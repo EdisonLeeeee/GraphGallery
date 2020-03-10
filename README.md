@@ -27,9 +27,12 @@ TensorFlow 2 implementation of state-of-the-arts deep learning graph models.
 + labels: np.ndarray shape [N, ], labels of all nodes.
 + idx_train, idx_val, idx_test: np.ndarray, the indices of training, validation and test nodes.
 
+You can specified training details by call `model.build(args)`.
+
 ## GCN
 
 ```python
+from graphgallery.nn.models import GCN
 model = GCN(adj, features, labels, device='CPU:0', seed=123)
 train_data = model.train_sequence(idx_train)
 val_data, test_data = model.test_sequence((idx_val, idx_test))
@@ -45,6 +48,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 ## DenceGCN
 
 ```python
+from graphgallery.nn.models import DenseGCN
 model = DenseGCN(adj, features, labels, device='CPU:0', seed=123)
 train_data = model.train_sequence(idx_train)
 val_data, test_data = model.test_sequence((idx_val, idx_test))
@@ -60,6 +64,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 ## ChebyGCN
 
 ```python
+from graphgallery.nn.models import ChebyGCN
 model = ChebyGCN(adj, features, labels, order=2, device='CPU:0', seed=123)
 train_data = model.train_sequence(idx_train)
 val_data, test_data = model.test_sequence((idx_val, idx_test))
@@ -73,6 +78,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 ## FastGCN
 
 ```python
+from graphgallery.nn.models import FastGCN
 model = FastGCN(adj, features, labels, device='CPU:0', seed=123)
 train_data = model.train_sequence(idx_train)
 val_data, test_data = model.test_sequence((idx_val, idx_test))
@@ -86,7 +92,8 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 ## GraphSAGE
 
 ```python
-model = FastGCN(adj, features, labels, n_samples=[10, 5], device='CPU:0', seed=123)
+from graphgallery.nn.models import GraphSAGE
+model = GraphSAGE(adj, features, labels, n_samples=[10, 5], device='CPU:0', seed=123)
 train_data = model.train_sequence(idx_train)
 val_data, test_data = model.test_sequence((idx_val, idx_test))
 model.build()
@@ -99,6 +106,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 ## RobustGCN
 
 ```python
+from graphgallery.nn.models import RobustGCN
 model = RobustGCN(adj, features, labels, device='CPU:0', seed=123)
 train_data = model.train_sequence(idx_train)
 val_data, test_data = model.test_sequence((idx_val, idx_test))
@@ -112,6 +120,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 ## SGC
 
 ```python
+from graphgallery.nn.models import SGC
 model = SGC(adj, features, labels, device='CPU:0', seed=123)
 train_data = model.train_sequence(idx_train)
 val_data, test_data = model.test_sequence((idx_val, idx_test))
@@ -125,6 +134,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 ## GWNN
 
 ```python
+from graphgallery.nn.models import GWNN
 model = GWNN(adj, features, labels, device='CPU:0', seed=123)
 train_data = model.train_sequence(idx_train)
 val_data, test_data = model.test_sequence((idx_val, idx_test))
@@ -138,6 +148,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 ## GAT
 
 ```python
+from graphgallery.nn.models import GAT
 model = GAT(adj, features, labels, device='CPU:0', seed=123)
 train_data = model.train_sequence(idx_train)
 val_data, test_data = model.test_sequence((idx_val, idx_test))
@@ -151,6 +162,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 ## ClusterGCN
 
 ```python
+from graphgallery.nn.models import ClusterGCN
 model = ClusterGCN(Data.adj, Data.features, data.labels, n_cluster=10, device='CPU:0', seed=123)
 train_data = model.train_sequence(data.idx_train)
 val_data, test_data = model.test_sequence((data.idx_val, data.idx_test))
