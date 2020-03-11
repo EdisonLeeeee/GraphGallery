@@ -1,5 +1,5 @@
-from numbers import Number
 import itertools
+from numbers import Number
 
 
 def repeat(src, length):
@@ -13,5 +13,3 @@ def repeat(src, length):
         return src + list(itertools.repeat(src[-1], length - len(src)))
     return src
 
-def is_iterable(arr):
-    return isinstance(arr, (list, tuple)) and not isinstance(arr[0], Number)

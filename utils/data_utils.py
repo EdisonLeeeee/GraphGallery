@@ -3,7 +3,7 @@ import scipy.sparse as sp
 import tensorflow as tf
 
 from numbers import Number
-from .shape_utils import repeat, is_iterable
+from .shape_utils import repeat
 
 def sample_mask(indices, shape):
     
@@ -13,6 +13,10 @@ def sample_mask(indices, shape):
         mask = np.zeros(shape, np.bool)
         mask[indices] = True
         return mask
+
+    
+def is_iterable(arr):
+    return isinstance(arr, (list, tuple)) and not isinstance(arr[0], Number)
 
 def sparse_to_tuple(sparse_mx):
     """Convert sparse matrix to tuple representation."""
