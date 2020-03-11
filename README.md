@@ -172,3 +172,26 @@ loss, accuracy = model.test(test_data)
 model.close
 print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 ```
+
+## Deepwalk
+
+```python
+from graphgallery.nn.models import Deepwalk
+model = Deepwalk(adj, features, labels)
+model.build()
+model.train(idx_train)
+accuracy = model.test(idx_test)
+print(f'Test accuracy {accuracy:.2%}')
+```
+
+## Node2vec
+
+```python
+from graphgallery.nn.models import Node2vec
+model = Node2vec(adj, features, labels)
+model.build()
+model.train(idx_train)
+accuracy = model.test(idx_test)
+print(f'Test accuracy {accuracy:.2%}')
+```
+

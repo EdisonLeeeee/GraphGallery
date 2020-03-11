@@ -32,9 +32,6 @@ class SupervisedModel:
         self.seed = seed
         self.device = tf.device(device)
 
-        self.train_inputs = None
-        self.test_inputs = None
-
         self.model = None
         self.built = None
         self.do_before_train = None
@@ -190,27 +187,26 @@ class SupervisedModel:
         assert isinstance(features, np.ndarray)
         return features / (features.sum(1, keepdims=True) + 1e-10)
 
-    def _sample_mask(self, idx, shape=None):
+    def _sample_mask(self, index, shape=None):
         if shape is None:
             shape = self.n_nodes
-        return sample_mask(idx, shape)
+        return sample_mask(index, shape)
     
     @staticmethod
     def _is_iterable(arr):
         return is_iterable(arr)
-    
 
     @staticmethod
-    def _check_and_convert(idx):
-        if isinstance(idx, int):
-            idx = np.asarray([idx])
-        elif isinstance(idx, list):
-            idx = np.asarray(idx)
-        elif isinstance(idx, np.ndarray):
+    def _check_and_convert(index):
+        if isinstance(index, int):
+            index = np.asarray([index])
+        elif isinstance(index, list):
+            index = np.asarray(index)
+        elif isinstance(index, np.ndarray):
             pass
         else:
-            raise ValueError('`idx` should be either list, int or np.ndarray!')
-        return idx
+            raise ValueError('`index` should be either list, int or np.ndarray!')
+        return index
 
     def save(self, path=None):
         if not os.path.exists('log'):
@@ -241,3 +237,77 @@ class SupervisedModel:
         #         del self.model
         self.built = None
         K.clear_session()
+
+        
+        
+from sklearn.metrics import accuracy_score
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import normalize
+
+class UnsupervisedModel:
+
+    def __init__(self, adj, features, labels, **kwargs):
+
+        seed = kwargs.pop('seed', None)
+        device = kwargs.pop('device', 'CPU:0')
+
+        self.n_nodes, self.n_features = features.shape
+        self.n_classes = labels.max() + 1
+        self.adj, self.features = adj, features
+        self.labels = labels
+
+        if seed:
+            tf.random.set_seed(seed)
+            np.random.seed(seed)
+            random.seed(seed)
+
+        self.seed = seed
+        self.device = tf.device(device)
+
+        self.log_path = f'./log/{self.__class__.__name__}_weights.ckpt'     
+        self.embeddings = None
+        self.model = None
+        
+        self.clssifier = LogisticRegression(solver='lbfgs', max_iter=1000, multi_class='auto', random_state=seed)
+
+    def build(self):
+        raise NotImplementedError
+
+                
+    def get_embeddings(self):
+        raise NotImplementedError
+
+    def train(self, index):
+        if self.embeddings is None:
+            self.get_embeddings()
+            
+        index = self._check_and_convert(index)
+        self.clssifier.fit(self.embeddings[index], self.labels[index])
+
+    def predict(self, index):
+        index = self._check_and_convert(index)
+        logit = self.clssifier.predict_proba(self.embeddings[index])
+        return logit
+    
+    def test(self, index):
+        index = self._check_and_convert(index)
+        y_true =  self.labels[index]
+        y_pred = self.clssifier.predict(self.embeddings[index])
+        accuracy = accuracy_score(y_true, y_pred)
+        return accuracy
+    
+    @staticmethod
+    def _normalize_embedding(embeddings):
+        return normalize(embeddings)
+    
+    @staticmethod
+    def _check_and_convert(index):
+        if isinstance(index, int):
+            index = np.asarray([index])
+        elif isinstance(index, list):
+            index = np.asarray(index)
+        elif isinstance(index, np.ndarray):
+            pass
+        else:
+            raise ValueError('`index` should be either list, int or np.ndarray!')
+        return index        
