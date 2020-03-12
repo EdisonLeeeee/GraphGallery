@@ -4,19 +4,14 @@ TensorFlow 2 implementation of state-of-the-arts deep learning graph models.
 
 # Requirements
 
-+ Python 3.7
-
-+ Tensorflow 2.1
-
-+ Scipy
-
-+ Sklearn
-
-+ Networkx
-
-+ Numpy
-
-+ Numba
++ python 3.7
++ tensorflow 2.1
++ networkx 2.3
++ scipy 1.4.1
++ sklearn 0.22
++ numpy 1.18.1
++ numba 0.48
++ gensim 3.8.1
 
 # Usage
 
