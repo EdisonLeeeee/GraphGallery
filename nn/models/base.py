@@ -19,7 +19,9 @@ class SupervisedModel:
 
         self.n_nodes, self.n_features = features.shape
         self.n_classes = labels.max() + 1
-        self.adj_ori, self.features_ori = adj, features
+        
+        self.adjacency_matrix = adj
+        self.feature_matrix = features
         self.labels = labels
 
 #         tf.config.set_soft_device_placement(True)
@@ -44,7 +46,7 @@ class SupervisedModel:
     def build(self):
         raise NotImplementedError
 
-    def train(self, train_data, val_data=None,
+    def train(self, index_train, index_val=None,
               epochs=200, early_stopping=None, validation=True,
               verbose=None, restore_best=True, log_path=None,
               best_metric='val_accuracy', early_stop_metric='val_loss'):
@@ -52,14 +54,15 @@ class SupervisedModel:
         # Check if model has built
         if not self.built:
             raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')
+            
+            
+        train_data = self.train_sequence(index_train)
 
-        assert isinstance(train_data, Sequence), 'The input `train_data` must be the instance of tf.keras.utils.Sequence.'
-
-        if validation and val_data is None:
-            raise RuntimeError('`val_data` must be specified when `validation=True`.')
-
-        if val_data is not None:
-            assert isinstance(val_data, Sequence), 'The input `val_data` must be the instance of tf.keras.utils.Sequence.'
+        if validation and index_val is None:
+            raise RuntimeError('`index_val` must be specified when `validation=True`.')
+        
+        if index_val is not None:
+            val_data = self.test_sequence(index_val)
 
         history = History(best_metric=best_metric,
                           early_stop_metric=early_stop_metric)
@@ -115,11 +118,13 @@ class SupervisedModel:
 
         return history
 
-    def test(self, test_data):
+    def test(self, index_test):
 
         if not self.built:
             raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')
-
+            
+        test_data = self.test_sequence(index_test)
+        
         if self.do_before_test is not None:
             self.do_before_test()
 
@@ -159,8 +164,13 @@ class SupervisedModel:
         return loss, accuracy
 
     def predict(self, index, **kwargs):
-        raise NotImplementedError
-
+        
+        if not self.built:
+            raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')
+            
+        if self.do_before_predict is not None:
+            self.do_before_predict(index, **kwargs)
+            
     def train_sequence(self, index):
         raise NotImplementedError
         

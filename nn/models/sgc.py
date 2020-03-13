@@ -16,11 +16,18 @@ class SGC(SupervisedModel):
                  normalize_rate=-0.5, normalize_features=True, device='CPU:0', seed=None):
     
         super().__init__(adj, features, labels, device=device, seed=seed)
+        
+        self.order = order
+        self.normalize_rate = normalize_rate
+        self.normalize_features = normalize_features            
+        self.preprocess(adj, features)
+        
+    def preprocess(self, adj, features):
+        
+        if self.normalize_rate is not None:
+            adj = self._normalize_adj(adj, self.normalize_rate)
 
-        if normalize_rate is not None:
-            adj = self._normalize_adj(adj, normalize_rate)
-
-        if normalize_features:
+        if self.normalize_features:
             features = self._normalize_features(features)
 
         adj, features = self._to_tensor([adj, features])
@@ -28,13 +35,11 @@ class SGC(SupervisedModel):
         begin_time = perf_counter()
 
         with tf.device('CPU:0'):
-            features = SGConvolution(order=order)([features, adj])
+            features = SGConvolution(order=self.order)([features, adj])
 
         end_time = perf_counter()
 
-        self.adj = adj
-        self.features = features
-        self.order = order
+        self.features, self.adj = features, adj
         self.precompute_time = end_time - begin_time
 
         
@@ -66,10 +71,7 @@ class SGC(SupervisedModel):
             return sequence
         
     def predict(self, index):
-        
-        if not self.built:
-            raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')
-            
+        super().predict(index)
         index = self._check_and_convert(index)
         features = tf.gather(self.features, index)
         with self.device:

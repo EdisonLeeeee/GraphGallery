@@ -21,20 +21,27 @@ class ClusterGCN(SupervisedModel):
         if n_cluster is None:
             n_cluster = self.n_classes
             
-        if normalize_features:
+        self.n_cluster = n_cluster
+        self.normalize_rate = normalize_rate
+        self.normalize_features = normalize_features
+        self.preprocess(adj, features, graph)
+        
+    def preprocess(self, adj, features, graph=None):  
+        
+        if self.normalize_features:
             features = self._normalize_features(features)
             
         if graph is None:
             graph = nx.from_scipy_sparse_matrix(adj, create_using=nx.DiGraph)
             
         (self.batch_adj, self.batch_features, self.batch_labels, 
-         self.cluster_member, self.mapper) = partition_graph(adj, features, labels, graph, n_cluster=n_cluster)
+         self.cluster_member, self.mapper) = partition_graph(adj, features, self.labels, graph, 
+                                                             n_cluster=self.n_cluster)
         
-        if normalize_rate is not None:
-            self.batch_adj = self._normalize_adj(self.batch_adj, normalize_rate)
+        if self.normalize_rate is not None:
+            self.batch_adj = self._normalize_adj(self.batch_adj, self.normalize_rate)
             
         self.batch_adj, self.batch_features = self._to_tensor([self.batch_adj, self.batch_features])
-        self.n_cluster = n_cluster
 
         
     def build(self, hidden_layers=[32], activations=['relu'], dropout=0.5, learning_rate=0.01, l2_norm=1e-5):
@@ -65,10 +72,7 @@ class ClusterGCN(SupervisedModel):
             
 
     def predict(self, index):
-        
-        if not self.built:
-            raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')
-            
+        super().predict(index)
         index = self._check_and_convert(index) 
         order_dict = {i: order for order, i in enumerate(index)}
         index = set(index.tolist())

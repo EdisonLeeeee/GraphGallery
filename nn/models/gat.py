@@ -15,12 +15,18 @@ class GAT(SupervisedModel):
     
         super().__init__(adj, features, labels, device=device, seed=seed)
         
-        if normalize_rate is None:
+        self.normalize_rate = normalize_rate
+        self.normalize_features = normalize_features            
+        self.preprocess(adj, features)
+        
+    def preprocess(self, adj, features):
+        
+        if self.normalize_rate is None:
             adj = adj + sp.eye(adj.shape[0])
         else:
-            adj = self._normalize_adj(adj, normalize_rate)
+            adj = self._normalize_adj(adj, self.normalize_rate)
             
-        if normalize_features:
+        if self.normalize_features:
             features = self._normalize_features(features)
 
         self.features, self.adj = self._to_tensor([features, adj])
@@ -67,14 +73,8 @@ class GAT(SupervisedModel):
         
         
     def predict(self, index):
-        if not self.built:
-            raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')
-
-        if self.do_before_predict is not None:
-            self.do_before_predict(idx, **kwargs)
-
+        super().predict(index)
         index = self._check_and_convert(index)
-
         with self.device:
             index = self._to_tensor(index)
             logit = self.model.predict_on_batch([self.features, self.adj, index])

@@ -12,18 +12,26 @@ from .base import SupervisedModel
 
 class ChebyGCN(SupervisedModel):
     
-    def __init__(self, adj, features, labels, order=2, normalize_rate=-0.5, normalize_features=True, device='CPU:0', seed=None):
+    def __init__(self, adj, features, labels, order=2, normalize_rate=-0.5, 
+                 normalize_features=True, device='CPU:0', seed=None):
     
-        super().__init__(adj, features, labels, device=device, seed=seed)
+        super().__init__(adj, features, labels, 
+                         device=device, seed=seed)
         
-        if normalize_rate is not None:
-            adj = chebyshev_polynomials(adj, rate=normalize_rate, order=order)
+        self.order = order
+        self.normalize_rate = normalize_rate
+        self.normalize_features = normalize_features
+        self.preprocess(adj, features)
+        
+    def preprocess(self, adj, features):
+        
+        if self.normalize_rate is not None:
+            adj = chebyshev_polynomials(adj, rate=self.normalize_rate, order=self.order)
             
-        if normalize_features:
+        if self.normalize_features:
             features = self._normalize_features(features)
 
-        self.features, self.adj = self._to_tensor([features, adj])
-        self.order = order
+        self.features, self.adj = self._to_tensor([features, adj])  
 
         
     def build(self, hidden_layers=[32], activations=['relu'], dropout=0.5, learning_rate=0.01, l2_norm=5e-4):
@@ -63,12 +71,7 @@ class ChebyGCN(SupervisedModel):
         
     
     def predict(self, index):
-        if not self.built:
-            raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')
-
-        if self.do_before_predict is not None:
-            self.do_before_predict(idx, **kwargs)
-
+        super().predict(index)
         index = self._check_and_convert(index)
 
         with self.device:

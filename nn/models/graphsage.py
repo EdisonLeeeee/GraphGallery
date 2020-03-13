@@ -18,15 +18,21 @@ class GraphSAGE(SupervisedModel):
     
         super().__init__(adj, features, labels, device=device, seed=seed)
         
-        if normalize_features:
+        self.n_samples = n_samples
+        self.normalize_features = normalize_features            
+        self.preprocess(adj, features)
+        
+    def preprocess(self, adj, features):
+        
+        if self.normalize_features:
             features = self._normalize_features(features)
             
-        adj = construct_adj(adj, max_degree=max(n_samples)) # Dense matrix, shape [n_nodes, max_degree]
+        # Dense matrix, shape [n_nodes, max_degree]            
+        adj = construct_adj(adj, max_degree=max(self.n_samples)) 
         # pad with dummy zero vector
         features = np.vstack([features, np.zeros(self.n_features, dtype=np.float32)])
         features = self._to_tensor(features)
         self.features, self.adj = features, adj
-        self.n_samples = n_samples
 
     def build(self, hidden_layers=[16], activations=['elu'], dropout=0.5, learning_rate=0.01, l2_norm=5e-4, 
               output_normalize=False, agg_method='mean'):
@@ -78,12 +84,9 @@ class GraphSAGE(SupervisedModel):
         
             
     def predict(self, index):
-        
-        if not self.built:
-            raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')
-            
-        index = self._check_and_convert(index)
+        super().predict(index)
         logit = []
+        index = self._check_and_convert(index)
         with self.device:
             data = SAGEMiniBatchSequence([self.features, index], adj=self.adj, n_samples=self.n_samples)
             for inputs, labels in data:

@@ -11,18 +11,27 @@ from .base import SupervisedModel
 
 class GWNN(SupervisedModel):
     
-    def __init__(self, adj, features, labels, 
-                 normalize_features=True, wavelet_s=1., 
-                 threshold=1e-4, order=3, wavelet_normalize=True, device='CPU:0', seed=None):
+    def __init__(self, adj, features, labels, order=3, wavelet_s=1., 
+                 threshold=1e-4, wavelet_normalize=True, 
+                 normalize_features=True, device='CPU:0', seed=None):
     
         super().__init__(adj, features, labels, device=device, seed=seed)
         
-        if normalize_features:
+        self.order = order
+        self.wavelet_s = wavelet_s
+        self.threshold = threshold
+        self.wavelet_normalize = wavelet_normalize
+        self.normalize_features = normalize_features   
+        self.preprocess(adj, features)
+        
+    def preprocess(self, adj, features):
+        
+        if self.normalize_features:
             features = self._normalize_features(features)
             
-        wavelet, inverse_wavelet = wavelet_basis(adj, wavelet_s=wavelet_s, 
-                                                 order=order, threshold=threshold, 
-                                                 wavelet_normalize=wavelet_normalize)
+        wavelet, inverse_wavelet = wavelet_basis(adj, wavelet_s=self.wavelet_s, 
+                                                 order=self.order, threshold=self.threshold, 
+                                                 wavelet_normalize=self.wavelet_normalize)
         
         self.features, self.adj = self._to_tensor([features, [wavelet, inverse_wavelet]])
         
@@ -59,21 +68,16 @@ class GWNN(SupervisedModel):
             return [self.train_sequence(idx) for idx in index]
         else:
             index = self._check_and_convert(index)
-            labels = self.labels[index]       
-        with self.device:
-            sequence = FullBatchNodeSequence([self.features, *self.adj, index], labels)
-        return sequence
+            labels = self.labels[index]  
+            
+            with self.device:
+                sequence = FullBatchNodeSequence([self.features, *self.adj, index], labels)
+            return sequence
         
     
     def predict(self, index):
-        if not self.built:
-            raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')
-
-        if self.do_before_predict is not None:
-            self.do_before_predict(idx, **kwargs)
-
+        super().predict(index)
         index = self._check_and_convert(index)
-
         with self.device:
             index = self._to_tensor(index)
             logit = self.model.predict_on_batch([self.features, *self.adj, index])

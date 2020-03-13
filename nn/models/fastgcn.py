@@ -10,20 +10,29 @@ from .base import SupervisedModel
 
 class FastGCN(SupervisedModel):
     
-    def __init__(self, adj, features, labels, normalize_rate=-0.5, normalize_features=False, device='CPU:0', seed=None):
+    def __init__(self, adj, features, labels, normalize_rate=-0.5, normalize_features=False,
+                 batch_size=256, rank=100, device='CPU:0', seed=None):
         
         super().__init__(adj, features, labels, device=device, seed=seed)
         
-        if normalize_rate is not None:
-            adj = self._normalize_adj(adj, normalize_rate)
+        self.rank = rank
+        self.batch_size= batch_size
+        self.normalize_rate = normalize_rate
+        self.normalize_features = normalize_features         
+        self.preprocess(adj, features)  
+        
+    def preprocess(self, adj, features):
+        
+        if self.normalize_rate is not None:
+            adj = self._normalize_adj(adj, self.normalize_rate)
             
-        if normalize_features:
+        if self.normalize_features:
             features = self._normalize_features(features)
             
         features = adj.dot(features)
         self.features, self.adj = features, adj
-        
-        
+
+
     def build(self, hidden_layers=[32], activations=['relu'], dropout=0.5, 
               learning_rate=0.01, l2_norm=5e-4, use_bias=False):
         
@@ -46,9 +55,7 @@ class FastGCN(SupervisedModel):
             self.built = True
             
     def predict(self, index):
-        if not self.built:
-            raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')        
-            
+        super().predict(index)
         index = self._check_and_convert(index)
         adj = self.adj[index]
         with self.device:
@@ -56,26 +63,26 @@ class FastGCN(SupervisedModel):
             logit = self.model.predict_on_batch([self.features, adj])
         return logit.numpy()
     
-    def train_sequence(self, index, batch_size=256, rank=100, normalize_rate=-0.5,):
+    def train_sequence(self, index):
         if self._is_iterable(index):
             return [self.train_sequence(idx) for idx in index]
         else:
             index = self._check_and_convert(index)
             labels = self.labels[index]
-
             features = self.features[index]
-            adj = self.adj_ori[index].tocsc()[:, index]
+            adj = self.adjacency_matrix[index].tocsc()[:, index]
 
-            if normalize_rate is not None:
-                adj = self._normalize_adj(adj, normalize_rate)
+            if self.normalize_rate is not None:
+                adj = self._normalize_adj(adj, self.normalize_rate)
 
             with self.device:
                 sequence = FastGCNBatchSequence([features, adj], labels,
-                                            batch_size=batch_size, rank=rank)
+                                                batch_size=self.batch_size, 
+                                                rank=self.rank)
             return sequence
         
         
-    def test_sequence(self, index, batch_size=None, rank=None):
+    def test_sequence(self, index):
         if self._is_iterable(index):
             return [self.test_sequence(idx) for idx in index]
         else:
@@ -84,6 +91,6 @@ class FastGCN(SupervisedModel):
             adj = self.adj[index]   
 
             with self.device:            
-                sequence = FastGCNBatchSequence([self.features, adj], labels,
-                                            batch_size=batch_size, rank=rank)  # use full batch
+                sequence = FastGCNBatchSequence([self.features, adj], 
+                                                labels, batch_size=None, rank=None)  # use full batch
             return sequence

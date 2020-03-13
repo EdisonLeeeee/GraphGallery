@@ -16,16 +16,21 @@ class GCN_MIX(SupervisedModel):
     
         super().__init__(adj, features, labels, device=device, seed=seed)
         
-        if normalize_rate is not None:
-            adj = self._normalize_adj(adj, normalize_rate)
+        self.normalize_rate = normalize_rate
+        self.normalize_features = normalize_features            
+        self.preprocess(adj, features)
+        
+    def preprocess(self, adj, features):
+        
+        if self.normalize_rate is not None:
+            adj = self._normalize_adj(adj, self.normalize_rate)        
             
-        if normalize_features:
+        if self.normalize_features:
             features = self._normalize_features(features)
             
         features = adj @ features
 
         self.features, self.adj = self._to_tensor(features), adj
-        self.normalize_rate = normalize_rate
         
     def build(self, hidden_layers=[32], activations=['relu'], dropout=0.5, 
               learning_rate=0.01, l2_norm=1e-4, use_bias=False):
@@ -62,10 +67,10 @@ class GCN_MIX(SupervisedModel):
         
         
     def predict(self, index):
-        if not self.built:
-            raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')    
-            
+        super().predict(index)
         index = self._check_and_convert(index)
         adj = self._to_tensor(self.adj[index])
-        logit = self.model.predict_on_batch([self.features, adj])
+        
+        with self.device:
+            logit = self.model.predict_on_batch([self.features, adj])
         return logit.numpy()

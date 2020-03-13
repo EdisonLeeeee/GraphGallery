@@ -18,16 +18,23 @@ class DenseGCN(SupervisedModel):
     
         super().__init__(adj, features, labels, device=device, seed=seed)
         
-        if normalize_rate is not None:
-            adj = self._normalize_adj(adj, normalize_rate)
+
+        self.normalize_rate = normalize_rate
+        self.normalize_features = normalize_features            
+        self.preprocess(adj, features)
+        
+    def preprocess(self, adj, features):
+        
+        if self.normalize_rate is not None:
+            adj = self._normalize_adj(adj, self.normalize_rate)
             
         if sp.isspmatrix(adj):
-            adj = adj.toarray()
+            adj = adj.toarray()    
             
-        if normalize_features:
+        if self.normalize_features:
             features = self._normalize_features(features)
-            
-        self.features, self.adj = self._to_tensor([features, adj])
+
+        self.features, self.adj = self._to_tensor([features, adj])  
         
     def build(self, hidden_layers=[32], activations=['relu'], dropout=0.5, 
               learning_rate=0.01, l2_norm=5e-4, use_bias=False):
@@ -72,11 +79,7 @@ class DenseGCN(SupervisedModel):
         if not self.built:
             raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')
 
-        if self.do_before_predict is not None:
-            self.do_before_predict(idx, **kwargs)
-
         index = self._check_and_convert(index)
-
         with self.device:
             index = self._to_tensor(index)
             logit = self.model.predict_on_batch([self.features, self.adj, index])
