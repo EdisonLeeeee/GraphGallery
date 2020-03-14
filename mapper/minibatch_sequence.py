@@ -132,7 +132,11 @@ class FastGCNBatchSequence(NodeSequence):
             else:
                 q = np.random.choice(distr, rank, replace=False, p=p[distr]/p[distr].sum())
             adj = adj[:, q].dot(sp.diags(1.0 / (p[q] * rank)))
-            features = features[q]                
+            
+            if tf.is_tensor(features):
+                features = tf.gather(features, q)
+            else:
+                features = features[q]                
     
         return self._to_tensor([(features, adj), labels])
     
