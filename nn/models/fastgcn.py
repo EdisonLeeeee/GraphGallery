@@ -30,7 +30,9 @@ class FastGCN(SupervisedModel):
             features = self._normalize_features(features)
             
         features = adj.dot(features)
-        self.features, self.adj = features, adj
+        
+        with self.device:
+            self.features, self.adj = self._to_tensor(features), adj
 
 
     def build(self, hidden_layers=[32], activations=['relu'], dropout=0.5, 
@@ -64,33 +66,32 @@ class FastGCN(SupervisedModel):
         return logit.numpy()
     
     def train_sequence(self, index):
-        if self._is_iterable(index):
-            return [self.train_sequence(idx) for idx in index]
+        index = self._check_and_convert(index)
+        labels = self.labels[index]
+        
+        if tf.is_tensor(self.features):
+            features = tf.gather(self.features, index)     
         else:
-            index = self._check_and_convert(index)
-            labels = self.labels[index]
             features = self.features[index]
-            adj = self.adjacency_matrix[index].tocsc()[:, index]
+            
+        adj = self.adjacency_matrix[index].tocsc()[:, index]
 
-            if self.normalize_rate is not None:
-                adj = self._normalize_adj(adj, self.normalize_rate)
+        if self.normalize_rate is not None:
+            adj = self._normalize_adj(adj, self.normalize_rate)
 
-            with self.device:
-                sequence = FastGCNBatchSequence([features, adj], labels,
-                                                batch_size=self.batch_size, 
-                                                rank=self.rank)
-            return sequence
-        
-        
+        with self.device:
+            sequence = FastGCNBatchSequence([features, adj], labels,
+                                            batch_size=self.batch_size, 
+                                            rank=self.rank)
+        return sequence
+
+
     def test_sequence(self, index):
-        if self._is_iterable(index):
-            return [self.test_sequence(idx) for idx in index]
-        else:
-            index = self._check_and_convert(index)
-            labels = self.labels[index]
-            adj = self.adj[index]   
+        index = self._check_and_convert(index)
+        labels = self.labels[index]
+        adj = self.adj[index]   
 
-            with self.device:            
-                sequence = FastGCNBatchSequence([self.features, adj], 
-                                                labels, batch_size=None, rank=None)  # use full batch
-            return sequence
+        with self.device:            
+            sequence = FastGCNBatchSequence([self.features, adj], 
+                                            labels, batch_size=None, rank=None)  # use full batch
+        return sequence

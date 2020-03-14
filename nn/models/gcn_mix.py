@@ -29,8 +29,9 @@ class GCN_MIX(SupervisedModel):
             features = self._normalize_features(features)
             
         features = adj @ features
-
-        self.features, self.adj = self._to_tensor(features), adj
+        
+        with self.device:
+            self.features, self.adj = self._to_tensor(features), adj
         
     def build(self, hidden_layers=[32], activations=['relu'], dropout=0.5, 
               learning_rate=0.01, l2_norm=1e-4, use_bias=False):
@@ -55,15 +56,12 @@ class GCN_MIX(SupervisedModel):
             
 
     def train_sequence(self, index):
-        if self._is_iterable(index):
-            return [self.train_sequence(idx) for idx in index]
-        else:
-            index = self._check_and_convert(index)
-            labels = self.labels[index]
-            adj = self.adj[index]
-            with self.device:
-                sequence = FullBatchNodeSequence([self.features, adj], labels)
-            return sequence
+        index = self._check_and_convert(index)
+        labels = self.labels[index]
+        adj = self.adj[index]
+        with self.device:
+            sequence = FullBatchNodeSequence([self.features, adj], labels)
+        return sequence
         
         
     def predict(self, index):

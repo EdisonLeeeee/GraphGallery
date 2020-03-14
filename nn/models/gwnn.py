@@ -32,8 +32,8 @@ class GWNN(SupervisedModel):
         wavelet, inverse_wavelet = wavelet_basis(adj, wavelet_s=self.wavelet_s, 
                                                  order=self.order, threshold=self.threshold, 
                                                  wavelet_normalize=self.wavelet_normalize)
-        
-        self.features, self.adj = self._to_tensor([features, [wavelet, inverse_wavelet]])
+        with self.device:
+            self.features, self.adj = self._to_tensor([features, [wavelet, inverse_wavelet]])
         
     def build(self, hidden_layers=[32], activations=['relu'], dropout=0.5, learning_rate=0.01, l2_norm=5e-4):
         
@@ -64,15 +64,12 @@ class GWNN(SupervisedModel):
             self.built = True
             
     def train_sequence(self, index):
-        if self._is_iterable(index):
-            return [self.train_sequence(idx) for idx in index]
-        else:
-            index = self._check_and_convert(index)
-            labels = self.labels[index]  
-            
-            with self.device:
-                sequence = FullBatchNodeSequence([self.features, *self.adj, index], labels)
-            return sequence
+        index = self._check_and_convert(index)
+        labels = self.labels[index]  
+
+        with self.device:
+            sequence = FullBatchNodeSequence([self.features, *self.adj, index], labels)
+        return sequence
         
     
     def predict(self, index):

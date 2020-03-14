@@ -34,12 +34,14 @@ class SGC(SupervisedModel):
 
         begin_time = perf_counter()
 
-        with tf.device('CPU:0'):
+        with self.device:
             features = SGConvolution(order=self.order)([features, adj])
 
         end_time = perf_counter()
-
-        self.features, self.adj = features, adj
+        
+        with self.device:
+            self.features, self.adj = features, adj
+            
         self.precompute_time = end_time - begin_time
 
         
@@ -60,15 +62,12 @@ class SGC(SupervisedModel):
 
     
     def train_sequence(self, index):
-        if self._is_iterable(index):
-            return [self.train_sequence(idx) for idx in index]
-        else:
-            index = self._check_and_convert(index)
-            labels = self.labels[index]
-            features = tf.gather(self.features, index)
-            with self.device:
-                sequence = FullBatchNodeSequence(features, labels)
-            return sequence
+        index = self._check_and_convert(index)
+        labels = self.labels[index]
+        features = tf.gather(self.features, index)
+        with self.device:
+            sequence = FullBatchNodeSequence(features, labels)
+        return sequence
         
     def predict(self, index):
         super().predict(index)

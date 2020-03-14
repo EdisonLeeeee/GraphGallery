@@ -28,8 +28,9 @@ class GAT(SupervisedModel):
             
         if self.normalize_features:
             features = self._normalize_features(features)
-
-        self.features, self.adj = self._to_tensor([features, adj])
+            
+        with self.device:
+            self.features, self.adj = self._to_tensor([features, adj])
 
             
     def build(self, hidden_layers=[8], n_heads=[8], activations=['elu'], dropout=0.5, learning_rate=0.01, l2_norm=5e-4):
@@ -62,14 +63,11 @@ class GAT(SupervisedModel):
             self.built = True
  
     def train_sequence(self, index):
-        if self._is_iterable(index):
-            return [self.train_sequence(idx) for idx in index]
-        else:
-            index = self._check_and_convert(index)
-            labels = self.labels[index]    
-            with self.device:
-                sequence = FullBatchNodeSequence([self.features, self.adj, index], labels)
-            return sequence
+        index = self._check_and_convert(index)
+        labels = self.labels[index]    
+        with self.device:
+            sequence = FullBatchNodeSequence([self.features, self.adj, index], labels)
+        return sequence
         
         
     def predict(self, index):

@@ -41,7 +41,8 @@ class ClusterGCN(SupervisedModel):
         if self.normalize_rate is not None:
             self.batch_adj = self._normalize_adj(self.batch_adj, self.normalize_rate)
             
-        self.batch_adj, self.batch_features = self._to_tensor([self.batch_adj, self.batch_features])
+        with self.device:
+            self.batch_adj, self.batch_features = self._to_tensor([self.batch_adj, self.batch_features])
 
         
     def build(self, hidden_layers=[32], activations=['relu'], dropout=0.5, learning_rate=0.01, l2_norm=1e-5):
@@ -98,23 +99,20 @@ class ClusterGCN(SupervisedModel):
         return reordered_logit
     
     def train_sequence(self, index):
-        if self._is_iterable(index):
-            return [self.train_sequence(idx) for idx in index]
-        else:
-            index = self._check_and_convert(index)
-            labels = self.labels[index]
-            
-            index = set(index.tolist())
-            batch_index, batch_labels = [], []
-            for cluster in range(self.n_cluster):
-                nodes = set(self.cluster_member[cluster])
-                batch_nodes = list(nodes.intersection(index))
-                batch_index.append(list(map(lambda n: self.mapper[n], batch_nodes)))
-                batch_labels.append(self.labels[batch_nodes])
+        index = self._check_and_convert(index)
+        labels = self.labels[index]
 
-            batch_data = tuple(zip(self.batch_features, self.batch_adj, batch_index))
-            with self.device:
-                sequence = ClusterMiniBatchSequence(batch_data, batch_labels)
-            return sequence
-        
+        index = set(index.tolist())
+        batch_index, batch_labels = [], []
+        for cluster in range(self.n_cluster):
+            nodes = set(self.cluster_member[cluster])
+            batch_nodes = list(nodes.intersection(index))
+            batch_index.append(list(map(lambda n: self.mapper[n], batch_nodes)))
+            batch_labels.append(self.labels[batch_nodes])
+
+        batch_data = tuple(zip(self.batch_features, self.batch_adj, batch_index))
+        with self.device:
+            sequence = ClusterMiniBatchSequence(batch_data, batch_labels)
+        return sequence
+
         

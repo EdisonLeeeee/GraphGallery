@@ -30,8 +30,9 @@ class ChebyGCN(SupervisedModel):
             
         if self.normalize_features:
             features = self._normalize_features(features)
-
-        self.features, self.adj = self._to_tensor([features, adj])  
+            
+        with self.device:
+            self.features, self.adj = self._to_tensor([features, adj])  
 
         
     def build(self, hidden_layers=[32], activations=['relu'], dropout=0.5, learning_rate=0.01, l2_norm=5e-4):
@@ -60,22 +61,17 @@ class ChebyGCN(SupervisedModel):
             self.built = True
             
     def train_sequence(self, index):
-        if self._is_iterable(index):
-            return [self.train_sequence(idx) for idx in index]
-        else:
-            index = self._check_and_convert(index)
-            labels = self.labels[index]      
-            with self.device:
-                sequence = FullBatchNodeSequence([self.features, *self.adj, index], labels)
+        index = self._check_and_convert(index)
+        labels = self.labels[index]      
+        with self.device:
+            sequence = FullBatchNodeSequence([self.features, *self.adj, index], labels)
         return sequence
         
     
     def predict(self, index):
         super().predict(index)
         index = self._check_and_convert(index)
-
+        index = self._to_tensor(index)
         with self.device:
-            index = self._to_tensor(index)
             logit = self.model.predict_on_batch([self.features, *self.adj, index])
-
         return logit.numpy()    

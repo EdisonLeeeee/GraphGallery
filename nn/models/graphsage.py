@@ -31,8 +31,10 @@ class GraphSAGE(SupervisedModel):
         adj = construct_adj(adj, max_degree=max(self.n_samples)) 
         # pad with dummy zero vector
         features = np.vstack([features, np.zeros(self.n_features, dtype=np.float32)])
-        features = self._to_tensor(features)
-        self.features, self.adj = features, adj
+        
+        with self.device:
+            features = self._to_tensor(features)
+            self.features, self.adj = features, adj
 
     def build(self, hidden_layers=[16], activations=['elu'], dropout=0.5, learning_rate=0.01, l2_norm=5e-4, 
               output_normalize=False, agg_method='mean'):
@@ -73,14 +75,11 @@ class GraphSAGE(SupervisedModel):
 
     
     def train_sequence(self, index):
-        if self._is_iterable(index):
-            return [self.train_sequence(idx) for idx in index]
-        else:
-            index = self._check_and_convert(index)
-            labels = self.labels[index]      
-            with self.device:
-                sequence = SAGEMiniBatchSequence([self.features, index], labels, self.adj, n_samples=self.n_samples)
-            return sequence
+        index = self._check_and_convert(index)
+        labels = self.labels[index]      
+        with self.device:
+            sequence = SAGEMiniBatchSequence([self.features, index], labels, self.adj, n_samples=self.n_samples)
+        return sequence
         
             
     def predict(self, index):

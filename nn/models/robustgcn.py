@@ -15,14 +15,20 @@ class RobustGCN(SupervisedModel):
     
         super().__init__(adj, features, labels, device=device, seed=seed)
         
-        if normalize_rate is not None:
-            adj = self._normalize_adj([adj, adj], normalize_rate) # [adj_1, adj_2]
-
-        if normalize_features:
+        self.normalize_rate = normalize_rate
+        self.normalize_features = normalize_features            
+        self.preprocess(adj, features)
+            
+    def preprocess(self, adj, features):
+        
+        if self.normalize_rate is not None:
+            adj = self._normalize_adj([adj, adj], self.normalize_rate)    # [adj_1, adj_2]    
+            
+        if self.normalize_features:
             features = self._normalize_features(features)
-
-        self.features, self.adj = self._to_tensor([features, adj])
-
+            
+        with self.device:
+            self.features, self.adj = self._to_tensor([features, adj])
         
     def build(self, hidden_layers=[64], activations=['relu'], dropout=0.5, learning_rate=0.01, l2_norm=5e-4, para_kl=5e-4):
         
@@ -54,14 +60,11 @@ class RobustGCN(SupervisedModel):
         self.built = True
         
     def train_sequence(self, index):
-        if self._is_iterable(index):
-            return [self.train_sequence(idx) for idx in index]
-        else:
-            index = self._check_and_convert(index)
-            labels = self.labels[index]      
-            with self.device:
-                sequence = FullBatchNodeSequence([self.features, *self.adj, index], labels)
-            return sequence
+        index = self._check_and_convert(index)
+        labels = self.labels[index]      
+        with self.device:
+            sequence = FullBatchNodeSequence([self.features, *self.adj, index], labels)
+        return sequence
 
     def predict(self, index):
         if not self.built:
