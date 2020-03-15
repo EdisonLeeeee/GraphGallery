@@ -6,13 +6,9 @@ from numbers import Number
 from .shape_utils import repeat
 
 def sample_mask(indices, shape):
-    
-    if is_iterable(indices): 
-        return [sample_mask(index, shape) for index in indices]
-    else:
-        mask = np.zeros(shape, np.bool)
-        mask[indices] = True
-        return mask
+    mask = np.zeros(shape, np.bool)
+    mask[indices] = True
+    return mask
 
     
 def is_iterable(arr):
@@ -37,8 +33,11 @@ def sparse_to_tuple(sparse_mx):
 def normalize_adj(adjacency, rate=-0.5, self_loop=True):
     """Normalize adjacency matrix."""
     def normalize(adj, alpha):
+        if alpha is None:
+            return adj
         if self_loop:
             adj = adj + sp.eye(adj.shape[0])
+            
         row_sum = adj.sum(1).A1
         d_inv_sqrt = np.power(row_sum, alpha)
         d_inv_sqrt[np.isinf(d_inv_sqrt)] = 0.

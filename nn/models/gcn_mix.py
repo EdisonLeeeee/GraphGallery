@@ -67,8 +67,8 @@ class GCN_MIX(SupervisedModel):
     def predict(self, index):
         super().predict(index)
         index = self._check_and_convert(index)
-        adj = self._to_tensor(self.adj[index])
         
         with self.device:
+            adj = self._to_tensor(self.adj[index])
             logit = self.model.predict_on_batch([self.features, adj])
         return logit.numpy()

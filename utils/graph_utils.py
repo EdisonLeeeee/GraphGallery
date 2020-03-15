@@ -65,8 +65,7 @@ def construct_adj(adj, max_degree=25, self_loop=False):
     np.random.shuffle(adj_dense.T)
     return adj_dense
 
-def sample_neighbors(adj, nodes, n_neighbors, shuffle=True):
-    if shuffle:
-        np.random.shuffle(adj.T)
-    return adj[nodes, :n_neighbors].copy()
+def sample_neighbors(adj, nodes, n_neighbors):
+    np.random.shuffle(adj.T)
+    return adj[nodes, :n_neighbors]
     

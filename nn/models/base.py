@@ -1,5 +1,6 @@
 import os
 import random
+import datetime
 import numpy as np
 import tensorflow as tf
 import scipy.sparse as sp
@@ -9,7 +10,10 @@ from tensorflow.keras.utils import Sequence
 
 from graphgallery.utils import History, sample_mask, normalize_adj, to_tensor, is_iterable
 
-
+def printbar():
+    t = datetime.datetime.now()
+    print("=========="*8, f'{t.hour:02}:{t.minute:02}:{t.second:02}')
+    
 class SupervisedModel:
 
     def __init__(self, adj, features, labels, **kwargs):
@@ -73,7 +77,9 @@ class SupervisedModel:
         if not validation:
             history.register_best_metric('accuracy')
             history.register_early_stop_metric('loss')
-
+            
+        printbar()
+        print('Start training.')
         for epoch in range(1, epochs+1):
 
             if self.do_before_train is not None:
@@ -107,12 +113,16 @@ class SupervisedModel:
                 break
 
             if verbose and history.times % verbose == 0:
+                printbar()
                 print(f'Epoch {epoch:3d}: loss {loss:.4f} - accuracy {accuracy:.2%}', end='')
                 if validation:
                     print(f' - val_loss {val_loss:.4f} - val_accuracy {val_accuracy:.2%}.')
                 else:
                     print()
 
+        printbar()
+        print('End of training.')
+        
         if restore_best:
             self.load(log_path)
 
@@ -138,28 +148,12 @@ class SupervisedModel:
             forward_fn = self.model.train_on_batch
         else:
             forward_fn = self.model.test_on_batch
-
-        loss = accuracy = 0
-        node_count_seen = 0
+            
+        self.model.reset_metrics()
 
         with self.device:
             for inputs, labels in data:
-                node_count = labels.shape[0]
-
-                if node_count == 0:
-                    continue
-
-                loss_, accuracy_ = forward_fn(x=inputs, y=labels)
-
-                loss += loss_ * node_count
-                accuracy += accuracy_ * node_count
-                node_count_seen += node_count
-
-        if node_count_seen != 0:
-            loss /= node_count_seen
-            accuracy /= node_count_seen
-        else:
-            print('No nodes seen in forward!')
+                loss, accuracy = forward_fn(x=inputs, y=labels, reset_metrics=False)
 
         return loss, accuracy
 
@@ -222,13 +216,15 @@ class SupervisedModel:
         if not os.path.exists('log'):
             os.makedirs('log')       
             
-        if not path:
+        if path is None:
             path = self.log_path
+            
         self.model.save_weights(path)
 
     def load(self, path=None):
-        if not path:
+        if path is None:
             path = self.log_path
+            
         self.model.load_weights(path)
 
     @property
@@ -237,10 +233,7 @@ class SupervisedModel:
 
     @property
     def np_weights(self):
-        weights = []
-        for W in self.weights:
-            weights.append(W.numpy())
-        return weights
+        return [weight.numpy() for weight in self.weights]
 
     @property
     def close(self):

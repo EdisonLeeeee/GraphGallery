@@ -51,7 +51,7 @@ class ClusterGCN(SupervisedModel):
             
             x = Input(batch_shape=[None, self.n_features], dtype=tf.float32, name='features')
             adj = Input(batch_shape=[None, None], dtype=tf.float32, sparse=True, name='adj_matrix')
-            index = Input(batch_shape=[None],  dtype=tf.int32, name='index')
+            mask = Input(batch_shape=[None],  dtype=tf.bool, name='mask')
 
             h = Dropout(rate=dropout)(x)
 
@@ -60,10 +60,10 @@ class ClusterGCN(SupervisedModel):
                 h = Dropout(rate=dropout)(h)
 
             h = GraphConvolution(self.n_classes)([h, adj])
-            h = tf.gather(h, index)
+            h = tf.boolean_mask(h, mask)
             output = Softmax()(h)
 
-            model = Model(inputs=[x, adj, index], outputs=output)
+            model = Model(inputs=[x, adj, mask], outputs=output)
 
             model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=learning_rate), 
                           metrics=['accuracy'], experimental_run_tf_function=False)
@@ -75,44 +75,51 @@ class ClusterGCN(SupervisedModel):
     def predict(self, index):
         super().predict(index)
         index = self._check_and_convert(index) 
-        order_dict = {i: order for order, i in enumerate(index)}
-        index = set(index.tolist())
-        batch_index, orders = [], []
-        for cluster in range(self.n_cluster):
-            nodes = set(self.cluster_member[cluster])
-            batch_nodes = list(nodes.intersection(index))
-            if len(batch_nodes) == 0 :continue
-            orders.extend([order_dict[n] for n in batch_nodes])
-            batch_index.append(list(map(lambda n: self.mapper[n], batch_nodes)))
-        batch_data = tuple(zip(self.batch_features, self.batch_adj, batch_index))
+        mask = self._sample_mask(index)
         
-        batch_data = self._to_tensor(batch_data)
-        logit = []
+        order_dict = {idx: order for order, idx in enumerate(index)}
+        batch_mask, orders = [], []
+        batch_features, batch_adj = [], []
+        for cluster in range(self.n_cluster):
+            nodes = self.cluster_member[cluster]
+            mini_mask = mask[nodes]
+            batch_nodes = np.asarray(nodes)[mini_mask]
+            if batch_nodes.size == 0: continue
+            batch_features.append(self.batch_features[cluster])
+            batch_adj.append(self.batch_adj[cluster])            
+            batch_mask.append(mini_mask)
+            orders.append([order_dict[n] for n in batch_nodes])
+            
+        batch_data = tuple(zip(batch_features, batch_adj, batch_mask))
+        
+        logit = np.zeros((index.size, self.n_classes), dtype='float32')
         with self.device:
-            for inputs in batch_data:
+            batch_data = self._to_tensor(batch_data)
+            for order, inputs in zip(orders, batch_data):
                 output = self.model.predict_on_batch(inputs)
-                logit.append(output)
+                logit[order] = output
                 
-        logit = np.concatenate(logit, axis=0)
-        reordered_logit = np.zeros_like(logit)
-        reordered_logit[orders] = logit
-        return reordered_logit
-    
+        return logit
+
+        
     def train_sequence(self, index):
         index = self._check_and_convert(index)
-        labels = self.labels[index]
+        mask = self._sample_mask(index)
+        labels = self.labels
 
-        index = set(index.tolist())
-        batch_index, batch_labels = [], []
+        batch_mask, batch_labels = [], []
+        batch_features, batch_adj = [], []
         for cluster in range(self.n_cluster):
-            nodes = set(self.cluster_member[cluster])
-            batch_nodes = list(nodes.intersection(index))
-            batch_index.append(list(map(lambda n: self.mapper[n], batch_nodes)))
-            batch_labels.append(self.labels[batch_nodes])
+            nodes = self.cluster_member[cluster]
+            mini_mask = mask[nodes]
+            mini_labels = labels[nodes][mini_mask]
+            if mini_labels.size==0: continue
+            batch_features.append(self.batch_features[cluster])
+            batch_adj.append(self.batch_adj[cluster])
+            batch_mask.append(mini_mask)
+            batch_labels.append(mini_labels)
 
-        batch_data = tuple(zip(self.batch_features, self.batch_adj, batch_index))
+        batch_data = tuple(zip(batch_features, batch_adj, batch_mask))
         with self.device:
             sequence = ClusterMiniBatchSequence(batch_data, batch_labels)
         return sequence
-
-        
