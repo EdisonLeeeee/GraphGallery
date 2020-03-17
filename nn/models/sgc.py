@@ -4,8 +4,6 @@ from tensorflow.keras.layers import Dense
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 
-from time import perf_counter
-
 from graphgallery.nn.layers import SGConvolution
 from graphgallery.mapper import FullBatchNodeSequence
 from .base import SupervisedModel
@@ -30,19 +28,14 @@ class SGC(SupervisedModel):
         if self.normalize_features:
             features = self._normalize_features(features)
 
-        adj, features = self._to_tensor([adj, features])
-
-        begin_time = perf_counter()
-
         with self.device:
+            features, adj = self._to_tensor([features, adj])
             features = SGConvolution(order=self.order)([features, adj])
 
-        end_time = perf_counter()
         
         with self.device:
             self.features, self.adj = features, adj
             
-        self.precompute_time = end_time - begin_time
 
         
     def build(self, learning_rate=0.2, l2_norm=5e-5):

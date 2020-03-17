@@ -122,7 +122,8 @@ class SupervisedModel:
 
         printbar()
         print('End of training.')
-        
+        printbar()
+
         if restore_best:
             self.load(log_path)
 
@@ -176,6 +177,9 @@ class SupervisedModel:
         predict_class = logit.argmax(1)
         return (predict_class == labels).mean()
 
+    def __call__(self, inputs):
+        return self.model(inputs)
+    
     @staticmethod
     def _to_tensor(inputs):
         """Convert input matrices to Tensor (SparseTensor)."""
