@@ -11,7 +11,7 @@ from .base import SupervisedModel
 
 class GWNN(SupervisedModel):
     
-    def __init__(self, adj, features, labels, order=3, wavelet_s=1., 
+    def __init__(self, adj, features, labels, order=3, wavelet_s=1.2, 
                  threshold=1e-4, wavelet_normalize=True, 
                  normalize_features=True, device='CPU:0', seed=None):
     

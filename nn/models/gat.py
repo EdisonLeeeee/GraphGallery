@@ -33,7 +33,7 @@ class GAT(SupervisedModel):
             self.features, self.adj = self._to_tensor([features, adj])
 
             
-    def build(self, hidden_layers=[8], n_heads=[8], activations=['elu'], dropout=0.5, learning_rate=0.01, l2_norm=5e-4):
+    def build(self, hidden_layers=[8], n_heads=[8], activations=['elu'], dropout=0.6, learning_rate=0.01, l2_norm=5e-4):
         
         with self.device:
             

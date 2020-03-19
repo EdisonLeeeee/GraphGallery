@@ -45,6 +45,9 @@ class SupervisedModel:
 
         self.model = None
         self.built = None
+        self.index_train = None
+        self.index_val = None
+        self.index_test = None
         self.do_before_train = None
         self.do_before_validation = None
         self.do_before_test = None
@@ -71,6 +74,7 @@ class SupervisedModel:
             train_data = index_train
         else:
             train_data = self.train_sequence(index_train)
+            self.index_train = self._check_and_convert(index_train)
             
 
         if validation and index_val is None:
@@ -81,6 +85,7 @@ class SupervisedModel:
                 val_data = index_val
             else:
                 val_data = self.test_sequence(index_val)
+                self.index_val = self._check_and_convert(index_val)
 
         history = History(best_metric=best_metric,
                           early_stop_metric=early_stop_metric)
@@ -93,10 +98,8 @@ class SupervisedModel:
             history.register_early_stop_metric('loss')
             
         if verbose:
-            t = datetime.datetime.now()
-
-            bar = printbar(0, epochs)
-            print(f'Time : {t.hour:02}:{t.minute:02}:{t.second:02} | ' 'Start training.')
+            Bt = datetime.datetime.now()
+            print(f'Start Time  : {Bt.hour:02}:{Bt.minute:02}:{Bt.second:02} | Start training.')
             
         for epoch in range(1, epochs+1):
 
@@ -138,9 +141,13 @@ class SupervisedModel:
                     
                 print(bar + msg, end='\r' if not line_plot else '\n')
                     
-        if not line_plot:
+        if verbose and not line_plot:
             print()
-
+            
+        if verbose:
+            Et = datetime.datetime.now()
+            print(f'Finish Time : {Et.hour:02}:{Et.minute:02}:{Et.second:02} | End of training. Time consuming : {(Et.timestamp()-Bt.timestamp()):.2f}s.')
+            
         if restore_best:
             self.load(log_path)
 
@@ -151,7 +158,11 @@ class SupervisedModel:
         if not self.built:
             raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')
             
-        test_data = self.test_sequence(index_test)
+        if isinstance(index_test, Sequence):
+            test_data = index_test
+        else:
+            test_data = self.test_sequence(index_test)
+            self.index_test = self._check_and_convert(index_test)
         
         if self.do_before_test is not None:
             self.do_before_test()
@@ -189,11 +200,14 @@ class SupervisedModel:
     def test_sequence(self, index):
         return self.train_sequence(index) 
     
-    def test_predict(self, index, labels):
+    def test_predict(self, index):
+        index = self._check_and_convert(index)
         logit = self.predict(index)
         predict_class = logit.argmax(1)
+        labels = self.labels[index]
         return (predict_class == labels).mean()
-
+    
+    @tf.function
     def __call__(self, inputs):
         return self.model(inputs)
     
@@ -231,7 +245,7 @@ class SupervisedModel:
             pass
         else:
             raise ValueError('`index` should be either list, int or np.ndarray!')
-        return index
+        return index.astype('int32')
 
     def save(self, path=None):
         if not os.path.exists('log'):
