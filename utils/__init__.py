@@ -6,3 +6,4 @@ from .shape_utils import repeat
 from .tensor_utils import to_tensor
 from .gdc_utils import GDC
 from .error_utils import solve_cudnn_error
+from .probar import progress_bar

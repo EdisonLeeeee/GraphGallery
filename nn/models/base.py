@@ -10,9 +10,14 @@ from tensorflow.keras.utils import Sequence
 
 from graphgallery.utils import History, sample_mask, normalize_adj, to_tensor, is_iterable
 
-def printbar():
+def printbar(epoch, total,bar_len=44):
     t = datetime.datetime.now()
-    print("=========="*8, f'{t.hour:02}:{t.minute:02}:{t.second:02}')
+    left = int((epoch/total)*bar_len)
+    right = bar_len - left
+    bar = '[' + "="*left + f'>' + '.'*right + ']'
+    bar = bar[:bar_len//2] + f' {epoch}/{total} ' + bar[bar_len//2:]
+    bar += f' {t.hour:02}:{t.minute:02}:{t.second:02}'
+    return bar
     
 class SupervisedModel:
 
@@ -53,7 +58,7 @@ class SupervisedModel:
     def train(self, index_train, index_val=None,
               epochs=200, early_stopping=None, validation=True,
               verbose=None, restore_best=True, log_path=None,
-              best_metric='val_accuracy', early_stop_metric='val_loss'):
+              best_metric='val_accuracy', early_stop_metric='val_loss', line_plot=False):
         '''
         index_train: np.ndarray, int, list, Sequence
         index_val: np.ndarray, int, list, Sequence or None
@@ -66,7 +71,6 @@ class SupervisedModel:
             train_data = index_train
         else:
             train_data = self.train_sequence(index_train)
-            
             
 
         if validation and index_val is None:
@@ -87,9 +91,12 @@ class SupervisedModel:
         if not validation:
             history.register_best_metric('accuracy')
             history.register_early_stop_metric('loss')
+            
         if verbose:
-            printbar()
-            print('Start training.')
+            t = datetime.datetime.now()
+
+            bar = printbar(0, epochs)
+            print(f'Time : {t.hour:02}:{t.minute:02}:{t.second:02} | ' 'Start training.')
             
         for epoch in range(1, epochs+1):
 
@@ -120,21 +127,19 @@ class SupervisedModel:
             # early stopping
             if early_stopping and history.time_to_early_stopping(early_stopping):
                 if verbose:
-                    print(f'Epoch {epoch}: early stopping with patience {early_stopping}.')
+                    print(f'Epoch {epoch}/{epochs}: early stopping with patience {early_stopping}.')
                 break
 
             if verbose and history.times % verbose == 0:
-                printbar()
-                print(f'Epoch {epoch:3d}: loss {loss:.4f} - accuracy {accuracy:.2%}', end='')
+                bar = printbar(epoch, epochs)
+                msg = f' | loss {loss:.2f} | accuracy {accuracy:.2%}'
                 if validation:
-                    print(f' - val_loss {val_loss:.4f} - val_accuracy {val_accuracy:.2%}.')
-                else:
-                    print()
-
-        if verbose:
-            printbar()
-            print('End of training.')
-            printbar()
+                    msg += f' | val_loss {val_loss:.2f} | val_accuracy {val_accuracy:.2%}'
+                    
+                print(bar + msg, end='\r' if not line_plot else '\n')
+                    
+        if not line_plot:
+            print()
 
         if restore_best:
             self.load(log_path)
