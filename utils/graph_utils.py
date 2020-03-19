@@ -69,3 +69,13 @@ def sample_neighbors(adj, nodes, n_neighbors):
     np.random.shuffle(adj.T)
     return adj[nodes, :n_neighbors]
     
+
+def get_indice_graph(adj, indices, size=np.inf, dropout=0.):
+    if dropout > 0.:
+        indices = np.random.choice(indices, int(indices.size*(1-dropout)), False)
+    neighbors = adj[indices].sum(axis=0).nonzero()[1]
+    if neighbors.size > size - indices.size:
+        neighbors = np.random.choice(list(neighbors), size-len(indices), False)
+    indices = np.union1d(indices, neighbors)
+    print(f'Indices size: {indices.size}', )
+    return indices

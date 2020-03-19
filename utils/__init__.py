@@ -5,3 +5,4 @@ from .wavelet_utils import wavelet_basis
 from .shape_utils import repeat
 from .tensor_utils import to_tensor
 from .gdc_utils import GDC
+from .error_utils import solve_cudnn_error

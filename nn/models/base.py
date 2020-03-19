@@ -54,19 +54,29 @@ class SupervisedModel:
               epochs=200, early_stopping=None, validation=True,
               verbose=None, restore_best=True, log_path=None,
               best_metric='val_accuracy', early_stop_metric='val_loss'):
-
+        '''
+        index_train: np.ndarray, int, list, Sequence
+        index_val: np.ndarray, int, list, Sequence or None
+        '''
         # Check if model has built
         if not self.built:
             raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')
             
+        if isinstance(index_train, Sequence):
+            train_data = index_train
+        else:
+            train_data = self.train_sequence(index_train)
             
-        train_data = self.train_sequence(index_train)
+            
 
         if validation and index_val is None:
             raise RuntimeError('`index_val` must be specified when `validation=True`.')
         
         if index_val is not None:
-            val_data = self.test_sequence(index_val)
+            if isinstance(index_val, Sequence):
+                val_data = index_val
+            else:
+                val_data = self.test_sequence(index_val)
 
         history = History(best_metric=best_metric,
                           early_stop_metric=early_stop_metric)
@@ -77,9 +87,10 @@ class SupervisedModel:
         if not validation:
             history.register_best_metric('accuracy')
             history.register_early_stop_metric('loss')
+        if verbose:
+            printbar()
+            print('Start training.')
             
-        printbar()
-        print('Start training.')
         for epoch in range(1, epochs+1):
 
             if self.do_before_train is not None:
@@ -120,9 +131,10 @@ class SupervisedModel:
                 else:
                     print()
 
-        printbar()
-        print('End of training.')
-        printbar()
+        if verbose:
+            printbar()
+            print('End of training.')
+            printbar()
 
         if restore_best:
             self.load(log_path)

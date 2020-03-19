@@ -7,3 +7,5 @@ from .graphsage_full import FullBatchSAGEConv
 from .graphsage import SAGEConvolution
 from .cheby_gcn import ChebyConvolution
 from .dense_gcn import DenseGraphConv
+from .top_k import Top_k_features
+from .lgcn import LGConvolution
