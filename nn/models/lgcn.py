@@ -20,6 +20,7 @@ class LGCN(SupervisedModel):
         self.normalize_rate = normalize_rate
         self.normalize_features = normalize_features            
         self.preprocess(adj, features)
+        self.sparse = False
         
     def preprocess(self, adj, features):
         

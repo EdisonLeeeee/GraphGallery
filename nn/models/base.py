@@ -52,6 +52,7 @@ class SupervisedModel:
         self.do_before_validation = None
         self.do_before_test = None
         self.do_before_predict = None
+        self.sparse = True
 
         self.log_path = f'./log/{self.__class__.__name__}_weights.ckpt'
 

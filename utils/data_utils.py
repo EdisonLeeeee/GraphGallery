@@ -19,7 +19,7 @@ def sparse_to_tuple(sparse_mx):
     def to_tuple(mx):
         mx = mx.tocoo()
         coords = np.vstack((mx.row, mx.col)).T
-        values = mx.data.astype('float32')
+        values = mx.data.astype('float32', copy=False)
         shape = mx.shape
         return coords, values, shape
 
@@ -40,9 +40,9 @@ def normalize_adj(adjacency, rate=-0.5, self_loop=True):
             
         row_sum = adj.sum(1).A1
         d_inv_sqrt = np.power(row_sum, alpha)
-        d_inv_sqrt[np.isinf(d_inv_sqrt)] = 0.
+#         d_inv_sqrt[np.isinf(d_inv_sqrt)] = 0.
         d_mat_inv_sqrt = sp.diags(d_inv_sqrt)
-        return (d_mat_inv_sqrt @ adj @ d_mat_inv_sqrt).astype(np.float32)
+        return (d_mat_inv_sqrt @ adj @ d_mat_inv_sqrt).astype('float32', copy=False)
 
     if is_iterable(adjacency):
         size = len(adjacency)
