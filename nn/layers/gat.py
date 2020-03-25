@@ -122,7 +122,7 @@ class GraphAttention(Layer):
             
             
             # Attention head a(Wh_i, Wh_j) = a^T [[Wh_i], [Wh_j]]
-            attentions = tf.sparse.add(attn_for_self, attn_for_neighs)  # (N x N) via broadcasting
+            attentions = tf.sparse.add(attn_for_self, attn_for_neighs) 
 
             # Add nonlinearty
             attentions = tf.sparse.SparseTensor(indices=attentions.indices,

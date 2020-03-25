@@ -25,7 +25,9 @@ class SupervisedModel:
 
         seed = kwargs.pop('seed', None)
         device = kwargs.pop('device', 'CPU:0')
-
+        
+        self.device_name = device
+        self.name = kwargs.pop('name', self.__class__.__name__)
         self.n_nodes, self.n_features = features.shape
         self.n_classes = labels.max() + 1
         
@@ -54,7 +56,7 @@ class SupervisedModel:
         self.do_before_predict = None
         self.sparse = True
 
-        self.log_path = f'./log/{self.__class__.__name__}_weights.ckpt'
+        self.log_path = f'./log/{self.name}_weights.ckpt'
 
     def build(self):
         raise NotImplementedError
@@ -211,7 +213,7 @@ class SupervisedModel:
     @tf.function
     def __call__(self, inputs):
         return self.model(inputs)
-    
+
     @staticmethod
     def _to_tensor(inputs):
         """Convert input matrices to Tensor (SparseTensor)."""
@@ -251,6 +253,7 @@ class SupervisedModel:
     def save(self, path=None):
         if not os.path.exists('log'):
             os.makedirs('log')       
+            print('mkdir /log')
             
         if path is None:
             path = self.log_path
@@ -270,12 +273,19 @@ class SupervisedModel:
     @property
     def np_weights(self):
         return [weight.numpy() for weight in self.weights]
+    
+    @property
+    def trainable_variables(self):
+        return self.model.trainable_variables
 
     @property
     def close(self):
-        #         del self.model
+        # del self.model
         self.built = None
         K.clear_session()
+        
+    def __repr__(self):
+        return self.name + ' in ' + self.device_name
 
         
         
@@ -289,7 +299,9 @@ class UnsupervisedModel:
 
         seed = kwargs.pop('seed', None)
         device = kwargs.pop('device', 'CPU:0')
-
+        
+        self.device_name = device        
+        self.name = kwargs.pop('name', self.__class__.__name__)
         self.n_nodes, self.n_features = features.shape
         self.n_classes = labels.max() + 1
         self.adj, self.features = adj, features
@@ -349,4 +361,7 @@ class UnsupervisedModel:
             pass
         else:
             raise ValueError('`index` should be either list, int or np.ndarray!')
-        return index        
+        return index.astype('int32')      
+
+    def __repr__(self):
+        return self.name + ' in ' + self.device_name
