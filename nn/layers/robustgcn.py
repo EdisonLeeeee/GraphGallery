@@ -54,7 +54,6 @@ class GaussionConvolution_F(Layer):
         assert len(adj) == 2
         
         features = features @ self.kernel
-        features = tf.sparse.sparse_dense_matmul(adj[0], features)
 
         if self.use_bias:
             features += self.bias
