@@ -7,6 +7,7 @@ import tensorflow as tf
 class GaussionConvolution_F(Layer):
     '''The input is features'''    
     def __init__(self, units,
+                 gamma=1.,
                  use_bias=False,
                  activation=None,
                  kernel_initializer='glorot_uniform',
@@ -20,6 +21,7 @@ class GaussionConvolution_F(Layer):
         super().__init__(**kwargs)
         self.units = units
         self.dim = units // 2
+        self.gamma = gamma
         self.use_bias = use_bias
 
         self.activation = activations.get(activation)
@@ -62,19 +64,20 @@ class GaussionConvolution_F(Layer):
         var = activations.relu(tf.slice(features, [0, self.dim], [-1, self.dim]))
         
         KL_divergence = 0.5 * tf.reduce_mean(tf.math.square(mean) + var - tf.math.log(1e-8 + var) - 1, axis=1)
-
+        KL_divergence = tf.reduce_sum(KL_divergence)
         
-        node_weight = tf.exp(-var)
-        mean_out = tf.sparse.sparse_dense_matmul(adj[0], mean * node_weight)
-        var_out = tf.sparse.sparse_dense_matmul(adj[1], var * node_weight * node_weight)
+        attention = tf.exp(-self.gamma*var)
+        mean = tf.sparse.sparse_dense_matmul(adj[0], mean * attention)
+        var = tf.sparse.sparse_dense_matmul(adj[1], var * attention * attention)
 
-        output = tf.concat([mean_out, var_out], axis=1)
+        output = tf.concat([mean, var], axis=1)
 
         return self.activation(output), KL_divergence
 
     def get_config(self):
         config = {'units': self.units,
                   'dim': self.dim,
+                  'gamma': self.gamma,
                   'activation': activations.serialize(self.activation),
                   'use_bias': self.use_bias,
                   'kernel_initializer': initializers.serialize(
@@ -98,11 +101,12 @@ class GaussionConvolution_F(Layer):
     def compute_output_shape(self, input_shapes):
         features_shape = input_shapes[0]
         output_shape = (features_shape[0], self.units)
-        return output_shape  # (batch_size, output_dim)
+        return  (output_shape, (1,))  # (batch_size, output_dim)
     
 class GaussionConvolution_D(Layer):
     '''The input is distribution'''    
     def __init__(self, units,
+                 gamma=1.,
                  use_bias=False,
                  activation=None,
                  kernel_initializer='glorot_uniform',
@@ -115,6 +119,7 @@ class GaussionConvolution_D(Layer):
                  **kwargs):
         super().__init__(**kwargs)
         self.units = units
+        self.gamma = gamma
         self.use_bias = use_bias
         
         self.activation = activations.get(activation)
@@ -172,16 +177,21 @@ class GaussionConvolution_D(Layer):
         mean = activations.elu(mean @ self.kernel_mean)
         var = activations.relu(var @ self.kernel_var)
         
-        node_weight = tf.math.exp(-var)
-        mean_out = tf.sparse.sparse_dense_matmul(adj[0], mean * node_weight)
-        var_out = tf.sparse.sparse_dense_matmul(adj[1], var * node_weight * node_weight)
+        attention = tf.math.exp(-self.gamma*var)
+        mean = tf.sparse.sparse_dense_matmul(adj[0], mean * attention)
+        var = tf.sparse.sparse_dense_matmul(adj[1], var * attention * attention)
         
-        sample = tf.random.normal(tf.shape(var_out), 0, 1, dtype=tf.float32)
-        output = mean_out + tf.math.sqrt(var_out + 1e-8) * sample
+        if self.use_bias:
+            mean += self.bias_mean
+            var += self.bias_var
+            
+        sample = tf.random.normal(tf.shape(var), 0, 1, dtype=tf.float32)
+        output = mean + tf.math.sqrt(var + 1e-8) * sample
         return self.activation(output)
 
     def get_config(self):
         config = {'units': self.units,
+                  'gamma': self.gamma,
                   'dim': self.dim,
                   'activation': activations.serialize(self.activation),
                   'use_bias': self.use_bias,

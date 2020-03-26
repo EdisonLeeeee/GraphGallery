@@ -30,31 +30,33 @@ class RobustGCN(SupervisedModel):
         with self.device:
             self.features, self.adj = self._to_tensor([features, adj])
         
-    def build(self, hidden_layers=[64], activations=['relu'], dropout=0.5, learning_rate=0.01, l2_norm=5e-4, para_kl=5e-4):
+    def build(self, hidden_layers=[64], activations=['relu'], use_bias=False, dropout=0.6, learning_rate=0.01, l2_norm=5e-4, para_kl=5e-4, gamma=1.0):
         
         x = Input(batch_shape=[self.n_nodes, self.n_features], dtype=tf.float32, name='features')
         adj = [Input(batch_shape=[self.n_nodes, self.n_nodes], dtype=tf.float32, sparse=True, name='adj_matrix_1'),
                Input(batch_shape=[self.n_nodes, self.n_nodes], dtype=tf.float32, sparse=True, name='adj_matrix_2')]
         index = Input(batch_shape=[None],  dtype=tf.int32, name='index')
 
-        h, KL_divergence = GaussionConvolution_F(hidden_layers[0], 
-                                                      activation=activations[0], 
-                                                      kernel_regularizer=regularizers.l2(l2_norm))([x, *adj])
-        h = Dropout(rate=dropout)(h)
+        h = Dropout(rate=dropout)(x)
+        h, KL_divergence = GaussionConvolution_F(hidden_layers[0], gamma=gamma, 
+                                                 use_bias=use_bias, 
+                                                 activation=activations[0], 
+                                                 kernel_regularizer=regularizers.l2(l2_norm))([h, *adj])
         
         # additional layers (usually unnecessay)
         for hid, activation in zip(hidden_layers[1:], activations[1:]):
-            h = GaussionConvolution_D(hid, activation=activation)([h, *adj])
             h = Dropout(rate=dropout)(h)
+            h = GaussionConvolution_D(hid, gamma=gamma, use_bias=use_bias, activation=activation)([h, *adj])
             
-        h = GaussionConvolution_D(self.n_classes)([h, *adj])
+        h = Dropout(rate=dropout)(h)
+        h = GaussionConvolution_D(self.n_classes, gamma=gamma, use_bias=use_bias)([h, *adj])
         h = tf.ensure_shape(h, [self.n_nodes, self.n_classes])            
         h = tf.gather(h, index)
         output = Softmax()(h)
 
         model = Model(inputs=[x, *adj, index], outputs=output)
         model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=learning_rate), metrics=['accuracy'])
-        model.add_loss(para_kl * tf.reduce_sum(KL_divergence))
+        model.add_loss(para_kl * KL_divergence)
         
         self.model = model
         self.built = True
