@@ -110,6 +110,8 @@ class SupervisedModel:
                 self.do_before_train()
 
             loss, accuracy = self.do_forward(train_data)
+#             if tf.is_tensor(loss): loss = loss.numpy()
+#             if tf.is_tensor(accuracy): accuracy = accuracy.numpy()
             train_data.on_epoch_end()
 
             history.add_results(loss, 'loss')
@@ -247,7 +249,7 @@ class SupervisedModel:
         elif isinstance(index, np.ndarray):
             pass
         else:
-            raise ValueError('`index` should be either list, int or np.ndarray!')
+            raise TypeError('`index` should be either list, int or np.ndarray!')
         return index.astype('int32')
 
     def save(self, path=None):

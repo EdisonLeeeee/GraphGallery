@@ -15,7 +15,7 @@ def to_tensor(inputs):
         elif isinstance(matrix, (np.ndarray, list)):
             return tf.convert_to_tensor(matrix)
         else:
-            raise ValueError(f'Invalid type `{type(matrix)}` of inputs data. Allowed data type (Tensor, SparseTensor, np.ndarray, scipy.sparse.csr_matrix, scipy.sparse.csc_matrix, None).')
+            raise TypeError(f'Invalid type `{type(matrix)}` of inputs data. Allowed data type (Tensor, SparseTensor, np.ndarray, scipy.sparse.csr_matrix, scipy.sparse.csc_matrix, None).')
             
     # Check `not isinstance(inputs[0], Number)` to avoid like [matrix, [1,2,3]], where [1,2,3] will be converted seperately.
     if isinstance(inputs, (list, tuple)) and not isinstance(inputs[0], Number): 
