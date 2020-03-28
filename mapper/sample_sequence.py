@@ -2,7 +2,6 @@
 import numpy as np
 import tensorflow as tf
 
-from numba import njit
 from graphgallery.utils import sample_mask
 from .node_sequence import NodeSequence
 
