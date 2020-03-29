@@ -5,19 +5,20 @@ import numpy as np
 import tensorflow as tf
 import scipy.sparse as sp
 
+from tqdm import tqdm
 from tensorflow.keras import backend as K
 from tensorflow.keras.utils import Sequence
 
 from graphgallery.utils import History, sample_mask, normalize_adj, to_tensor, is_iterable
 
-def printbar(epoch, total,bar_len=44):
-    t = datetime.datetime.now()
-    left = int((epoch/total)*bar_len)
-    right = bar_len - left
-    bar = '[' + "="*left + f'>' + '.'*right + ']'
-    bar = bar[:bar_len//2] + f' {epoch}/{total} ' + bar[bar_len//2:]
-    bar += f' {t.hour:02}:{t.minute:02}:{t.second:02}'
-    return bar
+# def printbar(epoch, total,bar_len=44):
+#     t = datetime.datetime.now()
+#     left = int((epoch/total)*bar_len)
+#     right = bar_len - left
+#     bar = '[' + "="*left + f'>' + '.'*right + ']'
+#     bar = bar[:bar_len//2] + f' {epoch}/{total} ' + bar[bar_len//2:]
+#     bar += f' {t.hour:02}:{t.minute:02}:{t.second:02}'
+#     return bar
     
 class SupervisedModel:
 
@@ -64,7 +65,7 @@ class SupervisedModel:
     def train(self, index_train, index_val=None,
               epochs=200, early_stopping=None, validation=True,
               verbose=None, restore_best=True, log_path=None,
-              best_metric='val_accuracy', early_stop_metric='val_loss', line_plot=False):
+              best_metric='val_accuracy', early_stop_metric='val_loss'):
         '''
         index_train: np.ndarray, int, list, Sequence
         index_val: np.ndarray, int, list, Sequence or None
@@ -101,10 +102,11 @@ class SupervisedModel:
             history.register_early_stop_metric('loss')
             
         if verbose:
-            Bt = datetime.datetime.now()
-            print(f'Start Time  : {Bt.hour:02}:{Bt.minute:02}:{Bt.second:02} | Start training.')
+            pbar = tqdm(range(1, epochs+1))
+        else:
+            pbar = range(1, epochs+1)
             
-        for epoch in range(1, epochs+1):
+        for epoch in pbar:
 
             if self.do_before_train is not None:
                 self.do_before_train()
@@ -134,25 +136,21 @@ class SupervisedModel:
 
             # early stopping
             if early_stopping and history.time_to_early_stopping(early_stopping):
+                msg = f'Early stopping with patience {early_stopping}.'
                 if verbose:
-                    print(f'Epoch {epoch}/{epochs}: early stopping with patience {early_stopping}.')
+                    pbar.set_description(msg)  
+                else:
+                    print(msg)
                 break
 
-            if verbose and history.times % verbose == 0:
-                bar = printbar(epoch, epochs)
-                msg = f' | loss {loss:.2f} | accuracy {accuracy:.2%}'
+            if verbose:
+                msg = f'loss {loss:.2f}, accuracy {accuracy:.2%}'
                 if validation:
-                    msg += f' | val_loss {val_loss:.2f} | val_accuracy {val_accuracy:.2%}'
-                    
-                print(bar + msg, end='\r' if not line_plot else '\n')
-                    
-        if verbose and not line_plot:
-            print()
+                    msg += f', val_loss {val_loss:.2f}, val_accuracy {val_accuracy:.2%}'
+                pbar.set_description(msg) 
+                
             
-        if verbose:
-            Et = datetime.datetime.now()
-            print(f'Finish Time : {Et.hour:02}:{Et.minute:02}:{Et.second:02} | End of training. Time consuming : {(Et.timestamp()-Bt.timestamp()):.2f}s.')
-            
+                
         if restore_best:
             self.load(log_path)
 

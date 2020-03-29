@@ -45,7 +45,6 @@ class SimplifiedOBVAT(SupervisedModel):
                                                 kernel_regularizer=regularizers.l2(l2_norm)),
                                GraphConvolution(self.n_classes)]
             self.dropout_layer = Dropout(rate=dropout)
-
             logit = self.propagation(x, adj)
             logit = tf.ensure_shape(logit, (self.n_nodes, self.n_classes))
             output = tf.gather(logit, index)
