@@ -35,7 +35,7 @@ class GWNN(SupervisedModel):
         with self.device:
             self.features, self.adj = self._to_tensor([features, [wavelet, inverse_wavelet]])
         
-    def build(self, hidden_layers=[32], activations=['relu'], dropout=0.5, learning_rate=0.01, l2_norm=5e-4):
+    def build(self, hidden_layers=[16], activations=['relu'], dropout=0.5, learning_rate=0.01, l2_norm=5e-4):
         
         with self.device:
             

@@ -34,7 +34,7 @@ class GCN_MIX(SupervisedModel):
             self.features, self.adj = self._to_tensor(features), adj
         
     def build(self, hidden_layers=[32], activations=['relu'], dropout=0.5, 
-              learning_rate=0.01, l2_norm=1e-4, use_bias=False):
+              learning_rate=0.01, l2_norm=5e-4, use_bias=False):
         
         with self.device:
             

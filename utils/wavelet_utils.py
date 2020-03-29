@@ -90,7 +90,8 @@ def laplacian(W, normalized=True):
         D = sp.diags(d)
         L = D - W
     else:
-        d = 1 / np.sqrt(d)
+        d = 1 / (np.sqrt(d) + 1e-6)
+#         d[np.isinf(d)] = 0.
         D = sp.diags(d)
         I = sp.identity(d.size, dtype=W.dtype)
         L = I - D * W * D
