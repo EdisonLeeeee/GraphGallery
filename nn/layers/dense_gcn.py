@@ -5,7 +5,45 @@ import tensorflow as tf
 
 
 class DenseGraphConv(Layer):
-    """Basic graph convolution layer as in https://arxiv.org/abs/1609.02907"""
+    """
+        Basic graph convolution layer as in: 
+        `Semi-Supervised Classification with Graph Convolutional Networks` (https://arxiv.org/abs/1609.02907)
+        Tensorflow 1.x implementation: https://github.com/tkipf/gcn
+        Pytorch implementation: https://github.com/tkipf/pygcn
+        
+        `DenseGraphConv` implements the `Dense` operation:
+        `output = activation(x @ adj @ kernel + bias)`
+        where `x` is the feature matrix, `adj` is the adjacency matrix with dense form,
+        `activation` is the element-wise activation function
+        passed as the `activation` argument, `kernel` is a weights matrix
+        created by the layer, and `bias` is a bias vector created by the layer
+        (only applicable if `use_bias` is `True`).
+        
+        
+        Arguments:
+          units: Positive integer, dimensionality of the output space.
+          activation: Activation function to use.
+            If you don't specify anything, no activation is applied
+            (ie. "linear" activation: `a(x) = x`).
+          use_bias: Boolean, whether the layer uses a bias vector.
+          kernel_initializer: Initializer for the `kernel` weights matrix.
+          bias_initializer: Initializer for the bias vector.
+          kernel_regularizer: Regularizer function applied to
+            the `kernel` weights matrix.
+          bias_regularizer: Regularizer function applied to the bias vector.
+          activity_regularizer: Regularizer function applied to
+            the output of the layer (its "activation")..
+          kernel_constraint: Constraint function applied to
+            the `kernel` weights matrix.
+          bias_constraint: Constraint function applied to the bias vector.
+
+        Input shape:
+          tuple/list with two 2-D tensor: Tensor `x` and SparseTensor `adj`: `[(n_nodes, n_features), (n_nodes, n_nodes)]`.
+          The former one is the feature matrix (Tensor) and the last is adjacency matrix (Tensor).
+
+        Output shape:
+          2-D tensor with shape: `(n_nodes, units)`.       
+    """
     def __init__(self, units,
                  use_bias=False,
                  activation=None,
@@ -46,15 +84,16 @@ class DenseGraphConv(Layer):
                                         constraint=self.bias_constraint)
         else:
             self.bias = None
+            
         self.built = True
         super().build(input_shapes)
         
         
     def call(self, inputs):
         
-        features, adj = inputs
-        output = features @ self.kernel
-        output = adj @ output
+        x, adj = inputs
+        h = x @ self.kernel
+        output = adj @ h
         
         if self.use_bias:
             output += self.bias
@@ -87,4 +126,4 @@ class DenseGraphConv(Layer):
     def compute_output_shape(self, input_shapes):
         features_shape = input_shapes[0]
         output_shape = (features_shape[0], self.units)
-        return output_shape  # (batch_size, output_dim)
+        return output_shape  # (n_nodes, output_dim)

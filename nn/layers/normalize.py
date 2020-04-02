@@ -3,6 +3,7 @@ from tensorflow.keras.layers import Layer
 
 
 class NormalizeLayer(Layer):
+    '''deprecated'''
     
     def __init__(self, n_nodes, normalize_rate, **kwargs):
         super().__init__(**kwargs)
