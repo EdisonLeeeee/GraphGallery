@@ -2,6 +2,12 @@
 
 TensorFlow 2 implementation of state-of-the-arts deep learning graph models.
 
+To achieve Four goals:
++ Similar accuracy with the proposed paper
++ Faster implementation of training and testing
++ Simple and convenient to use with higher flexibility
++ Easy to read source code
+
 # Requirements
 
 + python>=3.7
@@ -21,11 +27,10 @@ TensorFlow 2 implementation of state-of-the-arts deep learning graph models.
 + `adj`: scipy.sparse.csr_matrix (or csr_matrix), shape [N, N], sparse form of adjacency matrix. 
     where `N` means number of nodes in the graph.
 + `features`: np.ndarray shape [N, F], dense form of feature matrix. where `F` means dims of features.
-+ `labels`: np.ndarray shape [N,], labels of all nodes.
-+ `idx_train`, `idx_val`, `idx_test`: np.ndarray, the seperated indices of training, validation and test nodes. 
-    where len(idx_train) + len(idx_val) + len(idx_test) = `N`
++ `labels`: np.ndarray shape [N,], ground-truth labels of all nodes.
++ `idx_train`, `idx_val`, `idx_test`: np.ndarray, the seperated indices of training, validation and test nodes. where `len(idx_train) + len(idx_val) + len(idx_test) = N`
 
-You can specified hyperparameter and training details by call `model.build(your_args)` and `model.trian(your_args)`.
+You can specified hyperparameter and training details by call `model.build(your_args)` and `model.trian(your_args)`. The usuage documents will be gradually added later.
 
 ## GCN
 
@@ -33,7 +38,7 @@ You can specified hyperparameter and training details by call `model.build(your_
 from graphgallery.nn.models import GCN
 model = GCN(adj, features, labels, device='CPU', seed=123)
 model.build()
-his = model.train(idx_train, idx_val, verbose=10, epochs=100)
+his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
 model.close
 print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
@@ -46,7 +51,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 from graphgallery.nn.models import DenseGCN
 model = DenseGCN(adj, features, labels, device='CPU', seed=123)
 model.build()
-his = model.train(idx_train, idx_val, verbose=10, epochs=100)
+his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
 model.close
 print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
@@ -60,7 +65,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 from graphgallery.nn.models import ChebyGCN
 model = ChebyGCN(adj, features, labels, order=2, device='CPU', seed=123)
 model.build()
-his = model.train(idx_train, idx_val, verbose=10, epochs=100)
+his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
 model.close
 print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
@@ -72,7 +77,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 from graphgallery.nn.models import FastGCN
 model = FastGCN(adj, features, labels, device='CPU', seed=123)
 model.build()
-his = model.train(idx_train, idx_val, verbose=10, epochs=100)
+his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
 model.close
 print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
@@ -84,7 +89,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 from graphgallery.nn.models import GraphSAGE
 model = GraphSAGE(adj, features, labels, n_samples=[10, 5], device='CPU', seed=123)
 model.build()
-his = model.train(idx_train, idx_val, verbose=10, epochs=100, restore_best=False, validation=False)
+his = model.train(idx_train, idx_val, verbose=True, epochs=100, restore_best=False, validation=False)
 loss, accuracy = model.test(idx_test)
 model.close
 print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
@@ -96,7 +101,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 from graphgallery.nn.models import RobustGCN
 model = RobustGCN(adj, features, labels, device='CPU', seed=123)
 model.build()
-his = model.train(idx_train, idx_val, verbose=10, epochs=100)
+his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
 model.close
 print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
@@ -108,7 +113,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 from graphgallery.nn.models import SGC
 model = SGC(adj, features, labels, device='CPU', seed=123)
 model.build()
-his = model.train(idx_train, idx_val, verbose=10, epochs=100)
+his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
 model.close
 print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
@@ -120,7 +125,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 from graphgallery.nn.models import GWNN
 model = GWNN(adj, features, labels, device='CPU', seed=123)
 model.build()
-his = model.train(idx_train, idx_val, verbose=10, epochs=100)
+his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
 model.close
 print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
@@ -132,7 +137,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 from graphgallery.nn.models import GAT
 model = GAT(adj, features, labels, device='CPU', seed=123)
 model.build()
-his = model.train(idx_train, idx_val, verbose=10, epochs=200)
+his = model.train(idx_train, idx_val, verbose=True, epochs=200)
 loss, accuracy = model.test(idx_test)
 model.close
 print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
@@ -144,7 +149,53 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 from graphgallery.nn.models import ClusterGCN
 model = ClusterGCN(Data.adj, Data.features, data.labels, n_cluster=10, device='CPU', seed=123)
 model.build()
-his = model.train(idx_train, idx_val, verbose=10, epochs=100)
+his = model.train(idx_train, idx_val, verbose=True, epochs=100)
+loss, accuracy = model.test(idx_test)
+model.close
+print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
+```
+
+## SBVAT
+```python
+from graphgallery.nn.models import SBVAT
+model = GMNN(adj, features, labels, device='CPU', seed=123)
+model.build()
+his = model.train(idx_train, idx_val, verbose=True, epochs=100)
+loss, accuracy = model.test(idx_test)
+model.close
+print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
+```
+
+
+## OBVAT
+```python
+from graphgallery.nn.models import OBVAT
+model = OBVAT(adj, features, labels, device='CPU', seed=123)
+model.build()
+his = model.train(idx_train, idx_val, verbose=True, epochs=100)
+loss, accuracy = model.test(idx_test)
+model.close
+print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
+```
+
+
+## GMNN
+```python
+from graphgallery.nn.models import GMNN
+model = GMNN(adj, features, labels, device='CPU', seed=123)
+model.build()
+his = model.train(idx_train, idx_val, verbose=True, epochs=100)
+loss, accuracy = model.test(idx_test)
+model.close
+print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
+```
+
+## LGCN
+```python
+from graphgallery.nn.models import LGCN
+model = GMNN(adj, features, labels, device='CPU', seed=123)
+model.build()
+his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
 model.close
 print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
