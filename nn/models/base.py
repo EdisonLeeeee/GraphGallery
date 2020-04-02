@@ -56,21 +56,22 @@ class SupervisedModel:
         self.do_before_test = None
         self.do_before_predict = None
         self.sparse = True
+        self.custom_objects = None # used for save/load model
 
-        self.log_path = f'./log/{self.name}_weights.ckpt'
+        self.log_path = f'./log/{self.name}_weights'
 
     def build(self):
         raise NotImplementedError
 
     def train(self, index_train, index_val=None,
               epochs=200, early_stopping=None, validation=True,
-              verbose=None, restore_best=True, log_path=None,
+              verbose=None, restore_best=True, log_path=None, save_model=False,
               best_metric='val_accuracy', early_stop_metric='val_loss'):
         '''
         index_train: np.ndarray, int, list, Sequence
         index_val: np.ndarray, int, list, Sequence or None
         '''
-        # Check if model has built
+        # Check if model has been built
         if not self.built:
             raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')
             
@@ -132,7 +133,7 @@ class SupervisedModel:
             history.record_epoch(epoch)
 
             if restore_best and history.restore_best:
-                self.save(log_path)
+                self.save(log_path, save_model=save_model)
 
             # early stopping
             if early_stopping and history.time_to_early_stopping(early_stopping):
@@ -149,10 +150,8 @@ class SupervisedModel:
                     msg += f', val_loss {val_loss:.2f}, val_accuracy {val_accuracy:.2%}'
                 pbar.set_description(msg) 
                 
-            
-                
         if restore_best:
-            self.load(log_path)
+            self.load(log_path, save_model=save_model)
 
         return history
 
@@ -240,6 +239,9 @@ class SupervisedModel:
 
     @staticmethod
     def _check_and_convert(index):
+        if tf.is_tensor(index):
+            return tf.cast(index, tf.int32)
+        
         if isinstance(index, int):
             index = np.asarray([index])
         elif isinstance(index, list):
@@ -250,7 +252,7 @@ class SupervisedModel:
             raise TypeError('`index` should be either list, int or np.ndarray!')
         return index.astype('int32')
 
-    def save(self, path=None):
+    def save(self, path=None, save_model=False):
         if not os.path.exists('log'):
             os.makedirs('log')       
             print('mkdir /log')
@@ -258,14 +260,20 @@ class SupervisedModel:
         if path is None:
             path = self.log_path
             
-        self.model.save_weights(path)
+        if save_model:
+            self.model.save(self.log_path, save_format='h5')
+        else:
+            self.model.save_weights(path)
 
-    def load(self, path=None):
+    def load(self, path=None, save_model=False):
         if path is None:
             path = self.log_path
             
-        self.model.load_weights(path)
-
+        if save_model:
+            self.model = tf.keras.models.load_model(path, custom_objects=self.custom_objects)
+        else:
+            self.model.load_weights(path)
+            
     @property
     def weights(self):
         return self.model.weights
