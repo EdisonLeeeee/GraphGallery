@@ -57,7 +57,7 @@ class LGCN(SupervisedModel):
             
             h = Dropout(rate=dropout)(h)
             h = DenseGraphConv(self.n_classes, use_bias=use_bias, kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
-    
+            
             h = tf.boolean_mask(h, mask)
             output = Softmax()(h)
 
