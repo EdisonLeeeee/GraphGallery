@@ -25,7 +25,6 @@
 # GraphGallery
 [Back to TOC](#table-of-contents)
 
-
 A gallery of state-of-the-arts deep learning graph models. 
 
 Implemented with Tensorflow 2.x.
@@ -33,7 +32,7 @@ Implemented with Tensorflow 2.x.
 This repo aims to achieve Four goals:
 + Similar accuracy with the proposed paper
 + Faster implementation of training and testing
-+ Simple and convenient to use with high scalability.
++ Simple and convenient to use with high scalability
 + Easy to read source code
 
 <a class="toc" id ="2"></a>
@@ -73,9 +72,9 @@ The usuage documents will be gradually added later.
 <a class="toc" id ="3-2"></a>
 ## GCN
 
-[Semi-Supervised Classification with Graph Convolutional Networks](https://arxiv.org/abs/1609.02907)
-Tensorflow 1.x implementation: https://github.com/tkipf/gcn
-Pytorch implementation: https://github.com/tkipf/pygcn
++ [Semi-Supervised Classification with Graph Convolutional Networks](https://arxiv.org/abs/1609.02907)
++ Tensorflow 1.x implementation: https://github.com/tkipf/gcn
++ Pytorch implementation: https://github.com/tkipf/pygcn
 
 ```python
 from graphgallery.nn.models import GCN
@@ -107,9 +106,9 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 <a class="toc" id ="3-4"></a>
 ## ChebyGCN
 
-[Convolutional Neural Networks on Graphs with Fast Localized Spectral Filtering](https://arxiv.org/abs/1606.09375)
-Tensorflow 1.x implementation: https://github.com/mdeff/cnn_graph, https://github.com/tkipf/gcn
-Keras implementation: https://github.com/aclyde11/ChebyGCN
++ [Convolutional Neural Networks on Graphs with Fast Localized Spectral Filtering](https://arxiv.org/abs/1606.09375)
++ Tensorflow 1.x implementation: https://github.com/mdeff/cnn_graph, https://github.com/tkipf/gcn
++ Keras implementation: https://github.com/aclyde11/ChebyGCN
 
 ```python
 from graphgallery.nn.models import ChebyGCN
@@ -124,8 +123,8 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 <a class="toc" id ="3-5"></a>
 ## FastGCN
 
-[FastGCN: Fast Learning with Graph Convolutional Networks via Importance Sampling](https://arxiv.org/abs/1801.10247)
-Tensorflow 1.x implementation: https://github.com/matenure/FastGCN
++ [FastGCN: Fast Learning with Graph Convolutional Networks via Importance Sampling](https://arxiv.org/abs/1801.10247)
++ Tensorflow 1.x implementation: https://github.com/matenure/FastGCN
 
 ```python
 from graphgallery.nn.models import FastGCN
@@ -140,9 +139,9 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 <a class="toc" id ="3-6"></a>
 ## GraphSAGE
 
-[Inductive Representation Learning on Large Graphs](https://arxiv.org/abs/1706.02216)
-Tensorflow 1.x implementation: https://github.com/williamleif/GraphSAGE
-Pytorch implementation: https://github.com/williamleif/graphsage-simple/
++ [Inductive Representation Learning on Large Graphs](https://arxiv.org/abs/1706.02216)
++ Tensorflow 1.x implementation: https://github.com/williamleif/GraphSAGE
++ Pytorch implementation: https://github.com/williamleif/graphsage-simple/
 
 ```python
 from graphgallery.nn.models import GraphSAGE
@@ -157,8 +156,8 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 <a class="toc" id ="3-7"></a>
 ## RobustGCN
 
-[Robust Graph Convolutional Networks Against Adversarial Attacks](https://dl.acm.org/doi/10.1145/3292500.3330851)
-Tensorflow 1.x implementation: https://github.com/thumanlab/nrlweb/blob/master/static/assets/download/RGCN.zip
++ [Robust Graph Convolutional Networks Against Adversarial Attacks](https://dl.acm.org/doi/10.1145/3292500.3330851)
++ Tensorflow 1.x implementation: https://github.com/thumanlab/nrlweb/blob/master/static/assets/download/RGCN.zip
 
 ```python
 from graphgallery.nn.models import RobustGCN
@@ -173,8 +172,8 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 <a class="toc" id ="3-8"></a>
 ## SGC
 
-[Simplifying Graph Convolutional Networks](https://arxiv.org/pdf/1902.07153)
-Pytorch implementation: https://github.com/Tiiiger/SGC
++ [Simplifying Graph Convolutional Networks](https://arxiv.org/pdf/1902.07153)
++ Pytorch implementation: https://github.com/Tiiiger/SGC
         
 ```python
 from graphgallery.nn.models import SGC
@@ -189,9 +188,9 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 <a class="toc" id ="3-9"></a>
 ## GWNN
 
-[Graph Wavelet Neural Network](https://arxiv.org/abs/1904.07785)
-Tensorflow 1.x implementation: https://github.com/Eilene/GWNN
-Pytorch implementation: https://github.com/benedekrozemberczki/GraphWaveletNeuralNetwork
++ [Graph Wavelet Neural Network](https://arxiv.org/abs/1904.07785)
++ Tensorflow 1.x implementation: https://github.com/Eilene/GWNN
++ Pytorch implementation: https://github.com/benedekrozemberczki/GraphWaveletNeuralNetwork
         
 ```python
 from graphgallery.nn.models import GWNN
@@ -206,10 +205,10 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 <a class="toc" id ="3-10"></a>
 ## GAT
 
-[Graph Attention Networks](https://arxiv.org/abs/1710.10903)
-Tensorflow 1.x implementation: https://github.com/PetarV-/GAT
-Pytorch implementation: https://github.com/Diego999/pyGAT
-Keras implementation: https://github.com/danielegrattarola/keras-gat
++ [Graph Attention Networks](https://arxiv.org/abs/1710.10903)
++ Tensorflow 1.x implementation: https://github.com/PetarV-/GAT
++ Pytorch implementation: https://github.com/Diego999/pyGAT
++ Keras implementation: https://github.com/danielegrattarola/keras-gat
         
 ```python
 from graphgallery.nn.models import GAT
@@ -224,9 +223,9 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 <a class="toc" id ="3-11"></a>
 ## ClusterGCN
 
-[Cluster-GCN: An Efficient Algorithm for Training Deep and Large Graph Convolutional Networks](https://arxiv.org/abs/1905.07953)
-Tensorflow 1.x implementation: https://github.com/google-research/google-research/tree/master/cluster_gcn
-Pytorch implementation: https://github.com/benedekrozemberczki/ClusterGCN
++ [Cluster-GCN: An Efficient Algorithm for Training Deep and Large Graph Convolutional Networks](https://arxiv.org/abs/1905.07953)
++ Tensorflow 1.x implementation: https://github.com/google-research/google-research/tree/master/cluster_gcn
++ Pytorch implementation: https://github.com/benedekrozemberczki/ClusterGCN
 
 ```python
 from graphgallery.nn.models import ClusterGCN
@@ -241,8 +240,8 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 <a class="toc" id ="3-12"></a>
 ## SBVAT
 
-[Batch Virtual Adversarial Training for Graph Convolutional Networks](https://arxiv.org/pdf/1902.09192)
-Tensorflow 1.x implementation: https://github.com/thudzj/BVAT
++ [Batch Virtual Adversarial Training for Graph Convolutional Networks](https://arxiv.org/pdf/1902.09192)
++ Tensorflow 1.x implementation: https://github.com/thudzj/BVAT
 
 ```python
 from graphgallery.nn.models import SBVAT
@@ -258,8 +257,8 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 <a class="toc" id ="3-13"></a>
 ## OBVAT
 
-[Batch Virtual Adversarial Training for Graph Convolutional Networks](https://arxiv.org/pdf/1902.09192)
-Tensorflow 1.x implementation: https://github.com/thudzj/BVAT
++ [Batch Virtual Adversarial Training for Graph Convolutional Networks](https://arxiv.org/pdf/1902.09192)
++ Tensorflow 1.x implementation: https://github.com/thudzj/BVAT
 
 ```python
 from graphgallery.nn.models import OBVAT
@@ -275,8 +274,8 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 <a class="toc" id ="3-14"></a>
 ## GMNN
 
-[Graph Markov Neural Networks](https://arxiv.org/abs/1905.06214)
-Pytorch implementation: https://github.com/DeepGraphLearning/GMNN
++ [Graph Markov Neural Networks](https://arxiv.org/abs/1905.06214)
++ Pytorch implementation: https://github.com/DeepGraphLearning/GMNN
 
 
 ```python
@@ -292,8 +291,8 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 <a class="toc" id ="3-15"></a>
 ## LGCN
 
-[Large-Scale Learnable Graph Convolutional Networks](https://arxiv.org/abs/1808.03965)
-Tensorflow 1.x implementation: https://github.com/divelab/lgcn
++ [Large-Scale Learnable Graph Convolutional Networks](https://arxiv.org/abs/1808.03965)
++ Tensorflow 1.x implementation: https://github.com/divelab/lgcn
 
 ```python
 from graphgallery.nn.models import LGCN
@@ -308,8 +307,8 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 <a class="toc" id ="3-16"></a>
 ## Deepwalk
 
-[DeepWalk: Online Learning of Social Representations](https://arxiv.org/abs/1403.6652)
-Implementation: https://github.com/phanein/deepwalk
++ [DeepWalk: Online Learning of Social Representations](https://arxiv.org/abs/1403.6652)
++ Implementation: https://github.com/phanein/deepwalk
 
 ```python
 from graphgallery.nn.models import Deepwalk
@@ -323,9 +322,9 @@ print(f'Test accuracy {accuracy:.2%}')
 <a class="toc" id ="3-17"></a>
 ## Node2vec
 
-[node2vec: Scalable Feature Learning for Networks](https://arxiv.org/abs/1607.00653)
-Implementation: https://github.com/aditya-grover/node2vec
-Cpp implementation: https://github.com/snap-stanford/snap/tree/master/examples/node2vec
++ [node2vec: Scalable Feature Learning for Networks](https://arxiv.org/abs/1607.00653)
++ Implementation: https://github.com/aditya-grover/node2vec
++ Cpp implementation: https://github.com/snap-stanford/snap/tree/master/examples/node2vec
 
 ```python
 from graphgallery.nn.models import Node2vec
