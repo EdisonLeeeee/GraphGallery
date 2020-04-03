@@ -3,7 +3,58 @@ from tensorflow.keras.layers import Layer
 
 import tensorflow as tf
 
+
 class SAGEConvolution(Layer):
+    """
+        Basic graphSAGE convolution layer as in: 
+        `Inductive Representation Learning on Large Graphs` (https://arxiv.org/abs/1706.02216)
+        Tensorflow 1.x implementation: https://github.com/williamleif/GraphSAGE
+        Pytorch implementation: https://github.com/williamleif/graphsage-simple/
+
+        `SAGEConvolution` implements the operation:
+        `output = activation(Concat(x @ w1, Agg(neigh_x) @ w2) + bias)`
+        where `x` is the feature matrix, `neigh_x` is the feature matrix of neighbors,
+        `Agg` is the operation of aggregation (`mean`, `sum`, `max`, `min`) along the last dimension,
+        `w1` and `w2` are the trainable weights for node features and neighbor features,
+        `Concat` is the operation of concatenation between transformed node features and neighbor features,
+        and it could be replaced with `Add` operation.
+        `activation` is the element-wise activation function
+        passed as the `activation` argument, `kernel` is a weights matrix
+        created by the layer, and `bias` is a bias vector created by the layer
+        (only applicable if `use_bias` is `True`).
+
+
+        Arguments:
+          units: Positive integer, dimensionality of the output space.
+          activation: Activation function to use.
+            If you don't specify anything, no activation is applied
+            (ie. "linear" activation: `a(x) = x`).
+          use_bias: Boolean, whether the layer uses concatenation 
+            between transformed node features and neighbor features, 
+            if `False`, the `Add` operation will be used.
+          use_bias: Boolean, whether the layer uses a bias vector.
+          agg_method: String, which method of aggregation will be used for neighbor feature matrix,
+            one of (`mean`, `sum`, `max`, `min`) will be used.
+          kernel_initializer: Initializer for the `kernel` weights matrix.
+          bias_initializer: Initializer for the bias vector.
+          kernel_regularizer: Regularizer function applied to
+            the `kernel` weights matrix.
+          bias_regularizer: Regularizer function applied to the bias vector.
+          activity_regularizer: Regularizer function applied to
+            the output of the layer (its "activation")..
+          kernel_constraint: Constraint function applied to
+            the `kernel` weights matrix.
+          bias_constraint: Constraint function applied to the bias vector.
+
+        Input shape:
+          tuple/list with two tensor: 2-D Tensor `x` and 3-D Tensor `neigh_x`: 
+          `[(batch_n_nodes, n_features), (batch_n_nodes, n_samples, n_features)]`.
+          The former one is the node feature matrix (Tensor) and the last is the neighbor feature matrix (Tensor).
+
+        Output shape:
+          2-D tensor with shape: `(batch_n_nodes, units)` or `(batch_n_nodes, units * 2)`,
+          depend on using `Add` or `Concat` for the node and neighbor features.       
+    """
 
     def __init__(self,
                  units,
@@ -19,17 +70,15 @@ class SAGEConvolution(Layer):
                  kernel_constraint=None,
                  bias_constraint=None,
                  **kwargs):
-        
+
         super().__init__(**kwargs)
-
-
-        self.units = units  
+        self.units = units
         self.concat = concat
         self.use_bias = use_bias
         self.agg_method = agg_method
-        self.aggregator = {'mean':tf.reduce_mean, 'sum':tf.reduce_sum,
-                    'max':tf.reduce_max, 'min':tf.reduce_min}[agg_method]
-        self.activation = activations.get(activation) 
+        self.aggregator = {'mean': tf.reduce_mean, 'sum': tf.reduce_sum,
+                           'max': tf.reduce_max, 'min': tf.reduce_min}[agg_method]
+        self.activation = activations.get(activation)
 
         self.kernel_initializer = initializers.get(kernel_initializer)
         self.bias_initializer = initializers.get(bias_initializer)
@@ -45,44 +94,43 @@ class SAGEConvolution(Layer):
             self.output_dim = units * 2
         else:
             self.output_dim = units
-            
-            
+
     def build(self, input_shape):
         input_dim = input_shape[0][-1]
 
         self.kernel_self = self.add_weight(shape=(input_dim, self.units),
-                                 initializer=self.kernel_initializer,
-                                 regularizer=self.kernel_regularizer,
-                                 constraint=self.kernel_constraint,
-                                 name='kernel_self')
+                                           initializer=self.kernel_initializer,
+                                           regularizer=self.kernel_regularizer,
+                                           constraint=self.kernel_constraint,
+                                           name='kernel_self')
         self.kernel_neigh = self.add_weight(shape=(input_dim, self.units),
-                                 initializer=self.kernel_initializer,
-                                 regularizer=self.kernel_regularizer,
-                                 constraint=self.kernel_constraint,
-                                 name='kernel_neigh')        
+                                            initializer=self.kernel_initializer,
+                                            regularizer=self.kernel_regularizer,
+                                            constraint=self.kernel_constraint,
+                                            name='kernel_neigh')
 
-        # # Layer bias
+        # Layer bias
         if self.use_bias:
             self.bias = self.add_weight(shape=(self.output_dim, ),
-                                   initializer=self.bias_initializer,
-                                   regularizer=self.bias_regularizer,
-                                   constraint=self.bias_constraint,
-                                   name='bias')
+                                        initializer=self.bias_initializer,
+                                        regularizer=self.bias_regularizer,
+                                        constraint=self.bias_constraint,
+                                        name='bias')
 
         self.built = True
         super().build(input_shape)
 
     def call(self, inputs):
-        node_feat, neigh_feat = inputs
-        neigh_feat = self.aggregator(neigh_feat, axis=1)
-        
-        node_feat = node_feat @ self.kernel_self
-        neigh_feat = neigh_feat @ self.kernel_neigh
-        
+        x, neigh_x = inputs
+        neigh_x = self.aggregator(neigh_x, axis=1)
+
+        x = x @ self.kernel_self
+        neigh_x = neigh_x @ self.kernel_neigh
+
         if self.concat:
-            output = tf.concat([node_feat, neigh_feat], axis=1)
+            output = tf.concat([x, neigh_x], axis=1)
         else:
-            output = node_feat + neigh_feat
+            output = x + neigh_x
 
         if self.use_bias:
             output += self.bias
@@ -109,12 +157,11 @@ class SAGEConvolution(Layer):
                   'kernel_constraint': keras.constraints.serialize(
                       self.kernel_constraint),
                   'bias_constraint': keras.constraints.serialize(self.bias_constraint)
-                 }
+                  }
 
         base_config = super().get_config()
         return {**base_config, **config}
-    
-    
+
     def compute_output_shape(self, input_shape):
         output_shape = input_shape[0][0], self.output_dim
-        return output_shape
+        return output_shape  # (batch_n_nodes, units) or (batch_n_nodes, units * 2)

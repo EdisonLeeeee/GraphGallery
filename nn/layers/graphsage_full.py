@@ -4,6 +4,10 @@ from tensorflow.keras.layers import Layer
 import tensorflow as tf
 
 class FullBatchSAGEConv(Layer):
+    """
+        Using the whole feature matrix for SAGE convolution operation.
+        It's simple but not efficient and it has deprecated.
+    """
 
     def __init__(self,
                  units,

@@ -3,7 +3,12 @@ from tensorflow.keras.layers import Layer
 
 
 class NormalizeLayer(Layer):
-    '''deprecated'''
+    """
+        Normalize the adjacency matrix with the input (edge_index, edge_weight),
+        i.e., `A_hat = D^(-0.5) (A+I) D^(-0.5)`.
+        refer to https://github.com/CrawlScript/tf_geometric,
+        and it is deprecated we use SparseTensor `adj` instead.
+    """
     
     def __init__(self, n_nodes, normalize_rate, **kwargs):
         super().__init__(**kwargs)
@@ -49,8 +54,7 @@ class NormalizeLayer(Layer):
     
     def get_config(self):
         config = {'n_nodes': self.n_nodes,
-                  'normalize_rate': self.normalize_rate,
-                }
+                  'normalize_rate': self.normalize_rate}
         
         base_config = super().get_config()
         return {**base_config, **config}

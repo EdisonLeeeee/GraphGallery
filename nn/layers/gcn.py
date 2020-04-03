@@ -39,7 +39,7 @@ class GraphConvolution(Layer):
 
         Input shape:
           tuple/list with two 2-D tensor: Tensor `x` and SparseTensor `adj`: `[(n_nodes, n_features), (n_nodes, n_nodes)]`.
-          The former one is the feature matrix (Tensor) and the other is adjacency matrix (SparseTensor).
+          The former one is the feature matrix (Tensor) and the last is adjacency matrix (SparseTensor).
 
         Output shape:
           2-D tensor with shape: `(n_nodes, units)`.       
