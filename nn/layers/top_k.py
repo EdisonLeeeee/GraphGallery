@@ -6,7 +6,7 @@ from tensorflow.keras.layers import Layer
 class Top_k_features(Layer):
     """
         Top_k_features layer as in:
-        `Large-Scale Learnable Graph Convolutional Networks` (https://arxiv.org/abs/1808.03965)
+        [Large-Scale Learnable Graph Convolutional Networks](https://arxiv.org/abs/1808.03965)
         Tensorflow 1.x implementation: https://github.com/divelab/lgcn
 
         `Top_k_features` implements the operation:

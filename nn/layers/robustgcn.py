@@ -8,7 +8,7 @@ import tensorflow as tf
 class GaussionConvolution_F(Layer):
     """
         Robust graph convolution layer as in: 
-        `Robust Graph Convolutional Networks Against Adversarial Attacks` (https://dl.acm.org/doi/10.1145/3292500.3330851)
+        [Robust Graph Convolutional Networks Against Adversarial Attacks](https://dl.acm.org/doi/10.1145/3292500.3330851)
         Tensorflow 1.x implementation: https://github.com/thumanlab/nrlweb/blob/master/static/assets/download/RGCN.zip
 
         `GaussionConvolution_F` implements the GaussionConvolution operation

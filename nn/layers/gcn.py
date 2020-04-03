@@ -7,7 +7,7 @@ import tensorflow as tf
 class GraphConvolution(Layer):
     """
         Basic graph convolution layer as in: 
-        `Semi-Supervised Classification with Graph Convolutional Networks` (https://arxiv.org/abs/1609.02907)
+        [Convolutional Neural Networks on Graphs with Fast Localized Spectral Filtering](https://arxiv.org/abs/1606.09375)
         Tensorflow 1.x implementation: https://github.com/tkipf/gcn
         Pytorch implementation: https://github.com/tkipf/pygcn
         

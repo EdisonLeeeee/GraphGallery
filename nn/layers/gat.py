@@ -7,7 +7,7 @@ import tensorflow as tf
 class GraphAttention(Layer):
     """
         Basic graph attention layer as in: 
-        `Graph Attention Networks` (https://arxiv.org/abs/1710.10903)
+        [Graph Attention Networks](https://arxiv.org/abs/1710.10903)
         Tensorflow 1.x implementation: https://github.com/PetarV-/GAT
         Pytorch implementation: https://github.com/Diego999/pyGAT
         Keras implementation: https://github.com/danielegrattarola/keras-gat

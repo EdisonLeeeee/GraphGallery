@@ -7,7 +7,7 @@ import tensorflow as tf
 class ChebyConvolution(Layer):
     """
         Basic Chebyshev graph convolution layer as in: 
-        `Convolutional Neural Networks on Graphs with Fast Localized Spectral Filtering` (https://arxiv.org/abs/1606.09375)
+        [Convolutional Neural Networks on Graphs with Fast Localized Spectral Filtering](https://arxiv.org/abs/1606.09375)
         Tensorflow 1.x implementation: https://github.com/mdeff/cnn_graph, https://github.com/tkipf/gcn
         Keras implementation: https://github.com/aclyde11/ChebyGCN
 

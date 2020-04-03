@@ -7,7 +7,7 @@ import tensorflow as tf
 class SAGEConvolution(Layer):
     """
         Basic graphSAGE convolution layer as in: 
-        `Inductive Representation Learning on Large Graphs` (https://arxiv.org/abs/1706.02216)
+        [Inductive Representation Learning on Large Graphs](https://arxiv.org/abs/1706.02216)
         Tensorflow 1.x implementation: https://github.com/williamleif/GraphSAGE
         Pytorch implementation: https://github.com/williamleif/graphsage-simple/
 

@@ -6,7 +6,7 @@ from tensorflow.keras.layers import Layer, Dropout, Conv1D
 class LGConvolution(Layer):
     """
         Large-scale graph convolution layer as in:
-        `Large-Scale Learnable Graph Convolutional Networks` (https://arxiv.org/abs/1808.03965)
+        [Large-Scale Learnable Graph Convolutional Networks](https://arxiv.org/abs/1808.03965)
         Tensorflow 1.x implementation: https://github.com/divelab/lgcn
 
         `LGConvolution` implements the operation:
