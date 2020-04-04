@@ -1,28 +1,28 @@
 from tensorflow.keras import activations, constraints, initializers, regularizers
-from tensorflow.keras.layers import Layer, Dropout, LeakyReLU
+from tensorflow.keras.layers import Layer
 
 import tensorflow as tf
 
 
-class ChebyConvolution(Layer):
+class GINConvolution(Layer):
     """
-        Basic Chebyshev graph convolution layer as in: 
-        [Convolutional Neural Networks on Graphs with Fast Localized Spectral Filtering](https://arxiv.org/abs/1606.09375)
-        Tensorflow 1.x implementation: https://github.com/mdeff/cnn_graph, https://github.com/tkipf/gcn
-        Keras implementation: https://github.com/aclyde11/ChebyGCN
-
-        `ChebyConvolution` implements the operation:
-        `output = activation(adj_0 @ x @ kernel + bias) + activation(adj_1 @ x @ kernel + bias) + ...`
-        where `x` is the feature matrix, `adj_i` is the i-th adjacency matrix, 0<=i<=`order`,
+        Basic graph isomorphism convolution layer as in: 
+        [How Powerful are Graph Neural Networks?](https://arxiv.org/abs/1810.00826)
+        Tensorflow 2.0 implementation: https://github.com/calciver/Graph-Isomorphism-Networks
+        Pytorch implementation: https://github.com/weihua916/powerful-gnns
+        
+        `GraphConvolution` implements the operation:
+        `output = activation(((1+eps) * x + adj @ x) @ kernel + bias)`
+        where `x` is the feature matrix, `adj` is the adjacency matrix,
         `activation` is the element-wise activation function
         passed as the `activation` argument, `kernel` is a weights matrix
         created by the layer, and `bias` is a bias vector created by the layer
         (only applicable if `use_bias` is `True`).
-
-
+        
+        
         Arguments:
           units: Positive integer, dimensionality of the output space.
-          order: Positive integer, the order of `Chebyshev polynomials`.
+          eps: Float scalar, initial value for trainable variables `eps_var`.
           activation: Activation function to use.
             If you don't specify anything, no activation is applied
             (ie. "linear" activation: `a(x) = x`).
@@ -39,16 +39,14 @@ class ChebyConvolution(Layer):
           bias_constraint: Constraint function applied to the bias vector.
 
         Input shape:
-          tuple/list with `order + 2` 2-D tensor: Tensor `x` and `order + 1` SparseTensor `adj`: 
-          `[(n_nodes, n_features), (n_nodes, n_nodes), (n_nodes, n_nodes), ...]`.
+          tuple/list with two 2-D tensor: Tensor `x` and SparseTensor `adj`: `[(n_nodes, n_features), (n_nodes, n_nodes)]`.
           The former one is the feature matrix (Tensor) and the last is adjacency matrix (SparseTensor).
 
         Output shape:
-          2-D tensor with shape: `(n_nodes, units)`.  
+          2-D tensor with shape: `(n_nodes, units)`.       
     """
-
     def __init__(self, units,
-                 order,
+                 eps=0.,
                  use_bias=False,
                  activation=None,
                  kernel_initializer='glorot_uniform',
@@ -59,12 +57,12 @@ class ChebyConvolution(Layer):
                  kernel_constraint=None,
                  bias_constraint=None,
                  **kwargs):
-
+        
         super().__init__(**kwargs)
         self.units = units
-        self.order = order
+        self.eps = eps
         self.use_bias = use_bias
-
+        
         self.activation = activations.get(activation)
         self.kernel_initializer = initializers.get(kernel_initializer)
         self.bias_initializer = initializers.get(bias_initializer)
@@ -74,47 +72,42 @@ class ChebyConvolution(Layer):
         self.kernel_constraint = constraints.get(kernel_constraint)
         self.bias_constraint = constraints.get(bias_constraint)
 
-    def build(self, input_shapes):
-        self.kernel, self.bias = [], []
-        input_dim = input_shapes[0][-1]
-        for i in range(self.order+1):
-            kernel = self.add_weight(shape=(input_dim, self.units),
-                                     initializer=self.kernel_initializer,
-                                     name=f'kernel_{i}',
-                                     regularizer=self.kernel_regularizer,
-                                     constraint=self.kernel_constraint)
-            if self.use_bias:
-                bias = self.add_weight(shape=(self.units,),
-                                       initializer=self.bias_initializer,
-                                       name=f'bias_{i}',
-                                       regularizer=self.bias_regularizer,
-                                       constraint=self.bias_constraint)
-            else:
-                bias = None
-            self.kernel.append(kernel)
-            self.bias.append(bias)
 
+    def build(self, input_shapes):
+        self.kernel = self.add_weight(shape=(input_shapes[0][-1], self.units),
+                                      initializer=self.kernel_initializer,
+                                      name='kernel',
+                                      regularizer=self.kernel_regularizer,
+                                      constraint=self.kernel_constraint)
+        if self.use_bias:
+            self.bias = self.add_weight(shape=(self.units,),
+                                        initializer=self.bias_initializer,
+                                        name='bias',
+                                        regularizer=self.bias_regularizer,
+                                        constraint=self.bias_constraint)
+        else:
+            self.bias = None
+            
+        self.eps_var = tf.Variable(self.eps, dtype=tf.float32, name='eps')
+        
         self.built = True
         super().build(input_shapes)
-
+        
+        
     def call(self, inputs):
-
-        x, adjs = inputs
-        supports = []
-        for adj, kernel, bias in zip(adjs, self.kernel, self.bias):
-            support = x @ kernel
-            support = tf.sparse.sparse_dense_matmul(adj, support)
-            if self.use_bias:
-                support += bias
-            supports.append(support)
-
-        output = tf.add_n(supports)
-
+        
+        x, adj = inputs
+        h = x @ self.kernel
+        output = (1. + self.eps_var) * h + tf.sparse.sparse_dense_matmul(adj, h)
+        
+        if self.use_bias:
+            output += self.bias
+            
         return self.activation(output)
 
     def get_config(self):
         config = {'units': self.units,
-                  'order': self.order,
+                  'eps': self.eps,
                   'use_bias': self.use_bias,
                   'activation': activations.serialize(self.activation),
                   'kernel_initializer': initializers.serialize(
@@ -130,11 +123,12 @@ class ChebyConvolution(Layer):
                   'kernel_constraint': constraints.serialize(
                       self.kernel_constraint),
                   'bias_constraint': constraints.serialize(self.bias_constraint)
-                  }
+                 }
 
         base_config = super().get_config()
         return {**base_config, **config}
-
+    
+    
     def compute_output_shape(self, input_shapes):
         features_shape = input_shapes[0]
         output_shape = (features_shape[0], self.units)

@@ -10,6 +10,22 @@ from .base import SupervisedModel
 
 
 class RobustGCN(SupervisedModel):
+    """
+        Implementation of Robust Graph Convolutional Networks (RobustGCN). 
+        [Robust Graph Convolutional Networks Against Adversarial Attacks](https://dl.acm.org/doi/10.1145/3292500.3330851)
+        Tensorflow 1.x implementation: https://github.com/thumanlab/nrlweb/blob/master/static/assets/download/RGCN.zip
+
+        Arguments:
+        ----------
+            adj: `scipy.sparse.csr_matrix` (or `csr_matrix`) with shape (N, N), the input `symmetric` adjacency matrix, where `N` is the number of nodes in graph.
+            features: `np.array` with shape (N, F), the input node feature matrix, where `F` is the dimension of node features.
+            labels: `np.array` with shape (N,), the ground-truth labels for all nodes in graph.
+            normalize_rate (List of float scalar, optional): The normalize rate for adjacency matrix `adj`. (default: :obj:`[-0.5, -1]`, i.e., two normalized `adj` with rate `-0.5` and `-1.0`, respectively) 
+            normalize_features (Boolean, optional): Whether to use row-normalize for node feature matrix. (default :obj: `True`)
+            device (String, optional): The device where the model is running on. You can specified `CPU` or `GPU` for the model. (default: :obj: `CPU:0`, i.e., the model is running on the 0-th device `CPU`)
+            seed (Positive integer, optional): Used in combination with `tf.random.set_seed & np.random.seed & random.seed` to create a reproducible sequence of tensors across multiple calls. (default :obj: `None`, i.e., using random seed)
+
+    """    
     
     def __init__(self, adj, features, labels, normalize_rate=[-0.5, -1], normalize_features=True, device='CPU:0', seed=None):
     

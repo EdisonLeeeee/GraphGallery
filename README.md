@@ -104,15 +104,15 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 
 
 <a class="toc" id ="3-4"></a>
-## ChebyGCN
+## ChebyNet
 
 + [Convolutional Neural Networks on Graphs with Fast Localized Spectral Filtering](https://arxiv.org/abs/1606.09375)
 + Tensorflow 1.x implementation: https://github.com/mdeff/cnn_graph, https://github.com/tkipf/gcn
 + Keras implementation: https://github.com/aclyde11/ChebyGCN
 
 ```python
-from graphgallery.nn.models import ChebyGCN
-model = ChebyGCN(adj, features, labels, order=2, device='CPU', seed=123)
+from graphgallery.nn.models import ChebyNet
+model = ChebyNet(adj, features, labels, order=2, device='CPU', seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)

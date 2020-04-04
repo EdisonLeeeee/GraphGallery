@@ -12,10 +12,9 @@ class SAGEConvolution(Layer):
         Pytorch implementation: https://github.com/williamleif/graphsage-simple/
 
         `SAGEConvolution` implements the operation:
-        `output = activation(Concat(x @ w1, Agg(neigh_x) @ w2) + bias)`
+        `output = activation(Concat(x @ kernel_0, Agg(neigh_x) @ kernel_1) + bias)`
         where `x` is the feature matrix, `neigh_x` is the feature matrix of neighbors,
         `Agg` is the operation of aggregation (`mean`, `sum`, `max`, `min`) along the last dimension,
-        `w1` and `w2` are the trainable weights for node features and neighbor features,
         `Concat` is the operation of concatenation between transformed node features and neighbor features,
         and it could be replaced with `Add` operation.
         `activation` is the element-wise activation function

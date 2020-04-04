@@ -7,6 +7,22 @@ from .base import UnsupervisedModel
 from graphgallery.utils.walker import RandomWalker, alias_sample
 
 class Node2vec(UnsupervisedModel):
+    """
+        Implementation of Node2vec Unsupervised Graph Neural Networks (Node2vec). 
+        [node2vec: Scalable Feature Learning for Networks](https://arxiv.org/abs/1607.00653)
+        Implementation: https://github.com/aditya-grover/node2vec
+        Cpp implementation: https://github.com/snap-stanford/snap/tree/master/examples/node2vec
+
+        Arguments:
+        ----------
+            adj: `scipy.sparse.csr_matrix` (or `csr_matrix`) with shape (N, N), the input `symmetric` adjacency matrix, where `N` is the number of nodes in graph.
+            features: `np.array` with shape (N, F), the input node feature matrix, where `F` is the dimension of node features.
+            labels: `np.array` with shape (N,), the ground-truth labels for all nodes in graph.
+            graph (`nx.DiGraph`, optional): The networkx graph which converted by `adj`, if if not specified (`None`), the graph will be converted by `adj` automatically, but it will comsum lots of time. (default :obj: `None`)
+            device (String, optional): The device where the model is running on. You can specified `CPU` or `GPU` for the model. (default: :obj: `CPU:0`, i.e., the model is running on the 0-th device `CPU`)
+            seed (Positive integer, optional): Used in combination with `tf.random.set_seed & np.random.seed & random.seed` to create a reproducible sequence of tensors across multiple calls. (default :obj: `None`, i.e., using random seed)
+
+    """        
 
     def __init__(self, adj, features, labels, graph=None, device='CPU:0', seed=None):
 

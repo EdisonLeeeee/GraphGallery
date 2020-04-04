@@ -12,7 +12,7 @@ class DenseGraphConv(Layer):
         Pytorch implementation: https://github.com/tkipf/pygcn
         
         `DenseGraphConv` implements the `Dense` operation:
-        `output = activation(x @ adj @ kernel + bias)`
+        `output = activation(adj @ x @ kernel + bias)`
         where `x` is the feature matrix, `adj` is the adjacency matrix with dense form,
         `activation` is the element-wise activation function
         passed as the `activation` argument, `kernel` is a weights matrix

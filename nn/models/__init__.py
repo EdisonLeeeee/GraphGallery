@@ -8,7 +8,7 @@ from .gwnn import GWNN
 from .robustgcn import RobustGCN
 from .graphsage import GraphSAGE
 from .fastgcn import FastGCN
-from .cheby_gcn import ChebyGCN
+from .chebynet import ChebyNet
 # from .clustersgc import ClusterSGC
 from .dense_gcn import DenseGCN
 from .deepwalk import Deepwalk

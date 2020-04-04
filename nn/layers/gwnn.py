@@ -13,7 +13,7 @@ class WaveletConvolution(Layer):
         Pytorch implementation: https://github.com/benedekrozemberczki/GraphWaveletNeuralNetwork
 
         `WaveletConvolution` implements the operation:
-        `output = activation(wavelet @ filter @ inverse_wavelet @ x  @ kernel + bias)`
+        `output = activation(wavelet @ filter @ inverse_wavelet @ x @ kernel + bias)`
         where `x` is the feature matrix, `wavelet` is the wavelet matrix,
         `inverse_wavelet` is the inversed wavelet matrix, filter is the trainable diagnal matrix.
         `activation` is the element-wise activation function

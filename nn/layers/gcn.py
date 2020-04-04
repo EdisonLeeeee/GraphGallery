@@ -12,7 +12,7 @@ class GraphConvolution(Layer):
         Pytorch implementation: https://github.com/tkipf/pygcn
         
         `GraphConvolution` implements the operation:
-        `output = activation(x @ adj @ kernel + bias)`
+        `output = activation(adj @ x @ kernel + bias)`
         where `x` is the feature matrix, `adj` is the adjacency matrix,
         `activation` is the element-wise activation function
         passed as the `activation` argument, `kernel` is a weights matrix

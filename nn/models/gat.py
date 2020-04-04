@@ -10,6 +10,24 @@ from graphgallery.mapper import FullBatchNodeSequence
 from .base import SupervisedModel
 
 class GAT(SupervisedModel):
+    """
+        Implementation of Graph Attention Networks (GAT). 
+        [Graph Attention Networks](https://arxiv.org/abs/1710.10903)
+        Tensorflow 1.x implementation: https://github.com/PetarV-/GAT
+        Pytorch implementation: https://github.com/Diego999/pyGAT
+        Keras implementation: https://github.com/danielegrattarola/keras-gat
+
+        Arguments:
+        ----------
+            adj: `scipy.sparse.csr_matrix` (or `csr_matrix`) with shape (N, N), the input `symmetric` adjacency matrix, where `N` is the number of nodes in graph.
+            features: `np.array` with shape (N, F), the input node feature matrix, where `F` is the dimension of node features.
+            labels: `np.array` with shape (N,), the ground-truth labels for all nodes in graph.
+            normalize_rate (Float scalar, optional): The normalize rate for adjacency matrix `adj`. (default: :obj:`None`, donot normalize the input adjacency matrix, but add self-loops instead.) 
+            normalize_features (Boolean, optional): Whether to use row-normalize for node feature matrix. (default :obj: `True`)
+            device (String, optional): The device where the model is running on. You can specified `CPU` or `GPU` for the model. (default: :obj: `CPU:0`, i.e., the model is running on the 0-th device `CPU`)
+            seed (Positive integer, optional): Used in combination with `tf.random.set_seed & np.random.seed & random.seed` to create a reproducible sequence of tensors across multiple calls. (default :obj: `None`, i.e., using random seed)
+
+    """    
     
     def __init__(self, adj, features, labels, normalize_rate=None, normalize_features=True, device='CPU:0', seed=None):
     
