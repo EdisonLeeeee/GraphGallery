@@ -21,6 +21,19 @@ from graphgallery.utils import History, sample_mask, normalize_adj, to_tensor, i
 #     return bar
     
 class SupervisedModel:
+    """
+        Base model for supervised learning.
+
+        Arguments:
+        ----------
+            adj: `scipy.sparse.csr_matrix` (or `csr_matrix`) with shape (N, N), the input `symmetric` adjacency matrix, where `N` is the number of nodes in graph.
+            features: `np.array` with shape (N, F), the input node feature matrix, where `F` is the dimension of node features.
+            labels: `np.array` with shape (N,), the ground-truth labels for all nodes in graph.
+            device (String, optional): The device where the model is running on. You can specified `CPU` or `GPU` for the model. (default: :obj: `CPU:0`, i.e., the model is running on the 0-th device `CPU`)
+            seed (Positive integer, optional): Used in combination with `tf.random.set_seed & np.random.seed & random.seed` to create a reproducible sequence of tensors across multiple calls. (default :obj: `None`, i.e., using random seed)
+            name (String, optional): Name for the model. (default: name of class)
+
+    """    
 
     def __init__(self, adj, features, labels, **kwargs):
 
@@ -36,13 +49,14 @@ class SupervisedModel:
         self.feature_matrix = features
         self.labels = labels
 
-#         tf.config.set_soft_device_placement(True)
-
         if seed:
             tf.random.set_seed(seed)
             np.random.seed(seed)
             random.seed(seed)
-
+            
+        if kwargs:
+            raise ValueError(f'Invalid arguments of `{list(kwargs.keys())}`.')
+            
         self.seed = seed
         self.device = tf.device(device)
 
@@ -59,18 +73,72 @@ class SupervisedModel:
         self.custom_objects = None # used for save/load model
 
         self.log_path = f'./log/{self.name}_weights'
+        
+    def preprocess(self, adj, features):
+        """
+            Preprocess the input adjacency matrix and feature matrix, e.g., normalize.
+            And convert some of necessary to tensor.
+            
+        Arguments:
+        ----------
+            adj: `scipy.sparse.csr_matrix` (or `csr_matrix`) with shape (N, N), the input `symmetric` adjacency matrix, where `N` is the number of nodes in graph.
+            features: `np.array` with shape (N, F), the input node feature matrix, where `F` is the dimension of node features.            
+        """
+        raise NotImplementedError
+        
 
     def build(self):
+        """
+            Build the model using customized hyperparameters.
+            
+        Note:
+        ----------
+            This method must be called before training/testing/predicting. Use `model.build()`.
+            The following `Arguments` are only commonly used hyperparameters, and other model-specific parameters are not specified
+            
+        
+        Arguments:
+        ----------
+            hidden_layers: `list` of integer, the number of hidden units of model. Note: the last hidden unit (`n_classes`) aren't nececcary to specified and it will be automatically added in the last layer. 
+            activations: `list` of string, the activation function of model. Note: the last activation function (`softmax`) aren't nececcary to specified and it will be automatically spefified in the final output.              
+            dropout: Float scalar, dropout rate for the hidden outputs.
+            learning_rate: Float scalar, learning rate for the model.
+            l2_norm: Float scalar, l2 normalize for the hidden layers. (usually only used in the first layer)
+            use_bias: Boolean, whether to use bias in the hidden layers.
+            
+        """                
         raise NotImplementedError
 
     def train(self, index_train, index_val=None,
               epochs=200, early_stopping=None, validation=True,
-              verbose=None, restore_best=True, log_path=None, save_model=False,
+              verbose=False, restore_best=True, log_path=None, save_model=False,
               best_metric='val_accuracy', early_stop_metric='val_loss'):
-        '''
-        index_train: np.ndarray, int, list, Sequence
-        index_val: np.ndarray, int, list, Sequence or None
-        '''
+        """
+            Train the model for the input `index_train` of nodes or `sequence`.
+            
+        Note:
+        ----------
+            You must compile your model before training/testing/predicting. Use `model.build()`.
+        
+        Arguments:
+        ----------
+            index_train: `np.array`, `list`, integer scalar or `graphgallery.NodeSequence`, the index of nodes (or sequence) that will used in training.    
+            index_val: `np.array`, `list`, integer scalar or `graphgallery.NodeSequence`, the index of nodes (or sequence) that will used in validation. (default :obj: `None`, i.e., do not use validation during training)
+            epochs: Postive integer, the number of epochs of training.(default :obj: `200`)
+            early_stopping: Postive integer or None, the number of early stopping patience during training. (default :obj: `None`, i.e., do not use early stopping during training)
+            validation: Boolean, whether to use validation during traiing, if `True`, the `index_val` must be specified. (default :obj: `True`)
+            verbose: Boolean, whether to show the training details. (default :obj: `None`)
+            restore_best: Boolean, whether to restore the best result (accuracy of loss depend on `best_metrix`) of training or validation (depend on `validation` is `False` or `True`). (default :obj: `True`)
+            log_path: String or None, the path of saved weights/model. (default :obj: `None`, i.e., `./log/{self.name}_weights`)
+            save_model: Boolean, whether to save the whole model or weights only, if `True`, the `self.custom_objects` must be speficied if you are using customized `layer` or `loss` and so on.
+            best_metric: String, one of (val_loss, val_accuracy, loss, accuracy), it determines which metric will be used for `restore_best`. (default :obj: `val_accuracy`)
+            early_stop_metric: String, one of (val_loss, val_accuracy, loss, accuracy), it determines which metric will be used for early stopping. (default :obj: `val_loss`)
+                
+        Return:
+        ----------
+            history: graphgallery.utils.History, tensorflow like `history` instance.
+        """        
+        
         # Check if model has been built
         if not self.built:
             raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')
@@ -155,25 +223,66 @@ class SupervisedModel:
 
         return history
 
-    def test(self, index_test):
+    def test(self, index, **kwargs):
+        """
+            Test the output accuracy for the `index` of nodes or `sequence`.
+            
+        Note:
+        ----------
+            You must compile your model before training/testing/predicting. Use `model.build()`.
+        
+        Arguments:
+        ----------
+            index: `np.array`, `list`, integer scalar or `graphgallery.NodeSequence`, the index of nodes (or sequence) that will be tested.    
+            
+            **kwargs (optional): Additional arguments of
+                :method:`do_before_test`.   
+                
+        Return:
+        ----------
+            loss (Float scalar): Output loss of forward propagation.
+            accuracy (Float scalar): Output accuracy of prediction.        
+        """        
 
         if not self.built:
             raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')
             
-        if isinstance(index_test, Sequence):
-            test_data = index_test
+        if isinstance(index, Sequence):
+            test_data = index
         else:
-            test_data = self.test_sequence(index_test)
-            self.index_test = self._check_and_convert(index_test)
+            test_data = self.test_sequence(index)
+            self.index_test = self._check_and_convert(index)
         
         if self.do_before_test is not None:
-            self.do_before_test()
+            self.do_before_test(**kwargs)
 
         loss, accuracy = self.do_forward(test_data, training=False)
 
         return loss, accuracy
 
-    def do_forward(self, data, training=True):
+    def do_forward(self, sequence, training=True):
+        """
+            Forward propagation for the input `sequence`. This method will be called in `train` and `test`, 
+            you can rewrite it for you customized training/testing process.
+            If you want to specify your customized data during traing/testing/predicting, 
+            you can implement a sub-class of `graphgallery.NodeSequence`, wich is iterable and yields `inputs` and `labels` in each iteration. 
+            
+            
+        Note:
+        ----------
+            You must compile your model before training/testing/predicting. Use `model.build()`.
+        
+        Arguments:
+        ----------
+            sequence: `graphgallery.NodeSequence`, the input `sequence`.    
+            trainng (Boolean, optional): Indicating training or test procedure. (default: :obj:`True`)
+                
+        Return:
+        ----------
+            loss (Float scalar): Output loss of forward propagation.
+            accuracy (Float scalar): Output accuracy of prediction.
+        
+        """        
 
         if training:
             forward_fn = self.model.train_on_batch
@@ -183,26 +292,90 @@ class SupervisedModel:
         self.model.reset_metrics()
 
         with self.device:
-            for inputs, labels in data:
+            for inputs, labels in sequence:
                 loss, accuracy = forward_fn(x=inputs, y=labels, reset_metrics=False)
 
         return loss, accuracy
 
     def predict(self, index, **kwargs):
+        """
+            Predict the output probability for the `index` of nodes.
+            
+        Note:
+        ----------
+            You must compile your model before training/testing/predicting. Use `model.build()`.
+        
+        Arguments:
+        ----------
+            index: `np.array`, `list` or integer scalar, the index of nodes that will be computed.    
+            
+            **kwargs (optional): Additional arguments of
+                :method:`do_before_predict`.   
+                
+        Return:
+        ----------
+            The predicted probability of each class for each node, shape (len(index), n_classes).
+        
+        """
         
         if not self.built:
             raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')
             
         if self.do_before_predict is not None:
-            self.do_before_predict(index, **kwargs)
+            self.do_before_predict(**kwargs)
             
     def train_sequence(self, index):
+        """
+            Construct the training sequence for the `index` of nodes.
+            
+        
+        Arguments:
+        ----------
+            index: `np.array`, `list` or integer scalar, the index of nodes used in training.
+            
+        Return:
+        ----------
+            The sequence of `graphgallery.NodeSequence` for the nodes.
+        
+        """        
+        
         raise NotImplementedError
         
     def test_sequence(self, index):
+        """
+            Construct the testing sequence for the `index` of nodes.
+            
+        Note:
+        ----------
+            If not implemented, this method will call `train_sequence` automatically.
+        
+        Arguments:
+        ----------
+            index: `np.array`, `list` or integer scalar, the index of nodes used in testing.
+            
+        Return:
+        ----------
+            The sequence of `graphgallery.NodeSequence` for the nodes.
+        """
         return self.train_sequence(index) 
     
     def test_predict(self, index):
+        """
+            Predict the output accuracy for the `index` of nodes.
+            
+        Note:
+        ----------
+            You must compile your model before training/testing/predicting. Use `model.build()`.
+        
+        Arguments:
+        ----------
+            index: `np.array`, `list` or integer scalar, the index of nodes that will be computed.    
+            
+        Return:
+        ----------
+            accuracy: Float scalar, the output accuracy of the `index` of nodes.
+        
+        """        
         index = self._check_and_convert(index)
         logit = self.predict(index)
         predict_class = logit.argmax(1)
@@ -276,18 +449,30 @@ class SupervisedModel:
             
     @property
     def weights(self):
+        """
+            Return the weights of model, type `tf.Tensor`.
+        """
         return self.model.weights
 
     @property
     def np_weights(self):
+        """
+            Return the weights of model, type `np.array`.
+        """        
         return [weight.numpy() for weight in self.weights]
     
     @property
     def trainable_variables(self):
+        """
+            Return the trainable weights of model, type `tf.Tensor`.
+        """        
         return self.model.trainable_variables
 
     @property
     def close(self):
+        """
+            Close the session of model and set `built` to False.
+        """
         # del self.model
         self.built = None
         K.clear_session()
@@ -302,6 +487,19 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import normalize
 
 class UnsupervisedModel:
+    """
+        Base model for unsupervised learning.
+
+        Arguments:
+        ----------
+            adj: `scipy.sparse.csr_matrix` (or `csr_matrix`) with shape (N, N), the input `symmetric` adjacency matrix, where `N` is the number of nodes in graph.
+            features: `np.array` with shape (N, F), the input node feature matrix, where `F` is the dimension of node features.
+            labels: `np.array` with shape (N,), the ground-truth labels for all nodes in graph.
+            device (String, optional): The device where the model is running on. You can specified `CPU` or `GPU` for the model. (default: :obj: `CPU:0`, i.e., the model is running on the 0-th device `CPU`)
+            seed (Positive integer, optional): Used in combination with `tf.random.set_seed & np.random.seed & random.seed` to create a reproducible sequence of tensors across multiple calls. (default :obj: `None`, i.e., using random seed)
+            name (String, optional): Name for the model. (default: name of class)
+
+    """        
 
     def __init__(self, adj, features, labels, **kwargs):
 
@@ -319,7 +517,10 @@ class UnsupervisedModel:
             tf.random.set_seed(seed)
             np.random.seed(seed)
             random.seed(seed)
-
+            
+        if kwargs:
+            raise ValueError(f'Invalid arguments of `{list(kwargs.keys())}`.')
+            
         self.seed = seed
         self.device = tf.device(device)
 

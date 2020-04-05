@@ -30,13 +30,15 @@ class GraphSAGE(SupervisedModel):
             normalize_features (Boolean, optional): Whether to use row-normalize for node feature matrix. (default :obj: `True`)
             n_samples (List of positive integer, optional): The number of sampled neighbors for each nodes in each layer. (default :obj: `[10, 5]`, i.e., sample `10` first-order neighbors and `5` sencond-order neighbors, and the radius for `GraphSAGE` is `2`)
             device (String, optional): The device where the model is running on. You can specified `CPU` or `GPU` for the model. (default: :obj: `CPU:0`, i.e., the model is running on the 0-th device `CPU`)
-            seed (Positive integer, optional): Used in combination with `tf.random.set_seed & np.random.seed & random.seed` to create a reproducible sequence of tensors across multiple calls. (default :obj: `None`, i.e., using random seed)            
+            seed (Positive integer, optional): Used in combination with `tf.random.set_seed & np.random.seed & random.seed` to create a reproducible sequence of tensors across multiple calls. (default :obj: `None`, i.e., using random seed)     
+            name (String, optional): Name for the model. (default: name of class)
+            
 
     """   
     
-    def __init__(self, adj, features, labels, normalize_features=False, n_samples=[10, 5], device='CPU:0', seed=None):
+    def __init__(self, adj, features, labels, normalize_features=False, n_samples=[10, 5], device='CPU:0', seed=None, **kwargs):
     
-        super().__init__(adj, features, labels, device=device, seed=seed)
+        super().__init__(adj, features, labels, device=device, seed=seed, **kwargs)
         
         self.n_samples = n_samples
         self.normalize_features = normalize_features            

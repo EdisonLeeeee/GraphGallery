@@ -18,12 +18,14 @@ class Deepwalk(UnsupervisedModel):
             labels: `np.array` with shape (N,), the ground-truth labels for all nodes in graph.
             device (String, optional): The device where the model is running on. You can specified `CPU` or `GPU` for the model. (default: :obj: `CPU:0`, i.e., the model is running on the 0-th device `CPU`)
             seed (Positive integer, optional): Used in combination with `tf.random.set_seed & np.random.seed & random.seed` to create a reproducible sequence of tensors across multiple calls. (default :obj: `None`, i.e., using random seed)
+            name (String, optional): Name for the model. (default: name of class)
+            
 
     """    
 
-    def __init__(self, adj, features, labels, device='CPU:0', seed=None):
+    def __init__(self, adj, features, labels, device='CPU:0', seed=None, **kwargs):
 
-        super().__init__(adj, features, labels, device=device, seed=seed)
+        super().__init__(adj, features, labels, device=device, seed=seed, **kwargs)
 
 
     def build(self, walk_length=80, walks_per_node=10, 

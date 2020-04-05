@@ -21,12 +21,14 @@ class Node2vec(UnsupervisedModel):
             graph (`nx.DiGraph`, optional): The networkx graph which converted by `adj`, if if not specified (`None`), the graph will be converted by `adj` automatically, but it will comsum lots of time. (default :obj: `None`)
             device (String, optional): The device where the model is running on. You can specified `CPU` or `GPU` for the model. (default: :obj: `CPU:0`, i.e., the model is running on the 0-th device `CPU`)
             seed (Positive integer, optional): Used in combination with `tf.random.set_seed & np.random.seed & random.seed` to create a reproducible sequence of tensors across multiple calls. (default :obj: `None`, i.e., using random seed)
+            name (String, optional): Name for the model. (default: name of class)
+            
 
     """        
 
-    def __init__(self, adj, features, labels, graph=None, device='CPU:0', seed=None):
+    def __init__(self, adj, features, labels, graph=None, device='CPU:0', seed=None, **kwargs):
 
-        super().__init__(adj, features, labels, device=device, seed=seed)
+        super().__init__(adj, features, labels, device=device, seed=seed, **kwargs)
         
         self.walker = None
         
