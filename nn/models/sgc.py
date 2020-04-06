@@ -47,7 +47,7 @@ class SGC(SupervisedModel):
         if self.normalize_features:
             features = self._normalize_features(features)
 
-        with self.device:
+        with tf.device('CPU'):
             features, adj = self._to_tensor([features, adj])
             features = SGConvolution(order=self.order)([features, adj])
 
