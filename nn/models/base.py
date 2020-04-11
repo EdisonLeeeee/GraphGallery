@@ -398,8 +398,10 @@ class SupervisedModel:
     
     @staticmethod    
     def _normalize_features(features):
-        assert isinstance(features, np.ndarray)
+        if not isinstance(features, np.ndarray):
+            raise TypeError('feature matrix must be the instance of np.array.')
         return features / (features.sum(1, keepdims=True) + 1e-10)
+    
 
     def _sample_mask(self, index, shape=None):
         if shape is None:
