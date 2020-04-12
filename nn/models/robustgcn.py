@@ -17,15 +17,30 @@ class RobustGCN(SupervisedModel):
 
         Arguments:
         ----------
-            adj: `scipy.sparse.csr_matrix` (or `csr_matrix`) with shape (N, N), the input `symmetric` adjacency matrix, where `N` is the number of nodes in graph.
-            features: `np.array` with shape (N, F), the input node feature matrix, where `F` is the dimension of node features.
-            labels: `np.array` with shape (N,), the ground-truth labels for all nodes in graph.
-            normalize_rate (List of float scalar, optional): The normalize rate for adjacency matrix `adj`. (default: :obj:`[-0.5, -1]`, i.e., two normalized `adj` with rate `-0.5` and `-1.0`, respectively) 
-            normalize_features (Boolean, optional): Whether to use row-normalize for node feature matrix. (default :obj: `True`)
-            device (String, optional): The device where the model is running on. You can specified `CPU` or `GPU` for the model. (default: :obj: `CPU:0`, i.e., the model is running on the 0-th device `CPU`)
-            seed (Positive integer, optional): Used in combination with `tf.random.set_seed & np.random.seed & random.seed` to create a reproducible sequence of tensors across multiple calls. (default :obj: `None`, i.e., using random seed)
-            name (String, optional): Name for the model. (default: name of class)
-            
+            adj: `scipy.sparse.csr_matrix` (or `csc_matrix`) with shape (N, N)
+                The input `symmetric` adjacency matrix, where `N` is the number of nodes 
+                in graph.
+            features: `np.array` with shape (N, F)
+                The input node feature matrix, where `F` is the dimension of node features.
+            labels: `np.array` with shape (N,)
+                The ground-truth labels for all nodes in graph.
+            normalize_rate (List of float scalar, optional): 
+                The normalize rate for adjacency matrix `adj`. 
+                (default: :obj:`[-0.5, -1]`, i.e., two normalized `adj` with rate `-0.5` 
+                and `-1.0`, respectively) 
+            normalize_features (Boolean, optional): 
+                Whether to use row-normalize for node feature matrix. 
+                (default :obj: `True`)
+            device (String, optional): 
+                The device where the model is running on. You can specified `CPU` or `GPU` 
+                for the model. (default: :obj: `CPU:0`, i.e., the model is running on 
+                the 0-th device `CPU`)
+            seed (Positive integer, optional): 
+                Used in combination with `tf.random.set_seed & np.random.seed & random.seed` 
+                to create a reproducible sequence of tensors across multiple calls. 
+                (default :obj: `None`, i.e., using random seed)
+            name (String, optional): 
+                Name for the model. (default: name of class)
 
     """    
     
@@ -48,7 +63,7 @@ class RobustGCN(SupervisedModel):
         with self.device:
             self.features, self.adj = self._to_tensor([features, adj])
         
-    def build(self, hidden_layers=[64], activations=['relu'], use_bias=False, dropout=0.6, learning_rate=0.01, l2_norm=5e-4, para_kl=5e-4, gamma=1.0):
+    def build(self, hidden_layers=[64], activations=['relu'], use_bias=False, dropout=0.6, learning_rate=0.01, l2_norm=1e-4, para_kl=5e-4, gamma=1.0):
         
         x = Input(batch_shape=[self.n_nodes, self.n_features], dtype=tf.float32, name='features')
         adj = [Input(batch_shape=[self.n_nodes, self.n_nodes], dtype=tf.float32, sparse=True, name='adj_matrix_1'),
