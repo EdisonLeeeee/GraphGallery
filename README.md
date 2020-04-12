@@ -29,11 +29,11 @@ A gallery of state-of-the-arts deep learning graph models.
 
 Implemented with Tensorflow 2.x.
 
-This repo aims to achieve Four goals:
-+ Similar accuracy with the proposed paper
+This repo aims to achieve 4 goals:
++ Similar (or higher) performance with the corresponding papers
 + Faster implementation of training and testing
 + Simple and convenient to use with high scalability
-+ Easy to read source code
++ Easy to read source codes
 
 <a class="toc" id ="2"></a>
 # Requirements
@@ -57,16 +57,32 @@ This repo aims to achieve Four goals:
 
 <a class="toc" id ="3-1"></a>
 ## Inputs
-
-+ `adj`: scipy.sparse.csr_matrix (or csr_matrix), shape [N, N], sparse form of adjacency matrix. 
-    where `N` means the number of nodes in the graph.
-+ `features`: np.ndarray shape [N, F], dense form of feature matrix. where `F` means the dimension of features.
-+ `labels`: np.ndarray shape [N,], ground-truth labels of all nodes.
-+ `idx_train`, `idx_val`, `idx_test`: np.ndarray, the seperated indices for training, validation and testing.
-+ `device`: `CPU` or `GPU`.
-+ `seed`: Positive interger.
-
-You can specified customized hyperparameters and training details by call `model.build(your_args)` and `model.trian(your_args)`. 
+```
+adj: `scipy.sparse.csr_matrix` (or `csc_matrix`) with shape (N, N)
+    The input `symmetric` adjacency matrix, where `N` is the number of nodes 
+    in graph.
+features: `np.array` with shape (N, F)
+    The input node feature matrix, where `F` is the dimension of node features.
+labels: `np.array` with shape (N,)
+    The ground-truth labels for all nodes in graph.
+normalize_rate (Float scalar, optional): 
+    The normalize rate for adjacency matrix `adj`. (default: :obj:`-0.5`, 
+    i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
+normalize_features (Boolean, optional): 
+    Whether to use row-normalize for node feature matrix. 
+    (default :obj: `True`)
+device (String, optional): 
+    The device where the model is running on. You can specified `CPU` or `GPU` 
+    for the model. (default: :obj: `CPU:0`, i.e., the model is running on 
+    the 0-th device `CPU`)
+seed (Positive integer, optional): 
+    Used in combination with `tf.random.set_seed & np.random.seed & random.seed` 
+    to create a reproducible sequence of tensors across multiple calls. 
+    (default :obj: `None`, i.e., using random seed)
+name (String, optional): 
+    Name for the model. (default: name of class)
+```
+You can specified customized hyperparameters and training details by calling `model.build(your_args)` and `model.trian(your_args)`. 
 The usuage documents will be gradually added later.
 
 <a class="toc" id ="3-2"></a>
