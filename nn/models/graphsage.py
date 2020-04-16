@@ -18,9 +18,6 @@ class GraphSAGE(SupervisedModel):
         Tensorflow 1.x implementation: https://github.com/williamleif/GraphSAGE
         Pytorch implementation: https://github.com/williamleif/graphsage-simple/
         
-        Note:
-        ----------
-            No normalization is required for the input adjacency matrix to achieve better performance.
 
         Arguments:
         ----------
@@ -62,7 +59,7 @@ class GraphSAGE(SupervisedModel):
 
     """   
     
-    def __init__(self, adj, features, labels, n_samples=[10, 5], normalize_features=False, device='CPU:0', seed=None, **kwargs):
+    def __init__(self, adj, features, labels, n_samples=[15, 5], normalize_features=False, device='CPU:0', seed=None, **kwargs):
     
         super().__init__(adj, features, labels, device=device, seed=seed, **kwargs)
         
@@ -84,7 +81,7 @@ class GraphSAGE(SupervisedModel):
             features = self._to_tensor(features)
             self.features, self.adj = features, adj
 
-    def build(self, hidden_layers=[16], activations=['elu'], dropout=0.5, learning_rate=0.01, l2_norm=5e-4, 
+    def build(self, hidden_layers=[16], activations=['relu'], dropout=0.5, learning_rate=0.01, l2_norm=5e-4, 
               output_normalize=False, agg_method='mean'):
         
         with self.device:

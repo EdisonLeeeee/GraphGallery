@@ -256,8 +256,7 @@ class SupervisedModel:
                 msg = f'Early stopping with patience {early_stopping}.'
                 if verbose:
                     pbar.set_description(msg)  
-                else:
-                    print(msg)
+                    pbar.close()
                 break
 
             if verbose:

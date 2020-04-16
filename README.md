@@ -6,7 +6,7 @@
 	+ [Inputs](#3-1)
 	+ [GCN](#3-2)
 	+ [DenceGCN](#3-3)
-	+ [ChebyGCN](#3-4)
+	+ [ChebyNet](#3-4)
 	+ [FastGCN](#3-5)
 	+ [GraphSAGE](#3-6)
 	+ [RobustGCN](#3-7)

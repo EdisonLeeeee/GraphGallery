@@ -46,6 +46,8 @@ class NodeSampleSequence(NodeSequence):
                 n = np.random.randint(0, N)
             adv_index[i] = n
             flag[self.neighbors[n]] = True
+            if flag.sum()==N:
+                break
         adv_mask = np.zeros(N, dtype='float32')
         adv_mask[adv_index] = 1.
         return adv_mask

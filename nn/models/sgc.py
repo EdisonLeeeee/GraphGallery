@@ -91,16 +91,16 @@ class SGC(SupervisedModel):
     def train_sequence(self, index):
         index = self._check_and_convert(index)
         labels = self.labels[index]
-        features = tf.gather(self.features, index)
         with self.device:
+            features = tf.gather(self.features, index)
             sequence = FullBatchNodeSequence(features, labels)
         return sequence
         
     def predict(self, index):
         super().predict(index)
         index = self._check_and_convert(index)
-        features = tf.gather(self.features, index)
         with self.device:
+            features = tf.gather(self.features, index)
             logit = self.model.predict_on_batch(features)
         
         return logit.numpy()
