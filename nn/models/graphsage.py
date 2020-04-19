@@ -5,7 +5,7 @@ from tensorflow.keras.layers import Dropout, Softmax
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 
-from graphgallery.nn.layers import SAGEConvolution
+from graphgallery.nn.layers import MeanAggregator, GCNAggregator
 from graphgallery.mapper import SAGEMiniBatchSequence
 from graphgallery.utils import construct_adj
 from .base import SupervisedModel
@@ -72,10 +72,17 @@ class GraphSAGE(SupervisedModel):
             self.features, self.adj = features, adj
 
     def build(self, hidden_layers=[16], activations=['relu'], dropout=0.5, learning_rate=0.01, l2_norm=5e-4, 
-              output_normalize=False, agg_method='mean'):
+              output_normalize=False, aggrator='mean'):
         
         with self.device:
             
+            if aggrator == 'mean':
+                Agg = MeanAggregator
+            elif aggrator == 'gcn':
+                Agg = GCNAggregator
+            else:
+                raise ValueError(f'Invalid value of `aggrator`, allowed values (`mean`, `gcn`), but got `{aggrator}`.')
+                
             x = Input(batch_shape=[None, self.n_features], dtype=tf.float32, name='features')
             nodes = Input(batch_shape=[None], dtype=tf.int32, name='nodes')
             neighbors = [Input(batch_shape=[None], dtype=tf.int32, name=f'neighbors_{hop}') 
@@ -83,10 +90,11 @@ class GraphSAGE(SupervisedModel):
             
             aggrators = []
             for i, (hid, activation) in enumerate(zip(hidden_layers, activations)):
-                aggrators.append(SAGEConvolution(hid, concat=True, agg_method=agg_method, 
-                                          activation=activation, 
-                                          kernel_regularizer=regularizers.l2(l2_norm)))
-            aggrators.append(SAGEConvolution(self.n_classes, agg_method=agg_method))
+                # you can use `GCNAggregator` instead
+                aggrators.append(Agg(hid, concat=True, activation=activation, 
+                                                kernel_regularizer=regularizers.l2(l2_norm)))
+                
+            aggrators.append(Agg(self.n_classes))
                 
             h = [tf.nn.embedding_lookup(x, node) for node in [nodes, *neighbors]]
             for agg_i, aggrator  in enumerate(aggrators):
