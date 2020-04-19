@@ -49,7 +49,7 @@ class GraphSAGE(SupervisedModel):
 
     """   
     
-    def __init__(self, adj, features, labels, n_samples=[15, 5], normalize_features=False, device='CPU:0', seed=None, **kwargs):
+    def __init__(self, adj, features, labels, n_samples=[15, 5], normalize_features=True, device='CPU:0', seed=None, **kwargs):
     
         super().__init__(adj, features, labels, device=device, seed=seed, **kwargs)
         

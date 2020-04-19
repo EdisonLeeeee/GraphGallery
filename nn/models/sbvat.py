@@ -30,7 +30,7 @@ class SBVAT(SupervisedModel):
                 The input node feature matrix, where `F` is the dimension of node features.
             labels: `np.array` with shape (N,)
                 The ground-truth labels for all nodes in graph.
-            n_sample (Positive integer, optional): 
+            n_samples (Positive integer, optional): 
                 The number of sampled subset nodes in the graph where the shortest path 
                 length between them is at least 4. (default :obj: `50`)
             normalize_rate (Float scalar, optional): 
@@ -52,7 +52,7 @@ class SBVAT(SupervisedModel):
 
     """
     
-    def __init__(self, adj, features, labels, n_sample=50, 
+    def __init__(self, adj, features, labels, n_samples=100, 
                  normalize_rate=-0.5, normalize_features=True, device='CPU:0', seed=None, **kwargs):
     
         super().__init__(adj, features, labels, device=device, seed=seed, **kwargs)
@@ -60,7 +60,7 @@ class SBVAT(SupervisedModel):
         self.normalize_rate = normalize_rate
         self.normalize_features = normalize_features            
         self.preprocess(adj, features)
-        self.n_sample = n_sample
+        self.n_samples = n_samples
 
     def preprocess(self, adj, features):
         
@@ -195,7 +195,7 @@ class SBVAT(SupervisedModel):
         with self.device:
             sequence = NodeSampleSequence([self.features, self.adj, index], labels,
                                           neighbors=self.neighbors,
-                                          n_sample=self.n_sample)
+                                          n_samples=self.n_samples)
             
         return sequence    
     
@@ -206,7 +206,7 @@ class SBVAT(SupervisedModel):
         with self.device:
             sequence = NodeSampleSequence([self.features, self.adj, index], labels,
                                           neighbors=self.neighbors,
-                                          n_sample=self.n_sample,
+                                          n_samples=self.n_samples,
                                           resample=False)
             
         return sequence        
@@ -218,7 +218,7 @@ class SBVAT(SupervisedModel):
         with self.device:
             sequence = NodeSampleSequence([self.features, self.adj, index], None,
                                           neighbors=self.neighbors,
-                                          n_sample=self.n_sample,
+                                          n_samples=self.n_samples,
                                           resample=False)
             for inputs, _ in sequence:
                 x, adj, index, adv_mask = inputs

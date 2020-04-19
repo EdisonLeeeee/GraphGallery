@@ -13,7 +13,7 @@ class NodeSampleSequence(NodeSequence):
         inputs, 
         labels,
         neighbors,
-        n_sample=100,
+        n_samples=100,
         resample=True
     ):
 
@@ -22,7 +22,7 @@ class NodeSampleSequence(NodeSequence):
         self.n_batches = 1
         self.neighbors = neighbors
         self.n_nodes = inputs[0].shape[0]
-        self.n_sample = n_sample
+        self.n_samples = n_samples
         self.adv_mask = self.smple_nodes()
         self.resample = resample
 
@@ -39,8 +39,8 @@ class NodeSampleSequence(NodeSequence):
     def smple_nodes(self):
         N = self.n_nodes
         flag = np.zeros(N, dtype=np.bool)
-        adv_index = np.zeros(self.n_sample, dtype='int32')
-        for i in range(self.n_sample):
+        adv_index = np.zeros(self.n_samples, dtype='int32')
+        for i in range(self.n_samples):
             n = np.random.randint(0, N)
             while flag[n]:
                 n = np.random.randint(0, N)
