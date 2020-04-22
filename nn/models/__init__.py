@@ -18,3 +18,4 @@ from .obvat import OBVAT
 from .sbvat import SBVAT
 from .s_obvat import SimplifiedOBVAT
 from .gmnn import GMNN
+from .gcn_edgeconv import EdgeGCN
