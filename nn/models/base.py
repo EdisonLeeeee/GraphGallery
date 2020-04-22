@@ -147,13 +147,11 @@ class SupervisedModel:
         
         Arguments:
         ----------
-            index_train: `np.array`, `list
-                Integer scalar or `graphgallery.NodeSequence`, the index of nodes (or sequence) 
-                that will used in training.    
-            index_val: `np.array`, `list`
-                Integer scalar or `graphgallery.NodeSequence`, the index of nodes (or sequence) 
-                that will used in validation. (default :obj: `None`, i.e., do not use validation 
-                during training)
+            index_train: `np.array`, `list`, Integer scalar or `graphgallery.NodeSequence`
+                the index of nodes (or sequence) that will be used during training.    
+            index_val: `np.array`, `list`, Integer scalar or `graphgallery.NodeSequence`, optional
+                the index of nodes (or sequence) that will be used for validation. 
+                (default :obj: `None`, i.e., do not use validation during training)
             epochs: Postive integer
                 The number of epochs of training.(default :obj: `200`)
             early_stopping: Postive integer or None
@@ -281,7 +279,7 @@ class SupervisedModel:
         
         Arguments:
         ----------
-            index: `np.array`, `list`, integer scalar or `graphgallery.NodeSequence`
+            index: `np.array`, `list`, Integer scalar or `graphgallery.NodeSequence`
             The index of nodes (or sequence) that will be tested.    
             
             **kwargs (optional): Additional arguments of

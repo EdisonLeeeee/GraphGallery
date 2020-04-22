@@ -5,7 +5,7 @@ from tensorflow.keras.layers import Layer
 class SGConvolution(Layer):
     """
         Simplifying graph convolution layer as in: 
-        [Simplifying Graph Convolutional Networks](https://arxiv.org/pdf/1902.07153)
+        [Simplifying Graph Convolutional Networks](https://arxiv.org/abs/1902.07153)
         Pytorch implementation: https://github.com/Tiiiger/SGC
         
         `SGConvolution` implements the operation:

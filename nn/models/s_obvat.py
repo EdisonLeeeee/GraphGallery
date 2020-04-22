@@ -14,8 +14,8 @@ from graphgallery.utils import kl_divergence_with_logit, entropy_y_x, get_normal
 
 class SimplifiedOBVAT(SupervisedModel):
     """
-        Implementation of optimization-based Batch Virtual Adversarial Training  Graph Convolutional Networks (SBVAT). 
-        [Batch Virtual Adversarial Training for Graph Convolutional Networks](https://arxiv.org/pdf/1902.09192)
+        Implementation of optimization-based Batch Virtual Adversarial Training  Graph Convolutional Networks (OBVAT). 
+        [Batch Virtual Adversarial Training for Graph Convolutional Networks](https://arxiv.org/abs/1902.09192)
         Tensorflow 1.x implementation: https://github.com/thudzj/BVAT
         
         Note:

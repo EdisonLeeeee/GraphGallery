@@ -11,7 +11,7 @@ from .base import SupervisedModel
 class SGC(SupervisedModel):
     """
         Implementation of Simplifying Graph Convolutional Networks (RobustGCN). 
-        [Simplifying Graph Convolutional Networks](https://arxiv.org/pdf/1902.07153)
+        [Simplifying Graph Convolutional Networks](https://arxiv.org/abs/1902.07153)
         Pytorch implementation: https://github.com/Tiiiger/SGC
 
         Arguments:
