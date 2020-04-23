@@ -1,6 +1,5 @@
 <a class="toc" id="table-of-contents"></a>
 # Table of Contents
-[🔙](#table-of-contents)
 + [GraphGallery](#1)
 + [Requirements](#2)
 + [Usage](#3)
@@ -110,7 +109,7 @@ model = GCN(adj, features, labels, device='CPU', seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
-model.close
+model.close # clear session
 print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 ```
 
@@ -126,7 +125,7 @@ model = DenseGCN(adj, features, labels, device='CPU', seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
-model.close
+model.close # clear session
 print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 ```
 
@@ -138,8 +137,8 @@ i.e., using Tensor `edge index` and `edge weight` of adjacency matrix to aggrega
 message, instead of SparseTensor `adj`.
 
 Inspired by: tf_geometric and torch_geometric
-tf_geometric: https://github.com/CrawlScript/tf_geometric
-torch_geometric: https://github.com/rusty1s/pytorch_geometric
++ tf_geometric: https://github.com/CrawlScript/tf_geometric
++ torch_geometric: https://github.com/rusty1s/pytorch_geometric
 
 ```python
 from graphgallery.nn.models import EdgeGCN
@@ -147,7 +146,7 @@ model = EdgeGCN(adj, features, labels, device='CPU', seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
-model.close
+model.close # clear session
 print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 ```
 
@@ -168,7 +167,7 @@ model = GCN(GDC_adj, features, labels, device='CPU', seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
-model.close
+model.close # clear session
 print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 ```
 
@@ -186,7 +185,7 @@ model = ChebyNet(adj, features, labels, order=2, device='CPU', seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
-model.close
+model.close # clear session
 print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 ```
 
@@ -203,7 +202,7 @@ model = FastGCN(adj, features, labels, device='CPU', seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
-model.close
+model.close # clear session
 print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 ```
 
@@ -221,7 +220,7 @@ model = GraphSAGE(adj, features, labels, n_samples=[10, 5], device='CPU', seed=1
 model.build()
 his = model.train(idx_train, idx_val, verbose=True, epochs=100, restore_best=False, validation=False)
 loss, accuracy = model.test(idx_test)
-model.close
+model.close # clear session
 print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 ```
 
@@ -238,7 +237,7 @@ model = RobustGCN(adj, features, labels, device='CPU', seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
-model.close
+model.close # clear session
 print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 ```
 
@@ -255,7 +254,7 @@ model = SGC(adj, features, labels, device='CPU', seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
-model.close
+model.close # clear session
 print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 ```
 
@@ -273,7 +272,7 @@ model = GWNN(adj, features, labels, device='CPU', seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
-model.close
+model.close # clear session
 print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 ```
 
@@ -292,7 +291,7 @@ model = GAT(adj, features, labels, device='CPU', seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=True, epochs=200)
 loss, accuracy = model.test(idx_test)
-model.close
+model.close # clear session
 print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 ```
 
@@ -306,11 +305,11 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 
 ```python
 from graphgallery.nn.models import ClusterGCN
-model = ClusterGCN(Data.adj, Data.features, data.labels, n_cluster=10, device='CPU', seed=123)
+model = ClusterGCN(adj, features, labels, n_cluster=10, device='CPU', seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
-model.close
+model.close # clear session
 print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 ```
 
@@ -327,7 +326,7 @@ model = GMNN(adj, features, labels, device='CPU', seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
-model.close
+model.close # clear session
 print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 ```
 
@@ -345,7 +344,7 @@ model = OBVAT(adj, features, labels, device='CPU', seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
-model.close
+model.close # clear session
 print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 ```
 
@@ -364,7 +363,7 @@ model = GMNN(adj, features, labels, device='CPU', seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
-model.close
+model.close # clear session
 print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 ```
 
@@ -381,7 +380,7 @@ model = GMNN(adj, features, labels, device='CPU', seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
-model.close
+model.close # clear session
 print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 ```
 
