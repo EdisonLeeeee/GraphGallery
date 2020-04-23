@@ -94,7 +94,6 @@ class EdgeGCN(SupervisedModel):
                 h = Dropout(rate=dropout)(h)
 
             h = GraphEdgeConvolution(self.n_classes, use_bias=use_bias)([h, edge_index, edge_weight])
-            h = tf.ensure_shape(h, [self.n_nodes, self.n_classes])
             h = tf.gather(h, index)
             output = Softmax()(h)
 
