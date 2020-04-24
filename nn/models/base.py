@@ -480,14 +480,14 @@ class SupervisedModel:
         if tf.is_tensor(index):
             return tf.cast(index, tf.int32)
         
-        if isinstance(index, int):
+        if isinstance(index, (int, np.int32, np.int64)):
             index = np.asarray([index])
         elif isinstance(index, list):
             index = np.asarray(index)
         elif isinstance(index, np.ndarray):
             pass
         else:
-            raise TypeError('`index` should be either list, int or np.ndarray!')
+            raise TypeError('`index` should be either `list`, integer scalar or `np.ndarray`!')
         return index.astype('int32')
 
     def save(self, path=None, save_model=False):
