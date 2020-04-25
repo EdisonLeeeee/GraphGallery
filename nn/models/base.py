@@ -638,15 +638,18 @@ class UnsupervisedModel:
     
     @staticmethod
     def _check_and_convert(index):
-        if isinstance(index, int):
+        if tf.is_tensor(index):
+            return tf.cast(index, tf.int32)
+        
+        if isinstance(index, (int, np.int32, np.int64)):
             index = np.asarray([index])
         elif isinstance(index, list):
             index = np.asarray(index)
         elif isinstance(index, np.ndarray):
             pass
         else:
-            raise ValueError('`index` should be either list, int or np.ndarray!')
-        return index.astype('int32')      
+            raise TypeError('`index` should be either `list`, integer scalar or `np.ndarray`!')
+        return index.astype('int32')    
 
     def __repr__(self):
         return self.name + ' in ' + self.device_name
