@@ -51,6 +51,7 @@ This repo aims to achieve 4 goals:
 + numpy>=1.18.1
 + numba>=0.48
 + gensim>=3.8.1
++ texttable
 
 To install `metis`, just:
 ```bash
@@ -117,6 +118,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 <a class="toc" id ="3-3"></a>
 ## DenceGCN
 [🔙](#table-of-contents)
+
 Dense version of `GCN`, i.e., the `adj` will be transformed to `Tensor` instead of `SparseTensor`.
 
 ```python
@@ -132,6 +134,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 <a class="toc" id ="3-4"></a>
 ## EdgeGCN
 [🔙](#table-of-contents)
+
 Edge Convolutional version of `GCN`, using message passing framework,
 i.e., using Tensor `edge index` and `edge weight` of adjacency matrix to aggregate neighbors'
 message, instead of SparseTensor `adj`.
@@ -153,6 +156,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 <a class="toc" id ="3-5"></a>
 ## GDC
 [🔙](#table-of-contents)
+
 + [Diffusion Improves Graph Learning](https://arxiv.org/abs/1911.05485), NeurIPS 2019
 + official implementation: https://github.com/klicperajo/gdc
 + torch_geometric implementation: https://github.com/rusty1s/pytorch_geometric/blob/master/torch_geometric/transforms/gdc.py
