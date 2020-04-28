@@ -14,11 +14,11 @@ class EdgeGCN(SupervisedModel):
     """
         Implementation of Graph Convolutional Networks (GCN) -- Edge Convolution version. 
         [Semi-Supervised Classification with Graph Convolutional Networks](https://arxiv.org/abs/1609.02907)
-        
+
         Inspired by: tf_geometric and torch_geometric
         tf_geometric: https://github.com/CrawlScript/tf_geometric
         torch_geometric: https://github.com/rusty1s/pytorch_geometric
-        
+
         Note:
         ----------
         The Graph Edge Convolutional implements the operation using message passing framework,
@@ -51,9 +51,8 @@ class EdgeGCN(SupervisedModel):
                 (default :obj: `None`, i.e., using random seed)
             name (String, optional): 
                 Name for the model. (default: name of class)
-            
-    """
 
+    """
 
     def __init__(self, adj, features, labels, normalize_rate=-0.5, normalize_features=True, device='CPU:0', seed=None, **kwargs):
 
@@ -71,7 +70,7 @@ class EdgeGCN(SupervisedModel):
         if self.normalize_features:
             features = self._normalize_features(features)
 
-        with self.device:
+        with tf.device(self.device):
             edge_index = np.transpose(adj.nonzero()).astype('int32', copy=False)
             edge_weight = adj.data.astype('float32', copy=False)
             self.features, self.edge_index, self.edge_weight = self._to_tensor([features, edge_index, edge_weight])
@@ -79,7 +78,7 @@ class EdgeGCN(SupervisedModel):
     def build(self, hidden_layers=[16], activations=['relu'], dropout=0.5,
               learning_rate=0.01, l2_norm=5e-4, use_bias=False):
 
-        with self.device:
+        with tf.device(self.device):
             x = Input(batch_shape=[None, self.n_features], dtype=tf.float32, name='features')
             edge_index = Input(batch_shape=[None, 2], dtype=tf.int32, name='edge_index')
             edge_weight = Input(batch_shape=[None],  dtype=tf.float32, name='edge_weight')
@@ -88,8 +87,8 @@ class EdgeGCN(SupervisedModel):
             h = x
             for hid, activation in zip(hidden_layers, activations):
                 h = GraphEdgeConvolution(hid, use_bias=use_bias,
-                                     activation=activation,
-                                     kernel_regularizer=regularizers.l2(l2_norm))([h, edge_index, edge_weight])
+                                         activation=activation,
+                                         kernel_regularizer=regularizers.l2(l2_norm))([h, edge_index, edge_weight])
 
                 h = Dropout(rate=dropout)(h)
 
@@ -106,14 +105,14 @@ class EdgeGCN(SupervisedModel):
     def train_sequence(self, index):
         index = self._check_and_convert(index)
         labels = self.labels[index]
-        with self.device:
+        with tf.device(self.device):
             sequence = FullBatchNodeSequence([self.features, self.edge_index, self.edge_weight, index], labels)
         return sequence
 
     def predict(self, index):
         super().predict(index)
         index = self._check_and_convert(index)
-        with self.device:
+        with tf.device(self.device):
             index = self._to_tensor(index)
             logit = self.model.predict_on_batch([self.features, self.edge_index, self.edge_weight, index])
 

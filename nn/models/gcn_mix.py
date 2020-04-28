@@ -14,10 +14,10 @@ class GCN_MIX(SupervisedModel):
     """
         Implementation of Mixed Graph Convolutional Networks (GCN_MIX) occured in FastGCN. 
         Tensorflow 1.x implementation: https://github.com/matenure/FastGCN
-        
-        
+
+
         Calculating `A @ X` in advance to save time.
-        
+
         Arguments:
         ----------
             adj: `scipy.sparse.csr_matrix` (or `csc_matrix`) with shape (N, N)
@@ -43,35 +43,35 @@ class GCN_MIX(SupervisedModel):
                 (default :obj: `None`, i.e., using random seed)
             name (String, optional): 
                 Name for the model. (default: name of class)
-                
-    """        
-    
+
+    """
+
     def __init__(self, adj, features, labels, normalize_rate=-0.5, normalize_features=True, device='CPU:0', seed=None, **kwargs):
-    
+
         super().__init__(adj, features, labels, device=device, seed=seed, **kwargs)
-        
+
         self.normalize_rate = normalize_rate
-        self.normalize_features = normalize_features            
+        self.normalize_features = normalize_features
         self.preprocess(adj, features)
-        
+
     def preprocess(self, adj, features):
-        
+
         if self.normalize_rate is not None:
-            adj = self._normalize_adj(adj, self.normalize_rate)        
-            
+            adj = self._normalize_adj(adj, self.normalize_rate)
+
         if self.normalize_features:
             features = self._normalize_features(features)
-            
+
         features = adj @ features
-        
-        with self.device:
+
+        with tf.device(self.device):
             self.features, self.adj = self._to_tensor(features), adj
-        
-    def build(self, hidden_layers=[32], activations=['relu'], dropout=0.5, 
+
+    def build(self, hidden_layers=[32], activations=['relu'], dropout=0.5,
               learning_rate=0.01, l2_norm=5e-4, use_bias=False):
-        
-        with self.device:
-            
+
+        with tf.device(self.device):
+
             x = Input(batch_shape=[self.n_nodes, self.n_features], dtype=tf.float32, name='features')
             adj = Input(batch_shape=[None, self.n_nodes], dtype=tf.float32, sparse=True, name='adj_matrix')
 
@@ -87,22 +87,20 @@ class GCN_MIX(SupervisedModel):
 
             self.model = model
             self.built = True
-            
 
     def train_sequence(self, index):
         index = self._check_and_convert(index)
         labels = self.labels[index]
         adj = self.adj[index]
-        with self.device:
+        with tf.device(self.device):
             sequence = FullBatchNodeSequence([self.features, adj], labels)
         return sequence
-        
-        
+
     def predict(self, index):
         super().predict(index)
         index = self._check_and_convert(index)
-        
-        with self.device:
+
+        with tf.device(self.device):
             adj = self._to_tensor(self.adj[index])
             logit = self.model.predict_on_batch([self.features, adj])
         return logit.numpy()

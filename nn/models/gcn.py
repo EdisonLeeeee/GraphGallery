@@ -41,9 +41,8 @@ class GCN(SupervisedModel):
                 (default :obj: `None`, i.e., using random seed)
             name (String, optional): 
                 Name for the model. (default: name of class)
-            
-    """
 
+    """
 
     def __init__(self, adj, features, labels, normalize_rate=-0.5, normalize_features=True, device='CPU:0', seed=None, **kwargs):
 
@@ -61,13 +60,13 @@ class GCN(SupervisedModel):
         if self.normalize_features:
             features = self._normalize_features(features)
 
-        with self.device:
+        with tf.device(self.device):
             self.features, self.adj = self._to_tensor([features, adj])
 
     def build(self, hidden_layers=[16], activations=['relu'], dropout=0.5,
               learning_rate=0.01, l2_norm=5e-4, use_bias=False):
 
-        with self.device:
+        with tf.device(self.device):
 
             x = Input(batch_shape=[self.n_nodes, self.n_features], dtype=tf.float32, name='features')
             adj = Input(batch_shape=[self.n_nodes, self.n_nodes], dtype=tf.float32, sparse=True, name='adj_matrix')
@@ -95,14 +94,14 @@ class GCN(SupervisedModel):
     def train_sequence(self, index):
         index = self._check_and_convert(index)
         labels = self.labels[index]
-        with self.device:
+        with tf.device(self.device):
             sequence = FullBatchNodeSequence([self.features, self.adj, index], labels)
         return sequence
 
     def predict(self, index):
         super().predict(index)
         index = self._check_and_convert(index)
-        with self.device:
+        with tf.device(self.device):
             index = self._to_tensor(index)
             logit = self.model.predict_on_batch([self.features, self.adj, index])
 

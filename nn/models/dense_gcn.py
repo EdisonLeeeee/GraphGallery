@@ -17,7 +17,7 @@ class DenseGCN(SupervisedModel):
         [Semi-Supervised Classification with Graph Convolutional Networks](https://arxiv.org/abs/1609.02907)
         Tensorflow 1.x implementation: https://github.com/tkipf/gcn
         Pytorch implementation: https://github.com/tkipf/pygcn
-        
+
         Note:
         ----------
         The input adjacency matrix will be transformed into dense matrix, 
@@ -49,40 +49,38 @@ class DenseGCN(SupervisedModel):
                 (default :obj: `None`, i.e., using random seed)
             name (String, optional): 
                 Name for the model. (default: name of class)
-            
 
-    """    
-    
+
+    """
+
     def __init__(self, adj, features, labels, normalize_rate=-0.5, normalize_features=True, device='CPU:0', seed=None, **kwargs):
-    
-    
+
         super().__init__(adj, features, labels, device=device, seed=seed, **kwargs)
-        
 
         self.normalize_rate = normalize_rate
-        self.normalize_features = normalize_features            
+        self.normalize_features = normalize_features
         self.preprocess(adj, features)
         self.sparse = False
-        
+
     def preprocess(self, adj, features):
-        
+
         if self.normalize_rate is not None:
             adj = self._normalize_adj(adj, self.normalize_rate)
-            
+
         if sp.isspmatrix(adj):
-            adj = adj.toarray()    
-            
+            adj = adj.toarray()
+
         if self.normalize_features:
             features = self._normalize_features(features)
-            
-        with self.device:
-            self.features, self.adj = self._to_tensor([features, adj])  
-        
-    def build(self, hidden_layers=[32], activations=['relu'], dropout=0.5, 
+
+        with tf.device(self.device):
+            self.features, self.adj = self._to_tensor([features, adj])
+
+    def build(self, hidden_layers=[32], activations=['relu'], dropout=0.5,
               learning_rate=0.01, l2_norm=5e-4, use_bias=False):
-        
-        with self.device:
-            
+
+        with tf.device(self.device):
+
             x = Input(batch_shape=[self.n_nodes, self.n_features], dtype=tf.float32, name='features')
             adj = Input(batch_shape=[self.n_nodes, self.n_nodes], dtype=tf.float32, name='adj_matrix')
             index = Input(batch_shape=[None],  dtype=tf.int32, name='index')
@@ -90,9 +88,9 @@ class DenseGCN(SupervisedModel):
             h = x
             for hid, activation in zip(hidden_layers, activations):
                 h = DenseGraphConv(hid, use_bias=use_bias,
-                                     activation=activation, 
-                                     kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
-                
+                                   activation=activation,
+                                   kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
+
                 h = Dropout(rate=dropout)(h)
 
             h = DenseGraphConv(self.n_classes, use_bias=use_bias)([h, adj])
@@ -105,21 +103,20 @@ class DenseGCN(SupervisedModel):
 
             self.model = model
             self.built = True
-            
+
     def train_sequence(self, index):
         index = self._check_and_convert(index)
-        labels = self.labels[index]      
-        with self.device:
+        labels = self.labels[index]
+        with tf.device(self.device):
             sequence = FullBatchNodeSequence([self.features, self.adj, index], labels)
         return sequence
-        
-        
+
     def predict(self, index):
         if not self.built:
             raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')
 
         index = self._check_and_convert(index)
-        with self.device:
+        with tf.device(self.device):
             index = self._to_tensor(index)
             logit = self.model.predict_on_batch([self.features, self.adj, index])
 
