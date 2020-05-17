@@ -119,5 +119,7 @@ class GWNN(SupervisedModel):
         with tf.device(self.device):
             index = self._to_tensor(index)
             logit = self.model.predict_on_batch([self.features, *self.adj, index])
-
-        return logit.numpy()
+            
+        if tf.is_tensor(logit):
+            logit = logit.numpy()
+        return logit

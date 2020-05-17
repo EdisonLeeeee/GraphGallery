@@ -116,4 +116,6 @@ class EdgeGCN(SupervisedModel):
             index = self._to_tensor(index)
             logit = self.model.predict_on_batch([self.features, self.edge_index, self.edge_weight, index])
 
-        return logit.numpy()
+        if tf.is_tensor(logit):
+            logit = logit.numpy()
+        return logit

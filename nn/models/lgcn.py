@@ -134,4 +134,6 @@ class LGCN(SupervisedModel):
             features, adj, mask = self._to_tensor([features, adj, mask])
             logit = self.model.predict_on_batch([features, adj, mask])
 
-        return logit.numpy()
+        if tf.is_tensor(logit):
+            logit = logit.numpy()
+        return logit

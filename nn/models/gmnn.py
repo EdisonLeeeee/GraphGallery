@@ -133,7 +133,10 @@ class GMNN(SupervisedModel):
                       best_metric=best_metric, early_stop_metric=early_stop_metric)
 
         # then train model_q again
-        label_predict = self.model_p.predict_on_batch(self._to_tensor([label_predict, self.adj, index_all])).numpy()
+        label_predict = self.model_p.predict_on_batch(self._to_tensor([label_predict, self.adj, index_all]))
+        if tf.is_tensor(label_predict):
+            label_predict = label_predict.numpy()
+            
         label_predict[index_train] = self.labels_onehot[index_train]
         self.model = self.model_q
         with tf.device(self.device):
@@ -160,4 +163,6 @@ class GMNN(SupervisedModel):
             index = self._to_tensor(index)
             logit = self.model.predict_on_batch([self.features, self.adj, index])
 
-        return logit.numpy()
+        if tf.is_tensor(logit):
+            logit = logit.numpy()
+        return logit

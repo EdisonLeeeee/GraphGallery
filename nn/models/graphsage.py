@@ -130,6 +130,9 @@ class GraphSAGE(SupervisedModel):
             data = SAGEMiniBatchSequence([self.features, index], adj=self.adj, n_samples=self.n_samples)
             for inputs, labels in data:
                 output = self.model.predict_on_batch(inputs)
-                logit.append(output.numpy())
+                if tf.is_tensor(output):
+                    output = output.numpy()
+                    
+                logit.append(output)
         logit = np.concatenate(logit, axis=0)
         return logit

@@ -220,4 +220,6 @@ class SBVAT(SupervisedModel):
                 output = self.propagation(x, adj, training=False)
                 logit = softmax(tf.gather(output, index))
 
-        return logit.numpy()
+        if tf.is_tensor(logit):
+            logit = logit.numpy()
+        return logit

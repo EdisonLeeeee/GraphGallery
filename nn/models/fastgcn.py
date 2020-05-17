@@ -101,7 +101,10 @@ class FastGCN(SupervisedModel):
         with tf.device(self.device):
             adj = self._to_tensor(adj)
             logit = self.model.predict_on_batch([self.features, adj])
-        return logit.numpy()
+            
+        if tf.is_tensor(logit):
+            logit = logit.numpy()
+        return logit
 
     def train_sequence(self, index):
         index = self._check_and_convert(index)

@@ -98,4 +98,6 @@ class SGC(SupervisedModel):
             features = tf.gather(self.features, index)
             logit = self.model.predict_on_batch(features)
 
-        return logit.numpy()
+        if tf.is_tensor(logit):
+            logit = logit.numpy()
+        return logit

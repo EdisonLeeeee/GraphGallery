@@ -103,4 +103,7 @@ class GCN_MIX(SupervisedModel):
         with tf.device(self.device):
             adj = self._to_tensor(self.adj[index])
             logit = self.model.predict_on_batch([self.features, adj])
-        return logit.numpy()
+            
+        if tf.is_tensor(logit):
+            logit = logit.numpy()
+        return logit

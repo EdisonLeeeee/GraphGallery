@@ -107,4 +107,7 @@ class ChebyNet(SupervisedModel):
         index = self._to_tensor(index)
         with tf.device(self.device):
             logit = self.model.predict_on_batch([self.features, *self.adj, index])
-        return logit.numpy()
+            
+        if tf.is_tensor(logit):
+            logit = logit.numpy()
+        return logit
