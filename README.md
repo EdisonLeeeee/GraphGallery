@@ -28,7 +28,7 @@
 # GraphGallery
 [🔙](#table-of-contents)
 
-A gallery of state-of-the-arts deep learning graph models. 
+A gallery of state-of-the-arts graph neural networks.. 
 
 Implemented with Tensorflow 2.x.
 
@@ -43,7 +43,7 @@ This repo aims to achieve 4 goals:
 [🔙](#table-of-contents)
 
 + python>=3.7
-+ tensorflow>=2.1
++ tensorflow>=2.1 (2.1 is recommended)
 + networkx==2.3
 + metis==0.2a4
 + scipy>=1.4.1
