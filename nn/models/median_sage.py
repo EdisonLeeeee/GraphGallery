@@ -5,18 +5,14 @@ from tensorflow.keras.layers import Dropout, Softmax
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 
-from graphgallery.nn.layers import MeanAggregator, GCNAggregator
+from graphgallery.nn.layers import MedianAggregator, MedianGCNAggregator
 from graphgallery.mapper import SAGEMiniBatchSequence
 from graphgallery.utils import construct_adj
 from .base import SupervisedModel
 
 
-class GraphSAGE(SupervisedModel):
+class MedianSAGE(SupervisedModel):
     """
-        Implementation of SAmple and aggreGatE Graph Convolutional Networks (GraphSAGE). 
-        [Inductive Representation Learning on Large Graphs](https://arxiv.org/abs/1706.02216)
-        Tensorflow 1.x implementation: https://github.com/williamleif/GraphSAGE
-        Pytorch implementation: https://github.com/williamleif/graphsage-simple/
 
 
         Arguments:
@@ -72,16 +68,16 @@ class GraphSAGE(SupervisedModel):
             self.features, self.adj = features, adj
 
     def build(self, hidden_layers=[16], activations=['relu'], dropout=0.5, learning_rate=0.01, l2_norm=5e-4,
-              output_normalize=False, aggrator='mean'):
+              output_normalize=False, aggrator='median'):
 
         with tf.device(self.device):
 
-            if aggrator == 'mean':
-                Agg = MeanAggregator
+            if aggrator == 'median':
+                Agg = MedianAggregator
             elif aggrator == 'GCN':
-                Agg = GCNAggregator
+                Agg = MedianGCNAggregator
             else:
-                raise ValueError(f'Invalid value of `aggrator`, allowed values (`mean`, `gcn`), but got `{aggrator}`.')
+                raise ValueError(f'Invalid value of `aggrator`, allowed values (`median`, `gcn`), but got `{aggrator}`.')
 
             x = Input(batch_shape=[None, self.n_features], dtype=tf.float32, name='features')
             nodes = Input(batch_shape=[None], dtype=tf.int64, name='nodes')

@@ -4,7 +4,9 @@ from tensorflow.keras.layers import Layer
 import tensorflow as tf
 
 
-class MeanAggregator(Layer):
+
+
+class MedianAggregator(Layer):
     """
         Basic graphSAGE convolution layer as in: 
         [Inductive Representation Learning on Large Graphs](https://arxiv.org/abs/1706.02216)
@@ -13,8 +15,8 @@ class MeanAggregator(Layer):
 
         Aggregates via mean followed by matmul and non-linearity.
 
-        `MeanAggregator` implements the operation:
-        `output = activation(Concat(x @ kernel_0, Agg(neigh_x) @ kernel_1) + bias)`
+        `MedianAggregator` implements the operation:
+        `output = activation(Concat(x @ kernel_0, Median(neigh_x) @ kernel_1) + bias)`
         where `x` is the feature matrix, `neigh_x` is the feature matrix of neighbors,
         `Agg` is the operation of aggregation (`mean`, `sum`, `max`, `min`) along the last dimension,
         `Concat` is the operation of concatenation between transformed node features and neighbor features,
@@ -31,8 +33,6 @@ class MeanAggregator(Layer):
             between transformed node features and neighbor features, 
             if `False`, the `Add` operation will be used.
           use_bias: Boolean, whether the layer uses a bias vector.
-          agg_method: String, which method of aggregation will be used for neighbor 
-            feature matrix, one of (`mean`, `sum`, `max`, `min`) will be used.
           activation: Activation function to use.
             If you don't specify anything, no activation is applied
             (ie. "linear" activation: `a(x) = x`).            
@@ -61,7 +61,6 @@ class MeanAggregator(Layer):
                  units,
                  concat=False,
                  use_bias=True,
-                 agg_method='mean',
                  activation=None,
                  kernel_initializer='glorot_uniform',
                  bias_initializer='zeros',
@@ -76,9 +75,6 @@ class MeanAggregator(Layer):
         self.units = units
         self.concat = concat
         self.use_bias = use_bias
-        self.agg_method = agg_method
-        self.aggregator = {'mean': tf.reduce_mean, 'sum': tf.reduce_sum,
-                           'max': tf.reduce_max, 'min': tf.reduce_min}[agg_method]
         self.activation = activations.get(activation)
 
         self.kernel_initializer = initializers.get(kernel_initializer)
@@ -123,8 +119,10 @@ class MeanAggregator(Layer):
 
     def call(self, inputs):
         x, neigh_x = inputs
-        
-        neigh_x = self.aggregator(neigh_x, axis=1)
+        neigh_x = tf.transpose(neigh_x, perm=[0,2,1])
+        n = neigh_x.shape[-1]
+        n = n//2 + tf.math.mod(n, 2)
+        neigh_x = tf.raw_ops.NthElement(input=neigh_x, n=n)
 
         x = x @ self.kernel_self
         neigh_x = neigh_x @ self.kernel_neigh
@@ -144,7 +142,6 @@ class MeanAggregator(Layer):
         config = {'units': self.units,
                   'concat': self.concat,
                   'use_bias': self.use_bias,
-                  'agg_method': self.agg_method,
                   'activation': keras.activations.serialize(self.activation),
                   'kernel_initializer': keras.initializers.serialize(
                       self.kernel_initializer),
@@ -167,10 +164,8 @@ class MeanAggregator(Layer):
     def compute_output_shape(self, input_shape):
         output_shape = input_shape[0][0], self.output_dim
         return output_shape  # (batch_n_nodes, units) or (batch_n_nodes, units * 2)
-
-
     
-class GCNAggregator(Layer):
+class MedianGCNAggregator(Layer):
     """
         Basic graphSAGE convolution layer as in: 
         [Inductive Representation Learning on Large Graphs](https://arxiv.org/abs/1706.02216)
@@ -193,8 +188,6 @@ class GCNAggregator(Layer):
         Arguments:
           units: Positive integer, dimensionality of the output space.
           use_bias: Boolean, whether the layer uses a bias vector.
-          agg_method: String, which method of aggregation will be used for neighbor feature matrix,
-            one of (`mean`, `sum`, `max`, `min`) will be used.
           activation: Activation function to use.
             If you don't specify anything, no activation is applied
             (ie. "linear" activation: `a(x) = x`).            
@@ -222,7 +215,6 @@ class GCNAggregator(Layer):
     def __init__(self,
                  units,
                  use_bias=True,
-                 agg_method='mean',
                  activation=None,
                  kernel_initializer='glorot_uniform',
                  bias_initializer='zeros',
@@ -237,9 +229,6 @@ class GCNAggregator(Layer):
         super().__init__(**kwargs)
         self.units = units
         self.use_bias = use_bias
-        self.agg_method = agg_method
-        self.aggregator = {'mean': tf.reduce_mean, 'sum': tf.reduce_sum,
-                           'max': tf.reduce_max, 'min': tf.reduce_min}[agg_method]
         self.activation = activations.get(activation)
 
         self.kernel_initializer = initializers.get(kernel_initializer)
@@ -278,7 +267,11 @@ class GCNAggregator(Layer):
         x, neigh_x = inputs
         x = tf.expand_dims(x, axis=1)
         agg = tf.concat([x, neigh_x], axis=1)
-        h = self.aggregator(agg, axis=1)
+        
+        h = tf.transpose(agg, perm=[0,2,1])
+        n = h.shape[-1]
+        n = n//2
+        h = tf.raw_ops.NthElement(input=h, n=n)        
 
         output = h @ self.kernel
 
@@ -291,7 +284,6 @@ class GCNAggregator(Layer):
 
         config = {'units': self.units,
                   'use_bias': self.use_bias,
-                  'agg_method': self.agg_method,
                   'activation': keras.activations.serialize(self.activation),
                   'kernel_initializer': keras.initializers.serialize(
                       self.kernel_initializer),
