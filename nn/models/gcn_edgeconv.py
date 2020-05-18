@@ -71,7 +71,8 @@ class EdgeGCN(SupervisedModel):
             features = self._normalize_features(features)
 
         with tf.device(self.device):
-            edge_index = np.transpose(adj.nonzero()).astype('int64', copy=False)
+            adj = adj.tocoo()
+            edge_index = np.stack([adj.row, adj.col], axis=1).astype('int64', copy=False)
             edge_weight = adj.data.astype('float32', copy=False)
             self.features, self.edge_index, self.edge_weight = self._to_tensor([features, edge_index, edge_weight])
             
