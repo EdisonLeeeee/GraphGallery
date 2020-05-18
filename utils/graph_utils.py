@@ -42,7 +42,7 @@ def construct_adj(adj, max_degree=25, self_loop=False):
     N = adj.shape[0]
     indices = adj.indices
     indptr = adj.indptr
-    adj_dense = N * np.ones((N + 1, max_degree), dtype=np.int32)
+    adj_dense = N * np.ones((N + 1, max_degree), dtype=np.int64)
     for nodeid in range(N):
         neighbors = indices[indptr[nodeid]:indptr[nodeid + 1]]
         

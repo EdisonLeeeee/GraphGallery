@@ -68,7 +68,7 @@ class RobustGCN(SupervisedModel):
         x = Input(batch_shape=[self.n_nodes, self.n_features], dtype=tf.float32, name='features')
         adj = [Input(batch_shape=[self.n_nodes, self.n_nodes], dtype=tf.float32, sparse=True, name='adj_matrix_1'),
                Input(batch_shape=[self.n_nodes, self.n_nodes], dtype=tf.float32, sparse=True, name='adj_matrix_2')]
-        index = Input(batch_shape=[None],  dtype=tf.int32, name='index')
+        index = Input(batch_shape=[None],  dtype=tf.int64, name='index')
 
         h = Dropout(rate=dropout)(x)
         h, KL_divergence = GaussionConvolution_F(hidden_layers[0], gamma=gamma,

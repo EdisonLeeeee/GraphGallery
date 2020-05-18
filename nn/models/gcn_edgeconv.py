@@ -71,18 +71,18 @@ class EdgeGCN(SupervisedModel):
             features = self._normalize_features(features)
 
         with tf.device(self.device):
-            edge_index = np.transpose(adj.nonzero()).astype('int32', copy=False)
+            edge_index = np.transpose(adj.nonzero()).astype('int64', copy=False)
             edge_weight = adj.data.astype('float32', copy=False)
             self.features, self.edge_index, self.edge_weight = self._to_tensor([features, edge_index, edge_weight])
-
+            
     def build(self, hidden_layers=[16], activations=['relu'], dropout=0.5,
               learning_rate=0.01, l2_norm=5e-4, use_bias=False):
 
         with tf.device(self.device):
             x = Input(batch_shape=[None, self.n_features], dtype=tf.float32, name='features')
-            edge_index = Input(batch_shape=[None, 2], dtype=tf.int32, name='edge_index')
+            edge_index = Input(batch_shape=[None, 2], dtype=tf.int64, name='edge_index')
             edge_weight = Input(batch_shape=[None],  dtype=tf.float32, name='edge_weight')
-            index = Input(batch_shape=[None],  dtype=tf.int32, name='index')
+            index = Input(batch_shape=[None],  dtype=tf.int64, name='index')
 
             h = x
             for hid, activation in zip(hidden_layers, activations):

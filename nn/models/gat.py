@@ -74,7 +74,7 @@ class GAT(SupervisedModel):
 
             x = Input(batch_shape=[self.n_nodes, self.n_features], dtype=tf.float32, name='features')
             adj = Input(batch_shape=[self.n_nodes, self.n_nodes], dtype=tf.float32, sparse=True, name='adj_matrix')
-            index = Input(batch_shape=[None],  dtype=tf.int32, name='index')
+            index = Input(batch_shape=[None],  dtype=tf.int64, name='index')
 
             h = x
             for hid, n_head, activation in zip(hidden_layers, n_heads, activations):

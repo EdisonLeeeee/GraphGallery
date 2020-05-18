@@ -77,7 +77,7 @@ class ChebyNet(SupervisedModel):
             adj = [Input(batch_shape=[self.n_nodes, self.n_nodes],
                          dtype=tf.float32, sparse=True, name=f'adj_matrix_{i}') for i in range(self.order+1)]
 
-            index = Input(batch_shape=[None],  dtype=tf.int32, name='index')
+            index = Input(batch_shape=[None],  dtype=tf.int63, name='index')
 
             h = x
             for hid, activation in zip(hidden_layers, activations):

@@ -77,7 +77,7 @@ class SimplifiedOBVAT(SupervisedModel):
 
             x = Input(batch_shape=[self.n_nodes, self.n_features], dtype=tf.float32, name='features')
             adj = Input(batch_shape=[self.n_nodes, self.n_nodes], dtype=tf.float32, sparse=True, name='adj_matrix')
-            index = Input(batch_shape=[None],  dtype=tf.int32, name='index')
+            index = Input(batch_shape=[None],  dtype=tf.int64, name='index')
 
             self.GCN_layers = [GraphConvolution(hidden_layers[0], activation=activations[0],
                                                 kernel_regularizer=regularizers.l2(l2_norm)),

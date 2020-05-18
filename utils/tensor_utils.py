@@ -38,7 +38,7 @@ def add_self_loop_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0):
     if n_nodes is None:
         n_nodes = tf.reduce_max(edge_index)
         
-    diagnal_edge_index = np.transpose(np.diag_indices(n_nodes)).astype('int32')
+    diagnal_edge_index = np.transpose(np.diag_indices(n_nodes)).astype('int64')
     updated_edge_index = tf.concat([edge_index, diagnal_edge_index], axis=0)
 
     diagnal_edge_weight = tf.zeros([n_nodes], dtype=tf.float32) + fill_weight

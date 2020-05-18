@@ -85,7 +85,7 @@ class GWNN(SupervisedModel):
             wavelet = Input(batch_shape=[self.n_nodes, self.n_nodes], dtype=tf.float32, sparse=True, name='wavelet')
             inverse_wavelet = Input(batch_shape=[self.n_nodes, self.n_nodes], dtype=tf.float32, sparse=True,
                                     name='inverse_wavelet')
-            index = Input(batch_shape=[None],  dtype=tf.int32, name='index')
+            index = Input(batch_shape=[None],  dtype=tf.int64, name='index')
 
             h = x
 

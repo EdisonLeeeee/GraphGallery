@@ -73,7 +73,7 @@ class GMNN(SupervisedModel):
             x_p = Input(batch_shape=[self.n_nodes, self.n_classes], dtype=tf.float32, name='input_p')
             x_q = Input(batch_shape=[self.n_nodes, self.n_features], dtype=tf.float32, name='input_q')
             adj = Input(batch_shape=[self.n_nodes, self.n_nodes], dtype=tf.float32, sparse=True, name='adj_matrix')
-            index = Input(batch_shape=[None],  dtype=tf.int32, name='index')
+            index = Input(batch_shape=[None],  dtype=tf.int64, name='index')
 
             def build_GCN(x):
                 h = Dropout(rate=dropout)(x)
@@ -107,7 +107,7 @@ class GMNN(SupervisedModel):
               verbose=None, restore_best=True, log_path=None, save_model=False,
               best_metric='val_accuracy', early_stop_metric='val_loss'):
 
-        index_all = tf.range(self.n_nodes, dtype=tf.int32)
+        index_all = tf.range(self.n_nodes, dtype=tf.int64)
 
         # pre train model_q
         self.model = self.model_q

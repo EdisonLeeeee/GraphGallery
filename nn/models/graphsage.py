@@ -84,8 +84,8 @@ class GraphSAGE(SupervisedModel):
                 raise ValueError(f'Invalid value of `aggrator`, allowed values (`mean`, `gcn`), but got `{aggrator}`.')
 
             x = Input(batch_shape=[None, self.n_features], dtype=tf.float32, name='features')
-            nodes = Input(batch_shape=[None], dtype=tf.int32, name='nodes')
-            neighbors = [Input(batch_shape=[None], dtype=tf.int32, name=f'neighbors_{hop}')
+            nodes = Input(batch_shape=[None], dtype=tf.int64, name='nodes')
+            neighbors = [Input(batch_shape=[None], dtype=tf.int64, name=f'neighbors_{hop}')
                          for hop, n_sample in enumerate(self.n_samples)]
 
             aggrators = []

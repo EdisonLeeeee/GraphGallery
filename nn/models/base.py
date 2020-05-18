@@ -478,7 +478,7 @@ class SupervisedModel:
     @staticmethod
     def _check_and_convert(index):
         if tf.is_tensor(index):
-            return tf.cast(index, tf.int32)
+            return tf.cast(index, tf.int64)
 
         if isinstance(index, (int, np.int32, np.int64)):
             index = np.asarray([index])
@@ -488,7 +488,7 @@ class SupervisedModel:
             pass
         else:
             raise TypeError('`index` should be either `list`, integer scalar or `np.ndarray`!')
-        return index.astype('int32')
+        return index.astype('int64')
 
     def save(self, path=None, save_model=False):
         if not os.path.exists('log'):
@@ -632,7 +632,7 @@ class UnsupervisedModel:
     @staticmethod
     def _check_and_convert(index):
         if tf.is_tensor(index):
-            return tf.cast(index, tf.int32)
+            return tf.cast(index, tf.int64)
 
         if isinstance(index, (int, np.int32, np.int64)):
             index = np.asarray([index])
@@ -642,7 +642,7 @@ class UnsupervisedModel:
             pass
         else:
             raise TypeError('`index` should be either `list`, integer scalar or `np.ndarray`!')
-        return index.astype('int32')
+        return index.astype('int64')
 
     def __repr__(self):
         return self.name + ' in ' + self.device
