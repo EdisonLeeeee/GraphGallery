@@ -59,7 +59,8 @@ class ChebyNet(SupervisedModel):
         self.preprocess(adj, features)
 
     def preprocess(self, adj, features):
-
+        super().preprocess(adj, features)
+        
         if self.normalize_rate is not None:
             adj = chebyshev_polynomials(adj, rate=self.normalize_rate, order=self.order)
 
@@ -77,7 +78,7 @@ class ChebyNet(SupervisedModel):
             adj = [Input(batch_shape=[self.n_nodes, self.n_nodes],
                          dtype=tf.float32, sparse=True, name=f'adj_matrix_{i}') for i in range(self.order+1)]
 
-            index = Input(batch_shape=[None],  dtype=tf.int63, name='index')
+            index = Input(batch_shape=[None],  dtype=tf.int64, name='index')
 
             h = x
             for hid, activation in zip(hidden_layers, activations):

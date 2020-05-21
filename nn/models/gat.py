@@ -56,6 +56,7 @@ class GAT(SupervisedModel):
         self.preprocess(adj, features)
 
     def preprocess(self, adj, features):
+        super().preprocess(adj, features)
 
         if self.normalize_rate is None:
             adj = adj + sp.eye(adj.shape[0])

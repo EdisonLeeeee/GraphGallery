@@ -95,13 +95,31 @@ class SupervisedModel:
 
         Arguments:
         ----------
-            adj: `scipy.sparse.csr_matrix` (or `csr_matrix`) with shape (N, N)
+            adj: `scipy.sparse.csr_matrix` (or `csc_matrix`) with shape (N, N)
                 The input `symmetric` adjacency matrix, where `N` is the number of nodes
                 in graph.
             features: `np.array` with shape (N, F) 
                 The input node feature matrix, where `F` is the dimension of node features.            
         """
-        raise NotImplementedError
+        if not (sp.isspmatrix_csr(adj) or sp.isspmatrix_csc(adj)):
+            raise RuntimeError(f'Adjacency matrix `adj` must be `scipy.sparse.csr_matrix` (or `csc_matrix`), but got {type(adj)}')
+            
+        if not isinstance(features, np.ndarray):
+            raise RuntimeError(f'Feature matrix `features` must be `np.array`, but got {type(features)}')
+
+        adj_shape = adj.shape
+        features_shape = features.shape
+        
+        if adj_shape[0] != features_shape[0]:
+            raise RuntimeError(f'The first dimension of adjacency matrix and feature matrix should be equal.')
+            
+        if len(adj_shape) != len(features_shape) != 2:
+            raise RuntimeError(f'The adjacency matrix and feature matrix should have two dimensions.')
+            
+        self.adjacency_matrix = adj
+        self.feature_matrix = features
+        self.n_nodes, self.n_features = features_shape
+        
 
     def build(self):
         """
@@ -138,8 +156,8 @@ class SupervisedModel:
 
     def train(self, index_train, index_val=None,
               epochs=200, early_stopping=None, validation=True,
-              verbose=False, restore_best=True, log_path=None, save_model=False,
-              best_metric='val_accuracy', early_stop_metric='val_loss'):
+              verbose=False, save_best=True, log_path=None, save_model=False,
+              monitor_metric='val_accuracy', early_stop_metric='val_loss'):
         """
             Train the model for the input `index_train` of nodes or `sequence`.
 
@@ -164,8 +182,8 @@ class SupervisedModel:
                 specified. (default :obj: `True`)
             verbose: Boolean
                 Whether to show the training details. (default :obj: `None`)
-            restore_best: Boolean
-                Whether to restore the best result (accuracy of loss depend on `best_metrix`) 
+            save_best: Boolean
+                Whether to save the best weights (accuracy of loss depend on `monitor_metric`) 
                 of training or validation (depend on `validation` is `False` or `True`). 
                 (default :obj: `True`)
             log_path: String or None
@@ -174,9 +192,9 @@ class SupervisedModel:
             save_model: Boolean
                 Whether to save the whole model or weights only, if `True`, the `self.custom_objects`
                 must be speficied if you are using customized `layer` or `loss` and so on.
-            best_metric: String
+            monitor_metric: String
                 One of (val_loss, val_accuracy, loss, accuracy), it determines which metric will be
-                used for `restore_best`. (default :obj: `val_accuracy`)
+                used for `save_best`. (default :obj: `val_accuracy`)
             early_stop_metric: String
                 One of (val_loss, val_accuracy, loss, accuracy), it determines which metric will be 
                 used for early stopping. (default :obj: `val_loss`)
@@ -207,14 +225,14 @@ class SupervisedModel:
                 val_data = self.test_sequence(index_val)
                 self.index_val = self._check_and_convert(index_val)
 
-        history = History(best_metric=best_metric,
+        history = History(monitor_metric=monitor_metric,
                           early_stop_metric=early_stop_metric)
 
         if log_path is None:
             log_path = self.log_path
 
         if not validation:
-            history.register_best_metric('accuracy')
+            history.register_monitor_metric('accuracy')
             history.register_early_stop_metric('loss')
 
         if verbose:
@@ -247,7 +265,7 @@ class SupervisedModel:
             # record eoch and running times
             history.record_epoch(epoch)
 
-            if restore_best and history.restore_best:
+            if save_best and history.save_best:
                 self.save(log_path, save_model=save_model)
 
             # early stopping
@@ -264,7 +282,7 @@ class SupervisedModel:
                     msg += f', val_loss {val_loss:.2f}, val_accuracy {val_accuracy:.2%}'
                 pbar.set_description(msg)
 
-        if restore_best:
+        if save_best:
             self.load(log_path, save_model=save_model)
 
         return history

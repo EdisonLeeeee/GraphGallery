@@ -56,6 +56,7 @@ class SGC(SupervisedModel):
         self.preprocess(adj, features)
 
     def preprocess(self, adj, features):
+        super().preprocess(adj, features)
 
         if self.normalize_rate is not None:
             adj = self._normalize_adj(adj, self.normalize_rate)

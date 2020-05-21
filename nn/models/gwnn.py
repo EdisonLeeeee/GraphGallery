@@ -67,6 +67,7 @@ class GWNN(SupervisedModel):
         self.preprocess(adj, features)
 
     def preprocess(self, adj, features):
+        super().preprocess(adj, features)
 
         if self.normalize_features:
             features = self._normalize_features(features)

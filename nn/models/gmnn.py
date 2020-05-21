@@ -55,6 +55,7 @@ class GMNN(SupervisedModel):
         self.custom_objects = {'GraphConvolution': GraphConvolution}
 
     def preprocess(self, adj, features):
+        super().preprocess(adj, features)
 
         if self.normalize_rate is not None:
             adj = self._normalize_adj(adj, self.normalize_rate)
@@ -104,8 +105,8 @@ class GMNN(SupervisedModel):
 
     def train(self, index_train, index_val=None, pre_train_epochs=100,
               epochs=100, early_stopping=None, validation=True,
-              verbose=None, restore_best=True, log_path=None, save_model=False,
-              best_metric='val_accuracy', early_stop_metric='val_loss'):
+              verbose=None, save_best=True, log_path=None, save_model=False,
+              monitor_metric='val_accuracy', early_stop_metric='val_loss'):
 
         index_all = tf.range(self.n_nodes, dtype=tf.int64)
 
@@ -113,8 +114,8 @@ class GMNN(SupervisedModel):
         self.model = self.model_q
         super().train(index_train, index_val, epochs=pre_train_epochs,
                       early_stopping=early_stopping, validation=validation,
-                      verbose=verbose, restore_best=restore_best, log_path=log_path, save_model=True,
-                      best_metric=best_metric, early_stop_metric=early_stop_metric)
+                      verbose=verbose, save_best=save_best, log_path=log_path, save_model=True,
+                      monitor_metric=monitor_metric, early_stop_metric=early_stop_metric)
 
         label_predict = self.predict(index_all).argmax(1)
         label_predict[index_train] = self.labels[index_train]
@@ -126,11 +127,12 @@ class GMNN(SupervisedModel):
                 val_sequence = FullBatchNodeSequence([label_predict, self.adj, index_val], self.labels_onehot[index_val])
             else:
                 val_sequence = None
+                
         self.model = self.model_p
         super().train(train_sequence, val_sequence, epochs=epochs,
                       early_stopping=early_stopping, validation=validation,
-                      verbose=verbose, restore_best=restore_best, log_path=log_path, save_model=save_model,
-                      best_metric=best_metric, early_stop_metric=early_stop_metric)
+                      verbose=verbose, save_best=save_best, log_path=log_path, save_model=save_model,
+                      monitor_metric=monitor_metric, early_stop_metric=early_stop_metric)
 
         # then train model_q again
         label_predict = self.model_p.predict_on_batch(self._to_tensor([label_predict, self.adj, index_all]))
@@ -143,9 +145,9 @@ class GMNN(SupervisedModel):
             train_sequence = FullBatchNodeSequence([self.features, self.adj, index_all], label_predict)
         history = super().train(train_sequence, index_val, epochs=epochs,
                                 early_stopping=early_stopping, validation=validation,
-                                verbose=verbose, restore_best=restore_best,
+                                verbose=verbose, save_best=save_best,
                                 log_path=log_path, save_model=save_model,
-                                best_metric=best_metric, early_stop_metric=early_stop_metric)
+                                monitor_metric=monitor_metric, early_stop_metric=early_stop_metric)
 
         return history
 

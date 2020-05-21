@@ -68,6 +68,7 @@ class ClusterGCN(SupervisedModel):
         self.preprocess(adj, features, graph)
 
     def preprocess(self, adj, features, graph=None):
+        super().preprocess(adj, features)
 
         if self.normalize_features:
             features = self._normalize_features(features)

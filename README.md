@@ -35,7 +35,7 @@ Implemented with Tensorflow 2.x.
 This repo aims to achieve 4 goals:
 + Similar (or higher) performance with the corresponding papers
 + Faster implementation of training and testing
-+ Simple and convenient to use with high scalability
++ Simple and convenient to use, high scalability
 + Easy to read source codes
 
 <a class="toc" id ="2"></a>
@@ -222,7 +222,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 from graphgallery.nn.models import GraphSAGE
 model = GraphSAGE(adj, features, labels, n_samples=[10, 5], device='CPU', seed=123)
 model.build()
-his = model.train(idx_train, idx_val, verbose=True, epochs=100, restore_best=False, validation=False)
+his = model.train(idx_train, idx_val, verbose=True, epochs=100, save_best=False, validation=False)
 loss, accuracy = model.test(idx_test)
 model.close # clear session
 print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
