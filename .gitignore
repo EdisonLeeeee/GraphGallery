@@ -97,3 +97,6 @@ ENV/
 .ropeproject
 
 *.pickle
+
+# My codes
+median_sage.py
