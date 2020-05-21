@@ -5,7 +5,7 @@
 + [Usage](#3)
 	+ [Inputs](#3-1)
 	+ [GCN](#3-2)
-	+ [DenceGCN](#3-3)
+	+ [DenseGCN](#3-3)
 	+ [EdgeGCN](#3-4)
 	+ [GDC](#3-5)
 	+ [ChebyNet](#3-6)
@@ -116,7 +116,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 
 
 <a class="toc" id ="3-3"></a>
-## DenceGCN
+## DenseGCN
 [🔙](#table-of-contents)
 
 Dense version of `GCN`, i.e., the `adj` will be transformed to `Tensor` instead of `SparseTensor`.
