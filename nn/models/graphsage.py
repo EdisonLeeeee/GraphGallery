@@ -72,7 +72,7 @@ class GraphSAGE(SupervisedModel):
             features = self._to_tensor(features)
             self.features, self.adj = features, adj
 
-    def build(self, hidden_layers=[32], activations=['relu'], dropout=0.5, learning_rate=0.01, l2_norm=5e-4,
+    def build(self, hidden_layers=[64], activations=['relu'], dropout=0.5, learning_rate=0.01, l2_norm=5e-4,
               output_normalize=False, aggrator='mean'):
 
         with tf.device(self.device):

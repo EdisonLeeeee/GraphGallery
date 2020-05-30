@@ -6,9 +6,13 @@ from numbers import Number
 from tensorflow.keras import backend as K
 from .data_utils import sparse_to_tuple
 
+
+def is_tensor_or_variable(x):
+    return tf.is_tensor(x) or isinstance(x, tf.Variable)
+
 def to_tensor(inputs):
     def matrix_to_tensor(matrix):
-        if any((tf.is_tensor(matrix), K.is_sparse(matrix), matrix is None)):
+        if any((is_tensor_or_variable(matrix), K.is_sparse(matrix), matrix is None)):
             return matrix
         elif sp.isspmatrix_csr(matrix) or sp.isspmatrix_csc(matrix):
             return tf.sparse.SparseTensor(*sparse_to_tuple(matrix))
