@@ -285,7 +285,6 @@ class SupervisedModel(BaseModel):
                 self.index_val = self.to_int(index_val)
 
         model = self.model
-        print(model)
         
         if not isinstance(callbacks, callbacks_module.CallbackList):
             callbacks = callbacks_module.CallbackList(callbacks,
@@ -354,7 +353,8 @@ class SupervisedModel(BaseModel):
 
         if save_best:
             self.load(log_path, save_model=save_model)
-            os.remove(log_path)            
+            if os.exist(log_path):
+                os.remove(log_path)            
             
 
         return model.history    

@@ -227,7 +227,12 @@ class BaseModel:
         if save_model:
             self.model.save(path, save_format="h5")
         else:
-            self.model.save_weights(path)
+            try:
+                self.model.save_weights(path)
+            except ValueError as e:
+                # due to the bugs in tf 2.1
+                self.model.save_weights(path[:-3])
+
 
     def load(self, path=None, save_model=False):
         if path is None:
@@ -238,7 +243,10 @@ class BaseModel:
             model = tf.keras.models.load_model(path, custom_objects=self.custom_objects)
             self.set_model(model)
         else:
-            self.model.load_weights(path)
+            try:
+                self.model.load_weights(path)
+            except KeyError as e:
+                self.model.load_weights(path[:-3])
 
     def __repr__(self):
         return self.name + " in " + self.device
