@@ -71,7 +71,7 @@ pip install metis
 + adj: `scipy.sparse.csr_matrix` (or `csc_matrix`) with shape (N, N)
     The input `symmetric` adjacency matrix, where `N` is the number of nodes 
     in graph.
-+ features: `np.array` with shape (N, F)
++ x: `np.array` with shape (N, F)
     The input node feature matrix, where `F` is the dimension of node features.
 + labels: `np.array` with shape (N,)
     The ground-truth labels for all nodes in graph.
@@ -106,7 +106,7 @@ The usuage documents will be gradually added later.
 
 ```python
 from graphgallery.nn.models import GCN
-model = GCN(adj, features, labels, device='CPU', seed=123)
+model = GCN(adj, x, labels, device='CPU', seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
@@ -123,7 +123,7 @@ Dense version of `GCN`, i.e., the `adj` will be transformed to `Tensor` instead 
 
 ```python
 from graphgallery.nn.models import DenseGCN
-model = DenseGCN(adj, features, labels, device='CPU', seed=123)
+model = DenseGCN(adj, x, labels, device='CPU', seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
@@ -145,7 +145,7 @@ Inspired by: tf_geometric and torch_geometric
 
 ```python
 from graphgallery.nn.models import EdgeGCN
-model = EdgeGCN(adj, features, labels, device='CPU', seed=123)
+model = EdgeGCN(adj, x, labels, device='CPU', seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
@@ -167,7 +167,7 @@ from graphgallery.nn.models import GCN
 from graphgallery.utils import GDC
 
 GDC_adj = GDC(adj, alpha=0.3, k=128, which='PPR')
-model = GCN(GDC_adj, features, labels, device='CPU', seed=123)
+model = GCN(GDC_adj, x, labels, device='CPU', seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
@@ -185,7 +185,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 
 ```python
 from graphgallery.nn.models import ChebyNet
-model = ChebyNet(adj, features, labels, order=2, device='CPU', seed=123)
+model = ChebyNet(adj, x, labels, order=2, device='CPU', seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
@@ -202,7 +202,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 
 ```python
 from graphgallery.nn.models import FastGCN
-model = FastGCN(adj, features, labels, device='CPU', seed=123)
+model = FastGCN(adj, x, labels, device='CPU', seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
@@ -220,7 +220,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 
 ```python
 from graphgallery.nn.models import GraphSAGE
-model = GraphSAGE(adj, features, labels, n_samples=[10, 5], device='CPU', seed=123)
+model = GraphSAGE(adj, x, labels, n_samples=[10, 5], device='CPU', seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=True, epochs=100, save_best=False, validation=False)
 loss, accuracy = model.test(idx_test)
@@ -237,7 +237,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 
 ```python
 from graphgallery.nn.models import RobustGCN
-model = RobustGCN(adj, features, labels, device='CPU', seed=123)
+model = RobustGCN(adj, x, labels, device='CPU', seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
@@ -254,7 +254,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
         
 ```python
 from graphgallery.nn.models import SGC
-model = SGC(adj, features, labels, device='CPU', seed=123)
+model = SGC(adj, x, labels, device='CPU', seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
@@ -272,7 +272,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
         
 ```python
 from graphgallery.nn.models import GWNN
-model = GWNN(adj, features, labels, device='CPU', seed=123)
+model = GWNN(adj, x, labels, device='CPU', seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
@@ -291,7 +291,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
         
 ```python
 from graphgallery.nn.models import GAT
-model = GAT(adj, features, labels, device='CPU', seed=123)
+model = GAT(adj, x, labels, device='CPU', seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=True, epochs=200)
 loss, accuracy = model.test(idx_test)
@@ -309,7 +309,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 
 ```python
 from graphgallery.nn.models import ClusterGCN
-model = ClusterGCN(adj, features, labels, n_cluster=10, device='CPU', seed=123)
+model = ClusterGCN(adj, x, labels, n_cluster=10, device='CPU', seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
@@ -326,7 +326,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 
 ```python
 from graphgallery.nn.models import SBVAT
-model = GMNN(adj, features, labels, device='CPU', seed=123)
+model = GMNN(adj, x, labels, device='CPU', seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
@@ -344,7 +344,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 
 ```python
 from graphgallery.nn.models import OBVAT
-model = OBVAT(adj, features, labels, device='CPU', seed=123)
+model = OBVAT(adj, x, labels, device='CPU', seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
@@ -363,7 +363,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 
 ```python
 from graphgallery.nn.models import GMNN
-model = GMNN(adj, features, labels, device='CPU', seed=123)
+model = GMNN(adj, x, labels, device='CPU', seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
@@ -380,7 +380,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 
 ```python
 from graphgallery.nn.models import LGCN
-model = GMNN(adj, features, labels, device='CPU', seed=123)
+model = GMNN(adj, x, labels, device='CPU', seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=True, epochs=100)
 loss, accuracy = model.test(idx_test)
@@ -397,7 +397,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 
 ```python
 from graphgallery.nn.models import Deepwalk
-model = Deepwalk(adj, features, labels)
+model = Deepwalk(adj, x, labels)
 model.build()
 model.train(idx_train)
 accuracy = model.test(idx_test)
@@ -414,7 +414,7 @@ print(f'Test accuracy {accuracy:.2%}')
 
 ```python
 from graphgallery.nn.models import Node2vec
-model = Node2vec(adj, features, labels)
+model = Node2vec(adj, x, labels)
 model.build()
 model.train(idx_train)
 accuracy = model.test(idx_test)
