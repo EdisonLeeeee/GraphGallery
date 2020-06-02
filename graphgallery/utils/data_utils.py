@@ -3,6 +3,8 @@ import scipy.sparse as sp
 import tensorflow as tf
 
 from numbers import Number
+from sklearn.preprocessing import StandardScaler
+
 from graphgallery.utils.shape_utils import repeat
 from graphgallery.utils.is_something import is_sequence
 from graphgallery import config
@@ -16,14 +18,15 @@ def sample_mask(indices, shape):
 
 def normalize_x(x, row_wise=True):
     if not isinstance(x, (np.ndarray, np.matrix)):
-        raise TypeError('Feature matrix `x` must be the instance of `np.array`.'
-                       f' or  `np.matrix`, but got `{type(x)}`.')
+        raise TypeError("Feature matrix `x` must be the instance of `np.array`."
+                       f" or  `np.matrix`, but got `{type(x)}`.")
 
     if row_wise:
-        return x / (x.sum(1, keepdims=True) + config.epsilon())
+        x = x / (x.sum(1, keepdims=True) + config.epsilon())
     else:
-        # TODO
-        raise NotImplementedError
+        scaler = StandardScaler()
+        x = scaler.fit(x).transform(x)
+    return x
 
 
 def normalize_adj(adjacency, rate=-0.5, add_self_loop=True):
