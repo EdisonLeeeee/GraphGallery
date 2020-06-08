@@ -10,3 +10,7 @@ from graphgallery.nn.layers.top_k import Top_k_features
 from graphgallery.nn.layers.lgcn import LGConvolution
 from graphgallery.nn.layers.gcn_edgeconv import GraphEdgeConvolution
 from graphgallery.nn.layers.mediansage import MedianAggregator, MedianGCNAggregator
+from graphgallery.nn.layers.gcnf import GraphConvFeature
+from graphgallery.nn.layers.gcnf_edgeconv import GraphEdgeConvFeature
+from graphgallery.nn.layers.misc import SqueezedSparseConversion
+

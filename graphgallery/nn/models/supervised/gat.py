@@ -70,14 +70,14 @@ class GAT(SupervisedModel):
         with tf.device(self.device):
             self.tf_x, self.adj_norm = self.to_tensor([x, adj])
 
-    def build(self, hiddens=[8], n_heads=[8], activations=['elu'], dropout=0.6, lr=0.01, l2_norm=5e-4):
+    def build(self, hiddens=[8], n_heads=[8], activations=['elu'], dropout=0.6, lr=0.01, l2_norm=5e-4, ensure_shape=True):
         
         assert len(hiddens) == len(activations) == len(n_heads)
         
         with tf.device(self.device):
 
-            x = Input(batch_shape=[self.n_nodes, self.n_features], dtype=self.floatx, name='features')
-            adj = Input(batch_shape=[self.n_nodes, self.n_nodes], dtype=self.floatx, sparse=True, name='adj_matrix')
+            x = Input(batch_shape=[None, self.n_features], dtype=self.floatx, name='features')
+            adj = Input(batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix')
             index = Input(batch_shape=[None],  dtype=self.intx, name='index')
 
             h = x
@@ -91,7 +91,8 @@ class GAT(SupervisedModel):
                 h = Dropout(rate=dropout)(h)
 
             h = GraphAttention(self.n_classes, attn_heads=1, attn_heads_reduction='average')([h, adj])
-            h = tf.ensure_shape(h, [self.n_nodes, self.n_classes])
+            if ensure_shape:
+                h = tf.ensure_shape(h, [self.n_nodes, self.n_classes])
             h = tf.gather(h, index)
             output = Softmax()(h)
 

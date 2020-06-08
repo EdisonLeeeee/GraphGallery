@@ -68,12 +68,12 @@ class OBVAT(SupervisedModel):
         with tf.device(self.device):
             self.tf_x, self.tf_adj = self.to_tensor([x, adj])
 
-    def build(self, hiddens=[16], activations=['relu'], dropout=0.5, lr=0.01, l2_norm=5e-4, p1=1.4, p2=0.7):
+    def build(self, hiddens=[16], activations=['relu'], dropout=0.5, lr=0.01, l2_norm=5e-4, p1=1.4, p2=0.7, ensure_shape=True):
 
         with tf.device(self.device):
 
-            x = Input(batch_shape=[self.n_nodes, self.n_features], dtype=self.floatx, name='features')
-            adj = Input(batch_shape=[self.n_nodes, self.n_nodes], dtype=self.floatx, sparse=True, name='adj_matrix')
+            x = Input(batch_shape=[None, self.n_features], dtype=self.floatx, name='features')
+            adj = Input(batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix')
             index = Input(batch_shape=[None],  dtype=self.intx, name='index')
 
             self.GCN_layers = [GraphConvolution(hiddens[0], activation=activations[0],
@@ -82,7 +82,8 @@ class OBVAT(SupervisedModel):
             self.dropout_layer = Dropout(rate=dropout)
 
             logit = self.propagation(x, adj)
-            logit = tf.ensure_shape(logit, (self.n_nodes, self.n_classes))
+            if ensure_shape:
+                logit = tf.ensure_shape(logit, (self.n_nodes, self.n_classes))
             output = tf.gather(logit, index)
             output = Softmax()(output)
             model = Model(inputs=[x, adj, index], outputs=output)

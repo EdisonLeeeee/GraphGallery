@@ -104,7 +104,7 @@ class GWNN(SupervisedModel):
 
             model = Model(inputs=[x, wavelet, inverse_wavelet, index], outputs=output)
             model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=lr), metrics=['accuracy'])
-
+        
             self.set_model(model)
             self.built = True
 

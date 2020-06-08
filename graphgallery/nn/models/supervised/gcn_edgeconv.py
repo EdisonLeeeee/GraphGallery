@@ -8,7 +8,6 @@ from tensorflow.keras import regularizers
 from graphgallery.nn.layers import GraphEdgeConvolution
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.nn.models import SupervisedModel
-from graphgallery import config
 
 
 class EdgeGCN(SupervisedModel):
@@ -75,8 +74,8 @@ class EdgeGCN(SupervisedModel):
 
         with tf.device(self.device):
             adj = adj.tocoo()
-            edge_index = np.stack([adj.row, adj.col], axis=1).astype(config.intx(), copy=False)
-            edge_weight = adj.data.astype(config.floatx(), copy=False)
+            edge_index = np.stack([adj.row, adj.col], axis=1).astype(self.intx, copy=False)
+            edge_weight = adj.data.astype(self.floatx, copy=False)
             self.tf_x, self.edge_index, self.edge_weight = self.to_tensor([x, edge_index, edge_weight])
 
     def build(self, hiddens=[16], activations=['relu'], dropout=0.5,
@@ -124,3 +123,6 @@ class EdgeGCN(SupervisedModel):
         if tf.is_tensor(logit):
             logit = logit.numpy()
         return logit
+    
+    def __call__(self, inputs):
+        return self.model(inputs)

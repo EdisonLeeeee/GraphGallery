@@ -1,28 +1,30 @@
 import numpy as np
-import scipy.sparse as sp
 import tensorflow as tf
 from tensorflow.keras import Model, Input
 from tensorflow.keras.layers import Dropout, Softmax
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 
-from graphgallery.nn.layers import DenseGraphConv
+from graphgallery.nn.layers import GraphEdgeConvFeature
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.nn.models import SupervisedModel
 
 
-class DenseGCN(SupervisedModel):
+class EdgeGCNF(SupervisedModel):
     """
-        Implementation of Graph Convolutional Networks (GCN). 
+        Implementation of Graph Convolutional Networks (GCN) -- Edge Convolution version. 
         [Semi-Supervised Classification with Graph Convolutional Networks](https://arxiv.org/abs/1609.02907)
-        Tensorflow 1.x implementation: https://github.com/tkipf/gcn
-        Pytorch implementation: https://github.com/tkipf/pygcn
+
+        Inspired by: tf_geometric and torch_geometric
+        tf_geometric: https://github.com/CrawlScript/tf_geometric
+        torch_geometric: https://github.com/rusty1s/pytorch_geometric
 
         Note:
         ----------
-        The input adjacency matrix will be transformed into dense matrix, 
-        which will causes a lot of comsuming of memory. It's not recommended 
-        to use this model in large dataset.
+        The Graph Edge Convolutional implements the operation using message passing framework,
+            i.e., using Tensor `edge index` and `edge weight` of adjacency matrix to aggregate neighbors'
+            message, instead of SparseTensor `adj`.
+
 
         Arguments:
         ----------
@@ -50,7 +52,6 @@ class DenseGCN(SupervisedModel):
             name (String, optional): 
                 Name for the model. (default: name of class)
 
-
     """
 
     def __init__(self, adj, x, labels, normalize_rate=-0.5, is_normalize_x=True, 
@@ -61,8 +62,6 @@ class DenseGCN(SupervisedModel):
         self.normalize_rate = normalize_rate
         self.is_normalize_x = is_normalize_x
         self.preprocess(adj, x)
-        # set to `False` to suggest the Dense inputs
-        self.sparse = False
 
     def preprocess(self, adj, x):
         adj, x = super().preprocess(adj, x)
@@ -70,60 +69,61 @@ class DenseGCN(SupervisedModel):
         if self.normalize_rate is not None:
             adj = self.normalize_adj(adj, self.normalize_rate)
 
-        if sp.isspmatrix(adj):
-            adj = adj.toarray()
-
         if self.is_normalize_x:
             x = self.normalize_x(x)
 
         with tf.device(self.device):
-            self.tf_x, self.tf_adj = self.to_tensor([x, adj])
+            adj = adj.tocoo()
+            edge_index = np.stack([adj.row, adj.col], axis=1).astype(self.intx, copy=False)
+            edge_weight = adj.data.astype(self.floatx, copy=False)
+            self.tf_x, self.edge_index, self.edge_weight = self.to_tensor([x, edge_index, edge_weight])
 
     def build(self, hiddens=[16], activations=['relu'], dropout=0.5,
-              lr=0.01, l2_norm=5e-4, use_bias=False, ensure_shape=True):
-        
+              lr=0.01, l2_norm=5e-4, use_bias=False):
+
         assert len(hiddens) == len(activations)
 
         with tf.device(self.device):
-
             x = Input(batch_shape=[None, self.n_features], dtype=self.floatx, name='features')
-            adj = Input(batch_shape=[None, None], dtype=self.floatx, name='adj_matrix')
+            edge_index = Input(batch_shape=[None, 2], dtype=self.intx, name='edge_index')
+            edge_weight = Input(batch_shape=[None],  dtype=self.floatx, name='edge_weight')
             index = Input(batch_shape=[None],  dtype=self.intx, name='index')
 
             h = x
             for hid, activation in zip(hiddens, activations):
-                h = DenseGraphConv(hid, use_bias=use_bias,
-                                   activation=activation,
-                                   kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
+                h = GraphEdgeConvFeature(hid, use_bias=use_bias,
+                                         activation=activation,
+                                         concat=True,
+                                         kernel_regularizer=regularizers.l2(l2_norm))([h, edge_index, edge_weight])
 
                 h = Dropout(rate=dropout)(h)
 
-            h = DenseGraphConv(self.n_classes, use_bias=use_bias)([h, adj])
-            if ensure_shape:
-                h = tf.ensure_shape(h, [self.n_nodes, self.n_classes])
+            h = GraphEdgeConvFeature(self.n_classes, use_bias=use_bias)([h, edge_index, edge_weight])
             h = tf.gather(h, index)
             output = Softmax()(h)
 
-            model = Model(inputs=[x, adj, index], outputs=output)
+            model = Model(inputs=[x, edge_index, edge_weight, index], outputs=output)
             model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=lr), metrics=['accuracy'])
 
-            self._model = model
+            self.set_model(model)
             self.built = True
 
     def train_sequence(self, index):
         index = self.to_int(index)
         labels = self.labels[index]
         with tf.device(self.device):
-            sequence = FullBatchNodeSequence([self.tf_x, self.tf_adj, index], labels)
+            sequence = FullBatchNodeSequence([self.tf_x, self.edge_index, self.edge_weight, index], labels)
         return sequence
 
     def predict(self, index):
         super().predict(index)
         index = self.to_int(index)
         with tf.device(self.device):
-            index = self.to_tensor(index)
-            logit = self.model.predict_on_batch([self.tf_x, self.tf_adj, index])
+            logit = self.model.predict_on_batch([self.tf_x, self.edge_index, self.edge_weight, index])
 
         if tf.is_tensor(logit):
             logit = logit.numpy()
         return logit
+    
+    def __call__(self, inputs):
+        return self.model(inputs)

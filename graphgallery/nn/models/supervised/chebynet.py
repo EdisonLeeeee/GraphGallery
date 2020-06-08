@@ -70,14 +70,14 @@ class ChebyNet(SupervisedModel):
         with tf.device(self.device):
             self.tf_x, self.tf_adj = self.to_tensor([x, adj])
 
-    def build(self, hiddens=[32], activations=['relu'], dropout=0.5, lr=0.01, l2_norm=5e-4):
+    def build(self, hiddens=[32], activations=['relu'], dropout=0.5, lr=0.01, l2_norm=5e-4, ensure_shape=True):
 
         assert len(hiddens) == len(activations)
         
         with tf.device(self.device):
 
-            x = Input(batch_shape=[self.n_nodes, self.n_features], dtype=self.floatx, name='features')
-            adj = [Input(batch_shape=[self.n_nodes, self.n_nodes],
+            x = Input(batch_shape=[None, self.n_features], dtype=self.floatx, name='features')
+            adj = [Input(batch_shape=[None, None],
                          dtype=self.floatx, sparse=True, name=f'adj_matrix_{i}') for i in range(self.order+1)]
 
             index = Input(batch_shape=[None],  dtype=self.intx, name='index')
@@ -89,7 +89,8 @@ class ChebyNet(SupervisedModel):
                 h = Dropout(rate=dropout)(h)
 
             h = ChebyConvolution(self.n_classes, order=self.order)([h, adj])
-            h = tf.ensure_shape(h, [self.n_nodes, self.n_classes])
+            if ensure_shape:
+                h = tf.ensure_shape(h, [self.n_nodes, self.n_classes])
             h = tf.gather(h, index)
             output = Softmax()(h)
 

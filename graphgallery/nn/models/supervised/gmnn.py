@@ -68,15 +68,15 @@ class GMNN(SupervisedModel):
             self.tf_x, self.tf_adj = self.to_tensor([x, adj])
 
     def build(self, hiddens=[16], activations=['relu'], dropout=0.5,
-              lr=0.05, l2_norm=5e-4, use_bias=False):
+              lr=0.05, l2_norm=5e-4, use_bias=False, ensure_shape=True):
 
         assert len(hiddens) == len(activations)
         
         with tf.device(self.device):
             tf.random.set_seed(self.seed)
-            x_p = Input(batch_shape=[self.n_nodes, self.n_classes], dtype=self.floatx, name='input_p')
-            x_q = Input(batch_shape=[self.n_nodes, self.n_features], dtype=self.floatx, name='input_q')
-            adj = Input(batch_shape=[self.n_nodes, self.n_nodes], dtype=self.floatx, sparse=True, name='adj_matrix')
+            x_p = Input(batch_shape=[None, self.n_classes], dtype=self.floatx, name='input_p')
+            x_q = Input(batch_shape=[None, self.n_features], dtype=self.floatx, name='input_q')
+            adj = Input(batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix')
             index = Input(batch_shape=[None],  dtype=self.intx, name='index')
 
             def build_GCN(x):
@@ -89,7 +89,8 @@ class GMNN(SupervisedModel):
 #                     h = Dropout(rate=dropout)(h)
 
                 h = GraphConvolution(self.n_classes, use_bias=use_bias)([h, adj])
-                h = tf.ensure_shape(h, [self.n_nodes, self.n_classes])
+                if ensure_shape:
+                    h = tf.ensure_shape(h, [self.n_nodes, self.n_classes])
                 h = tf.gather(h, index)
                 output = Softmax()(h)
 

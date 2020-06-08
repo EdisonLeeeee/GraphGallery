@@ -18,6 +18,9 @@ from graphgallery.nn.models.supervised.s_obvat import SimplifiedOBVAT
 from graphgallery.nn.models.supervised.gmnn import GMNN
 from graphgallery.nn.models.supervised.gcn_edgeconv import EdgeGCN
 from graphgallery.nn.models.supervised.mediansage import MedianSAGE
+from graphgallery.nn.models.supervised.gcnf import GCNF
+from graphgallery.nn.models.supervised.gcnf_edgeconv import EdgeGCNF
+
 
 from graphgallery.nn.models.unsupervised.unsupervised_model import UnsupervisedModel
 from graphgallery.nn.models.unsupervised.deepwalk import Deepwalk

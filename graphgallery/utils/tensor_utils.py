@@ -37,12 +37,12 @@ def normalize_edge(edge_index, edge_weight=None, n_nodes=None, fill_weight=1.0, 
         edge_weight = tf.ones([edge_index.shape[0]], dtype=config.floatx())
 
     if n_nodes is None:
-        n_nodes = tf.reduce_max(edge_index)
+        n_nodes = tf.reduce_max(edge_index) + 1
         
     edge_index, edge_weight = add_self_loop_edge(edge_index, edge_weight, n_nodes=n_nodes, fill_weight=fill_weight)
 
     row, col = tf.unstack(edge_index, axis=1)
-    deg = tf.math.unsorted_segment_sum(edge_weight, row, num_segments=n_nodes+1)
+    deg = tf.math.unsorted_segment_sum(edge_weight, row, num_segments=n_nodes)
     deg_inv_sqrt = tf.pow(deg, rate)
 
     # check if exists NAN

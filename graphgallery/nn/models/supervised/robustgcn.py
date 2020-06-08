@@ -65,15 +65,15 @@ class RobustGCN(SupervisedModel):
         with tf.device(self.device):
             self.tf_x, self.tf_adj = self.to_tensor([x, adj])
 
-    def build(self, hiddens=[64], activations=['relu'], use_bias=False, dropout=0.6, lr=0.01, l2_norm=1e-4, para_kl=5e-4, gamma=1.0):
+    def build(self, hiddens=[64], activations=['relu'], use_bias=False, dropout=0.6, lr=0.01, l2_norm=1e-4, para_kl=5e-4, gamma=1.0, ensure_shape=True):
         
         assert len(hiddens) == len(activations)
         
         with tf.device(self.device):
 
-            x = Input(batch_shape=[self.n_nodes, self.n_features], dtype=self.floatx, name='features')
-            adj = [Input(batch_shape=[self.n_nodes, self.n_nodes], dtype=self.floatx, sparse=True, name='adj_matrix_1'),
-                   Input(batch_shape=[self.n_nodes, self.n_nodes], dtype=self.floatx, sparse=True, name='adj_matrix_2')]
+            x = Input(batch_shape=[None, self.n_features], dtype=self.floatx, name='features')
+            adj = [Input(batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix_1'),
+                   Input(batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix_2')]
             index = Input(batch_shape=[None],  dtype=self.intx, name='index')
 
             h = Dropout(rate=dropout)(x)
@@ -89,7 +89,8 @@ class RobustGCN(SupervisedModel):
 
             h = Dropout(rate=dropout)(h)
             h = GaussionConvolution_D(self.n_classes, gamma=gamma, use_bias=use_bias)([h, *adj])
-            h = tf.ensure_shape(h, [self.n_nodes, self.n_classes])
+            if ensure_shape:
+                h = tf.ensure_shape(h, [self.n_nodes, self.n_classes])
             h = tf.gather(h, index)
             output = Softmax()(h)
 
