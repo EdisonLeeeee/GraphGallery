@@ -1,4 +1,5 @@
 from graphgallery.nn.models.basemodel import BaseModel
+
 from graphgallery.nn.models.supervised.supervised_model import SupervisedModel
 from graphgallery.nn.models.supervised.gcn import GCN
 from graphgallery.nn.models.supervised.gcn_mix import GCN_MIX
@@ -16,10 +17,9 @@ from graphgallery.nn.models.supervised.obvat import OBVAT
 from graphgallery.nn.models.supervised.sbvat import SBVAT
 from graphgallery.nn.models.supervised.s_obvat import SimplifiedOBVAT
 from graphgallery.nn.models.supervised.gmnn import GMNN
-from graphgallery.nn.models.supervised.gcn_edgeconv import EdgeGCN
+from graphgallery.nn.models.supervised.edgeconv import EdgeGCN
 from graphgallery.nn.models.supervised.mediansage import MedianSAGE
 from graphgallery.nn.models.supervised.gcnf import GCNF
-from graphgallery.nn.models.supervised.gcnf_edgeconv import EdgeGCNF
 
 
 from graphgallery.nn.models.unsupervised.unsupervised_model import UnsupervisedModel
