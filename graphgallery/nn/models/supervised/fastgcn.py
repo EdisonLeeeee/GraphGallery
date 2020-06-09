@@ -5,8 +5,9 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 
 from graphgallery.nn.layers import GraphConvolution
-from graphgallery.sequence import FastGCNBatchSequence
 from graphgallery.nn.models import SupervisedModel
+from graphgallery.sequence import FastGCNBatchSequence
+from graphgallery.utils.data_utils import normalize_fn, normalize_adj
 
 
 class FastGCN(SupervisedModel):
@@ -17,19 +18,21 @@ class FastGCN(SupervisedModel):
 
         Arguments:
         ----------
-            adj: `scipy.sparse.csr_matrix` (or `csc_matrix`) with shape (N, N)
-                The input `symmetric` adjacency matrix, where `N` is the number of nodes 
-                in graph.
-            x: `np.array` with shape (N, F)
-                The input node feature matrix, where `F` is the dimension of node features.
+            adj: shape (N, N), `scipy.sparse.csr_matrix` (or `csc_matrix`) if 
+                `is_adj_sparse=True`, `np.array` or `np.matrix` if `is_adj_sparse=False`.
+                The input `symmetric` adjacency matrix, where `N` is the number 
+                of nodes in graph.
+            x: shape (N, F), `scipy.sparse.csr_matrix` (or `csc_matrix`) if 
+                `is_x_sparse=True`, `np.array` or `np.matrix` if `is_x_sparse=False`.
+                The input node feature matrix, where `F` is the dimension of features.
             labels: `np.array` with shape (N,)
                 The ground-truth labels for all nodes in graph.
-            normalize_rate (Float scalar, optional): 
+            norm_adj_rate (Float scalar, optional): 
                 The normalize rate for adjacency matrix `adj`. (default: :obj:`-0.5`, 
                 i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
-            is_normalize_x (Boolean, optional): 
-                Whether to use row-normalize for node feature matrix. 
-                (default :obj: `True`)
+            norm_x_type (String, optional): 
+                How to normalize the node feature matrix. See graphgallery.utils.normalize_fn
+                (default :obj: `None`, i.e., do not enforce normalize)
             batch_size (Positive integer, optional): 
                 Batch size for the training nodes. (default :obj: `256`)
             rank (Positive integer, optional): 
@@ -40,34 +43,34 @@ class FastGCN(SupervisedModel):
                 for the model. (default: :obj: `CPU:0`, i.e., the model is running on 
                 the 0-th device `CPU`)
             seed (Positive integer, optional): 
-                Used in combination with `tf.random.set_seed & np.random.seed & random.seed` 
+                Used in combination with `tf.random.set_seed` & `np.random.seed` & `random.seed`  
                 to create a reproducible sequence of tensors across multiple calls. 
                 (default :obj: `None`, i.e., using random seed)
             name (String, optional): 
-                Name for the model. (default: name of class)
+                Specified name for the model. (default: `class.__name__`)
 
 
     """
 
-    def __init__(self, adj, x, labels, normalize_rate=-0.5, is_normalize_x=False,
+    def __init__(self, adj, x, labels, norm_adj_rate=-0.5, norm_x_type=None,
                  batch_size=256, rank=100, device='CPU:0', seed=None, name=None, **kwargs):
 
         super().__init__(adj, x, labels, device=device, seed=seed, name=name, **kwargs)
 
         self.rank = rank
         self.batch_size = batch_size
-        self.normalize_rate = normalize_rate
-        self.is_normalize_x = is_normalize_x
+        self.norm_adj_rate = norm_adj_rate
+        self.norm_x_fn = normalize_fn(norm_x_type)
         self.preprocess(adj, x)
 
     def preprocess(self, adj, x):
         adj, x = super().preprocess(adj, x)
 
-        if self.normalize_rate is not None:
-            adj = self.normalize_adj(adj, self.normalize_rate)
+        if self.norm_adj_rate is not None:
+            adj = normalize_adj(adj, self.norm_adj_rate)
 
-        if self.is_normalize_x:
-            x = self.normalize_x(x)
+        if self.norm_x_fn is not None:
+            x = self.norm_x_fn(x)
 
         x = adj.dot(x)
 
@@ -77,7 +80,8 @@ class FastGCN(SupervisedModel):
     def build(self, hiddens=[32], activations=['relu'], dropout=0.5,
               lr=0.01, l2_norm=5e-4, use_bias=False):
         
-        assert len(hiddens) == len(activations)
+        assert len(hiddens) == len(activations), "The number of hidden units and " \
+                                                "activation function should be the same"
         with tf.device(self.device):
 
             x = Input(batch_shape=[None, self.n_features], dtype=self.floatx, name='features')
@@ -113,8 +117,8 @@ class FastGCN(SupervisedModel):
         labels = self.labels[index]
         adj = self.adj[index].tocsc()[:, index]
 
-        if self.normalize_rate is not None:
-            adj = self.normalize_adj(adj, self.normalize_rate)
+        if self.norm_adj_rate is not None:
+            adj = normalize_adj(adj, self.norm_adj_rate)
 
         with tf.device(self.device):
             x = tf.gather(self.tf_x, index)

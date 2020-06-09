@@ -53,7 +53,7 @@ This repo aims to achieve 4 goals:
 + gensim>=3.8.1
 + texttable
 
-To install `metis`, just:
+To install `metis`, jus typet:
 ```bash
 sudo apt-get install libmetis-dev 
 pip install metis
@@ -68,30 +68,43 @@ pip install metis
 ## Inputs
 [🔙](#table-of-contents)
 
-+ adj: `scipy.sparse.csr_matrix` (or `csc_matrix`) with shape (N, N)
-    The input `symmetric` adjacency matrix, where `N` is the number of nodes 
-    in graph.
-+ x: `np.array` with shape (N, F)
-    The input node feature matrix, where `F` is the dimension of node features.
-+ labels: `np.array` with shape (N,)
-    The ground-truth labels for all nodes in graph.
+### Init
+
++ adj: shape (N, N), `scipy.sparse.csr_matrix` (or `csc_matrix`) if  `is_adj_sparse=True`, `np.array` or `np.matrix` if `is_adj_sparse=False`.
+    
+    ​      The input  symmetric adjacency matrix, where `N` is the number of nodes in graph.
+    
++  x: shape (N, F), `scipy.sparse.csr_matrix` (or `csc_matrix`) if  `is_x_sparse=True`, `np.array` or `np.matrix` if `is_x_sparse=False`.
+
+    ​      The input node feature matrix, where `F` is the dimension of features.
+
++ labels: shape (N,), array-like. Default: `None` for unsupervised learning.
+
+    ​      The class labels of the nodes in the graph. 
+
++ device: string. Default: `CPU:0`.
+
+    ​      The device where the model running on.
+
++ seed: interger scalar. Default: `None`.
+
+    ​      Used in combination with `tf.random.set_seed` & `np.random.seed` & `random.seed` 
+
+    ​      to create a reproducible sequence of tensors across multiple calls. 
+
++ name: string. Default: `None` which will be the name of the classes. 
+
+    ​      Specified name for the model.  (default: `class.__name__`)
+
+### Training
+
 + idx_train: `np.array`, `list`, Integer scalar or `graphgallery.NodeSequence`
-    the index of nodes (or sequence) that will be used during training.    
+  the index of nodes (or sequence) that will be used during training.    
 + idx_val: `np.array`, `list`, Integer scalar or `graphgallery, optional.NodeSequence`
-    the index of nodes (or sequence) that will be used for validation. 
-    (default :obj: `None`, i.e., do not use validation during training)
+  the index of nodes (or sequence) that will be used for validation. 
+  (default :obj: `None`, i.e., do not use validation during training)
 + idx_test: `np.array`, `list`, Integer scalar or `graphgallery.NodeSequence`
-    The index of nodes (or sequence) that will be tested.   
-+ device (String, optional): 
-    The device where the model is running on. You can specified `CPU` or `GPU` 
-    for the model. (default: :obj: `CPU:0`, i.e., the model is running on 
-    the 0-th device `CPU`)
-+ seed (Positive integer, optional): 
-    Used in combination with `tf.random.set_seed & np.random.seed & random.seed` 
-    to create a reproducible sequence of tensors across multiple calls. 
-    (default :obj: `None`, i.e., using random seed)
-
-
+  The index of nodes (or sequence) that will be tested.   
 
 You can specified customized hyperparameters and training details by calling `model.build(your_args)` and `model.trian(your_args)`. 
 The usuage documents will be gradually added later.
@@ -372,6 +385,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 ```
 
 <a class="toc" id ="3-17"></a>
+
 ## LGCN
 [🔙](#table-of-contents)
 
@@ -389,6 +403,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 ```
 
 <a class="toc" id ="3-18"></a>
+
 ## Deepwalk
 [🔙](#table-of-contents)
 

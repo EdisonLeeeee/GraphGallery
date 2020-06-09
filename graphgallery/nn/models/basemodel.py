@@ -7,7 +7,6 @@ import tensorflow as tf
 import scipy.sparse as sp
 
 from graphgallery import config
-from graphgallery.utils import data_utils
 from graphgallery.utils import to_something
 
 
@@ -46,12 +45,12 @@ def _check_inputs(adj, x, is_adj_sparse, is_x_sparse):
     Arguments:
     ----------
         adj: shape (N, N), `scipy.sparse.csr_matrix` (or `csc_matrix`) if 
-            `is_adj_sparse=True`, `np.array` if `is_adj_sparse=False`.
-            The input `symmetric` adjacency matrix, where `N` is the number of nodes
-            in graph.
+            `is_adj_sparse=True`, `np.array` or `np.matrix` if `is_adj_sparse=False`.
+            The input `symmetric` adjacency matrix, where `N` is the number 
+            of nodes in graph.
         x: shape (N, F), `scipy.sparse.csr_matrix` (or `csc_matrix`) if 
-            `is_x_sparse=True`, `np.array` if `is_x_sparse=False`.
-            The input node feature matrix, where `F` is the dimension of node features.
+            `is_x_sparse=True`, `np.array` or `np.matrix` if `is_x_sparse=False`.
+            The input node feature matrix, where `F` is the dimension of features.
 
     Note:
     ----------
@@ -83,21 +82,21 @@ class BaseModel:
     Arguments:
     ----------
         adj: shape (N, N), `scipy.sparse.csr_matrix` (or `csc_matrix`) if 
-            `is_adj_sparse=True`, `np.array` if `is_adj_sparse=False`.
-            The input `symmetric` adjacency matrix, where `N` is the number of nodes
-            in graph.
+            `is_adj_sparse=True`, `np.array` or `np.matrix` if `is_adj_sparse=False`.
+            The input `symmetric` adjacency matrix, where `N` is the number 
+            of nodes in graph.
         x: shape (N, F), `scipy.sparse.csr_matrix` (or `csc_matrix`) if 
-            `is_x_sparse=True`, `np.array` if `is_x_sparse=False`.
-            The input node feature matrix, where `F` is the dimension of node features.
+            `is_x_sparse=True`, `np.array` or `np.matrix` if `is_x_sparse=False`.
+            The input node feature matrix, where `F` is the dimension of features.
         labels: shape (N,), array-like. Default: `None` for unsupervised learning.
             The class labels of the nodes in the graph. 
         device: string. Default: `CPU:0`.
             The device where the model running on.
         seed: interger scalar. Default: `None`.
-            Used in combination with `tf.random.set_seed & np.random.seed & random.seed` 
+            Used in combination with `tf.random.set_seed` & `np.random.seed` & `random.seed`  
             to create a reproducible sequence of tensors across multiple calls. 
-        name: string. Default: `None` which will be the name of the classes. 
-            Specified name for the model.
+        name (String, optional): 
+                Specified name for the model. (default: `class.__name__`)
         kwargs: other customed keyword arguments.
             
     Note:
@@ -143,7 +142,7 @@ class BaseModel:
 
         self.seed = seed
         self.device = device
-        self.labels = labels
+        self.labels = self.to_int(labels)
         self.name = name
         self._model = None
         self.built = None
@@ -155,6 +154,7 @@ class BaseModel:
         self.do_before_test = None
         self.do_before_predict = None
         self.sparse = True
+        self.norm_x_fn = None
         self.custom_objects = None  # used for save/load model
 
         self.log_path = f"./log/{name}_weights"
@@ -179,8 +179,8 @@ class BaseModel:
         ----------
             adj: shape (N, N), `scipy.sparse.csr_matrix` (or `csc_matrix`) if 
                 `is_adj_sparse=True`, `np.array` if `is_adj_sparse=False`.
-                The input `symmetric` adjacency matrix, where `N` is the number of nodes
-                in graph.
+                The input `symmetric` adjacency matrix, where `N` is the number 
+                of nodes in graph.
             x: shape (N, F), `scipy.sparse.csr_matrix` (or `csc_matrix`) if 
                 `is_x_sparse=True`, `np.array` if `is_x_sparse=False`.
                 The input node feature matrix, where `F` is the dimension of node features.
@@ -203,15 +203,6 @@ class BaseModel:
     @staticmethod
     def to_int(inputs):
         return to_something.to_int(inputs)
-
-    @staticmethod
-    def normalize_adj(adj, rate=-0.5, add_self_loop=True):
-        """Normalize adjacency matrix."""
-        return data_utils.normalize_adj(adj, rate=rate, add_self_loop=add_self_loop)
-
-    @staticmethod
-    def normalize_x(x, row_wise=True):
-        return data_utils.normalize_x(x, row_wise=row_wise)
 
     def save(self, path=None, save_model=False):
         if not os.path.exists("log"):
@@ -249,4 +240,4 @@ class BaseModel:
                 self.model.load_weights(path[:-3])
 
     def __repr__(self):
-        return self.name + " in " + self.device
+        return f"Graphgallery.nn.{self.name} in {self.device}"

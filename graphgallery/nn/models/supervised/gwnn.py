@@ -5,9 +5,10 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 
 from graphgallery.nn.layers import WaveletConvolution
+from graphgallery.nn.models import SupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.wavelet_utils import wavelet_basis
-from graphgallery.nn.models import SupervisedModel
+from graphgallery.utils.data_utils import normalize_fn
 
 
 class GWNN(SupervisedModel):
@@ -19,11 +20,13 @@ class GWNN(SupervisedModel):
 
         Arguments:
         ----------
-            adj: `scipy.sparse.csr_matrix` (or `csc_matrix`) with shape (N, N)
-                The input `symmetric` adjacency matrix, where `N` is the number of nodes 
-                in graph.
-            x: `np.array` with shape (N, F)
-                The input node feature matrix, where `F` is the dimension of node features.
+            adj: shape (N, N), `scipy.sparse.csr_matrix` (or `csc_matrix`) if 
+                `is_adj_sparse=True`, `np.array` or `np.matrix` if `is_adj_sparse=False`.
+                The input `symmetric` adjacency matrix, where `N` is the number 
+                of nodes in graph.
+            x: shape (N, F), `scipy.sparse.csr_matrix` (or `csc_matrix`) if 
+                `is_x_sparse=True`, `np.array` or `np.matrix` if `is_x_sparse=False`.
+                The input node feature matrix, where `F` is the dimension of features.
             labels: `np.array` with shape (N,)
                 The ground-truth labels for all nodes in graph.
             order (Positive integer, optional): 
@@ -38,23 +41,23 @@ class GWNN(SupervisedModel):
                 of wavelet matrix)       
             wavelet_normalize (Boolean, optional): 
                 Whether to use row-normalize for wavelet matrix. (default :obj: `True`)
-            is_normalize_x (Boolean, optional): 
-                Whether to use row-normalize for node feature matrix. 
-                (default :obj: `True`)
+            norm_x_type (String, optional): 
+                How to normalize the node feature matrix. See graphgallery.utils.normalize_fn
+                (default :obj: `row_wise`)
             device (String, optional): 
                 The device where the model is running on. You can specified `CPU` or `GPU` 
                 for the model. (default: :obj: `CPU:0`, i.e., the model is running on 
                 the 0-th device `CPU`)
             seed (Positive integer, optional): 
-                Used in combination with `tf.random.set_seed & np.random.seed & random.seed` 
+                Used in combination with `tf.random.set_seed` & `np.random.seed` & `random.seed`  
                 to create a reproducible sequence of tensors across multiple calls. 
                 (default :obj: `None`, i.e., using random seed)
             name (String, optional): 
-                Name for the model. (default: name of class)
+                Specified name for the model. (default: `class.__name__`)
     """
 
     def __init__(self, adj, x, labels, order=3, wavelet_s=1.2,
-                 threshold=1e-4, wavelet_normalize=True, is_normalize_x=True,
+                 threshold=1e-4, wavelet_normalize=True, norm_x_type='row_wise',
                  device='CPU:0', seed=None, name=None, **kwargs):
 
         super().__init__(adj, x, labels, device=device, seed=seed, name=name, **kwargs)
@@ -63,14 +66,14 @@ class GWNN(SupervisedModel):
         self.wavelet_s = wavelet_s
         self.threshold = threshold
         self.wavelet_normalize = wavelet_normalize
-        self.is_normalize_x = is_normalize_x
+        self.norm_x_fn = normalize_fn(norm_x_type)
         self.preprocess(adj, x)
 
     def preprocess(self, adj, x):
         adj, x = super().preprocess(adj, x)
 
-        if self.is_normalize_x:
-            x = self.normalize_x(x)
+        if self.norm_x_fn is not None:
+            x = self.norm_x_fn(x)
 
         wavelet, inverse_wavelet = wavelet_basis(adj, wavelet_s=self.wavelet_s,
                                                  order=self.order, threshold=self.threshold,
@@ -80,7 +83,8 @@ class GWNN(SupervisedModel):
 
     def build(self, hiddens=[16], activations=['relu'], dropout=0.5, lr=0.01, l2_norm=5e-4):
         
-        assert len(hiddens) == len(activations)
+        assert len(hiddens) == len(activations), "The number of hidden units and " \
+                                                "activation function should be the same"
 
         with tf.device(self.device):
 

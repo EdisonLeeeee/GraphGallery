@@ -3,7 +3,8 @@ import scipy.sparse as sp
 import tensorflow as tf
 
 from numbers import Number
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import scale, normalize
+from functools import partial
 
 from graphgallery.utils.shape_utils import repeat
 from graphgallery.utils.is_something import is_sequence
@@ -16,17 +17,34 @@ def sample_mask(indices, shape):
     return mask
 
 
-def normalize_x(x, row_wise=True):
-    if not isinstance(x, (np.ndarray, np.matrix)):
-        raise TypeError("Feature matrix `x` must be the instance of `np.array`."
-                       f" or  `np.matrix`, but got `{type(x)}`.")
+def normalize_fn(norm_type='row_wise'):
+    """Return a normalize function applied for feature matrix
+    
+    Arguments
+    ----------
 
-    if row_wise:
-        x = x / (x.sum(1, keepdims=True) + config.epsilon())
+    norm_type: The specified type for the normalization.
+        `row_wise`: l1-norm for axis 1, from sklearn.preprocessing.normalize
+        `col_wise`: l1-norm for axis 0, sklearn.preprocessing.normalize
+        `scale`: standard scale for axis 0, sklearn.preprocessing.scale
+        None: return None
+
+    Returns
+    ----------
+
+        A normalize function applied for feature matrix
+    """
+    assert norm_type in {'row_wise', 'col_wise', 'scale', None}
+
+    if norm_type == 'row_wise':
+        norm_fn = partial(normalize, axis=1, norm='l1')
+    elif norm_type == 'col_wise':
+        norm_fn = partial(normalize, axis=0, norm='l1')
+    elif norm_type == 'scale':
+        norm_fn = scale
     else:
-        scaler = StandardScaler()
-        x = scaler.fit(x).transform(x)
-    return x
+        norm_fn = None
+    return norm_fn
 
 
 def normalize_adj(adjacency, rate=-0.5, add_self_loop=True):

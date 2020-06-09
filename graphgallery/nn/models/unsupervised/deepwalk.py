@@ -15,11 +15,13 @@ class Deepwalk(UnsupervisedModel):
 
         Arguments:
         ----------
-            adj: `scipy.sparse.csr_matrix` (or `csc_matrix`) with shape (N, N)
-                The input `symmetric` adjacency matrix, where `N` is the number of nodes 
-                in graph.
-            features: `np.array` with shape (N, F)
-                The input node feature matrix, where `F` is the dimension of node features.
+            adj: shape (N, N), `scipy.sparse.csr_matrix` (or `csc_matrix`) if 
+                `is_adj_sparse=True`, `np.array` or `np.matrix` if `is_adj_sparse=False`.
+                The input `symmetric` adjacency matrix, where `N` is the number 
+                of nodes in graph.
+            x: shape (N, F), `scipy.sparse.csr_matrix` (or `csc_matrix`) if 
+                `is_x_sparse=True`, `np.array` or `np.matrix` if `is_x_sparse=False`.
+                The input node feature matrix, where `F` is the dimension of features.
             labels: `np.array` with shape (N,)
                 The ground-truth labels for all nodes in graph.
             device (String, optional): 
@@ -27,17 +29,17 @@ class Deepwalk(UnsupervisedModel):
                 for the model. (default: :obj: `CPU:0`, i.e., the model is running on 
                 the 0-th device `CPU`)
             seed (Positive integer, optional): 
-                Used in combination with `tf.random.set_seed & np.random.seed & random.seed` 
+                Used in combination with `tf.random.set_seed` & `np.random.seed` & `random.seed`  
                 to create a reproducible sequence of tensors across multiple calls. 
                 (default :obj: `None`, i.e., using random seed)
             name (String, optional): 
-                Name for the model. (default: name of class)
+                Specified name for the model. (default: `class.__name__`)
 
     """
 
-    def __init__(self, adj, features, labels, device='CPU:0', seed=None, name=None, **kwargs):
+    def __init__(self, adj, x, labels, device='CPU:0', seed=None, name=None, **kwargs):
 
-        super().__init__(adj, features, labels, device=device, seed=seed, name=name, **kwargs)
+        super().__init__(adj, x, labels, device=device, seed=seed, name=name, **kwargs)
 
     def build(self, walk_length=80, walks_per_node=10,
               embedding_dim=64, window_size=5, workers=16,

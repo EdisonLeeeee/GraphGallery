@@ -10,11 +10,11 @@ from tensorflow.keras.activations import softmax
 from tensorflow.keras.metrics import SparseCategoricalAccuracy
 
 from graphgallery.nn.layers import GraphConvolution
+from graphgallery.nn.models import SupervisedModel
 from graphgallery.sequence import NodeSampleSequence
 from graphgallery.utils.sample_utils import find_4o_nbrs
 from graphgallery.utils.bvat_utils import get_normalized_vector, kl_divergence_with_logit, entropy_y_x
-from graphgallery.nn.models import SupervisedModel
-from graphgallery import config
+from graphgallery.utils.data_utils import normalize_fn, normalize_adj
 
 class SBVAT(SupervisedModel):
     """
@@ -24,53 +24,55 @@ class SBVAT(SupervisedModel):
 
         Arguments:
         ----------
-            adj: `scipy.sparse.csr_matrix` (or `csc_matrix`) with shape (N, N)
-                The input `symmetric` adjacency matrix, where `N` is the number of nodes 
-                in graph.
-            x: `np.array` with shape (N, F)
-                The input node feature matrix, where `F` is the dimension of node features.
+            adj: shape (N, N), `scipy.sparse.csr_matrix` (or `csc_matrix`) if 
+                `is_adj_sparse=True`, `np.array` or `np.matrix` if `is_adj_sparse=False`.
+                The input `symmetric` adjacency matrix, where `N` is the number 
+                of nodes in graph.
+            x: shape (N, F), `scipy.sparse.csr_matrix` (or `csc_matrix`) if 
+                `is_x_sparse=True`, `np.array` or `np.matrix` if `is_x_sparse=False`.
+                The input node feature matrix, where `F` is the dimension of features.
             labels: `np.array` with shape (N,)
                 The ground-truth labels for all nodes in graph.
             n_samples (Positive integer, optional): 
                 The number of sampled subset nodes in the graph where the shortest path 
                 length between them is at least 4. (default :obj: `50`)
-            normalize_rate (Float scalar, optional): 
+            norm_adj_rate (Float scalar, optional): 
                 The normalize rate for adjacency matrix `adj`. (default: :obj:`-0.5`, 
                 i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
-            is_normalize_x (Boolean, optional): 
-                Whether to use row-normalize for node feature matrix. 
-                (default :obj: `True`)
+            norm_x_type (String, optional): 
+                How to normalize the node feature matrix. See graphgallery.utils.normalize_fn
+                (default :obj: `row_wise`)
             device (String, optional): 
                 The device where the model is running on. You can specified `CPU` or `GPU` 
                 for the model. (default: :obj: `CPU:0`, i.e., the model is running on 
                 the 0-th device `CPU`)
             seed (Positive integer, optional): 
-                Used in combination with `tf.random.set_seed & np.random.seed & random.seed` 
+                Used in combination with `tf.random.set_seed` & `np.random.seed` & `random.seed`  
                 to create a reproducible sequence of tensors across multiple calls. 
                 (default :obj: `None`, i.e., using random seed)
             name (String, optional): 
-                Name for the model. (default: name of class)
+                Specified name for the model. (default: `class.__name__`)
 
     """
 
     def __init__(self, adj, x, labels, n_samples=100,
-                 normalize_rate=-0.5, is_normalize_x=True, device='CPU:0', seed=None, name=None, **kwargs):
+                 norm_adj_rate=-0.5, norm_x_type='row_wise', device='CPU:0', seed=None, name=None, **kwargs):
 
         super().__init__(adj, x, labels, device=device, seed=seed, name=name, **kwargs)
 
-        self.normalize_rate = normalize_rate
-        self.is_normalize_x = is_normalize_x
+        self.norm_adj_rate = norm_adj_rate
+        self.norm_x_fn = normalize_fn(norm_x_type)
         self.n_samples = n_samples
         self.preprocess(adj, x)
 
     def preprocess(self, adj, x):
         adj, x = super().preprocess(adj, x)
 
-        if self.normalize_rate is not None:
-            adj = self.normalize_adj(adj, self.normalize_rate)
+        if self.norm_adj_rate is not None:
+            adj = normalize_adj(adj, self.norm_adj_rate)
 
-        if self.is_normalize_x:
-            x = self.normalize_x(x)
+        if self.norm_x_fn is not None:
+            x = self.norm_x_fn(x)
 
         self.neighbors = list(find_4o_nbrs(adj.indices, adj.indptr, np.arange(self.n_nodes)))
 
@@ -81,7 +83,8 @@ class SBVAT(SupervisedModel):
               lr=0.01, l2_norm=5e-4, p1=1., p2=1.,
               n_power_iterations=1, epsilon=0.03, xi=1e-6):
         
-        assert len(hiddens) == len(activations) == 1
+        assert len(hiddens) == len(activations), "The number of hidden units and " \
+                                                "activation function should be the same" == 1
 
         with tf.device(self.device):
 
@@ -170,7 +173,7 @@ class SBVAT(SupervisedModel):
         return loss.numpy(), accuracy.numpy()
 
     def virtual_adversarial_loss(self, x, adj, logit, adv_mask):
-        d = tf.random.normal(shape=tf.shape(x), dtype=config.floatx())
+        d = tf.random.normal(shape=tf.shape(x), dtype=self.floatx)
 
         for _ in range(self.n_power_iterations):
             d = get_normalized_vector(d) * self.xi
