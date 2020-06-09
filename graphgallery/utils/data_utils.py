@@ -41,7 +41,7 @@ def normalize_fn(norm_type='row_wise'):
     elif norm_type == 'col_wise':
         norm_fn = partial(normalize, axis=0, norm='l1')
     elif norm_type == 'scale':
-        norm_fn = scale
+        norm_fn = lambda x: scale(x.astype('float64')).astype(config.floatx())
     else:
         norm_fn = None
     return norm_fn
