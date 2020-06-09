@@ -19,8 +19,8 @@ def normalize_adj_tensor(adj, rate=-0.5, add_self_loop=True):
 def add_self_loop_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0):
 
     if n_nodes is None:
-        n_nodes = tf.reduce_max(edge_index)
-
+        n_nodes = tf.reduce_max(edge_index) + 1
+        
     range_arr = tf.range(n_nodes, dtype=config.intx())
     diagnal_edge_index = tf.stack([range_arr, range_arr], axis=1)
     updated_edge_index = tf.concat([edge_index, diagnal_edge_index], axis=0)
