@@ -9,7 +9,7 @@ from tensorflow.keras import backend as K
 from graphgallery.utils.is_something import is_sequence, is_interger_scalar, is_tensor_or_variable
 
 
-def scipy_sparse_to_sparse_tensor(x):
+def sparse_adj_to_sparse_tensor(x):
     """Converts a SciPy sparse matrix to a SparseTensor."""
     sparse_coo = x.tocoo()
     row, col = sparse_coo.row, sparse_coo.col
@@ -21,7 +21,7 @@ def scipy_sparse_to_sparse_tensor(x):
     return tf.sparse.SparseTensor(indices, data, shape)
 
 
-def sparse_tensor_to_scipy_sparse(x):
+def sparse_tensor_to_sparse_adj(x):
     """Converts a SparseTensor to a SciPy sparse matrix."""
     # TODO
     return x
@@ -88,7 +88,7 @@ def to_tensor(inputs):
         if any((is_tensor_or_variable(matrix), K.is_sparse(matrix), matrix is None)):
             return matrix
         elif sp.isspmatrix_csr(matrix) or sp.isspmatrix_csc(matrix):
-            return scipy_sparse_to_sparse_tensor(matrix)
+            return sparse_adj_to_sparse_tensor(matrix)
         elif isinstance(matrix, np.ndarray) or is_sequence(matrix):
             return tf.convert_to_tensor(matrix, dtype=inferer_type(matrix))
         else:

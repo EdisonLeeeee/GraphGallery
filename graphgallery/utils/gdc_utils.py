@@ -3,7 +3,7 @@ import scipy.sparse as sp
 from sklearn.preprocessing import normalize
 from scipy.linalg import expm
 
-from .data_utils import normalize_adj
+from graphgallery.utils.data_utils import normalize_adj
 
 def clip_matrix(matrix, threshold: float) -> sp.csr_matrix:
     '''Sparsify using threshold epsilon'''
