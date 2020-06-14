@@ -9,24 +9,6 @@ from tensorflow.keras import backend as K
 from graphgallery.utils.is_something import is_sequence, is_interger_scalar, is_tensor_or_variable
 
 
-def to_int(index):
-    """Convert `index` to interger type.
-
-    """
-    if is_tensor_or_variable(index):
-        return tf.cast(index, config.intx())
-
-    if is_interger_scalar(index):
-        index = np.asarray([index])
-    elif is_sequence(index):
-        index = np.asarray(index)
-    elif isinstance(index, np.ndarray):
-        pass
-    else:
-        raise TypeError('`index` should be either `list`, integer scalar or `np.array`!')
-    return index.astype(config.intx())
-
-
 def scipy_sparse_to_sparse_tensor(x):
     """Converts a SciPy sparse matrix to a SparseTensor."""
     sparse_coo = x.tocoo()
@@ -44,6 +26,30 @@ def sparse_tensor_to_scipy_sparse(x):
     # TODO
     return x
 
+def sparse_adj_to_edges(adj):
+    """Convert a Scipy sparse matrix to (edge_index, edge_weight) representation
+    
+    edge_index: shape [M, 2]
+    edge_weight: shape [M,]
+    
+    """
+    adj = adj.tocoo()
+    edge_index = np.stack([adj.row, adj.col], axis=1).astype(config.intx())
+    edge_weight = adj.data.astype(config.floatx())
+    
+    return edge_index, edge_weight
+
+def edges_to_sparse_adj(edge_index, edge_weight):
+    """Convert (edge_index, edge_weight) representation to a Scipy sparse matrix
+    
+    edge_index: shape [M, 2]
+    edge_weight: shape [M,]
+    
+    """    
+    n = np.max(edge_index) + 1
+    adj = sp.csr_matrix((edge_weight, (edge_index[:,0], edge_index[:, 1])), shape=(n,n))
+    return adj.astype(config.floatx(), copy=False)
+
 
 def inferer_type(x):
     x = np.asarray(x)
@@ -55,6 +61,25 @@ def inferer_type(x):
         return 'bool'
     else:
         raise RuntimeError(f'Invalid types, type `{type(x)}`')
+
+
+
+def to_int(index):
+    """Convert `index` to interger type.
+
+    """
+    if is_tensor_or_variable(index):
+        return tf.cast(index, config.intx())
+
+    if is_interger_scalar(index):
+        index = np.asarray([index])
+    elif is_sequence(index):
+        index = np.asarray(index)
+    elif isinstance(index, np.ndarray):
+        pass
+    else:
+        raise TypeError('`index` should be either `list`, integer scalar or `np.array`!')
+    return index.astype(config.intx())
 
 
 def to_tensor(inputs):

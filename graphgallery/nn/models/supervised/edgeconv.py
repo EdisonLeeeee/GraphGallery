@@ -9,6 +9,7 @@ from graphgallery.nn.layers import GraphEdgeConvolution
 from graphgallery.nn.models import SupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.data_utils import normalize_fn, normalize_adj
+from graphgallery.utils.to_something import sparse_adj_to_edges
 
 
 class EdgeGCN(SupervisedModel):
@@ -76,9 +77,7 @@ class EdgeGCN(SupervisedModel):
             x = self.norm_x_fn(x)
 
         with tf.device(self.device):
-            adj = adj.tocoo()
-            edge_index = np.stack([adj.row, adj.col], axis=1).astype(self.intx, copy=False)
-            edge_weight = adj.data.astype(self.floatx, copy=False)
+            edge_index, edge_weight = sparse_adj_to_edges(adj)
             self.tf_x, self.edge_index, self.edge_weight = self.to_tensor([x, edge_index, edge_weight])
 
     def build(self, hiddens=[16], activations=['relu'], dropout=0.5,
