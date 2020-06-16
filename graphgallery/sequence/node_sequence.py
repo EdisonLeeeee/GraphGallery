@@ -4,7 +4,7 @@ from tensorflow.keras.layers import Layer
 import numpy as np
 import tensorflow as tf
 
-from graphgallery.utils import to_something
+from graphgallery.utils import conversion
 
 
 class NodeSequence(Sequence):
@@ -20,7 +20,7 @@ class NodeSequence(Sequence):
 
     @staticmethod
     def to_tensor(inputs):
-        return to_something.to_tensor(inputs)
+        return conversion.to_tensor(inputs)
 
     def on_epoch_end(self):
         pass

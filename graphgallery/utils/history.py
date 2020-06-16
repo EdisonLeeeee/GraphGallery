@@ -1,5 +1,8 @@
+try:
+    import texttable
+except ImportError:
+    texttable = None
 import numpy as np
-import texttable
 from collections import defaultdict
 
 
@@ -96,6 +99,7 @@ class History:
         return dict(self._history)
         
     def show(self):
+        assert texttable is not None, "Please install `texttable` package!"
         t = texttable.Texttable()
         t.add_rows([["Training Details", "Value"],
                     ['Running times', self.times],

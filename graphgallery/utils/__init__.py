@@ -4,4 +4,4 @@ from graphgallery.utils.shape_utils import repeat
 from graphgallery.utils.tensor_utils import normalize_edge
 from graphgallery.utils.gdc_utils import GDC
 from graphgallery.utils.probar import progress_bar
-from graphgallery.utils.to_something import to_int, to_tensor
+from graphgallery.utils.conversion import *

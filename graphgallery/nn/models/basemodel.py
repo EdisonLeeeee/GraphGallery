@@ -7,7 +7,7 @@ import tensorflow as tf
 import scipy.sparse as sp
 
 from graphgallery import config
-from graphgallery.utils import to_something
+from graphgallery.utils import conversion
 
 
 def _check_adj(adj, is_adj_sparse):
@@ -198,11 +198,11 @@ class BaseModel:
     @staticmethod
     def to_tensor(inputs):
         """Convert input matrices to Tensor (SparseTensor)."""
-        return to_something.to_tensor(inputs)
+        return conversion.to_tensor(inputs)
 
     @staticmethod
     def to_int(inputs):
-        return to_something.to_int(inputs)
+        return conversion.to_int(inputs)
 
     def save(self, path=None, save_model=False):
         if not os.path.exists("log"):

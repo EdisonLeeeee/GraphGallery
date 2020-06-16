@@ -9,7 +9,7 @@ from graphgallery.nn.layers import GraphEdgeConvolution
 from graphgallery.nn.models import SupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.data_utils import normalize_fn, normalize_adj
-from graphgallery.utils.to_something import sparse_adj_to_edges
+from graphgallery.utils.conversion import sparse_adj_to_edges
 
 
 class EdgeGCN(SupervisedModel):

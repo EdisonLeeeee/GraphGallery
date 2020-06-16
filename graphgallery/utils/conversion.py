@@ -3,11 +3,15 @@ import tensorflow as tf
 import scipy.sparse as sp
 
 from numbers import Number
-from graphgallery import config
 from tensorflow.keras import backend as K
 
-from graphgallery.utils.is_something import is_sequence, is_interger_scalar, is_tensor_or_variable
+from graphgallery import config
+from graphgallery.utils.type_check import is_sequence, is_interger_scalar, is_tensor_or_variable
 
+
+__all__ = ['sparse_adj_to_sparse_tensor', 'sparse_tensor_to_sparse_adj', 
+'sparse_adj_to_edges', 'edges_to_sparse_adj', 'to_int', 'to_tensor',
+]
 
 def sparse_adj_to_sparse_tensor(x):
     """Converts a SciPy sparse matrix to a SparseTensor."""
@@ -89,12 +93,13 @@ def to_tensor(inputs):
             return matrix
         elif sp.isspmatrix_csr(matrix) or sp.isspmatrix_csc(matrix):
             return sparse_adj_to_sparse_tensor(matrix)
-        elif isinstance(matrix, np.ndarray) or is_sequence(matrix):
+        elif isinstance(matrix, (np.ndarray, np.matrix)) or is_sequence(matrix):
             return tf.convert_to_tensor(matrix, dtype=inferer_type(matrix))
         else:
             raise TypeError(f'Invalid type `{type(matrix)}` of inputs data. Allowed data type (Tensor, SparseTensor, np.ndarray, scipy.sparse.sparsetensor, None).')
 
-    # Check `not isinstance(inputs[0], Number)` to avoid like [matrix, [1,2,3]], where [1,2,3] will be converted seperately.
+    # Check `not isinstance(inputs[0], Number)` to avoid the situation like [1,2,3],
+    # where [1,2,3] will be converted to three tensors seperately.
     if is_sequence(inputs) and not isinstance(inputs[0], Number):
         return [to_tensor(matrix) for matrix in inputs]
     else:

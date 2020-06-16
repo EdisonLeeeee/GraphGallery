@@ -1,9 +1,13 @@
-import metis
+try:
+    import metis
+except ImportError:
+    metis = None
+
 import numpy as np
 import scipy.sparse as sp
 
 
-def metis_clustering(graph, n_cluster=10):
+def metis_clustering(graph, n_cluster):
 
     _, parts = metis.part_graph(graph, n_cluster)
 
@@ -11,7 +15,8 @@ def metis_clustering(graph, n_cluster=10):
 
 
 def partition_graph(adj, features, labels, graph, n_cluster):
-    
+
+    assert metis is not None, "Please install `metis` package!"    
     # partition graph
     parts = metis_clustering(graph, n_cluster)
     
@@ -77,5 +82,4 @@ def get_indice_graph(adj, indices, size=np.inf, dropout=0.):
     if neighbors.size > size - indices.size:
         neighbors = np.random.choice(list(neighbors), size-len(indices), False)
     indices = np.union1d(indices, neighbors)
-#     print(f'Indices size: {indices.size}', )
     return indices

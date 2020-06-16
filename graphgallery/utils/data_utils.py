@@ -7,7 +7,7 @@ from sklearn.preprocessing import scale, normalize
 from functools import partial
 
 from graphgallery.utils.shape_utils import repeat
-from graphgallery.utils.is_something import is_sequence
+from graphgallery.utils.type_check import is_sequence
 from graphgallery import config
 
 
@@ -114,24 +114,3 @@ class Bunch(dict):
         # ignoring the pickled __dict__
         pass
 
-    
-    
-# def add_self_loop_edge(edge_index, num_nodes, edge_weight=None, fill_weight=1.0):
-#     diagnal_edges = [[node_index, node_index] for node_index in range(num_nodes)]
-#     diagnal_edge_index = np.array(diagnal_edges).T.astype(np.int32)
-
-#     updated_edge_index = tf.concat([edge_index, diagnal_edge_index], axis=1)
-
-#     if not tf.is_tensor(edge_index):
-#         updated_edge_index = updated_edge_index.numpy()
-
-#     if edge_weight is not None:
-#         diagnal_edge_weight = tf.cast(tf.fill([num_nodes], fill_weight), tf.float32)
-#         updated_edge_weight = tf.concat([edge_weight, diagnal_edge_weight], axis=0)
-
-#         if not tf.is_tensor(edge_weight):
-#             updated_edge_weight = updated_edge_weight.numpy()
-#     else:
-#         updated_edge_weight = None
-
-#     return updated_edge_index, updated_edge_weight

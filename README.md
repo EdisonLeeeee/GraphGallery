@@ -45,22 +45,31 @@ This repo aims to achieve 4 goals:
 + python>=3.7
 + tensorflow>=2.1 (2.1 is recommended)
 + networkx==2.3
-+ metis==0.2a4
 + scipy>=1.4.1
 + sklearn>=0.22
 + numpy>=1.18.1
 + numba>=0.48
 + gensim>=3.8.1
+
+Extral packages (not necessary）:
+
++ metis==0.2a4
 + texttable
 
-To install `metis`, jus typet:
+To install **metis**, jus type:
 ```bash
 sudo apt-get install libmetis-dev 
 pip install metis
 ```
 
+To install **texttable**, just type:
+
+```bash
+pip install texttable
+```
 
 <a class="toc" id ="3"></a>
+
 # Usage
 [🔙](#table-of-contents)
 
@@ -71,7 +80,7 @@ pip install metis
 ### Init
 
 + adj: shape (N, N), `scipy.sparse.csr_matrix` (or `csc_matrix`) if  `is_adj_sparse=True`, `np.array` or `np.matrix` if `is_adj_sparse=False`.
-    
+  
     ​      The input  symmetric adjacency matrix, where `N` is the number of nodes in graph.
     
 +  x: shape (N, F), `scipy.sparse.csr_matrix` (or `csc_matrix`) if  `is_x_sparse=True`, `np.array` or `np.matrix` if `is_x_sparse=False`.
