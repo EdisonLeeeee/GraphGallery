@@ -372,7 +372,7 @@ class SupervisedModel(BaseModel):
         Arguments:
         ----------
             index: `np.array`, `list`, Integer scalar or `graphgallery.NodeSequence`
-            The index of nodes (or sequence) that will be tested.    
+                The index of nodes (or sequence) that will be tested.    
 
             **kwargs (optional): Additional arguments of
                 :method:`do_before_test`.   

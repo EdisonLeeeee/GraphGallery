@@ -15,3 +15,11 @@ class SqueezedSparseConversion(Layer):
             indices=indices, values=values, dense_shape=(n_nodes, n_nodes)
         )
         return output
+    
+class Scale(Layer):
+    def call(self, inputs):
+        output = (inputs - tf.reduce_mean(inputs, axis=0, keepdims=True)) / tf.keras.backend.std(inputs, axis=0, keepdims=True)      
+        return output
+    
+    def compute_output_shape(self, input_shapes):
+        return tf.TensorShape(input_shapes)    

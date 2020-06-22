@@ -4,8 +4,8 @@ import numpy as np
 import collections.abc as collections_abc
 
 
-def is_sequence(x):
-    """Check if x is sequence like `List` and `Tuple`
+def is_list_like(x):
+    """Check if x is list like: `List` or `Tuple`
     """
     return isinstance(x, collections_abc.Sequence)
 

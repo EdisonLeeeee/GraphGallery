@@ -6,7 +6,7 @@ from numbers import Number
 from tensorflow.keras import backend as K
 
 from graphgallery import config
-from graphgallery.utils.type_check import is_sequence, is_interger_scalar, is_tensor_or_variable
+from graphgallery.utils.type_check import is_list_like, is_interger_scalar, is_tensor_or_variable
 
 
 __all__ = ['sparse_adj_to_sparse_tensor', 'sparse_tensor_to_sparse_adj', 
@@ -77,7 +77,7 @@ def to_int(index):
 
     if is_interger_scalar(index):
         index = np.asarray([index])
-    elif is_sequence(index):
+    elif is_list_like(index):
         index = np.asarray(index)
     elif isinstance(index, np.ndarray):
         pass
@@ -93,14 +93,14 @@ def to_tensor(inputs):
             return matrix
         elif sp.isspmatrix_csr(matrix) or sp.isspmatrix_csc(matrix):
             return sparse_adj_to_sparse_tensor(matrix)
-        elif isinstance(matrix, (np.ndarray, np.matrix)) or is_sequence(matrix):
+        elif isinstance(matrix, (np.ndarray, np.matrix)) or is_list_like(matrix):
             return tf.convert_to_tensor(matrix, dtype=inferer_type(matrix))
         else:
             raise TypeError(f'Invalid type `{type(matrix)}` of inputs data. Allowed data type (Tensor, SparseTensor, np.ndarray, scipy.sparse.sparsetensor, None).')
 
     # Check `not isinstance(inputs[0], Number)` to avoid the situation like [1,2,3],
     # where [1,2,3] will be converted to three tensors seperately.
-    if is_sequence(inputs) and not isinstance(inputs[0], Number):
+    if is_list_like(inputs) and not isinstance(inputs[0], Number):
         return [to_tensor(matrix) for matrix in inputs]
     else:
         return matrix_to_tensor(inputs)
