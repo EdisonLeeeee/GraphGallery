@@ -7,40 +7,46 @@ import numpy as np
 import scipy.sparse as sp
 
 
-def metis_clustering(graph, n_cluster):
-
-    _, parts = metis.part_graph(graph, n_cluster)
-
+def metis_clustering(graph, n_clusters):
+    """Partitioning graph using Metis"""
+    _, parts = metis.part_graph(graph, n_clusters)
     return parts
 
+def random_clustering(n_nodes, n_clusters):
+    """Partitioning graph randomly"""
+    partts = np.random.choice(n_clusters, size=n_nodes)
+    return parts
 
-def partition_graph(adj, features, labels, graph, n_cluster):
-
-    assert metis is not None, "Please install `metis` package!"    
+def partition_graph(adj, x, labels, graph, n_clusters, metis_partition=True):
     # partition graph
-    parts = metis_clustering(graph, n_cluster)
+    if metis_partition:
+        assert metis is not None, "Please install `metis` package!"    
+        parts = metis_clustering(graph, n_clusters)
+    else:
+        parts = random_clustering(adj.shape[0], n_clusters)
+
     
-    cluster_member = [[] for _ in range(n_cluster)]
+    cluster_member = [[] for _ in range(n_clusters)]
     for node_index, part in enumerate(parts):
         cluster_member[part].append(node_index)
 
     mapper = {}
     
-    batch_adj, batch_features, batch_labels = [], [], []
+    batch_adj, batch_x, batch_labels = [], [], []
     
-    for cluster in range(n_cluster):
+    for cluster in range(n_clusters):
         
         nodes = sorted(cluster_member[cluster])
         mapper.update({old_id: new_id for new_id, old_id in enumerate(nodes)})
         
         mini_adj = adj[nodes].tocsc()[:, nodes]
-        mini_features = features[nodes]
+        mini_x = x[nodes]
 
         batch_adj.append(mini_adj)
-        batch_features.append(mini_features)
+        batch_x.append(mini_x)
         batch_labels.append(labels[nodes])
         
-    return batch_adj, batch_features, batch_labels, cluster_member, mapper
+    return batch_adj, batch_x, batch_labels, cluster_member, mapper
 
 
 def construct_neighbors(adj, max_degree=25, self_loop=False):

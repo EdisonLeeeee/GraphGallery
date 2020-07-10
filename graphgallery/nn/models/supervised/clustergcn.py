@@ -36,7 +36,7 @@ class ClusterGCN(SupervisedModel):
                 The networkx graph which converted by `adj`, if if not specified (`None`), 
                 the graph will be converted by `adj` automatically, but it will comsum lots 
                 of time. (default :obj: `None`)
-            n_cluster (Potitive integer): 
+            n_clusters (Potitive integer): 
                 The number of clusters that the graph being seperated, if not specified (`None`), 
                 it will be set to the number of classes automatically. (default :obj: `None`).
             norm_adj_rate (Float scalar, optional): 
@@ -58,15 +58,15 @@ class ClusterGCN(SupervisedModel):
 
     """
 
-    def __init__(self, adj, x, labels, graph=None, n_cluster=None,
+    def __init__(self, adj, x, labels, graph=None, n_clusters=None,
                  norm_adj_rate=-0.5, norm_x_type='row_wise', device='CPU:0', seed=None, name=None, **kwargs):
 
         super().__init__(adj, x, labels=labels, device=device, seed=seed, name=name, **kwargs)
 
-        if n_cluster is None:
-            n_cluster = self.n_classes
+        if n_clusters is None:
+            n_clusters = self.n_classes
 
-        self.n_cluster = n_cluster
+        self.n_clusters = n_clusters
         self.norm_adj_rate = norm_adj_rate
         self.norm_x_fn = normalize_fn(norm_x_type)
         self.preprocess(adj, x, graph)
@@ -82,7 +82,7 @@ class ClusterGCN(SupervisedModel):
 
         (self.batch_adj, self.batch_x, self.batch_labels,
          self.cluster_member, self.mapper) = partition_graph(adj, x, self.labels, graph,
-                                                             n_cluster=self.n_cluster)
+                                                             n_clusters=self.n_clusters)
 
         if self.norm_adj_rate is not None:
             self.batch_adj = normalize_adj(self.batch_adj, self.norm_adj_rate)
@@ -127,7 +127,7 @@ class ClusterGCN(SupervisedModel):
         orders_dict = {idx: order for order, idx in enumerate(index)}
         batch_mask, orders = [], []
         batch_x, batch_adj = [], []
-        for cluster in range(self.n_cluster):
+        for cluster in range(self.n_clusters):
             nodes = self.cluster_member[cluster]
             mini_mask = mask[nodes]
             batch_nodes = np.asarray(nodes)[mini_mask]
@@ -156,7 +156,7 @@ class ClusterGCN(SupervisedModel):
 
         batch_mask, batch_labels = [], []
         batch_x, batch_adj = [], []
-        for cluster in range(self.n_cluster):
+        for cluster in range(self.n_clusters):
             nodes = self.cluster_member[cluster]
             mini_mask = mask[nodes]
             mini_labels = labels[nodes][mini_mask]
