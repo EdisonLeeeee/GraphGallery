@@ -94,7 +94,6 @@ class ChebyConvolution(Layer):
             self.kernel.append(kernel)
             self.bias.append(bias)
 
-        self.built = True
         super().build(input_shapes)
 
     def call(self, inputs):

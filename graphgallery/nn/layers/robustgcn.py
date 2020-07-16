@@ -87,7 +87,7 @@ class GaussionConvolution_F(Layer):
                                         constraint=self.bias_constraint)
         else:
             self.bias = None
-        self.built = True
+
         super().build(input_shapes)
 
     def call(self, inputs):
@@ -238,7 +238,7 @@ class GaussionConvolution_D(Layer):
                                             constraint=self.bias_constraint)
         else:
             self.bias = None
-        self.built = True
+
         super().build(input_shapes)
 
     def call(self, inputs):

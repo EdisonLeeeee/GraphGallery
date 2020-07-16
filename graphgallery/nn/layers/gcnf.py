@@ -18,13 +18,13 @@ class GraphConvFeature(Layer):
                  kernel_constraint=None,
                  bias_constraint=None,
                  **kwargs):
-        
+
         super().__init__(**kwargs)
         self.units = units
         self.use_bias = use_bias
         self.concat = concat
         self.output_dim = units*2 if concat else units
-        
+
         self.activation = activations.get(activation)
         self.kernel_initializer = initializers.get(kernel_initializer)
         self.bias_initializer = initializers.get(bias_initializer)
@@ -33,7 +33,6 @@ class GraphConvFeature(Layer):
         self.activity_regularizer = regularizers.get(activity_regularizer)
         self.kernel_constraint = constraints.get(kernel_constraint)
         self.bias_constraint = constraints.get(bias_constraint)
-
 
     def build(self, input_shapes):
         self.kernel = self.add_weight(shape=(input_shapes[0][-1], self.units),
@@ -49,24 +48,23 @@ class GraphConvFeature(Layer):
                                         constraint=self.bias_constraint)
         else:
             self.bias = None
-        self.built = True
+
         super().build(input_shapes)
-        
-        
+
     def call(self, inputs):
-        
+
         x, adj = inputs
         h = x @ self.kernel
         output = tf.sparse.sparse_dense_matmul(adj, h)
-        
+
         if self.concat:
             output = tf.concat([output, h], axis=1)
         else:
             output = tf.divide(tf.add(output, h), 2.0)
-        
+
         if self.use_bias:
             output += self.bias
-            
+
         return self.activation(output)
 
     def get_config(self):
@@ -87,12 +85,11 @@ class GraphConvFeature(Layer):
                   'kernel_constraint': constraints.serialize(
                       self.kernel_constraint),
                   'bias_constraint': constraints.serialize(self.bias_constraint)
-                 }
+                  }
 
         base_config = super().get_config()
         return {**base_config, **config}
-    
-    
+
     def compute_output_shape(self, input_shapes):
         features_shape = input_shapes[0]
         output_shape = (features_shape[0], self.output_dim)

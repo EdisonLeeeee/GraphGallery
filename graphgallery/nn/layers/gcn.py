@@ -10,7 +10,7 @@ class GraphConvolution(Layer):
         [Convolutional Neural Networks on Graphs with Fast Localized Spectral Filtering](https://arxiv.org/abs/1606.09375)
         Tensorflow 1.x implementation: https://github.com/tkipf/gcn
         Pytorch implementation: https://github.com/tkipf/pygcn
-        
+
         `GraphConvolution` implements the operation:
         `output = activation(adj @ x @ kernel + bias)`
         where `x` is the feature matrix, `adj` is the adjacency matrix,
@@ -18,8 +18,8 @@ class GraphConvolution(Layer):
         passed as the `activation` argument, `kernel` is a weights matrix
         created by the layer, and `bias` is a bias vector created by the layer
         (only applicable if `use_bias` is `True`).
-        
-        
+
+
         Arguments:
           units: Positive integer, dimensionality of the output space.
           activation: Activation function to use.
@@ -44,6 +44,7 @@ class GraphConvolution(Layer):
         Output shape:
           2-D tensor with shape: `(n_nodes, units)`.       
     """
+
     def __init__(self, units,
                  use_bias=False,
                  activation=None,
@@ -55,11 +56,11 @@ class GraphConvolution(Layer):
                  kernel_constraint=None,
                  bias_constraint=None,
                  **kwargs):
-        
+
         super().__init__(**kwargs)
         self.units = units
         self.use_bias = use_bias
-        
+
         self.activation = activations.get(activation)
         self.kernel_initializer = initializers.get(kernel_initializer)
         self.bias_initializer = initializers.get(bias_initializer)
@@ -68,7 +69,6 @@ class GraphConvolution(Layer):
         self.activity_regularizer = regularizers.get(activity_regularizer)
         self.kernel_constraint = constraints.get(kernel_constraint)
         self.bias_constraint = constraints.get(bias_constraint)
-
 
     def build(self, input_shapes):
         self.kernel = self.add_weight(shape=(input_shapes[0][-1], self.units),
@@ -84,19 +84,18 @@ class GraphConvolution(Layer):
                                         constraint=self.bias_constraint)
         else:
             self.bias = None
-        self.built = True
+
         super().build(input_shapes)
-        
-        
+
     def call(self, inputs):
-        
+
         x, adj = inputs
         h = x @ self.kernel
         output = tf.sparse.sparse_dense_matmul(adj, h)
-        
+
         if self.use_bias:
             output += self.bias
-            
+
         return self.activation(output)
 
     def get_config(self):
@@ -116,12 +115,11 @@ class GraphConvolution(Layer):
                   'kernel_constraint': constraints.serialize(
                       self.kernel_constraint),
                   'bias_constraint': constraints.serialize(self.bias_constraint)
-                 }
+                  }
 
         base_config = super().get_config()
         return {**base_config, **config}
-    
-    
+
     def compute_output_shape(self, input_shapes):
         features_shape = input_shapes[0]
         output_shape = (features_shape[0], self.units)

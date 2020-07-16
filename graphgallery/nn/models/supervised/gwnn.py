@@ -8,26 +8,26 @@ from graphgallery.nn.layers import WaveletConvolution
 from graphgallery.nn.models import SupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.wavelet_utils import wavelet_basis
-from graphgallery.utils.data_utils import normalize_fn
+from graphgallery import astensor, asintarr, normalize_x
 
 
 class GWNN(SupervisedModel):
     """
         Implementation of Graph Wavelet Neural Networks (GWNN). 
-        [Graph Wavelet Neural Network](https://arxiv.org/abs/1904.07785)
-        Tensorflow 1.x implementation: https://github.com/Eilene/GWNN
-        Pytorch implementation: https://github.com/benedekrozemberczki/GraphWaveletNeuralNetwork
+        `Graph Wavelet Neural Network <https://arxiv.org/abs/1904.07785>`
+        Tensorflow 1.x implementation: <https://github.com/Eilene/GWNN>
+        Pytorch implementation: <https://github.com/benedekrozemberczki/GraphWaveletNeuralNetwork>
 
         Arguments:
         ----------
-            adj: shape (N, N), `scipy.sparse.csr_matrix` (or `csc_matrix`) if 
-                `is_adj_sparse=True`, `np.array` or `np.matrix` if `is_adj_sparse=False`.
+            adj: shape (N, N), Scipy sparse matrix if  `is_adj_sparse=True`, 
+                Numpy array-like (or matrix) if `is_adj_sparse=False`.
                 The input `symmetric` adjacency matrix, where `N` is the number 
                 of nodes in graph.
-            x: shape (N, F), `scipy.sparse.csr_matrix` (or `csc_matrix`) if 
-                `is_x_sparse=True`, `np.array` or `np.matrix` if `is_x_sparse=False`.
+            x: shape (N, F), Scipy sparse matrix if `is_x_sparse=True`, 
+                Numpy array-like (or matrix) if `is_x_sparse=False`.
                 The input node feature matrix, where `F` is the dimension of features.
-            labels: `np.array` with shape (N,)
+            labels: Numpy array-like with shape (N,)
                 The ground-truth labels for all nodes in graph.
             order (Positive integer, optional): 
                 The power (order) of approximated wavelet matrix using Chebyshev polynomial 
@@ -40,24 +40,23 @@ class GWNN(SupervisedModel):
                 values less than `1e-4` will be set to zero to preserve the sparsity 
                 of wavelet matrix)       
             wavelet_normalize (Boolean, optional): 
-                Whether to use row-normalize for wavelet matrix. (default :obj: `True`)
+                Whether to use row-normalize for wavelet matrix. (default :bool: `True`)
             norm_x_type (String, optional): 
-                How to normalize the node feature matrix. See graphgallery.utils.normalize_fn
-                (default :obj: `row_wise`)
+                How to normalize the node feature matrix. See `graphgallery.normalize_x`
+                (default :str: `l1`)
             device (String, optional): 
                 The device where the model is running on. You can specified `CPU` or `GPU` 
-                for the model. (default: :obj: `CPU:0`, i.e., the model is running on 
-                the 0-th device `CPU`)
+                for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
             seed (Positive integer, optional): 
                 Used in combination with `tf.random.set_seed` & `np.random.seed` & `random.seed`  
                 to create a reproducible sequence of tensors across multiple calls. 
                 (default :obj: `None`, i.e., using random seed)
             name (String, optional): 
-                Specified name for the model. (default: `class.__name__`)
+                Specified name for the model. (default: :str: `class.__name__`)
     """
 
     def __init__(self, adj, x, labels, order=3, wavelet_s=1.2,
-                 threshold=1e-4, wavelet_normalize=True, norm_x_type='row_wise',
+                 threshold=1e-4, wavelet_normalize=True, norm_x_type='l1',
                  device='CPU:0', seed=None, name=None, **kwargs):
 
         super().__init__(adj, x, labels, device=device, seed=seed, name=name, **kwargs)
@@ -66,25 +65,27 @@ class GWNN(SupervisedModel):
         self.wavelet_s = wavelet_s
         self.threshold = threshold
         self.wavelet_normalize = wavelet_normalize
-        self.norm_x_fn = normalize_fn(norm_x_type)
+        self.norm_x_type = norm_x_type
         self.preprocess(adj, x)
 
     def preprocess(self, adj, x):
-        adj, x = super().preprocess(adj, x)
+        super().preprocess(adj, x)
+        # check the input adj and x, and convert them into proper data types
+        adj, x = self._check_inputs(adj, x)
 
-        if self.norm_x_fn is not None:
-            x = self.norm_x_fn(x)
+        if self.norm_x_type:
+            x = normalize_x(x, norm=self.norm_x_type)
 
         wavelet, inverse_wavelet = wavelet_basis(adj, wavelet_s=self.wavelet_s,
                                                  order=self.order, threshold=self.threshold,
                                                  wavelet_normalize=self.wavelet_normalize)
         with tf.device(self.device):
-            self.tf_x, self.tf_adj = self.to_tensor([x, [wavelet, inverse_wavelet]])
+            self.x_norm, self.adj_norm = astensor([x, [wavelet, inverse_wavelet]])
 
     def build(self, hiddens=[16], activations=['relu'], dropout=0.5, lr=0.01, l2_norm=5e-4):
-        
+
         assert len(hiddens) == len(activations), "The number of hidden units and " \
-                                                "activation function should be the same"
+            "activation functions should be the same."
 
         with tf.device(self.device):
 
@@ -108,24 +109,23 @@ class GWNN(SupervisedModel):
 
             model = Model(inputs=[x, wavelet, inverse_wavelet, index], outputs=output)
             model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=lr), metrics=['accuracy'])
-        
+
             self.set_model(model)
-            self.built = True
 
     def train_sequence(self, index):
-        index = self.to_int(index)
+        index = asintarr(index)
         labels = self.labels[index]
 
         with tf.device(self.device):
-            sequence = FullBatchNodeSequence([self.tf_x, *self.tf_adj, index], labels)
+            sequence = FullBatchNodeSequence([self.x_norm, *self.adj_norm, index], labels)
         return sequence
 
     def predict(self, index):
         super().predict(index)
-        index = self.to_int(index)
+        index = asintarr(index)
         with tf.device(self.device):
-            index = self.to_tensor(index)
-            logit = self.model.predict_on_batch([self.tf_x, *self.tf_adj, index])
+            index = astensor(index)
+            logit = self.model.predict_on_batch([self.x_norm, *self.adj_norm, index])
 
         if tf.is_tensor(logit):
             logit = logit.numpy()

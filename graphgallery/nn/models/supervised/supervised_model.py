@@ -12,6 +12,7 @@ from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 
 from graphgallery.nn.models import BaseModel
 from graphgallery.utils.history import History
+from graphgallery import asintarr, astensor
 
 
 class SupervisedModel(BaseModel):
@@ -20,24 +21,23 @@ class SupervisedModel(BaseModel):
 
         Arguments:
         ----------
-            adj: shape (N, N), `scipy.sparse.csr_matrix` (or `csc_matrix`) if 
-                `is_adj_sparse=True`, `np.array` or `np.matrix` if `is_adj_sparse=False`.
+            adj: shape (N, N), Scipy sparse matrix if  `is_adj_sparse=True`, 
+                Numpy array-like (or matrix) if `is_adj_sparse=False`.
                 The input `symmetric` adjacency matrix, where `N` is the number 
                 of nodes in graph.
-            features: `np.array` with shape (N, F)
+            features: Numpy array-like with shape (N, F)
                 The input node feature matrix, where `F` is the dimension of node features.
-            labels: `np.array` with shape (N,)
+            labels: Numpy array-like with shape (N,)
                 The ground-truth labels for all nodes in graph.
             device (String, optional): 
                 The device where the model is running on. You can specified `CPU` or `GPU` 
-                for the model. (default: :obj: `CPU:0`, i.e., the model is running on 
-                the 0-th device `CPU`)
+                for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
             seed (Positive integer, optional): 
                 Used in combination with `tf.random.set_seed` & `np.random.seed` & `random.seed`  
                 to create a reproducible sequence of tensors across multiple calls. 
                 (default :obj: `None`, i.e., using random seed)
             name (String, optional): 
-                Specified name for the model. (default: `class.__name__`)
+                Specified name for the model. (default: :str: `class.__name__`)
 
     """
 
@@ -68,7 +68,7 @@ class SupervisedModel(BaseModel):
             dropout: Float scalar
                 Dropout rate for the hidden outputs.
             lr: Float scalar
-                Learning rate for the model.
+                Learning rate for the training model.
             l2_norm: Float scalar
                 L2 normalize for the hidden layers. (usually only used in the first layer)
             use_bias: Boolean
@@ -79,7 +79,7 @@ class SupervisedModel(BaseModel):
 
     def train(self, index_train, index_val=None,
               epochs=200, early_stopping=None,
-              verbose=False, save_best=True, log_path=None, save_model=False,
+              verbose=False, save_best=True, weight_path=None, as_model=False,
               monitor='val_acc', early_stop_metric='val_loss'):
         """
             Train the model for the input `index_train` of nodes or `sequence`.
@@ -90,9 +90,9 @@ class SupervisedModel(BaseModel):
 
         Arguments:
         ----------
-            index_train: `np.array`, `list`, Integer scalar or `graphgallery.NodeSequence`
+            index_train: Numpy array-like, `list`, Integer scalar or `graphgallery.NodeSequence`
                 the index of nodes (or sequence) that will be used during training.    
-            index_val: `np.array`, `list`, Integer scalar or `graphgallery.NodeSequence`, optional
+            index_val: Numpy array-like, `list`, Integer scalar or `graphgallery.NodeSequence`, optional
                 the index of nodes (or sequence) that will be used for validation. 
                 (default :obj: `None`, i.e., do not use validation during training)
             epochs: Postive integer
@@ -105,11 +105,11 @@ class SupervisedModel(BaseModel):
             save_best: Boolean
                 Whether to save the best weights (accuracy of loss depend on `monitor`) 
                 of training or validation (depend on `validation` is `False` or `True`). 
-                (default :obj: `True`)
-            log_path: String or None
+                (default :bool: `True`)
+            weight_path: String or None
                 The path of saved weights/model. (default :obj: `None`, i.e., 
                 `./log/{self.name}_weights`)
-            save_model: Boolean
+            as_model: Boolean
                 Whether to save the whole model or weights only, if `True`, the `self.custom_objects`
                 must be speficied if you are using customized `layer` or `loss` and so on.
             monitor: String
@@ -127,16 +127,15 @@ class SupervisedModel(BaseModel):
         # TODO use tensorflow callbacks
 
         # Check if model has been built
-        if not self.built:
+        if not self.model:
             raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')
 
         if isinstance(index_train, Sequence):
             train_data = index_train
         else:
             train_data = self.train_sequence(index_train)
-            self.index_train = self.to_int(index_train)
+            self.index_train = asintarr(index_train)
 
-        
         validation = index_val is not None
 
         if validation:
@@ -144,16 +143,16 @@ class SupervisedModel(BaseModel):
                 val_data = index_val
             else:
                 val_data = self.test_sequence(index_val)
-                self.index_val = self.to_int(index_val)
+                self.index_val = asintarr(index_val)
 
         history = History(monitor_metric=monitor,
                           early_stop_metric=early_stop_metric)
 
-        if log_path is None:
-            log_path = self.log_path
-            
-        if not log_path.endswith('.h5'):
-            log_path += '.h5'                
+        if weight_path is None:
+            weight_path = self.weight_path
+
+        if not weight_path.endswith('.h5'):
+            weight_path += '.h5'
 
         if not validation:
             history.register_monitor_metric('acc')
@@ -188,7 +187,7 @@ class SupervisedModel(BaseModel):
             history.record_epoch(epoch)
 
             if save_best and history.save_best:
-                self.save(log_path, save_model=save_model)
+                self.save(weight_path, as_model=as_model)
 
             # early stopping
             if early_stopping and history.time_to_early_stopping(early_stopping):
@@ -205,15 +204,15 @@ class SupervisedModel(BaseModel):
                 pbar.set_description(msg)
 
         if save_best:
-            self.load(log_path, save_model=save_model)
-            os.remove(log_path)            
+            self.load(weight_path, as_model=as_model)
+            os.remove(weight_path)
 
         return history
-    
+
     def train_v2(self, index_train, index_val=None,
-              epochs=200, early_stopping=None,
-              verbose=False, save_best=True, log_path=None, save_model=False,
-              monitor='val_acc', early_stop_metric='val_loss', callbacks=None, **kwargs):
+                 epochs=200, early_stopping=None,
+                 verbose=False, save_best=True, weight_path=None, as_model=False,
+                 monitor='val_acc', early_stop_metric='val_loss', callbacks=None, **kwargs):
         """
             Train the model for the input `index_train` of nodes or `sequence`.
 
@@ -223,9 +222,9 @@ class SupervisedModel(BaseModel):
 
         Arguments:
         ----------
-            index_train: `np.array`, `list`, Integer scalar or `graphgallery.NodeSequence`
+            index_train: Numpy array-like, `list`, Integer scalar or `graphgallery.NodeSequence`
                 the index of nodes (or sequence) that will be used during training.    
-            index_val: `np.array`, `list`, Integer scalar or `graphgallery.NodeSequence`, optional
+            index_val: Numpy array-like, `list`, Integer scalar or `graphgallery.NodeSequence`, optional
                 the index of nodes (or sequence) that will be used for validation. 
                 (default :obj: `None`, i.e., do not use validation during training)
             epochs: Postive integer
@@ -238,11 +237,11 @@ class SupervisedModel(BaseModel):
             save_best: Boolean
                 Whether to save the best weights (accuracy of loss depend on `monitor`) 
                 of training or validation (depend on `validation` is `False` or `True`). 
-                (default :obj: `True`)
-            log_path: String or None
+                (default :bool: `True`)
+            weight_path: String or None
                 The path of saved weights/model. (default :obj: `None`, i.e., 
                 `./log/{self.name}_weights`)
-            save_model: Boolean
+            as_model: Boolean
                 Whether to save the whole model or weights only, if `True`, the `self.custom_objects`
                 must be speficied if you are using customized `layer` or `loss` and so on.
             monitor: String
@@ -262,19 +261,19 @@ class SupervisedModel(BaseModel):
             and validation metrics values (if applicable).
 
         """
-        
-        if not tf.__version__>='2.2.0':
+
+        if not tf.__version__ >= '2.2.0':
             raise RuntimeError(f'This method is only work for tensorflow version >= 2.2.0.')
 
         # Check if model has been built
-        if not self.built:
+        if not self.model:
             raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')
 
         if isinstance(index_train, Sequence):
             train_data = index_train
         else:
             train_data = self.train_sequence(index_train)
-            self.index_train = self.to_int(index_train)
+            self.index_train = asintarr(index_train)
 
         validation = index_val is not None
 
@@ -283,10 +282,10 @@ class SupervisedModel(BaseModel):
                 val_data = index_val
             else:
                 val_data = self.test_sequence(index_val)
-                self.index_val = self.to_int(index_val)
+                self.index_val = asintarr(index_val)
 
         model = self.model
-        
+
         if not isinstance(callbacks, callbacks_module.CallbackList):
             callbacks = callbacks_module.CallbackList(callbacks,
                                                       add_history=True,
@@ -294,71 +293,69 @@ class SupervisedModel(BaseModel):
                                                       verbose=verbose,
                                                       epochs=epochs)
         if early_stopping is not None:
-            es_callback = EarlyStopping(monitor=early_stop_metric, 
-                                        patience=early_stopping, 
-                                        mode='auto', 
+            es_callback = EarlyStopping(monitor=early_stop_metric,
+                                        patience=early_stopping,
+                                        mode='auto',
                                         verbose=kwargs.pop('es_verbose', 0))
             callbacks.append(es_callback)
-            
-        if save_best:
-            if log_path is None:
-                log_path = self.log_path
 
-            if not log_path.endswith('.h5'):
-                log_path += '.h5'           
-                
-            mc_callback = ModelCheckpoint(log_path,
+        if save_best:
+            if weight_path is None:
+                weight_path = self.weight_path
+
+            if not weight_path.endswith('.h5'):
+                weight_path += '.h5'
+
+            mc_callback = ModelCheckpoint(weight_path,
                                           monitor=monitor,
                                           save_best_only=True,
-                                          save_weights_only=not save_model,
+                                          save_weights_only=not as_model,
                                           verbose=verbose)
             callbacks.append(mc_callback)
         callbacks.set_model(model)
-        
+
         # leave it blank for the future
         allowed_kwargs = set([])
         unknown_kwargs = set(kwargs.keys()) - allowed_kwargs
         if unknown_kwargs:
             raise TypeError(
-                "Invalid keyword argument(s) in `__init__`: %s" % (unknown_kwargs,))        
-            
-        callbacks.on_train_begin()            
-        
+                "Invalid keyword argument(s) in `__init__`: %s" % (unknown_kwargs,))
+
+        callbacks.on_train_begin()
+
         for epoch in range(epochs):
             callbacks.on_epoch_begin(epoch)
 
             if self.do_before_train is not None:
                 self.do_before_train()
-                
+
             callbacks.on_train_batch_begin(0)
             loss, accuracy = self.do_forward(train_data)
             train_data.on_epoch_end()
-            
+
             training_logs = {'loss': loss, 'acc': accuracy}
             callbacks.on_train_batch_end(0, training_logs)
-            
+
             if validation:
                 if self.do_before_validation is not None:
                     self.do_before_validation()
 
                 val_loss, val_accuracy = self.do_forward(val_data, training=False)
                 training_logs.update({'val_loss': val_loss, 'val_acc': val_accuracy})
-                
+
             callbacks.on_epoch_end(epoch, training_logs)
-            
+
             if model.stop_training:
                 break
-                
-                
-        callbacks.on_train_end()            
+
+        callbacks.on_train_end()
 
         if save_best:
-            self.load(log_path, save_model=save_model)
-            if os.exist(log_path):
-                os.remove(log_path)            
-            
+            self.load(weight_path, as_model=as_model)
+            if os.exist(weight_path):
+                os.remove(weight_path)
 
-        return model.history    
+        return model.history
 
     def test(self, index, **kwargs):
         """
@@ -371,7 +368,7 @@ class SupervisedModel(BaseModel):
 
         Arguments:
         ----------
-            index: `np.array`, `list`, Integer scalar or `graphgallery.NodeSequence`
+            index: Numpy array-like, `list`, Integer scalar or `graphgallery.NodeSequence`
                 The index of nodes (or sequence) that will be tested.    
 
             **kwargs (optional): Additional arguments of
@@ -386,14 +383,14 @@ class SupervisedModel(BaseModel):
         """
 
         # TODO record test logs like self.train() or self.train_v2()
-        if not self.built:
+        if not self.model:
             raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')
 
         if isinstance(index, Sequence):
             test_data = index
         else:
             test_data = self.test_sequence(index)
-            self.index_test = self.to_int(index)
+            self.index_test = asintarr(index)
 
         if self.do_before_test is not None:
             self.do_before_test(**kwargs)
@@ -432,7 +429,7 @@ class SupervisedModel(BaseModel):
 
         """
         model = self.model
-        
+
         if training:
             forward_fn = model.train_on_batch
         else:
@@ -457,7 +454,7 @@ class SupervisedModel(BaseModel):
 
         Arguments:
         ----------
-            index: `np.array`, `list` or integer scalar
+            index: Numpy array-like, `list` or integer scalar
                 The index of nodes that will be computed.    
 
             **kwargs (optional): Additional arguments of
@@ -470,7 +467,7 @@ class SupervisedModel(BaseModel):
 
         """
 
-        if not self.built:
+        if not self.model:
             raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')
 
         if self.do_before_predict is not None:
@@ -483,7 +480,7 @@ class SupervisedModel(BaseModel):
 
         Arguments:
         ----------
-            index: `np.array`, `list` or integer scalar
+            index: Numpy array-like, `list` or integer scalar
                 The index of nodes used in training.
 
         Return:
@@ -504,7 +501,7 @@ class SupervisedModel(BaseModel):
 
         Arguments:
         ----------
-            index: `np.array`, `list` or integer scalar
+            index: Numpy array-like, `list` or integer scalar
                 The index of nodes used in testing.
 
         Return:
@@ -524,7 +521,7 @@ class SupervisedModel(BaseModel):
 
         Arguments:
         ----------
-            index: `np.array`, `list` or integer scalar
+            index: Numpy array-like, `list` or integer scalar
                 The index of nodes that will be computed.    
 
         Return:
@@ -533,7 +530,7 @@ class SupervisedModel(BaseModel):
                 The output accuracy of the `index` of nodes.
 
         """
-        index = self.to_int(index)
+        index = asintarr(index)
         logit = self.predict(index)
         predict_class = logit.argmax(1)
         labels = self.labels[index]
@@ -550,7 +547,7 @@ class SupervisedModel(BaseModel):
 
     @property
     def np_weights(self):
-        """Return the weights of model, type `np.array`."""
+        """Return the weights of model, type Numpy array-like."""
         return [weight.numpy() for weight in self.weights]
 
     @property
@@ -562,5 +559,4 @@ class SupervisedModel(BaseModel):
     def close(self):
         """Close the session of model and set `built` to False."""
         self.set_model(None)
-        self.built = None
         K.clear_session()

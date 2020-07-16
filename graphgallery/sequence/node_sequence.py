@@ -1,10 +1,9 @@
-from tensorflow.keras.utils import Sequence
-from tensorflow.keras.layers import Layer
-
 import numpy as np
 import tensorflow as tf
 
-from graphgallery.utils import conversion
+
+from tensorflow.keras.utils import Sequence
+from tensorflow.keras.layers import Layer
 
 
 class NodeSequence(Sequence):
@@ -17,10 +16,6 @@ class NodeSequence(Sequence):
 
     def __getitem__(self, index):
         raise NotImplementedError
-
-    @staticmethod
-    def to_tensor(inputs):
-        return conversion.to_tensor(inputs)
 
     def on_epoch_end(self):
         pass

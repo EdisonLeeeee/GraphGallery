@@ -16,32 +16,30 @@ class Node2vec(UnsupervisedModel):
 
         Arguments:
         ----------
-            adj: shape (N, N), `scipy.sparse.csr_matrix` (or `csc_matrix`) if 
-                `is_adj_sparse=True`, `np.array` or `np.matrix` if `is_adj_sparse=False`.
+            adj: shape (N, N), Scipy sparse matrix if  `is_adj_sparse=True`, 
+                Numpy array-like (or matrix) if `is_adj_sparse=False`.
                 The input `symmetric` adjacency matrix, where `N` is the number 
                 of nodes in graph.
-            x: shape (N, F), `scipy.sparse.csr_matrix` (or `csc_matrix`) if 
-                `is_x_sparse=True`, `np.array` or `np.matrix` if `is_x_sparse=False`.
+            x: shape (N, F), Scipy sparse matrix if `is_x_sparse=True`, 
+                Numpy array-like (or matrix) if `is_x_sparse=False`.
                 The input node feature matrix, where `F` is the dimension of features.
-            labels: `np.array` with shape (N,)
+            labels: Numpy array-like with shape (N,)
                 The ground-truth labels for all nodes in graph.
             device (String, optional): 
                 The device where the model is running on. You can specified `CPU` or `GPU` 
-                for the model. (default: :obj: `CPU:0`, i.e., the model is running on 
-                the 0-th device `CPU`)
+                for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
             seed (Positive integer, optional): 
                 Used in combination with `tf.random.set_seed` & `np.random.seed` & `random.seed`  
                 to create a reproducible sequence of tensors across multiple calls. 
                 (default :obj: `None`, i.e., using random seed)
             name (String, optional): 
-                Specified name for the model. (default: `class.__name__`)
+                Specified name for the model. (default: :str: `class.__name__`)
 
     """
 
     def __init__(self, adj, x, labels, graph=None, device='CPU:0', seed=None, name=None, **kwargs):
 
         super().__init__(adj, x, labels, device=device, seed=seed, name=name, **kwargs)
-
 
         if graph is None:
             graph = nx.from_scipy_sparse_matrix(adj, create_using=nx.DiGraph)
@@ -66,7 +64,7 @@ class Node2vec(UnsupervisedModel):
 
         model = Word2Vec(sentences, size=embedding_dim, window=window_size, min_count=0, sg=1, workers=workers,
                          iter=iter, negative=num_neg_samples, hs=0, compute_loss=True)
-        
+
         self.set_model(model)
 
     @staticmethod

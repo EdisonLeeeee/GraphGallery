@@ -12,40 +12,41 @@ def metis_clustering(graph, n_clusters):
     _, parts = metis.part_graph(graph, n_clusters)
     return parts
 
+
 def random_clustering(n_nodes, n_clusters):
     """Partitioning graph randomly"""
     partts = np.random.choice(n_clusters, size=n_nodes)
     return parts
 
+
 def partition_graph(adj, x, labels, graph, n_clusters, metis_partition=True):
     # partition graph
     if metis_partition:
-        assert metis is not None, "Please install `metis` package!"    
+        assert metis, "Please install `metis` package!"
         parts = metis_clustering(graph, n_clusters)
     else:
         parts = random_clustering(adj.shape[0], n_clusters)
 
-    
     cluster_member = [[] for _ in range(n_clusters)]
     for node_index, part in enumerate(parts):
         cluster_member[part].append(node_index)
 
     mapper = {}
-    
+
     batch_adj, batch_x, batch_labels = [], [], []
-    
+
     for cluster in range(n_clusters):
-        
+
         nodes = sorted(cluster_member[cluster])
         mapper.update({old_id: new_id for new_id, old_id in enumerate(nodes)})
-        
+
         mini_adj = adj[nodes].tocsc()[:, nodes]
         mini_x = x[nodes]
 
         batch_adj.append(mini_adj)
         batch_x.append(mini_x)
         batch_labels.append(labels[nodes])
-        
+
     return batch_adj, batch_x, batch_labels, cluster_member, mapper
 
 
@@ -56,30 +57,31 @@ def construct_neighbors(adj, max_degree=25, self_loop=False):
     adj_dense = N * np.ones((N + 1, max_degree), dtype=np.int64)
     for nodeid in range(N):
         neighbors = indices[indptr[nodeid]:indptr[nodeid + 1]]
-        
+
 #         if not self_loop:
 #             neighbors = np.setdiff1d(neighbors, [nodeid])
 #         else:
 #             neighbors = np.intersect1d(neighbors, [nodeid])
-            
+
         size = neighbors.size
         if size == 0:
             continue
-            
+
         if size > max_degree:
             neighbors = np.random.choice(neighbors, max_degree, replace=False)
         elif size < max_degree:
             neighbors = np.random.choice(neighbors, max_degree, replace=True)
-            
+
         adj_dense[nodeid] = neighbors
-        
+
     np.random.shuffle(adj_dense.T)
     return adj_dense
+
 
 def sample_neighbors(adj, nodes, n_neighbors):
     np.random.shuffle(adj.T)
     return adj[nodes, :n_neighbors]
-    
+
 
 def get_indice_graph(adj, indices, size=np.inf, dropout=0.):
     if dropout > 0.:

@@ -6,6 +6,7 @@ import scipy.sparse as sp
 from graphgallery.sequence.node_sequence import NodeSequence
 from graphgallery.utils.misc import column_prop
 from graphgallery.utils.graph_utils import sample_neighbors
+from graphgallery import astensor
 
 
 class ClusterMiniBatchSequence(NodeSequence):
@@ -18,7 +19,7 @@ class ClusterMiniBatchSequence(NodeSequence):
         batch_size=1,
     ):
         assert batch_size == 1
-        self.inputs, self.labels = self.to_tensor([inputs, labels])
+        self.inputs, self.labels = astensor([inputs, labels])
         self.n_batches = len(self.inputs)
         self.shuffle_batches = shuffle_batches
         self.batch_size = batch_size
@@ -63,7 +64,7 @@ class SAGEMiniBatchSequence(NodeSequence):
         self.indices = np.arange(len(self.nodes))
         self.n_samples = n_samples
 
-        self.x = self.to_tensor(self.x)
+        self.x = astensor(self.x)
 
     def __len__(self):
         return self.n_batches
@@ -81,7 +82,7 @@ class SAGEMiniBatchSequence(NodeSequence):
 
         labels = self.labels[idx] if self.labels is not None else None
 
-        return self.to_tensor([[self.x, *nodes_input], labels])
+        return astensor([[self.x, *nodes_input], labels])
 
     def on_epoch_end(self):
         if self.shuffle_batches:
@@ -119,9 +120,9 @@ class FastGCNBatchSequence(NodeSequence):
 
     def __getitem__(self, index):
         if self.batch_size is None:
-            (features, adj), labels = self.full_batch(index)
+            (x, adj), labels = self.full_batch(index)
         else:
-            (features, adj), labels = self.mini_batch(index)
+            (x, adj), labels = self.mini_batch(index)
 
         if self.rank is not None:
             p = self.p
@@ -133,12 +134,12 @@ class FastGCNBatchSequence(NodeSequence):
                 q = np.random.choice(distr, rank, replace=False, p=p[distr]/p[distr].sum())
             adj = adj[:, q].dot(sp.diags(1.0 / (p[q] * rank)))
 
-            if tf.is_tensor(features):
-                features = tf.gather(features, q)
+            if tf.is_tensor(x):
+                x = tf.gather(x, q)
             else:
-                features = features[q]
+                x = x[q]
 
-        return self.to_tensor([(features, adj), labels])
+        return astensor([(x, adj), labels])
 
     def full_batch(self, index):
         return (self.x, self.adj), self.labels

@@ -118,12 +118,11 @@ class MeanAggregator(Layer):
                                         constraint=self.bias_constraint,
                                         name='bias')
 
-        self.built = True
         super().build(input_shape)
 
     def call(self, inputs):
         x, neigh_x = inputs
-        
+
         neigh_x = self.aggregator(neigh_x, axis=1)
 
         x = x @ self.kernel_self
@@ -169,7 +168,6 @@ class MeanAggregator(Layer):
         return output_shape  # (batch_n_nodes, units) or (batch_n_nodes, units * 2)
 
 
-    
 class GCNAggregator(Layer):
     """
         Basic graphSAGE convolution layer as in: 
@@ -179,7 +177,7 @@ class GCNAggregator(Layer):
 
         Aggregates via mean followed by matmul and non-linearity.
         Same matmul parameters are used self vector and neighbor vectors.    
-    
+
         `GCNAggregator` implements the operation:
         `output = activation(Agg(Concat(neigh_x, x)) @ kernel) + bias)`
         where `x` is the feature matrix, `neigh_x` is the feature matrix of neighbors,
@@ -232,8 +230,8 @@ class GCNAggregator(Layer):
                  kernel_constraint=None,
                  bias_constraint=None,
                  **kwargs):
-        
-        kwargs.pop('concat', None) # in order to be compatible with `MeanAggregator`
+
+        kwargs.pop('concat', None)  # in order to be compatible with `MeanAggregator`
         super().__init__(**kwargs)
         self.units = units
         self.use_bias = use_bias
@@ -252,15 +250,14 @@ class GCNAggregator(Layer):
         self.kernel_constraint = constraints.get(kernel_constraint)
         self.bias_constraint = constraints.get(bias_constraint)
 
-
     def build(self, input_shape):
         input_dim = input_shape[0][-1]
 
         self.kernel = self.add_weight(shape=(input_dim, self.units),
-                                           initializer=self.kernel_initializer,
-                                           regularizer=self.kernel_regularizer,
-                                           constraint=self.kernel_constraint,
-                                           name='kernel')
+                                      initializer=self.kernel_initializer,
+                                      regularizer=self.kernel_regularizer,
+                                      constraint=self.kernel_constraint,
+                                      name='kernel')
 
         # Layer bias
         if self.use_bias:
@@ -270,11 +267,10 @@ class GCNAggregator(Layer):
                                         constraint=self.bias_constraint,
                                         name='bias')
 
-        self.built = True
         super().build(input_shape)
 
     def call(self, inputs):
-        
+
         x, neigh_x = inputs
         x = tf.expand_dims(x, axis=1)
         agg = tf.concat([x, neigh_x], axis=1)

@@ -100,7 +100,6 @@ class LGConvolution(Layer):
                             bias_constraint=self.bias_constraint,
                             name='conv2')
 
-        self.built = True
         super().build(input_shapes)
 
     def call(self, inputs):

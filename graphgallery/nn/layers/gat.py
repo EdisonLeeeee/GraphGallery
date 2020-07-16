@@ -137,7 +137,6 @@ class GraphAttention(Layer):
                                                  name=f'attn_kernel_neigh_{head}')
             self.attn_kernels.append([attn_kernel_self, attn_kernel_neighs])
 
-        self.built = True
         super().build(input_shape)
 
     def call(self, inputs):

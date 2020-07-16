@@ -90,7 +90,6 @@ class GINConvolution(Layer):
 
         self.eps_var = tf.Variable(self.eps, dtype=self.floatx, name='eps')
 
-        self.built = True
         super().build(input_shapes)
 
     def call(self, inputs):

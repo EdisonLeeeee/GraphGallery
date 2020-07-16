@@ -20,7 +20,7 @@ def add_self_loop_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0):
 
     if n_nodes is None:
         n_nodes = tf.reduce_max(edge_index) + 1
-        
+
     range_arr = tf.range(n_nodes, dtype=config.intx())
     diagnal_edge_index = tf.stack([range_arr, range_arr], axis=1)
     updated_edge_index = tf.concat([edge_index, diagnal_edge_index], axis=0)
@@ -31,14 +31,14 @@ def add_self_loop_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0):
     return updated_edge_index, updated_edge_weight
 
 
-def normalize_edge(edge_index, edge_weight=None, n_nodes=None, fill_weight=1.0, rate=-0.5):
+def normalize_edge_tensor(edge_index, edge_weight=None, n_nodes=None, fill_weight=1.0, rate=-0.5):
 
     if edge_weight is None:
         edge_weight = tf.ones([edge_index.shape[0]], dtype=config.floatx())
 
     if n_nodes is None:
         n_nodes = tf.reduce_max(edge_index) + 1
-        
+
     edge_index, edge_weight = add_self_loop_edge(edge_index, edge_weight, n_nodes=n_nodes, fill_weight=fill_weight)
 
     row, col = tf.unstack(edge_index, axis=1)

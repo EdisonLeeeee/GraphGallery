@@ -103,7 +103,6 @@ class WaveletConvolution(Layer):
 
         self.indices = np.stack([np.arange(n_nodes)]*2, axis=1)
 
-        self.built = True
         super().build(input_shapes)
 
     def call(self, inputs):

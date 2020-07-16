@@ -39,4 +39,12 @@ def is_tensor_or_variable(x):
 
 
 def is_interger_scalar(x):
-    return isinstance(x,  (int, np.int32, np.int64))
+    return isinstance(x, (int, np.int8,
+                           np.int16,
+                           np.int32,
+                           np.int64,
+                           np.uint8,
+                           np.uint16,
+                           np.uint32,
+                           np.uint64,
+                           ))
