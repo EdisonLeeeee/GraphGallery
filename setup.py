@@ -2,26 +2,20 @@
 # coding: utf-8
 from setuptools import setup, find_packages
 
-
-__version__ = '0.1.0'
+__version__ = '0.1.3'
 url = 'https://github.com/EdisonLeeeee/Graphgallery'
 
 install_requires = [
-    'tensorflow>=2.1',
-    'numpy',
-    'tqdm',
-    'scipy',
-    'networkx==2.4',
-    'scikit-learn',
-    'numba',
-    'requests',
-    'pandas',
-    'rdflib',
-    'h5py',
-    'googledrivedownloader',
-    'metis==0.2a4',
-    'gensim',
-    'texttable'
+            'networkx==2.3',
+            'metis==0.2a4',
+            'scipy==1.4.1',
+            'tensorflow>=2.1.0',
+            'numpy==1.17.4',
+            'gensim>=3.8.0',
+            'texttable>=1.6.2',
+            'numba>=0.46.0',
+            'tqdm>=4.40.2',
+            'scikit_learn>=0.23.1',
 ]
 
 setup(

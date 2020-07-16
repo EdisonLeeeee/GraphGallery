@@ -6,3 +6,8 @@ from graphgallery.utils.conversion import (chk_convert, sparse_adj_to_edges,
                                            astensor)
 from graphgallery.utils.data_utils import normalize_adj, normalize_x, Bunch, sample_mask
 from graphgallery.utils.shape_utils import repeat
+
+
+__version__ = '0.1.4'
+
+# __all__ = ['graphgallery', '__version__']
