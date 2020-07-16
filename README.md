@@ -26,15 +26,9 @@ Extral packages (not necessary）:
 + metis==0.2a4
 + texttable
 
-To install **metis**, jus type:
+# Install
 ```bash
-sudo apt-get install libmetis-dev 
-pip install metis
+pip install graphgallery -U
 ```
 
-To install **texttable**, just type:
-
-```bash
-pip install texttable
-```
 

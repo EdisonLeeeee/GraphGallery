@@ -25,6 +25,7 @@ setup(
     author='Jintang Li',
     author_email='cnljt@outlook.com',
     long_description=open("README.md", encoding="utf-8").read(),
+    long_description_content_type="text/markdown",
     url=url,
     download_url='{}/archive/{}.tar.gz'.format(url, __version__),
     keywords=[
