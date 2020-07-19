@@ -4,7 +4,7 @@ from tensorflow.keras.layers import Dropout, Softmax
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 
-from graphgallery.nn.layers import GaussionConvolution_F, GaussionConvolution_D
+from graphgallery.nn.layers import GaussionConvolution_F, GaussionConvolution_D, Sample
 from graphgallery.nn.models import SupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery import astensor, asintarr, normalize_x, normalize_adj
@@ -70,7 +70,8 @@ class RobustGCN(SupervisedModel):
         with tf.device(self.device):
             self.x_norm, self.adj_norm = astensor([x, adj])
 
-    def build(self, hiddens=[64], activations=['relu'], use_bias=False, dropout=0.6, lr=0.01, l2_norm=1e-4, para_kl=5e-4, gamma=1.0, ensure_shape=True):
+    def build(self, hiddens=[64], activations=['relu'], use_bias=False, dropout=0.5, 
+              lr=0.01, l2_norm=5e-4, kl=5e-4, gamma=1., ensure_shape=True):
 
         assert len(hiddens) == len(activations), "The number of hidden units and " \
             "activation functions should be the same."
@@ -83,20 +84,21 @@ class RobustGCN(SupervisedModel):
             index = Input(batch_shape=[None],  dtype=self.intx, name='index')
 
             h = Dropout(rate=dropout)(x)
-            h, KL_divergence = GaussionConvolution_F(hiddens[0], gamma=gamma,
+            mean, var = GaussionConvolution_F(hiddens[0], gamma=gamma, kl=kl,
                                                      use_bias=use_bias,
                                                      activation=activations[0],
                                                      kernel_regularizer=regularizers.l2(l2_norm))([h, *adj])
 
             # additional layers (usually unnecessay)
             for hid, activation in zip(hiddens[1:], activations[1:]):
-                h = Dropout(rate=dropout)(h)
-                h = GaussionConvolution_D(hid, gamma=gamma, use_bias=use_bias, activation=activation)([h, *adj])
+                mean = Dropout(rate=dropout)(mean)
+                var = Dropout(rate=dropout)(var)
+                mean, var = GaussionConvolution_D(hid, gamma=gamma, use_bias=use_bias, activation=activation)([mean, var, *adj])
 
-            h = Dropout(rate=dropout)(h)
-            h = GaussionConvolution_D(self.n_classes, gamma=gamma, use_bias=use_bias)([h, *adj])
-            # To aviod the UserWarning of `tf.gather`, but it causes the shape
-            # of the input data to remain the same
+            mean = Dropout(rate=dropout)(mean)
+            var = Dropout(rate=dropout)(var)
+            mean, var = GaussionConvolution_D(self.n_classes, gamma=gamma, use_bias=use_bias)([mean, var, *adj])
+            h = Sample()(mean, var)
             if ensure_shape:
                 h = tf.ensure_shape(h, [self.n_nodes, self.n_classes])
             h = tf.gather(h, index)
@@ -104,7 +106,6 @@ class RobustGCN(SupervisedModel):
 
             model = Model(inputs=[x, *adj, index], outputs=output)
             model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=lr), metrics=['accuracy'])
-            model.add_loss(para_kl * KL_divergence)
 
             self.set_model(model)
 

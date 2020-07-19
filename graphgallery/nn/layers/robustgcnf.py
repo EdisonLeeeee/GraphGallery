@@ -7,21 +7,15 @@ import tensorflow as tf
 from graphgallery import config
 
 
-class GaussionConvolution_F(Layer):
+class GaussionConvolutionFeature_F(Layer):
     """
-        Robust graph convolution layer as in: 
-        `Robust Graph Convolutional Networks Against Adversarial Attacks` <https://dl.acm.org/doi/10.1145/3292500.3330851>
-        Tensorflow 1.x implementation: <https://github.com/thumanlab/nrlweb/blob/master/static/assets/download/RGCN.zip>
-
-        `GaussionConvolution_F` implements the GaussionConvolution operation
-           where the inputs is node feature matrix and two adjacency matrices,
-           the output is another distribution (represented with `mean vector` 
-           and `variance vector`) 
-
+        RobustGCN + Feature
+        
         Arguments:
           units: Positive integer, dimensionality of the output space.
           gamma: Float scalar, determining the attention weights for mean and variance. 
           kl: Float scalar, the hyper-paremeter of KL-divergence loss.
+          concat: Boolean, whether to concat the outpus with hidden feature.
           activation: Activation function to use.
             If you don't specify anything, no activation is applied
             (ie. "linear" activation: `a(x) = x`).
@@ -50,6 +44,7 @@ class GaussionConvolution_F(Layer):
     def __init__(self, units,
                  gamma=1.,
                  kl=0.,
+                 concat=False,
                  use_bias=False,
                  activation=None,
                  kernel_initializer='glorot_uniform',
@@ -63,6 +58,7 @@ class GaussionConvolution_F(Layer):
         super().__init__(**kwargs)
         self.units = units
         self.kl = kl
+        self.concat = concat
         self.gamma = gamma
         self.use_bias = use_bias
 
@@ -111,6 +107,10 @@ class GaussionConvolution_F(Layer):
         mean = tf.sparse.sparse_dense_matmul(adj[0], mean * attention)
         var = tf.sparse.sparse_dense_matmul(adj[1], var * attention * attention)
         
+        if self.concat:
+            mean = tf.concat([mean, h], axis=1)
+            var = tf.concat([var, h], axis=1)
+            
         if self.use_bias:
             mean += self.bias_mean
             var += self.bias_var        
@@ -121,6 +121,7 @@ class GaussionConvolution_F(Layer):
         config = {'units': self.units,
                   'gamma': self.gamma,
                   'kl': self.kl, 
+                  'concat': self.concat,
                   'activation': activations.serialize(self.activation),
                   'use_bias': self.use_bias,
                   'kernel_initializer': initializers.serialize(
@@ -142,25 +143,20 @@ class GaussionConvolution_F(Layer):
         return {**base_config, **config}
 
     def compute_output_shape(self, input_shapes):
+        dim = 2*self.units if self.concat else self.units
         features_shape = input_shapes[0]
-        output_shape = (features_shape[0], self.units)
+        output_shape = (features_shape[0], dim)
         return tf.TensorShape(output_shape), tf.TensorShape(output_shape) 
 
 
-class GaussionConvolution_D(Layer):
+class GaussionConvolutionFeature_D(Layer):
     """
-        Robust graph convolution layer as in: 
-        `Robust Graph Convolutional Networks Against Adversarial Attacks` <https://dl.acm.org/doi/10.1145/3292500.3330851>
-        Tensorflow 1.x implementation: <https://github.com/thumanlab/nrlweb/blob/master/static/assets/download/RGCN.zip>
-
-        `GaussionConvolution_F` implements the GaussionConvolution operation
-           where the inputs are the distribution (represented with `mean vector` and `variance vector`) 
-           and two adjacency matrices, the output is another distribution (represented with `mean vector` 
-           and `variance vector`) 
+       RobustGCN + Feature
 
         Arguments:
           units: Positive integer, dimensionality of the output space.
-          gamma: Float scalar, decide the attention weights for mean and variance. 
+          gamma: float scalar, decide the attention weights for mean and variance. 
+          concat: Boolean, whether to concat the outpus with hidden feature.
           activation: Activation function to use.
             If you don't specify anything, no activation is applied
             (ie. "linear" activation: `a(x) = x`).
@@ -189,6 +185,7 @@ class GaussionConvolution_D(Layer):
 
     def __init__(self, units,
                  gamma=1.,
+                 concat=False,
                  use_bias=False,
                  activation=None,
                  kernel_initializer='glorot_uniform',
@@ -202,6 +199,7 @@ class GaussionConvolution_D(Layer):
         super().__init__(**kwargs)
         self.units = units
         self.gamma = gamma
+        self.concat = concat
         self.use_bias = use_bias
         
         self.activation = activations.get(activation)
@@ -257,6 +255,11 @@ class GaussionConvolution_D(Layer):
         mean = tf.sparse.sparse_dense_matmul(adj[0], mean * attention)
         var = tf.sparse.sparse_dense_matmul(adj[1], var * attention * attention)
 
+        if self.concat:
+            mean = tf.concat([mean, h], axis=1)
+            var = tf.concat([var, h], axis=1)
+            
+            
         if self.use_bias:
             mean += self.bias_mean
             var += self.bias_var
@@ -267,6 +270,7 @@ class GaussionConvolution_D(Layer):
     def get_config(self):
         config = {'units': self.units,
                   'gamma': self.gamma,
+                  'concat': self.concat,
                   'activation': activations.serialize(self.activation),
                   'use_bias': self.use_bias,
                   'kernel_initializer': initializers.serialize(
@@ -288,10 +292,11 @@ class GaussionConvolution_D(Layer):
         return {**base_config, **config}
 
     def compute_output_shape(self, input_shapes):
+        dim = 2*self.units if self.concat else self.units
         feature_shape_mean, feature_shape_var = input_shapes[:2]
         
-        output_shape_mean = (feature_shape_mean[0], self.units)
-        output_shape_var = (feature_shape_var[1], self.units)
+        output_shape_mean = (feature_shape_mean[0], dim)
+        output_shape_var = (feature_shape_var[1], dim)
 
         return tf.TensorShape(output_shape_mean), tf.TensorShape(output_shape_var) 
     

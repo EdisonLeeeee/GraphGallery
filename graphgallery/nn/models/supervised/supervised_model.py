@@ -510,7 +510,7 @@ class SupervisedModel(BaseModel):
         """
         return self.train_sequence(index)
 
-    def test_predict(self, index):
+    def _test_predict(self, index):
         """
             Predict the output accuracy for the `index` of nodes.
 

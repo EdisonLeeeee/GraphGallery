@@ -1,5 +1,6 @@
 import tensorflow as tf
 from tensorflow.keras.layers import Layer
+from graphgallery import config
 
 
 class SqueezedSparseConversion(Layer):
@@ -32,3 +33,18 @@ class Scale(Layer):
 
     def compute_output_shape(self, input_shapes):
         return tf.TensorShape(input_shapes)
+    
+class Sample(Layer):
+    def __init__(self, seed=None, *args, **kwargs):
+        if seed:
+            tf.random.set_seed(seed)
+        super().__init__(*args, **kwargs)
+        
+    def call(self, mean, var):
+        sample = tf.random.normal(tf.shape(var), 0, 1, dtype=config.floatx())
+        output = mean + tf.math.sqrt(var + 1e-8) * sample
+        return output 
+    
+    def compute_output_shape(self, input_shapes):
+        return tf.TensorShape(input_shapes[0])
+    

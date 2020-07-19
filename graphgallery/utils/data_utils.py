@@ -3,7 +3,7 @@ import scipy.sparse as sp
 import tensorflow as tf
 
 from numbers import Number
-from sklearn.preprocessing import scale, normalize, robust_scale
+from sklearn.preprocessing import normalize, StandardScaler, RobustScaler
 
 from graphgallery.utils.shape_utils import repeat
 from graphgallery.utils.type_check import is_list_like
@@ -19,13 +19,14 @@ def sample_mask(indices, shape):
 
 
 def normalize_x(x, norm='l1'):
-    """Normalize the feature matrix.
+    """Normalize the feature matrix with given type.
 
     Arguments
     ----------
 
     norm: The specified type for the normalization.
         `l1`: l1-norm for axis 1, from sklearn.preprocessing.
+        `l1_0`: l1-norm for axis 0, from sklearn.preprocessing.
         `scale`: standard scale for axis 0, sklearn.preprocessing.scale
         `robust_scale`, robust scale for axis 0, sklearn.preprocessing.robust_scale
         None: return None
@@ -35,22 +36,38 @@ def normalize_x(x, norm='l1'):
 
         A normalized feature matrix.
     """
-    assert norm in {'l1', 'scale', 'robust_scale', None}
+    if norm not in {'l1', 'l1_0', 'scale', 'robust_scale', None}:
+        raise ValueError(f'{norm} is not a supported norm.')
 
     if norm == 'l1':
-        x_norm = normalize(x, norm=norm, axis=1)
+        x_norm = normalize(x, norm='l1', axis=1)
+    elif norm == 'l1_0':
+        x_norm = normalize(x, norm='l1', axis=0)
     elif norm == 'scale':
         # something goes wrong with type float32
-        x_norm = scale(x.astype('float64')).astype(config.floatx(), copy=False)
+        x_norm = StandardScaler().fit(x).transform(x)
     elif norm == 'robust_scale':
-        x_norm = robust_scale
+        x_norm = RobustScaler().fit(x).transform(x)
     else:
         x_norm = None
     return x_norm
 
 
 def normalize_adj(adjacency, rate=-0.5, add_self_loop=True):
-    """Normalize adjacency matrix."""
+    """Normalize adjacency matrix.
+    
+    
+    Arguments
+    ----------
+    adjacency: Single or a list of Scipy sparse matrix.
+    rate: Single or a list of float scale, the normalize rate for adjacency.
+    add_self_loop: Boolean, whether to add self loops for the adjacency matrix.
+    
+    Returns
+    ----------
+    Single or a list of Scipy sparse matrix.
+    
+    """
     def normalize(adj, alpha):
 
         if add_self_loop:

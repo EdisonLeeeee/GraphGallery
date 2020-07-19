@@ -1,5 +1,7 @@
+# Base model
 from graphgallery.nn.models.basemodel import BaseModel
 
+# (semi-)supervised model
 from graphgallery.nn.models.supervised.supervised_model import SupervisedModel
 from graphgallery.nn.models.supervised.gcn import GCN
 from graphgallery.nn.models.supervised.gcn_mix import GCN_MIX
@@ -20,8 +22,10 @@ from graphgallery.nn.models.supervised.gmnn import GMNN
 from graphgallery.nn.models.supervised.edgeconv import EdgeGCN
 from graphgallery.nn.models.supervised.mediansage import MedianSAGE
 from graphgallery.nn.models.supervised.gcnf import GCNF
+from graphgallery.nn.models.supervised.robustgcnf import RobustGCNF
 
 
+# unsupervised model
 from graphgallery.nn.models.unsupervised.unsupervised_model import UnsupervisedModel
 from graphgallery.nn.models.unsupervised.deepwalk import Deepwalk
 from graphgallery.nn.models.unsupervised.node2vec import Node2vec

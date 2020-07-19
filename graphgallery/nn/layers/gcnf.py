@@ -5,6 +5,7 @@ import tensorflow as tf
 
 
 class GraphConvFeature(Layer):
+    """GCN + Feature"""
 
     def __init__(self, units,
                  use_bias=False,

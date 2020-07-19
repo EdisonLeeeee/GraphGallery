@@ -11,5 +11,6 @@ from graphgallery.nn.layers.lgcn import LGConvolution
 from graphgallery.nn.layers.edgeconv import GraphEdgeConvolution
 from graphgallery.nn.layers.mediansage import MedianAggregator, MedianGCNAggregator
 from graphgallery.nn.layers.gcnf import GraphConvFeature
-from graphgallery.nn.layers.misc import SqueezedSparseConversion
+from graphgallery.nn.layers.misc import SqueezedSparseConversion, Scale, Sample
+from graphgallery.nn.layers.robustgcnf import GaussionConvolutionFeature_F, GaussionConvolutionFeature_D
 
