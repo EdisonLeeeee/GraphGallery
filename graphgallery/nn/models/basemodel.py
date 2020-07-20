@@ -7,6 +7,8 @@ import tensorflow as tf
 import scipy.sparse as sp
 
 from graphgallery import config, chk_convert, asintarr
+from graphgallery.utils.type_check import is_list_like
+
 
 
 class BaseModel:
@@ -118,7 +120,11 @@ class BaseModel:
         """
         adj = chk_convert(adj, self.is_adj_sparse)
         x = chk_convert(x, self.is_x_sparse)
-        adj_shape = adj.shape
+        if is_list_like(adj):
+            adj_shape = adj[0].shape
+        else:
+            adj_shape = adj.shape
+        
         x_shape = x.shape
 
         if adj_shape[0] != x_shape[0]:

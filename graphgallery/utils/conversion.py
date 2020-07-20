@@ -27,6 +27,9 @@ def chk_convert(matrix, is_sparse):
         A converted matrix with proper data type.
 
     """
+    # for multi inputs, only check for the first one
+    if is_list_like(matrix):
+        return [chk_convert(m, is_sparse) for m in matrix]
     if not is_sparse:
         if not isinstance(matrix, (np.ndarray, np.matrix)):
             raise TypeError("The input matrix must be Numpy array-like or `np.matrix`"
@@ -34,7 +37,7 @@ def chk_convert(matrix, is_sparse):
         return np.asarray(matrix, dtype=config.floatx())
     else:
         if not sp.issparse(matrix):
-            raise TypeError(f"The input matrix must be Scipy sparse matrix when `is_sparse=True`, but got {type(x)}")
+            raise TypeError(f"The input matrix must be Scipy sparse matrix when `is_sparse=True`, but got {type(matrix)}")
 
         return matrix.astype(dtype=config.floatx(), copy=False)
 

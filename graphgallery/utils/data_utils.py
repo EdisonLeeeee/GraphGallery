@@ -53,7 +53,7 @@ def normalize_x(x, norm='l1'):
     return x_norm
 
 
-def normalize_adj(adjacency, rate=-0.5, add_self_loop=True):
+def normalize_adj(adjacency, rate=-0.5, self_loop=1.0):
     """Normalize adjacency matrix.
     
     
@@ -61,7 +61,7 @@ def normalize_adj(adjacency, rate=-0.5, add_self_loop=True):
     ----------
     adjacency: Single or a list of Scipy sparse matrix.
     rate: Single or a list of float scale, the normalize rate for adjacency.
-    add_self_loop: Boolean, whether to add self loops for the adjacency matrix.
+    self_loop: Float scalar, weight of self loops for the adjacency matrix.
     
     Returns
     ----------
@@ -70,8 +70,7 @@ def normalize_adj(adjacency, rate=-0.5, add_self_loop=True):
     """
     def normalize(adj, alpha):
 
-        if add_self_loop:
-            adj = adj + sp.eye(adj.shape[0])
+        adj = adj + self_loop*sp.eye(adj.shape[0])
 
         if alpha is None:
             return adj.astype(config.floatx(), copy=False)
