@@ -22,7 +22,6 @@ from graphgallery.nn.models.supervised.gmnn import GMNN
 from graphgallery.nn.models.supervised.edgeconv import EdgeGCN
 from graphgallery.nn.models.supervised.mediansage import MedianSAGE
 from graphgallery.nn.models.supervised.gcnf import GCNF
-from graphgallery.nn.models.supervised.robustgcnf import RobustGCNF
 
 
 # unsupervised model

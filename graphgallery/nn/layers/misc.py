@@ -45,6 +45,10 @@ class Sample(Layer):
         output = mean + tf.math.sqrt(var + 1e-8) * sample
         return output 
     
+    def get_config(self):
+        base_config = super().get_config()
+        return base_config
+    
     def compute_output_shape(self, input_shapes):
         return tf.TensorShape(input_shapes[0])
     
