@@ -1,6 +1,9 @@
 # GraphGallery
-![GraphGallery](./graphgallery.png)
-A gallery of state-of-the-arts graph neural networks.. 
+
+<img src=./graphgallery.svg width = "800" height = "300" alt="GraphGallery" align=center>
+
+
+A gallery of state-of-the-arts graph neural networks..
 
 Implemented with Tensorflow 2.x.
 
