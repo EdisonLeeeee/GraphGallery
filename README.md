@@ -1,5 +1,5 @@
 # GraphGallery
-
+![GraphGallery](./graphgallery.png)
 A gallery of state-of-the-arts graph neural networks.. 
 
 Implemented with Tensorflow 2.x.

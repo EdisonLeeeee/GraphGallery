@@ -5,6 +5,7 @@
 tmp/
 *.txt
 !requirements.txt
+!graphgallery.png
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

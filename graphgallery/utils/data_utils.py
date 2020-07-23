@@ -72,7 +72,7 @@ def normalize_adj(adjacency, rate=-0.5, self_loop=1.0):
 
         adj = adj + self_loop*sp.eye(adj.shape[0])
 
-        if alpha is None:
+        if not alpha:
             return adj.astype(config.floatx(), copy=False)
 
         row_sum = adj.sum(1).A1

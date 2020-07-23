@@ -30,7 +30,11 @@ class Scale(Layer):
     def call(self, inputs):
         output = (inputs - tf.reduce_mean(inputs, axis=0, keepdims=True)) / tf.keras.backend.std(inputs, axis=0, keepdims=True)
         return output
-
+    
+    def get_config(self):
+        base_config = super().get_config()
+        return base_config
+    
     def compute_output_shape(self, input_shapes):
         return tf.TensorShape(input_shapes)
     
