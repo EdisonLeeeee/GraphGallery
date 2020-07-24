@@ -70,6 +70,8 @@ def normalize_adj(adjacency, rate=-0.5, self_loop=1.0):
     """
     def normalize(adj, alpha):
 
+        adj = adj.tocsr(copy=False)
+        
         adj = adj + self_loop*sp.eye(adj.shape[0])
 
         if not alpha:

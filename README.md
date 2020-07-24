@@ -3,9 +3,7 @@
 <img src=./graphgallery.svg width = "800" height = "300" alt="GraphGallery" align=center>
 
 
-A gallery of state-of-the-arts graph neural networks..
-
-Implemented with Tensorflow 2.x.
+A gallery of state-of-the-arts graph neural networks. Implemented with Tensorflow 2.x.
 
 This repo aims to achieve 4 goals:
 + Similar (or higher) performance with the corresponding papers
@@ -15,7 +13,7 @@ This repo aims to achieve 4 goals:
 
 # Requirements
 
-+ python>=3.7
++ python>=3.6
 + tensorflow>=2.1 (2.1 is recommended)
 + networkx==2.3
 + scipy>=1.4.1
@@ -31,7 +29,10 @@ Extral packages (not necessary）:
 
 # Install
 ```bash
-pip install graphgallery -U
+pip install -U graphgallery
 ```
+
+# Quick Start
+
 
 
