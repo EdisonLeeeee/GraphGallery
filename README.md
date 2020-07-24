@@ -6,8 +6,8 @@
 A gallery of state-of-the-arts graph neural networks. Implemented with Tensorflow 2.x.
 
 This repo aims to achieve 4 goals:
-+ Similar (or higher) performance with the corresponding papers
-+ Faster implementation of training and testing
++ Similar (or higher) performance
++ Faster training and testing
 + Simple and convenient to use, high scalability
 + Easy to read source codes
 
@@ -24,7 +24,7 @@ This repo aims to achieve 4 goals:
 
 Other packages (not necessary）:
 
-+ metis==0.2a4
++ metis==0.2a4 (used for `ClusterGCN`)
 + texttable
 
 # Install
@@ -49,11 +49,11 @@ Defense models
 + **SBVAT/OBVAT** from *Batch Virtual Adversarial Training for Graph Convolutional Networks* [🌐Paper](https://arxiv.org/abs/1902.09192)
 
 Other models
-+ **GCN_MIX**
-+ **GCNF**
-+ **DenseGCN**
-+ **EdgeGCN**
-+ **MedianSAGE**
++ **GCN_MIX**: Mixture of GCN and MLP
++ **GCNF**: GCN + feature
++ **DenseGCN**: Dense version of GCN
++ **EdgeGCN**: GCN using message passing framework
++ **MedianSAGE**: GraphSAGE using `Median` aggregation
 
 # Quick Start
 ## Train a GCN model
