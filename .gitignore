@@ -1,11 +1,9 @@
 # Custom
 *.idea
-*.png
 *.pdf
 tmp/
 *.txt
 !requirements.txt
-!graphgallery.svg
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -100,4 +98,4 @@ ENV/
 *.pickle
 
 # My codes
-median_sage.py
+
