@@ -1,12 +1,18 @@
 # GraphGallery
 
+[pypi-image]: https://badge.fury.io/py/graphgallery.svg
+[pypi-url]: https://pypi.org/project/graphgallery/
+
+
 <img src=./imgs/graphgallery.svg width = "1000" height = "300" alt="GraphGallery" align=center>
+
+[![PyPI Version][pypi-image]][pypi-url]
 
 
 A gallery of state-of-the-arts graph neural networks. Implemented with Tensorflow 2.x.
 
 This repo aims to achieve 4 goals:
-+ Similar (or higher) performance
++ Similar or higher performance
 + Faster training and testing
 + Simple and convenient to use, high scalability
 + Easy to read source codes
@@ -17,8 +23,8 @@ This repo aims to achieve 4 goals:
 + tensorflow>=2.1 (2.1 is recommended)
 + networkx==2.3
 + scipy>=1.4.1
-+ sklearn>=0.22
-+ numpy>=1.18.1
++ scikit_learn>=0.22
++ numpy>=1.17.4
 + numba>=0.48
 + gensim>=3.8.1
 
@@ -31,6 +37,7 @@ Other packages (not necessary）:
 ```bash
 pip install -U graphgallery
 ```
+
 # Implementation
 General models
 + **GCN** from *Semi-Supervised Classification with Graph Convolutional Networks* [🌐Paper](https://arxiv.org/abs/1609.02907)
