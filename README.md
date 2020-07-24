@@ -4,12 +4,14 @@
 [pypi-url]: https://pypi.org/project/graphgallery/
 
 
-<img src=./imgs/graphgallery.svg width = "1000" height = "300" alt="GraphGallery" align=center>
+<p align="center">
+  <img width = "1000" height = "300" src="./imgs/graphgallery.svg" />
+</p>
 
 [![PyPI Version][pypi-image]][pypi-url]
 
 
-A gallery of state-of-the-arts graph neural networks. Implemented with Tensorflow 2.x.
+A gallery of state-of-the-arts graph neural networks. Implemented with [TensorFlow](https://github.com/tensorflow/tensorflow) 2.x.
 
 This repo aims to achieve 4 goals:
 + Similar or higher performance
@@ -39,7 +41,7 @@ pip install -U graphgallery
 ```
 
 # Implementation
-General models
+## General models
 + **GCN** from *Semi-Supervised Classification with Graph Convolutional Networks* [🌐Paper](https://arxiv.org/abs/1609.02907)
 + **GAT** from *Graph Attention Networks* [🌐Paper](https://arxiv.org/abs/1710.10903>)
 + **SGC** from *Simplifying Graph Convolutional Networks* [🌐Paper](https://arxiv.org/abs/1902.07153)
@@ -51,11 +53,11 @@ General models
 + **FastGCN** from *FastGCN: Fast Learning with Graph Convolutional Networks via Importance Sampling* [🌐Paper](https://arxiv.org/abs/1801.10247)
 + **LGCN** from  *Large-Scale Learnable Graph Convolutional Networks* [🌐Paper](https://arxiv.org/abs/1808.03965)
 
-Defense models
+## Defense models
 + **RGCN** from *Robust Graph Convolutional Networks Against Adversarial Attacks* [🌐Paper](https://dl.acm.org/doi/10.1145/3292500.3330851)
 + **SBVAT/OBVAT** from *Batch Virtual Adversarial Training for Graph Convolutional Networks* [🌐Paper](https://arxiv.org/abs/1902.09192)
 
-Other models
+## Other models
 + **GCN_MIX**: Mixture of GCN and MLP
 + **GCNF**: GCN + feature
 + **DenseGCN**: Dense version of GCN
