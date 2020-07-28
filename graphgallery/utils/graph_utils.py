@@ -19,7 +19,7 @@ def random_clustering(n_nodes, n_clusters):
     return parts
 
 
-def partition_graph(adj, x, labels, graph, n_clusters, metis_partition=True):
+def partition_graph(adj, x, graph, n_clusters, metis_partition=True):
     # partition graph
     if metis_partition:
         assert metis, "Please install `metis` package!"
@@ -33,7 +33,7 @@ def partition_graph(adj, x, labels, graph, n_clusters, metis_partition=True):
 
     mapper = {}
 
-    batch_adj, batch_x, batch_labels = [], [], []
+    batch_adj, batch_x = [], []
 
     for cluster in range(n_clusters):
 
@@ -45,9 +45,8 @@ def partition_graph(adj, x, labels, graph, n_clusters, metis_partition=True):
 
         batch_adj.append(mini_adj)
         batch_x.append(mini_x)
-        batch_labels.append(labels[nodes])
 
-    return batch_adj, batch_x, batch_labels, cluster_member, mapper
+    return batch_adj, batch_x, cluster_member
 
 
 def construct_neighbors(adj, max_degree=25, self_loop=False):

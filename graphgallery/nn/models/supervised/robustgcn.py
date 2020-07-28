@@ -85,7 +85,6 @@ class RobustGCN(SupervisedModel):
         self.model_paras.update(paras)
 
         with tf.device(self.device):
-            tf.random.set_seed(self.seed)
             x = Input(batch_shape=[None, self.n_features], dtype=self.floatx, name='features')
             adj = [Input(batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix_1'),
                    Input(batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix_2')]

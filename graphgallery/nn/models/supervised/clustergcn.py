@@ -6,12 +6,12 @@ from tensorflow.keras.layers import Dropout, Softmax
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 
-from graphgallery.nn.layers import GraphConvolution
+from graphgallery.nn.layers import GraphConvolution, SqueezedSparseConversion
 from graphgallery.nn.models import SupervisedModel
 from graphgallery.sequence import ClusterMiniBatchSequence
 from graphgallery.utils.graph_utils import partition_graph
 from graphgallery.utils.shape_utils import set_equal_in_length
-from graphgallery import Bunch, sample_mask, normalize_x, normalize_adj, astensor, asintarr
+from graphgallery import Bunch, sample_mask, normalize_x, normalize_adj, astensor, asintarr, sparse_adj_to_edges
 
 
 class ClusterGCN(SupervisedModel):
@@ -80,19 +80,24 @@ class ClusterGCN(SupervisedModel):
         if self.norm_x_type:
             x = normalize_x(x, norm=self.norm_x_type)
 
-        if not graph:
+        if graph is None:
             graph = nx.from_scipy_sparse_matrix(adj, create_using=nx.DiGraph)
 
-        (self.batch_adj, self.batch_x, self.batch_labels,
-         self.cluster_member, self.mapper) = partition_graph(adj, x, self.labels, graph,
-                                                             n_clusters=self.n_clusters)
+        batch_adj, batch_x, self.cluster_member = partition_graph(adj, x, graph,
+                                                                  n_clusters=self.n_clusters)
 
         if self.norm_adj_rate:
-            self.batch_adj = normalize_adj(self.batch_adj, self.norm_adj_rate)
-
+            batch_adj = normalize_adj(batch_adj, self.norm_adj_rate)
+            
+        batch_adj = [sparse_adj_to_edges(b_adj) for b_adj in batch_adj]
+        batch_edge_index, batch_edge_weight = tuple(zip(*batch_adj))
+        
         with tf.device(self.device):
-            self.batch_adj, self.batch_x = astensor([self.batch_adj, self.batch_x])
+            (self.batch_edge_index, 
+             self.batch_edge_weight, 
+             self.batch_x) = astensor([batch_edge_index, batch_edge_weight, batch_x])
 
+    
     def build(self, hiddens=[32], activations=['relu'], dropouts=[0.5], l2_norms=[1e-5], lr=0.01):
         local_paras = locals()
         local_paras.pop('self')
@@ -106,9 +111,11 @@ class ClusterGCN(SupervisedModel):
         with tf.device(self.device):
 
             x = Input(batch_shape=[None, self.n_features], dtype=self.floatx, name='features')
-            adj = Input(batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix')
+            edge_index = Input(batch_shape=[None, 2], dtype=tf.int64, name='edge_index')
+            edge_weight = Input(batch_shape=[None], dtype=self.floatx, name='edge_weight')
             mask = Input(batch_shape=[None],  dtype=tf.bool, name='mask')
 
+            adj = SqueezedSparseConversion()([edge_index, edge_weight])
             h = x
             for hid, activation, dropout, l2_norm in zip(hiddens, activations, dropouts, l2_norms):
                 h = Dropout(rate=dropout)(h)
@@ -120,10 +127,10 @@ class ClusterGCN(SupervisedModel):
             h = tf.boolean_mask(h, mask)
             output = Softmax()(h)
 
-            model = Model(inputs=[x, adj, mask], outputs=output)
+            model = Model(inputs=[x, edge_index, edge_weight, mask], outputs=output)
 
             model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=lr),
-                          metrics=['accuracy'], experimental_run_tf_function=False)
+                          metrics=['accuracy'])
 
             self.set_model(model)
 
@@ -134,7 +141,7 @@ class ClusterGCN(SupervisedModel):
 
         orders_dict = {idx: order for order, idx in enumerate(index)}
         batch_mask, orders = [], []
-        batch_x, batch_adj = [], []
+        batch_x, batch_edge_index, batch_edge_weight = [], [], []
         for cluster in range(self.n_clusters):
             nodes = self.cluster_member[cluster]
             mini_mask = mask[nodes]
@@ -142,12 +149,13 @@ class ClusterGCN(SupervisedModel):
             if batch_nodes.size == 0:
                 continue
             batch_x.append(self.batch_x[cluster])
-            batch_adj.append(self.batch_adj[cluster])
+            batch_edge_index.append(self.batch_edge_index[cluster])
+            batch_edge_weight.append(self.batch_edge_weight[cluster])
             batch_mask.append(mini_mask)
             orders.append([orders_dict[n] for n in batch_nodes])
 
-        batch_data = tuple(zip(batch_x, batch_adj, batch_mask))
-
+        batch_data = tuple(zip(batch_x, batch_edge_index, batch_edge_weight, batch_mask))
+        
         logit = np.zeros((index.size, self.n_classes), dtype=self.floatx)
         with tf.device(self.device):
             batch_data = astensor(batch_data)
@@ -163,7 +171,7 @@ class ClusterGCN(SupervisedModel):
         labels = self.labels
 
         batch_mask, batch_labels = [], []
-        batch_x, batch_adj = [], []
+        batch_x, batch_edge_index, batch_edge_weight = [], [], []
         for cluster in range(self.n_clusters):
             nodes = self.cluster_member[cluster]
             mini_mask = mask[nodes]
@@ -171,11 +179,13 @@ class ClusterGCN(SupervisedModel):
             if mini_labels.size == 0:
                 continue
             batch_x.append(self.batch_x[cluster])
-            batch_adj.append(self.batch_adj[cluster])
+            batch_edge_index.append(self.batch_edge_index[cluster])
+            batch_edge_weight.append(self.batch_edge_weight[cluster])
             batch_mask.append(mini_mask)
             batch_labels.append(mini_labels)
 
-        batch_data = tuple(zip(batch_x, batch_adj, batch_mask))
+        batch_data = tuple(zip(batch_x, batch_edge_index, batch_edge_weight, batch_mask))
+        
         with tf.device(self.device):
             sequence = ClusterMiniBatchSequence(batch_data, batch_labels)
         return sequence

@@ -10,8 +10,7 @@ class SqueezedSparseConversion(Layer):
 
     def call(self, inputs):
         indices, values = inputs
-        n_nodes = self.n_nodes or tf.reduce_max(indices) + 1
-        self.n_nodes = n_nodes
+        n_nodes = tf.reduce_max(indices) + 1
 
         if indices.dtype != tf.int64:
             indices = tf.cast(indices, tf.int64)

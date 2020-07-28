@@ -5,7 +5,7 @@ from numbers import Number
 def repeat(src, length):
     if src is None:
         return src
-    if isinstance(src, Number):
+    if isinstance(src, (Number, str)):
         return list(itertools.repeat(src, length))
     if (len(src) > length):
         return src[:length]
@@ -43,8 +43,8 @@ def set_equal_in_length(*inputs, max_length=None):
 
 
 def get_length(arr):
-    try:
+    if isinstance(arr, (list, tuple)):
         length = len(arr)
-    except TypeError as e:
+    else:
         length = 1
     return length
