@@ -9,41 +9,42 @@ from tensorflow.keras import regularizers
 from graphgallery.nn.layers import Top_k_features, LGConvolution, DenseGraphConv
 from graphgallery.nn.models import SupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
+from graphgallery.utils.shape_utils import set_equal_in_length, get_length
 from graphgallery.utils.graph_utils import get_indice_graph
-from graphgallery import astensor, asintarr, sample_mask, normalize_x, normalize_adj
+from graphgallery import astensor, asintarr, sample_mask, normalize_x, normalize_adj, Bunch, repeat
 
 
 class LGCN(SupervisedModel):
     """
-        Implementation of Large-Scale Learnable Graph Convolutional Networks (LGCN). 
+        Implementation of Large-Scale Learnable Graph Convolutional Networks (LGCN).
         `Large-Scale Learnable Graph Convolutional Networks <https://arxiv.org/abs/1808.03965>`
         Tensorflow 1.x implementation: <https://github.com/divelab/lgcn>
 
         Arguments:
         ----------
-            adj: shape (N, N), Scipy sparse matrix if  `is_adj_sparse=True`, 
+            adj: shape (N, N), Scipy sparse matrix if  `is_adj_sparse=True`,
                 Numpy array-like (or matrix) if `is_adj_sparse=False`.
-                The input `symmetric` adjacency matrix, where `N` is the number 
+                The input `symmetric` adjacency matrix, where `N` is the number
                 of nodes in graph.
-            x: shape (N, F), Scipy sparse matrix if `is_x_sparse=True`, 
+            x: shape (N, F), Scipy sparse matrix if `is_x_sparse=True`,
                 Numpy array-like (or matrix) if `is_x_sparse=False`.
                 The input node feature matrix, where `F` is the dimension of features.
             labels: Numpy array-like with shape (N,)
                 The ground-truth labels for all nodes in graph.
-            norm_adj_rate (Float scalar, optional): 
-                The normalize rate for adjacency matrix `adj`. (default: :obj:`-0.5`, 
-                i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
-            norm_x_type (String, optional): 
+            norm_adj_rate (Float scalar, optional):
+                The normalize rate for adjacency matrix `adj`. (default: :obj:`-0.5`,
+                i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}})
+            norm_x_type (String, optional):
                 How to normalize the node feature matrix. See `graphgallery.normalize_x`
                 (default :str: `l1`)
-            device (String, optional): 
-                The device where the model is running on. You can specified `CPU` or `GPU` 
+            device (String, optional):
+                The device where the model is running on. You can specified `CPU` or `GPU`
                 for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
-            seed (Positive integer, optional): 
-                Used in combination with `tf.random.set_seed` & `np.random.seed` & `random.seed`  
-                to create a reproducible sequence of tensors across multiple calls. 
+            seed (Positive integer, optional):
+                Used in combination with `tf.random.set_seed` & `np.random.seed` & `random.seed`
+                to create a reproducible sequence of tensors across multiple calls.
                 (default :obj: `None`, i.e., using random seed)
-            name (String, optional): 
+            name (String, optional):
                 Specified name for the model. (default: :str: `class.__name__`)
 
 
@@ -77,11 +78,23 @@ class LGCN(SupervisedModel):
 
         self.x_norm, self.adj_norm = x, adj
 
-    def build(self, hiddens=[32], n_filters=[8, 8], activations=[None], dropout=0.8,
-              lr=0.1, l2_norm=5e-4, use_bias=False, k=8):
+    def build(self, hiddens=[32], n_filters=[8, 8], activations=[None], dropouts=[0.8], l2_norms=[5e-4],
+              lr=0.1, use_bias=False, k=8):
 
-        assert len(hiddens) == len(activations), "The number of hidden units and " \
-            "activation functions should be the same."
+        local_paras = locals()
+        local_paras.pop('self')
+        paras = Bunch(**local_paras)
+        hiddens = repeat(hiddens, get_length(hiddens))
+        n_filters = repeat(n_filters, get_length(n_filters))
+        activations, l2_norms = set_equal_in_length(activations, l2_norms,
+                                                    max_length=get_length(hiddens) + get_length(n_filters))
+        dropouts = repeat(dropouts, get_length(hiddens) + 1)
+
+        paras.update(Bunch(hiddens=hiddens, n_filters=n_filters, activations=activations,
+                           dropouts=dropouts, l2_norms=l2_norms))
+        # update all parameters
+        self.paras.update(paras)
+        self.model_paras.update(paras)
 
         with tf.device(self.device):
 
@@ -90,21 +103,22 @@ class LGCN(SupervisedModel):
             mask = Input(batch_shape=[None],  dtype=tf.bool, name='mask')
 
             h = x
-            for hid, activation in zip(hiddens, activations):
-                h = Dropout(rate=dropout)(h)
-                h = DenseGraphConv(hid, use_bias=use_bias, activation=activation,
-                                   kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
+            for idx, hid in enumerate(hiddens):
+                h = Dropout(rate=dropouts[idx])(h)
+                h = DenseGraphConv(hid, use_bias=use_bias, activation=activations[idx],
+                                   kernel_regularizer=regularizers.l2(l2_norms[idx]))([h, adj])
 
-            for n_filter in n_filters:
+            for idx, n_filter in enumerate(n_filters):
                 top_k_h = Top_k_features(k=k)([h, adj])
-                cur_h = LGConvolution(n_filter, k, use_bias=use_bias,
-                                      dropout=dropout, activation=None,
-                                      kernel_regularizer=regularizers.l2(l2_norm))(top_k_h)
+                cur_h = LGConvolution(n_filter, kernel_size=k, use_bias=use_bias,
+                                      dropout=dropouts[idx], activation=activations[idx],
+                                      kernel_regularizer=regularizers.l2(l2_norms[idx]))(top_k_h)
                 cur_h = BatchNormalization()(cur_h)
                 h = Concatenate()([h, cur_h])
 
-            h = Dropout(rate=dropout)(h)
-            h = DenseGraphConv(self.n_classes, use_bias=use_bias, kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
+            h = Dropout(rate=dropouts[-1])(h)
+            h = DenseGraphConv(self.n_classes, use_bias=use_bias, activation=activations[-1],
+                               kernel_regularizer=regularizers.l2(l2_norms[-1]))([h, adj])
 
             h = tf.boolean_mask(h, mask)
             output = Softmax()(h)

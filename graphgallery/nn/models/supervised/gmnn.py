@@ -8,7 +8,8 @@ from tensorflow.keras import regularizers
 from graphgallery.nn.layers import GraphConvolution
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.nn.models import SupervisedModel
-from graphgallery import astensor, asintarr, normalize_x, normalize_adj
+from graphgallery.utils.shape_utils import set_equal_in_length
+from graphgallery import astensor, asintarr, normalize_x, normalize_adj, Bunch
 
 
 class GMNN(SupervisedModel):
@@ -71,11 +72,17 @@ class GMNN(SupervisedModel):
         with tf.device(self.device):
             self.x_norm, self.adj_norm = astensor([x, adj])
 
-    def build(self, hiddens=[16], activations=['relu'], dropout=0.5,
-              lr=0.05, l2_norm=5e-4, use_bias=False, ensure_shape=True):
+    def build(self, hiddens=[16], activations=['relu'], dropouts=[0.6], l2_norms=[5e-4],
+              lr=0.05, use_bias=False, ensure_shape=True):
 
-        assert len(hiddens) == len(activations), "The number of hidden units and " \
-            "activation functions should be the same."
+        local_paras = locals()
+        local_paras.pop('self')
+        paras = Bunch(**local_paras)
+        hiddens, activations, dropouts, l2_norms = set_equal_in_length(hiddens, activations, dropouts, l2_norms)
+        paras.update(Bunch(hiddens=hiddens, activations=activations, dropouts=dropouts, l2_norms=l2_norms))
+        # update all parameters
+        self.paras.update(paras)
+        self.model_paras.update(paras)
 
         with tf.device(self.device):
             tf.random.set_seed(self.seed)
@@ -85,13 +92,12 @@ class GMNN(SupervisedModel):
             index = Input(batch_shape=[None],  dtype=self.intx, name='index')
 
             def build_GCN(x):
-                h = Dropout(rate=dropout)(x)
-
-                for hid, activation in zip(hiddens, activations):
+                h = x
+                for hid, activation, dropout, l2_norm in zip(hiddens, activations, dropouts, l2_norms):
                     h = GraphConvolution(hid, use_bias=use_bias,
                                          activation=activation,
                                          kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
-#                     h = Dropout(rate=dropout)(h)
+                    h = Dropout(rate=dropout)(h)
 
                 h = GraphConvolution(self.n_classes, use_bias=use_bias)([h, adj])
                 # To aviod the UserWarning of `tf.gather`, but it causes the shape
@@ -115,18 +121,20 @@ class GMNN(SupervisedModel):
             self.set_model(self.model_q)
 
     def train(self, index_train, index_val=None, pre_train_epochs=100,
-              epochs=100, early_stopping=None,
-              verbose=None, save_best=True, weight_path=None, as_model=False,
+              epochs=100, early_stopping=None, verbose=None, save_best=True,
+              weight_path=None, as_model=False,
               monitor='val_acc', early_stop_metric='val_loss'):
 
+        histories = []
         index_all = tf.range(self.n_nodes, dtype=self.intx)
 
         # pre train model_q
         self.set_model(self.model_q)
-        super().train(index_train, index_val, epochs=pre_train_epochs,
-                      early_stopping=early_stopping,
-                      verbose=verbose, save_best=save_best, weight_path=weight_path, as_model=True,
-                      monitor=monitor, early_stop_metric=early_stop_metric)
+        history = super().train(index_train, index_val, epochs=pre_train_epochs,
+                                early_stopping=early_stopping,
+                                verbose=verbose, save_best=save_best, weight_path=weight_path, as_model=True,
+                                monitor=monitor, early_stop_metric=early_stop_metric)
+        histories.append(history)
 
         label_predict = self.predict(index_all).argmax(1)
         label_predict[index_train] = self.labels[index_train]
@@ -140,10 +148,11 @@ class GMNN(SupervisedModel):
                 val_sequence = None
 
         self.set_model(self.model_p)
-        super().train(train_sequence, val_sequence, epochs=epochs,
-                      early_stopping=early_stopping,
-                      verbose=verbose, save_best=save_best, weight_path=weight_path, as_model=as_model,
-                      monitor=monitor, early_stop_metric=early_stop_metric)
+        history = super().train(train_sequence, val_sequence, epochs=epochs,
+                                early_stopping=early_stopping,
+                                verbose=verbose, save_best=save_best, weight_path=weight_path, as_model=as_model,
+                                monitor=monitor, early_stop_metric=early_stop_metric)
+        histories.append(history)
 
         # then train model_q again
         label_predict = self.model.predict_on_batch(astensor([label_predict, self.adj_norm, index_all]))
@@ -161,7 +170,12 @@ class GMNN(SupervisedModel):
                                 weight_path=weight_path, as_model=as_model,
                                 monitor=monitor, early_stop_metric=early_stop_metric)
 
-        return history
+        histories.append(history)
+        # update training paras and all paras
+        self.train_paras.update(Bunch(pre_train_epochs=pre_train_epochs))
+        self.paras.update(Bunch(pre_train_epochs=pre_train_epochs))
+
+        return histories
 
     def train_sequence(self, index):
         index = asintarr(index)

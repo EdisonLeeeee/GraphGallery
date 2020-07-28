@@ -11,13 +11,12 @@ import numpy as np
 import tensorflow as tf
 import scipy.sparse as sp
 
-from tqdm import tqdm
 from sklearn.preprocessing import normalize
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 
 from graphgallery.nn.models import BaseModel
-from graphgallery import asintarr
+from graphgallery import asintarr, Bunch
 
 
 class UnsupervisedModel(BaseModel):
@@ -52,6 +51,7 @@ class UnsupervisedModel(BaseModel):
 
         self.embeddings = None
         self.classifier = LogisticRegression(solver='lbfgs', max_iter=1000, multi_class='auto', random_state=seed)
+        self.train_paras.update(Bunch(classifier=self.classifier))
 
     def build(self):
         raise NotImplementedError
@@ -60,7 +60,7 @@ class UnsupervisedModel(BaseModel):
         raise NotImplementedError
 
     def train(self, index):
-        if self.embeddings is None:
+        if not self.embeddings:
             self.get_embeddings()
 
         index = asintarr(index)

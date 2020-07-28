@@ -10,50 +10,51 @@ from graphgallery.nn.layers import GraphConvolution
 from graphgallery.nn.models import SupervisedModel
 from graphgallery.sequence import ClusterMiniBatchSequence
 from graphgallery.utils.graph_utils import partition_graph
+from graphgallery.utils.shape_utils import set_equal_in_length
 from graphgallery import Bunch, sample_mask, normalize_x, normalize_adj, astensor, asintarr
 
 
 class ClusterGCN(SupervisedModel):
     """
-        Implementation of Cluster Graph Convolutional Networks (ClusterGCN). 
+        Implementation of Cluster Graph Convolutional Networks (ClusterGCN).
 
-        `Cluster-GCN: An Efficient Algorithm for Training Deep and Large Graph Convolutional Networks 
+        `Cluster-GCN: An Efficient Algorithm for Training Deep and Large Graph Convolutional Networks
         <https://arxiv.org/abs/1905.07953>`
         Tensorflow 1.x implementation: <https://github.com/google-research/google-research/tree/master/cluster_gcn>
         Pytorch implementation: <https://github.com/benedekrozemberczki/ClusterGCN>
 
         Arguments:
         ----------
-            adj: shape (N, N), Scipy sparse matrix if  `is_adj_sparse=True`, 
+            adj: shape (N, N), Scipy sparse matrix if  `is_adj_sparse=True`,
                 Numpy array-like (or matrix) if `is_adj_sparse=False`.
-                The input `symmetric` adjacency matrix, where `N` is the number 
+                The input `symmetric` adjacency matrix, where `N` is the number
                 of nodes in graph.
-            x: shape (N, F), Scipy sparse matrix if `is_x_sparse=True`, 
+            x: shape (N, F), Scipy sparse matrix if `is_x_sparse=True`,
                 Numpy array-like (or matrix) if `is_x_sparse=False`.
                 The input node feature matrix, where `F` is the dimension of features.
             labels: Numpy array-like with shape (N,)
                 The ground-truth labels for all nodes in graph.
-            graph (`nx.DiGraph`, optional): 
-                The networkx graph which converted by `adj`, if if not specified (`None`), 
-                the graph will be converted by `adj` automatically, but it will comsum lots 
+            graph (`nx.DiGraph`, optional):
+                The networkx graph which converted by `adj`, if if not specified (`None`),
+                the graph will be converted by `adj` automatically, but it will comsum lots
                 of time. (default :obj: `None`)
-            n_clusters (Potitive integer): 
-                The number of clusters that the graph being seperated, if not specified (`None`), 
+            n_clusters (Potitive integer):
+                The number of clusters that the graph being seperated, if not specified (`None`),
                 it will be set to the number of classes automatically. (default :obj: `None`).
-            norm_adj_rate (Float scalar, optional): 
-                The normalize rate for adjacency matrix `adj`. (default: :obj:`-0.5`, 
+            norm_adj_rate (Float scalar, optional):
+                The normalize rate for adjacency matrix `adj`. (default: :obj:`-0.5`,
                 i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}})
-            norm_x_type (String, optional): 
+            norm_x_type (String, optional):
                 How to normalize the node feature matrix. See `graphgallery.normalize_x`
                 (default :str: `l1`)
-            device (String, optional): 
-                The device where the model is running on. You can specified `CPU` or `GPU` 
+            device (String, optional):
+                The device where the model is running on. You can specified `CPU` or `GPU`
                 for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
-            seed (Positive integer, optional): 
-                Used in combination with `tf.random.set_seed` & `np.random.seed` & `random.seed`  
-                to create a reproducible sequence of tensors across multiple calls. 
+            seed (Positive integer, optional):
+                Used in combination with `tf.random.set_seed` & `np.random.seed` & `random.seed`
+                to create a reproducible sequence of tensors across multiple calls.
                 (default :obj: `None`, i.e., using random seed)
-            name (String, optional): 
+            name (String, optional):
                 Specified name for the model. (default: :str: `class.__name__`)
 
     """
@@ -63,7 +64,7 @@ class ClusterGCN(SupervisedModel):
 
         super().__init__(adj, x, labels=labels, device=device, seed=seed, name=name, **kwargs)
 
-        if n_clusters is None:
+        if not n_clusters:
             n_clusters = self.n_classes
 
         self.n_clusters = n_clusters
@@ -92,10 +93,15 @@ class ClusterGCN(SupervisedModel):
         with tf.device(self.device):
             self.batch_adj, self.batch_x = astensor([self.batch_adj, self.batch_x])
 
-    def build(self, hiddens=[32], activations=['relu'], dropout=0.5, lr=0.01, l2_norm=1e-5):
-
-        assert len(hiddens) == len(activations), "The number of hidden units and " \
-            "activation functions should be the same."
+    def build(self, hiddens=[32], activations=['relu'], dropouts=[0.5], l2_norms=[1e-5], lr=0.01):
+        local_paras = locals()
+        local_paras.pop('self')
+        paras = Bunch(**local_paras)
+        hiddens, activations, dropouts, l2_norms = set_equal_in_length(hiddens, activations, dropouts, l2_norms)
+        paras.update(Bunch(hiddens=hiddens, activations=activations, dropouts=dropouts, l2_norms=l2_norms))
+        # update all parameters
+        self.paras.update(paras)
+        self.model_paras.update(paras)
 
         with tf.device(self.device):
 
@@ -103,12 +109,13 @@ class ClusterGCN(SupervisedModel):
             adj = Input(batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix')
             mask = Input(batch_shape=[None],  dtype=tf.bool, name='mask')
 
-            h = Dropout(rate=dropout)(x)
-
-            for hid, activation in zip(hiddens, activations):
-                h = GraphConvolution(hid, activation=activation, kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
+            h = x
+            for hid, activation, dropout, l2_norm in zip(hiddens, activations, dropouts, l2_norms):
                 h = Dropout(rate=dropout)(h)
-
+                h = GraphConvolution(hid, activation=activation,
+                                     kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
+                
+            h = Dropout(rate=dropout)(h)
             h = GraphConvolution(self.n_classes)([h, adj])
             h = tf.boolean_mask(h, mask)
             output = Softmax()(h)

@@ -2,6 +2,7 @@ import tensorflow as tf
 from tensorflow.keras.layers import Layer
 from graphgallery import config
 
+
 class NormalizeLayer(Layer):
     """
         Normalize the adjacency matrix with the input (edge_index, edge_weight),
@@ -17,7 +18,7 @@ class NormalizeLayer(Layer):
     def call(self, inputs, improved=False):
         edge_index, edge_weight = inputs
         n_nodes = tf.reduce_max(edge_index) + 1
-        if edge_weight is None:
+        if not edge_weight:
             edge_weight = tf.ones([edge_index.shape[0]], dtype=config.floatx())
 
         fill_weight = 2.0 if improved else 1.0
@@ -40,7 +41,7 @@ class NormalizeLayer(Layer):
 
         updated_edge_index = tf.concat([edge_index, diagnal_edge_index], axis=0)
 
-        if edge_weight is not None:
+        if edge_weight:
             diagnal_edge_weight = tf.cast(tf.fill([n_nodes], fill_weight), dtype=config.floatx())
             updated_edge_weight = tf.concat([edge_weight, diagnal_edge_weight], axis=0)
 

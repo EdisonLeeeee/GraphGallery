@@ -4,7 +4,7 @@ import numpy as np
 import tensorflow as tf
 import scipy.sparse as sp
 
-from tqdm import tqdm
+from graphgallery.utils.tqdm import tqdm
 from tensorflow.keras import backend as K
 from tensorflow.keras.utils import Sequence
 from tensorflow.python.keras import callbacks as callbacks_module
@@ -12,7 +12,7 @@ from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 
 from graphgallery.nn.models import BaseModel
 from graphgallery.utils.history import History
-from graphgallery import asintarr, astensor
+from graphgallery import asintarr, astensor, Bunch
 
 
 class SupervisedModel(BaseModel):
@@ -57,20 +57,20 @@ class SupervisedModel(BaseModel):
 
         Arguments:
         ----------
-            hiddens: `list` of integer 
+            hiddens: `list` of integer or integer scalar 
                 The number of hidden units of model. Note: the last hidden unit (`n_classes`)
                 aren't nececcary to specified and it will be automatically added in the last 
                 layer. 
-            activations: `list` of string
+            activations: `list` of string or string
                 The activation function of model. Note: the last activation function (`softmax`) 
                 aren't nececcary to specified and it will be automatically spefified in the 
                 final output.              
-            dropout: Float scalar
-                Dropout rate for the hidden outputs.
+            dropouts: `list` of float scalar or float scalar
+                Dropout rates for the hidden outputs.
+            l2_norms:  `list` of float scalar or float scalar
+                L2 normalize parameters for the hidden layers. (only used in the hidden layers)
             lr: Float scalar
                 Learning rate for the training model.
-            l2_norm: Float scalar
-                L2 normalize for the hidden layers. (usually only used in the first layer)
             use_bias: Boolean
                 Whether to use bias in the hidden layers.
 
@@ -124,7 +124,14 @@ class SupervisedModel(BaseModel):
             history: graphgallery.utils.History
                 tensorflow like `history` instance.
         """
+
         # TODO use tensorflow callbacks
+
+        local_paras = locals()
+        local_paras.pop('self')
+        local_paras.pop('index_train')
+        local_paras.pop('index_val')
+        paras = Bunch(**local_paras)
 
         # Check if model has been built
         if not self.model:
@@ -136,25 +143,31 @@ class SupervisedModel(BaseModel):
             train_data = self.train_sequence(index_train)
             self.index_train = asintarr(index_train)
 
-        validation = index_val is not None
+        validation = index_val
 
-        if validation:
+        if validation is not None:
             if isinstance(index_val, Sequence):
                 val_data = index_val
             else:
                 val_data = self.test_sequence(index_val)
                 self.index_val = asintarr(index_val)
 
+
+
         history = History(monitor_metric=monitor,
                           early_stop_metric=early_stop_metric)
 
-        if weight_path is None:
+        if not weight_path:
             weight_path = self.weight_path
-
         if not weight_path.endswith('.h5'):
             weight_path += '.h5'
-
-        if not validation:
+            
+        paras.update(Bunch(weight_path=weight_path))
+        # update all parameters
+        self.paras.update(paras)
+        self.train_paras.update(paras)
+        
+        if validation is None:
             history.register_monitor_metric('acc')
             history.register_early_stop_metric('loss')
 
@@ -165,7 +178,7 @@ class SupervisedModel(BaseModel):
 
         for epoch in pbar:
 
-            if self.do_before_train is not None:
+            if self.do_before_train:
                 self.do_before_train()
 
             loss, accuracy = self.do_forward(train_data)
@@ -174,8 +187,8 @@ class SupervisedModel(BaseModel):
             history.add_results(loss, 'loss')
             history.add_results(accuracy, 'acc')
 
-            if validation:
-                if self.do_before_validation is not None:
+            if validation is not None:
+                if self.do_before_validation:
                     self.do_before_validation()
 
                 val_loss, val_accuracy = self.do_forward(val_data, training=False)
@@ -199,7 +212,7 @@ class SupervisedModel(BaseModel):
 
             if verbose:
                 msg = f'loss {loss:.2f}, acc {accuracy:.2%}'
-                if validation:
+                if validation is not None:
                     msg += f', val_loss {val_loss:.2f}, val_acc {val_accuracy:.2%}'
                 pbar.set_description(msg)
 
@@ -261,6 +274,11 @@ class SupervisedModel(BaseModel):
             and validation metrics values (if applicable).
 
         """
+        local_paras = locals()
+        local_paras.pop('self')
+        local_paras.pop('index_train')
+        local_paras.pop('index_val')
+        paras = Bunch(**local_paras)
 
         if not tf.__version__ >= '2.2.0':
             raise RuntimeError(f'This method is only work for tensorflow version >= 2.2.0.')
@@ -275,9 +293,9 @@ class SupervisedModel(BaseModel):
             train_data = self.train_sequence(index_train)
             self.index_train = asintarr(index_train)
 
-        validation = index_val is not None
+        validation = index_val
 
-        if validation:
+        if validation is not None:
             if isinstance(index_val, Sequence):
                 val_data = index_val
             else:
@@ -285,14 +303,13 @@ class SupervisedModel(BaseModel):
                 self.index_val = asintarr(index_val)
 
         model = self.model
-
         if not isinstance(callbacks, callbacks_module.CallbackList):
             callbacks = callbacks_module.CallbackList(callbacks,
                                                       add_history=True,
                                                       add_progbar=True,
                                                       verbose=verbose,
                                                       epochs=epochs)
-        if early_stopping is not None:
+        if early_stopping:
             es_callback = EarlyStopping(monitor=early_stop_metric,
                                         patience=early_stopping,
                                         mode='auto',
@@ -300,7 +317,7 @@ class SupervisedModel(BaseModel):
             callbacks.append(es_callback)
 
         if save_best:
-            if weight_path is None:
+            if not weight_path:
                 weight_path = self.weight_path
 
             if not weight_path.endswith('.h5'):
@@ -313,7 +330,12 @@ class SupervisedModel(BaseModel):
                                           verbose=verbose)
             callbacks.append(mc_callback)
         callbacks.set_model(model)
-
+        
+        paras.update(Bunch(weight_path=weight_path))
+        # update all parameters
+        self.paras.update(paras)
+        self.train_paras.update(paras)
+        
         # leave it blank for the future
         allowed_kwargs = set([])
         unknown_kwargs = set(kwargs.keys()) - allowed_kwargs
@@ -326,7 +348,7 @@ class SupervisedModel(BaseModel):
         for epoch in range(epochs):
             callbacks.on_epoch_begin(epoch)
 
-            if self.do_before_train is not None:
+            if self.do_before_train:
                 self.do_before_train()
 
             callbacks.on_train_batch_begin(0)
@@ -336,8 +358,8 @@ class SupervisedModel(BaseModel):
             training_logs = {'loss': loss, 'acc': accuracy}
             callbacks.on_train_batch_end(0, training_logs)
 
-            if validation:
-                if self.do_before_validation is not None:
+            if validation is not None:
+                if self.do_before_validation:
                     self.do_before_validation()
 
                 val_loss, val_accuracy = self.do_forward(val_data, training=False)
@@ -392,7 +414,7 @@ class SupervisedModel(BaseModel):
             test_data = self.test_sequence(index)
             self.index_test = asintarr(index)
 
-        if self.do_before_test is not None:
+        if self.do_before_test:
             self.do_before_test(**kwargs)
 
         loss, accuracy = self.do_forward(test_data, training=False)
@@ -470,7 +492,7 @@ class SupervisedModel(BaseModel):
         if not self.model:
             raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')
 
-        if self.do_before_predict is not None:
+        if self.do_before_predict:
             self.do_before_predict(**kwargs)
 
     def train_sequence(self, index):

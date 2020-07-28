@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # coding: utf-8
 from setuptools import setup, find_packages
+from graphgallery import __version__
 
-__version__ = '0.1.4'
+# __version__ = '0.1.4'
 url = 'https://github.com/EdisonLeeeee/Graphgallery'
 
 install_requires = [
@@ -10,7 +11,7 @@ install_requires = [
             'metis==0.2a4',
             'scipy==1.4.1',
             'tensorflow>=2.1.0',
-            'numpy==1.17.4',
+            'numpy>=1.17.4',
             'gensim>=3.8.0',
             'texttable>=1.6.2',
             'numba>=0.46.0',

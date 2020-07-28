@@ -9,7 +9,8 @@ from graphgallery.nn.layers import MedianAggregator, MedianGCNAggregator
 from graphgallery.nn.models import SupervisedModel
 from graphgallery.sequence import SAGEMiniBatchSequence
 from graphgallery.utils.graph_utils import construct_neighbors
-from graphgallery import astensor, asintarr, normalize_x
+from graphgallery.utils.shape_utils import set_equal_in_length
+from graphgallery import astensor, asintarr, normalize_x, Bunch
 
 
 class MedianSAGE(SupervisedModel):
@@ -73,13 +74,19 @@ class MedianSAGE(SupervisedModel):
             x = astensor(x)
             self.x_norm, self.neighbors = x, neighbors
 
-    def build(self, hiddens=[64], activations=['relu'], dropout=0.5, lr=0.01, l2_norm=5e-4,
+    def build(self, hiddens=[32], activations=['relu'], dropouts=[0.5], l2_norms=[5e-4], lr=0.01,
               output_normalize=False, aggrator='median'):
 
-        assert len(hiddens) == len(self.n_samples)-1, "The number of hidden units and " \
-            "samples per layer should be the same"
-        assert len(hiddens) == len(activations), "The number of hidden units and " \
-            "activation functions should be the same."
+        local_paras = locals()
+        local_paras.pop('self')
+        paras = Bunch(**local_paras)
+        hiddens, activations, dropouts, l2_norms = set_equal_in_length(hiddens, activations, dropouts, l2_norms,
+                                                                       max_length=len(self.n_samples)-1)
+        paras.update(Bunch(hiddens=hiddens, activations=activations,
+                           dropouts=dropouts, l2_norms=l2_norms, n_samples=self.n_samples))
+        # update all parameters
+        self.paras.update(paras)
+        self.model_paras.update(paras)
 
         with tf.device(self.device):
 
@@ -88,7 +95,7 @@ class MedianSAGE(SupervisedModel):
             elif aggrator == 'gcn':
                 Agg = MedianGCNAggregator
             else:
-                raise ValueError(f'Invalid value of `aggrator`, allowed values (`median`, `gcn`), but got `{aggrator}`.')
+                raise ValueError(f'Invalid value of `aggrator`, allowed values (`median`, `gcn`), but got `{aggrator}`')
 
             x = Input(batch_shape=[None, self.n_features], dtype=self.floatx, name='features')
             nodes = Input(batch_shape=[None], dtype=self.intx, name='nodes')
@@ -96,7 +103,7 @@ class MedianSAGE(SupervisedModel):
                          for hop, n_sample in enumerate(self.n_samples)]
 
             aggrators = []
-            for i, (hid, activation) in enumerate(zip(hiddens, activations)):
+            for i, (hid, activation, l2_norm) in enumerate(zip(hiddens, activations, l2_norms)):
                 # you can use `GCNAggregator` instead
                 aggrators.append(Agg(hid, concat=True, activation=activation,
                                      kernel_regularizer=regularizers.l2(l2_norm)))
@@ -108,7 +115,9 @@ class MedianSAGE(SupervisedModel):
                 feature_shape = h[0].shape[-1]
                 for hop in range(len(self.n_samples)-agg_i):
                     neighbor_shape = [-1, self.n_samples[hop], feature_shape]
-                    h[hop] = Dropout(rate=dropout)(aggrator([h[hop], tf.reshape(h[hop+1], neighbor_shape)]))
+                    h[hop] = aggrator([h[hop], tf.reshape(h[hop+1], neighbor_shape)])
+                    if hop!=len(self.n_samples)-1:
+                        h[hop] = Dropout(rate=dropouts[hop])(h[hop])
                 h.pop()
 
             h = h[0]

@@ -7,7 +7,8 @@ from tensorflow.keras import regularizers
 from graphgallery.nn.layers import SGConvolution
 from graphgallery.nn.models import SupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
-from graphgallery import astensor, asintarr, normalize_x, normalize_adj
+from graphgallery.utils.shape_utils import repeat
+from graphgallery import astensor, asintarr, normalize_x, normalize_adj, Bunch
 
 
 class SGC(SupervisedModel):
@@ -71,16 +72,23 @@ class SGC(SupervisedModel):
 
         with tf.device(self.device):
             x, adj = astensor([x, adj])
-            x = SGConvolution(order=self.order)([x, adj])            
+            x = SGConvolution(order=self.order)([x, adj])
             self.x_norm, self.adj_norm = x, adj
 
-    def build(self, lr=0.2, l2_norm=5e-5):
+    def build(self, lr=0.2, l2_norms=5e-5):
+        l2_norms = repeat(l2_norms, 1)
+        local_paras = locals()
+        local_paras.pop('self')
+        paras = Bunch(**local_paras)
+        # update all parameters
+        self.paras.update(paras)
+        self.model_paras.update(paras)
 
         with tf.device(self.device):
 
             x = Input(batch_shape=[None, self.n_features], dtype=self.floatx, name='features')
 
-            output = Dense(self.n_classes, activation='softmax', kernel_regularizer=regularizers.l2(l2_norm))(x)
+            output = Dense(self.n_classes, activation='softmax', kernel_regularizer=regularizers.l2(l2_norms[0]))(x)
 
             model = Model(inputs=x, outputs=output)
             model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=lr), metrics=['accuracy'])

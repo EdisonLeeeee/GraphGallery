@@ -8,43 +8,44 @@ from graphgallery.nn.layers import ChebyConvolution
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.nn.models import SupervisedModel
 from graphgallery.utils.misc import chebyshev_polynomials
-from graphgallery import astensor, asintarr, normalize_x
+from graphgallery.utils.shape_utils import set_equal_in_length
+from graphgallery import astensor, asintarr, normalize_x, Bunch
 
 
 class ChebyNet(SupervisedModel):
     """
-        Implementation of Chebyshev Graph Convolutional Networks (ChebyNet). 
+        Implementation of Chebyshev Graph Convolutional Networks (ChebyNet).
         `Convolutional Neural Networks on Graphs with Fast Localized Spectral Filtering <https://arxiv.org/abs/1606.09375>`
         Tensorflow 1.x implementation: <https://github.com/mdeff/cnn_graph>, <https://github.com/tkipf/gcn>
         Keras implementation: <https://github.com/aclyde11/ChebyGCN>
 
         Arguments:
         ----------
-            adj: shape (N, N), Scipy sparse matrix if  `is_adj_sparse=True`, 
+            adj: shape (N, N), Scipy sparse matrix if  `is_adj_sparse=True`,
                 Numpy array-like (or matrix) if `is_adj_sparse=False`.
-                The input `symmetric` adjacency matrix, where `N` is the number 
+                The input `symmetric` adjacency matrix, where `N` is the number
                 of nodes in graph.
-            x: shape (N, F), Scipy sparse matrix if `is_x_sparse=True`, 
+            x: shape (N, F), Scipy sparse matrix if `is_x_sparse=True`,
                 Numpy array-like (or matrix) if `is_x_sparse=False`.
                 The input node feature matrix, where `F` is the dimension of features.
             labels: Numpy array-like with shape (N,)
                 The ground-truth labels for all nodes in graph.
-            order (Positive integer, optional): 
+            order (Positive integer, optional):
                 The order of Chebyshev polynomial filter. (default :obj: `2`)
-            norm_adj_rate (Float scalar, optional): 
-                The normalize rate for adjacency matrix `adj`. (default: :obj:`-0.5`, 
-                i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
-            norm_x_type (String, optional): 
+            norm_adj_rate (Float scalar, optional):
+                The normalize rate for adjacency matrix `adj`. (default: :obj:`-0.5`,
+                i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}})
+            norm_x_type (String, optional):
                 How to normalize the node feature matrix. See `graphgallery.normalize_x`
                 (default :str: `l1`)
-            device (String, optional): 
-                The device where the model is running on. You can specified `CPU` or `GPU` 
+            device (String, optional):
+                The device where the model is running on. You can specified `CPU` or `GPU`
                 for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
-            seed (Positive integer, optional): 
-                Used in combination with `tf.random.set_seed` & `np.random.seed` & `random.seed` 
-                to create a reproducible sequence of tensors across multiple calls. 
+            seed (Positive integer, optional):
+                Used in combination with `tf.random.set_seed` & `np.random.seed` & `random.seed`
+                to create a reproducible sequence of tensors across multiple calls.
                 (default :obj: `None`, i.e., using random seed)
-            name (String, optional): 
+            name (String, optional):
                 Specified name for the model. (default: :str: `class.__name__`)
 
     """
@@ -74,10 +75,15 @@ class ChebyNet(SupervisedModel):
         with tf.device(self.device):
             self.x_norm, self.adj_norm = astensor([x, adj])
 
-    def build(self, hiddens=[32], activations=['relu'], dropout=0.5, lr=0.01, l2_norm=5e-4, ensure_shape=True):
-
-        assert len(hiddens) == len(activations), "The number of hidden units and " \
-            "activation functions should be the same."
+    def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5], l2_norms=[5e-4], lr=0.01, ensure_shape=True):
+        local_paras = locals()
+        local_paras.pop('self')
+        paras = Bunch(**local_paras)
+        hiddens, activations, dropouts, l2_norms = set_equal_in_length(hiddens, activations, dropouts, l2_norms)
+        paras.update(Bunch(hiddens=hiddens, activations=activations, dropouts=dropouts, l2_norms=l2_norms))
+        # update all parameters
+        self.paras.update(paras)
+        self.model_paras.update(paras)
 
         with tf.device(self.device):
 
@@ -88,7 +94,7 @@ class ChebyNet(SupervisedModel):
             index = Input(batch_shape=[None],  dtype=self.intx, name='index')
 
             h = x
-            for hid, activation in zip(hiddens, activations):
+            for hid, activation, dropout, l2_norm in zip(hiddens, activations, dropouts, l2_norms):
                 h = ChebyConvolution(hid, order=self.order, activation=activation,
                                      kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
                 h = Dropout(rate=dropout)(h)

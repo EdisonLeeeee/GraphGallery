@@ -6,9 +6,9 @@ import numpy as np
 import tensorflow as tf
 import scipy.sparse as sp
 
-from graphgallery import config, chk_convert, asintarr
+from graphgallery import config, check_and_convert, asintarr, Bunch
 from graphgallery.utils.type_check import is_list_like
-
+from graphgallery.utils.misc import print_table
 
 
 class BaseModel:
@@ -49,7 +49,7 @@ class BaseModel:
             np.random.seed(seed)
             random.seed(seed)
 
-        if name is None:
+        if not name:
             name = self.__class__.__name__
 
         # By default, adj is sparse matrix and x is dense array (matrix)
@@ -69,7 +69,7 @@ class BaseModel:
 
         self.is_adj_sparse = is_adj_sparse
         self.is_x_sparse = is_x_sparse
-        self.adj, self.x = self._check_inputs(adj, x)   
+        self.adj, self.x = self._check_inputs(adj, x)
 
         if labels is not None:
             self.n_classes = np.max(labels) + 1
@@ -97,6 +97,14 @@ class BaseModel:
         # data types, default: `float32` and `int64`
         self.floatx = config.floatx()
         self.intx = config.intx()
+        # Paraneters
+        self.paras = Bunch(device=device, seed=seed, name=name,
+                           is_adj_sparse=is_adj_sparse,
+                           is_x_sparse=is_x_sparse,
+                           is_weighted=is_weighted)
+
+        self.model_paras = Bunch(name=name)
+        self.train_paras = Bunch(name=name)
 
     def _check_inputs(self, adj, x):
         """Check the input adj and x and make sure they are legal forms of input.
@@ -118,13 +126,13 @@ class BaseModel:
 
 
         """
-        adj = chk_convert(adj, self.is_adj_sparse)
-        x = chk_convert(x, self.is_x_sparse)
+        adj = check_and_convert(adj, self.is_adj_sparse)
+        x = check_and_convert(x, self.is_x_sparse)
         if is_list_like(adj):
             adj_shape = adj[0].shape
         else:
             adj_shape = adj.shape
-        
+
         x_shape = x.shape
 
         if adj_shape[0] != x_shape[0]:
@@ -164,7 +172,7 @@ class BaseModel:
             2-D matrices.
         """
         # check the input adj and x, and convert them to appropriate forms
-        self.adj, self.x = self._check_inputs(adj, x)        
+        self.adj, self.x = self._check_inputs(adj, x)
         self.n_nodes, self.n_features = x.shape
 
     def save(self, path=None, as_model=False):
@@ -172,7 +180,7 @@ class BaseModel:
             os.makedirs("weight")
             logging.log(logging.WARNING, "Mkdir /weight")
 
-        if path is None:
+        if not path:
             path = self.weight_path
 
         if not path.endswith('.h5'):
@@ -188,7 +196,7 @@ class BaseModel:
                 self.model.save_weights(path[:-3])
 
     def load(self, path=None, as_model=False):
-        if path is None:
+        if not path:
             path = self.weight_path
         if not path.endswith('.h5'):
             path += '.h5'
@@ -203,3 +211,19 @@ class BaseModel:
 
     def __repr__(self):
         return f"Graphgallery.nn.{self.name} in {self.device}"
+
+    def show(self, name=None):
+        """Show the parameters in a table.
+        Note: You must install `texttable` package first. Using
+        ```
+        pip install texttable
+        ```
+
+        """
+        if name=='train':
+            paras = self.train_paras
+        elif name=='model':
+            paras = self.model_paras
+        else:
+            paras = self.paras
+        print_table(paras)

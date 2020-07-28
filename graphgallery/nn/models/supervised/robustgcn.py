@@ -7,7 +7,8 @@ from tensorflow.keras import regularizers
 from graphgallery.nn.layers import GaussionConvolution_F, GaussionConvolution_D, Sample
 from graphgallery.nn.models import SupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
-from graphgallery import astensor, asintarr, normalize_x, normalize_adj
+from graphgallery.utils.shape_utils import set_equal_in_length, repeat
+from graphgallery import astensor, asintarr, normalize_x, normalize_adj, Bunch
 
 
 class RobustGCN(SupervisedModel):
@@ -70,35 +71,43 @@ class RobustGCN(SupervisedModel):
         with tf.device(self.device):
             self.x_norm, self.adj_norm = astensor([x, adj])
 
-    def build(self, hiddens=[64], activations=['relu'], use_bias=False, dropout=0.5, 
-              lr=0.01, l2_norm=5e-4, kl=5e-4, gamma=1., ensure_shape=True):
-
-        assert len(hiddens) == len(activations), "The number of hidden units and " \
-            "activation functions should be the same."
+    def build(self, hiddens=[64], activations=['relu'], use_bias=False, dropouts=[0.5], l2_norms=[5e-4],
+              lr=0.01, kl=5e-4, gamma=1., ensure_shape=True):
+        
+        local_paras = locals()
+        local_paras.pop('self')
+        paras = Bunch(**local_paras)
+        hiddens, activations, l2_norms = set_equal_in_length(hiddens, activations, l2_norms)
+        dropouts = repeat(dropouts, len(hiddens)+1)
+        paras.update(Bunch(hiddens=hiddens, activations=activations, dropouts=dropouts, l2_norms=l2_norms))
+        # update all parameters
+        self.paras.update(paras)
+        self.model_paras.update(paras)
 
         with tf.device(self.device):
-
+            tf.random.set_seed(self.seed)
             x = Input(batch_shape=[None, self.n_features], dtype=self.floatx, name='features')
             adj = [Input(batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix_1'),
                    Input(batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix_2')]
             index = Input(batch_shape=[None],  dtype=self.intx, name='index')
 
-            h = Dropout(rate=dropout)(x)
+            h = Dropout(rate=dropouts[0])(x)
             mean, var = GaussionConvolution_F(hiddens[0], gamma=gamma, kl=kl,
-                                                     use_bias=use_bias,
-                                                     activation=activations[0],
-                                                     kernel_regularizer=regularizers.l2(l2_norm))([h, *adj])
+                                              use_bias=use_bias,
+                                              activation=activations[0],
+                                              kernel_regularizer=regularizers.l2(l2_norms[0]))([h, *adj])
 
             # additional layers (usually unnecessay)
-            for hid, activation in zip(hiddens[1:], activations[1:]):
+            for hid, activation, dropout, l2_norm in zip(hiddens[1:], activations[1:], dropouts[1:-1], l2_norms[1:]):
                 mean = Dropout(rate=dropout)(mean)
                 var = Dropout(rate=dropout)(var)
                 mean, var = GaussionConvolution_D(hid, gamma=gamma, use_bias=use_bias, activation=activation)([mean, var, *adj])
 
+            dropout = dropouts[-1]
             mean = Dropout(rate=dropout)(mean)
             var = Dropout(rate=dropout)(var)
             mean, var = GaussionConvolution_D(self.n_classes, gamma=gamma, use_bias=use_bias)([mean, var, *adj])
-            h = Sample()(mean, var)
+            h = Sample(seed=self.seed)(mean, var)
             if ensure_shape:
                 h = tf.ensure_shape(h, [self.n_nodes, self.n_classes])
             h = tf.gather(h, index)

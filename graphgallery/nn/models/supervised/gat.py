@@ -8,12 +8,13 @@ from tensorflow.keras import regularizers
 from graphgallery.nn.layers import GraphAttention
 from graphgallery.nn.models import SupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
-from graphgallery import astensor, asintarr, normalize_x, normalize_adj
+from graphgallery.utils.shape_utils import set_equal_in_length
+from graphgallery import astensor, asintarr, normalize_x, normalize_adj, Bunch
 
 
 class GAT(SupervisedModel):
     """
-        Implementation of Graph Attention Networks (GAT). 
+        Implementation of Graph Attention Networks (GAT).
         `Graph Attention Networks <https://arxiv.org/abs/1710.10903>`
         Tensorflow 1.x implementation: <https://github.com/PetarV-/GAT>
         Pytorch implementation: <https://github.com/Diego999/pyGAT>
@@ -21,28 +22,28 @@ class GAT(SupervisedModel):
 
         Arguments:
         ----------
-            adj: shape (N, N), Scipy sparse matrix if  `is_adj_sparse=True`, 
+            adj: shape (N, N), Scipy sparse matrix if  `is_adj_sparse=True`,
                 Numpy array-like (or matrix) if `is_adj_sparse=False`.
-                The input `symmetric` adjacency matrix, where `N` is the number 
+                The input `symmetric` adjacency matrix, where `N` is the number
                 of nodes in graph.
-            x: shape (N, F), Scipy sparse matrix if `is_x_sparse=True`, 
+            x: shape (N, F), Scipy sparse matrix if `is_x_sparse=True`,
                 Numpy array-like (or matrix) if `is_x_sparse=False`.
                 The input node feature matrix, where `F` is the dimension of features.
             labels: Numpy array-like with shape (N,)
                 The ground-truth labels for all nodes in graph.
-            norm_adj_rate (Float scalar, optional): 
-                The normalize rate for adjacency matrix `adj`. (default: :obj: `None`) 
-            norm_x_type (String, optional): 
+            norm_adj_rate (Float scalar, optional):
+                The normalize rate for adjacency matrix `adj`. (default: :obj: `None`)
+            norm_x_type (String, optional):
                 How to normalize the node feature matrix. See `graphgallery.normalize_x`
                 (default :str: `l1`)
-            device (String, optional): 
-                The device where the model is running on. You can specified `CPU` or `GPU` 
+            device (String, optional):
+                The device where the model is running on. You can specified `CPU` or `GPU`
                 for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
-            seed (Positive integer, optional): 
-                Used in combination with `tf.random.set_seed` & `np.random.seed` & `random.seed`  
-                to create a reproducible sequence of tensors across multiple calls. 
+            seed (Positive integer, optional):
+                Used in combination with `tf.random.set_seed` & `np.random.seed` & `random.seed`
+                to create a reproducible sequence of tensors across multiple calls.
                 (default :obj: `None`, i.e., using random seed)
-            name (String, optional): 
+            name (String, optional):
                 Specified name for the model. (default: :str: `class.__name__`)
 
 
@@ -73,10 +74,20 @@ class GAT(SupervisedModel):
         with tf.device(self.device):
             self.x_norm, self.adj_norm = astensor([x, adj])
 
-    def build(self, hiddens=[8], n_heads=[8], activations=['elu'], dropout=0.6, lr=0.01, l2_norm=5e-4, ensure_shape=True):
+    def build(self, hiddens=[8], n_heads=[8], activations=['elu'], dropouts=[0.6], l2_norms=[5e-4],
+              lr=0.01, ensure_shape=True):
 
-        assert len(hiddens) == len(n_heads) == len(activations), "The number of hidden units and attention heads" \
-            "and activation functions should be the same."
+        local_paras = locals()
+        local_paras.pop('self')
+        paras = Bunch(**local_paras)
+        (hiddens, n_heads,
+         activations, dropouts,
+         l2_norms) = set_equal_in_length(hiddens, n_heads, activations, dropouts, l2_norms)
+        paras.update(Bunch(hiddens=hiddens, n_heads=n_heads, activations=activations,
+                           dropouts=dropouts, l2_norms=l2_norms))
+        # update all parameters
+        self.paras.update(paras)
+        self.model_paras.update(paras)
 
         with tf.device(self.device):
 
@@ -85,7 +96,7 @@ class GAT(SupervisedModel):
             index = Input(batch_shape=[None],  dtype=self.intx, name='index')
 
             h = x
-            for hid, n_head, activation in zip(hiddens, n_heads, activations):
+            for hid, n_head, activation, dropout, l2_norm in zip(hiddens, n_heads, activations, dropouts, l2_norms):
                 h = GraphAttention(hid, attn_heads=n_head,
                                    attn_heads_reduction='concat',
                                    activation=activation,

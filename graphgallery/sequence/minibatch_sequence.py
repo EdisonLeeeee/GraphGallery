@@ -119,12 +119,12 @@ class FastGCNBatchSequence(NodeSequence):
         return self.n_batches
 
     def __getitem__(self, index):
-        if self.batch_size is None:
+        if not self.batch_size:
             (x, adj), labels = self.full_batch(index)
         else:
             (x, adj), labels = self.mini_batch(index)
 
-        if self.rank is not None:
+        if self.rank:
             p = self.p
             rank = self.rank
             distr = adj.sum(0).A1.nonzero()[0]

@@ -8,7 +8,8 @@ from tensorflow.keras import regularizers
 from graphgallery.nn.layers import GraphConvolution
 from graphgallery.nn.models import SupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
-from graphgallery import astensor, asintarr, normalize_x, normalize_adj
+from graphgallery.utils.shape_utils import set_equal_in_length
+from graphgallery import astensor, asintarr, normalize_x, normalize_adj, Bunch
 
 
 class GCN_MIX(SupervisedModel):
@@ -73,11 +74,18 @@ class GCN_MIX(SupervisedModel):
         with tf.device(self.device):
             self.x_norm, self.adj_norm = astensor(x), adj
 
-    def build(self, hiddens=[16], activations=['relu'], dropout=0.5,
-              lr=0.01, l2_norm=5e-4, use_bias=False):
+    def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5], l2_norms=[5e-4],
+              lr=0.01, use_bias=False):
 
-        assert len(hiddens) == len(activations), "The number of hidden units and " \
-            "activation functions should be the same."
+        local_paras = locals()
+        local_paras.pop('self')
+        paras = Bunch(**local_paras)
+        hiddens, activations, dropouts, l2_norms = set_equal_in_length(hiddens, activations, dropouts, l2_norms)
+        paras.update(Bunch(hiddens=hiddens, activations=activations, dropouts=dropouts, l2_norms=l2_norms))
+        # update all parameters
+        self.paras.update(paras)
+        self.model_paras.update(paras)
+
 
         with tf.device(self.device):
 
@@ -85,8 +93,9 @@ class GCN_MIX(SupervisedModel):
             adj = Input(batch_shape=[None, self.n_nodes], dtype=self.floatx, sparse=True, name='adj_matrix')
 
             h = x
-            for hid, activation in zip(hiddens, activations):
-                h = Dense(hid, use_bias=use_bias, activation=activation, kernel_regularizer=regularizers.l2(l2_norm))(h)
+            for hid, activation, dropout, l2_norm in zip(hiddens, activations, dropouts, l2_norms):
+                h = Dense(hid, use_bias=use_bias, activation=activation,
+                          kernel_regularizer=regularizers.l2(l2_norm))(h)
                 h = Dropout(rate=dropout)(h)
 
             output = GraphConvolution(self.n_classes, activation='softmax')([h, adj])
@@ -109,8 +118,7 @@ class GCN_MIX(SupervisedModel):
         index = asintarr(index)
         adj = self.adj_norm[index]
         with tf.device(self.device):
-            logit = self.model.predict_on_batch([self.x_norm, adj])
-
+            logit = self.model.predict_on_batch(astensor([self.x_norm, adj]))
         if tf.is_tensor(logit):
             logit = logit.numpy()
         return logit

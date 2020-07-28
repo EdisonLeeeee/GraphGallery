@@ -4,6 +4,7 @@ from numba import njit
 from gensim.models import Word2Vec
 
 from graphgallery.nn.models import UnsupervisedModel
+from graphgallery import Bunch
 
 
 class Deepwalk(UnsupervisedModel):
@@ -42,6 +43,13 @@ class Deepwalk(UnsupervisedModel):
     def build(self, walk_length=80, walks_per_node=10,
               embedding_dim=64, window_size=5, workers=16,
               iter=1, num_neg_samples=1):
+
+        local_paras = locals()
+        local_paras.pop('self')
+        paras = Bunch(**local_paras)
+        # update all parameters
+        self.paras.update(paras)
+        self.model_paras.update(paras)
 
         walks = self.deepwalk_random_walk(self.adj.indices,
                                           self.adj.indptr,

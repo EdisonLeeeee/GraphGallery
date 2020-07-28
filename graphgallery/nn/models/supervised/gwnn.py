@@ -8,7 +8,8 @@ from graphgallery.nn.layers import WaveletConvolution
 from graphgallery.nn.models import SupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.wavelet_utils import wavelet_basis
-from graphgallery import astensor, asintarr, normalize_x
+from graphgallery.utils.shape_utils import set_equal_in_length
+from graphgallery import astensor, asintarr, normalize_x, Bunch
 
 
 class GWNN(SupervisedModel):
@@ -82,10 +83,17 @@ class GWNN(SupervisedModel):
         with tf.device(self.device):
             self.x_norm, self.adj_norm = astensor([x, [wavelet, inverse_wavelet]])
 
-    def build(self, hiddens=[16], activations=['relu'], dropout=0.5, lr=0.01, l2_norm=5e-4):
+    def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5], l2_norms=[5e-4], lr=0.01,
+              ensure_shape=True):
 
-        assert len(hiddens) == len(activations), "The number of hidden units and " \
-            "activation functions should be the same."
+        local_paras = locals()
+        local_paras.pop('self')
+        paras = Bunch(**local_paras)
+        hiddens, activations, dropouts, l2_norms = set_equal_in_length(hiddens, activations, dropouts, l2_norms)
+        paras.update(Bunch(hiddens=hiddens, activations=activations, dropouts=dropouts, l2_norms=l2_norms))
+        # update all parameters
+        self.paras.update(paras)
+        self.model_paras.update(paras)
 
         with tf.device(self.device):
 
@@ -96,14 +104,16 @@ class GWNN(SupervisedModel):
             index = Input(batch_shape=[None],  dtype=self.intx, name='index')
 
             h = x
-
-            for hid, activation in zip(hiddens, activations):
+            for hid, activation, dropout, l2_norm in zip(hiddens, activations, dropouts, l2_norms):
                 h = WaveletConvolution(hid, activation=activation,
                                        kernel_regularizer=regularizers.l2(l2_norm))([h, wavelet, inverse_wavelet])
                 h = Dropout(rate=dropout)(h)
 
             h = WaveletConvolution(self.n_classes)([h, wavelet, inverse_wavelet])
-            h = tf.ensure_shape(h, [self.n_nodes, self.n_classes])
+            # To aviod the UserWarning of `tf.gather`, but it causes the shape
+            # of the input data to remain the same
+            if ensure_shape:
+                h = tf.ensure_shape(h, [self.n_nodes, self.n_classes])
             h = tf.gather(h, index)
             output = Softmax()(h)
 

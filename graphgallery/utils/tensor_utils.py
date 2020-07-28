@@ -18,7 +18,7 @@ def normalize_adj_tensor(adj, rate=-0.5, add_self_loop=True):
 
 def add_self_loop_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0):
 
-    if n_nodes is None:
+    if not n_nodes:
         n_nodes = tf.reduce_max(edge_index) + 1
 
     range_arr = tf.range(n_nodes, dtype=config.intx())
@@ -33,10 +33,10 @@ def add_self_loop_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0):
 
 def normalize_edge_tensor(edge_index, edge_weight=None, n_nodes=None, fill_weight=1.0, rate=-0.5):
 
-    if edge_weight is None:
+    if not edge_weight:
         edge_weight = tf.ones([edge_index.shape[0]], dtype=config.floatx())
 
-    if n_nodes is None:
+    if not n_nodes:
         n_nodes = tf.reduce_max(edge_index) + 1
 
     edge_index, edge_weight = add_self_loop_edge(edge_index, edge_weight, n_nodes=n_nodes, fill_weight=fill_weight)

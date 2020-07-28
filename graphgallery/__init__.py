@@ -1,4 +1,4 @@
-from graphgallery.utils.conversion import (chk_convert, sparse_adj_to_edges,
+from graphgallery.utils.conversion import (check_and_convert, sparse_adj_to_edges,
                                            sparse_tensor_to_sparse_adj,
                                            sparse_adj_to_edges,
                                            edges_to_sparse_adj,
@@ -11,7 +11,6 @@ from graphgallery.utils.shape_utils import repeat
 from graphgallery import nn
 from graphgallery import utils
 from graphgallery import sequence
-
 
 
 __version__ = '0.1.4'

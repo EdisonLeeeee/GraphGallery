@@ -14,7 +14,8 @@ from graphgallery.nn.models import SupervisedModel
 from graphgallery.sequence import NodeSampleSequence
 from graphgallery.utils.sample_utils import find_4o_nbrs
 from graphgallery.utils.bvat_utils import get_normalized_vector, kl_divergence_with_logit, entropy_y_x
-from graphgallery import astensor, asintarr, normalize_x, normalize_adj
+from graphgallery.utils.shape_utils import set_equal_in_length
+from graphgallery import astensor, asintarr, normalize_x, normalize_adj, Bunch
 
 
 class SBVAT(SupervisedModel):
@@ -81,12 +82,18 @@ class SBVAT(SupervisedModel):
         with tf.device(self.device):
             self.x_norm, self.adj_norm = astensor([x, adj])
 
-    def build(self, hiddens=[16], activations=['relu'], dropout=0.5,
-              lr=0.01, l2_norm=5e-4, p1=1., p2=1.,
+    def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5],
+              lr=0.01, l2_norms=[5e-4], p1=1., p2=1.,
               n_power_iterations=1, epsilon=0.03, xi=1e-6):
 
-        assert len(hiddens) == len(activations), "The number of hidden units and " \
-            "activation functions should be the same." == 1
+        local_paras = locals()
+        local_paras.pop('self')
+        paras = Bunch(**local_paras)
+        hiddens, activations, dropouts, l2_norms = set_equal_in_length(hiddens, activations, dropouts, l2_norms)
+        paras.update(Bunch(hiddens=hiddens, activations=activations, dropouts=dropouts, l2_norms=l2_norms))
+        # update all parameters
+        self.paras.update(paras)
+        self.model_paras.update(paras)
 
         with tf.device(self.device):
 
@@ -94,11 +101,16 @@ class SBVAT(SupervisedModel):
             adj = Input(batch_shape=[self.n_nodes, self.n_nodes], dtype=self.floatx, sparse=True, name='adj_matrix')
             index = Input(batch_shape=[None],  dtype=self.intx, name='index')
 
-            self.GCN_layers = [GraphConvolution(hiddens[0],
-                                                activation=activations[0],
-                                                kernel_regularizer=regularizers.l2(l2_norm)),
-                               GraphConvolution(self.n_classes)]
-            self.dropout_layer = Dropout(dropout)
+            GCN_layers = []
+            dropout_layers = []
+            for hid, activation, dropout, l2_norm in zip(hiddens, activations, dropouts, l2_norms):
+                GCN_layers.append(GraphConvolution(hid, activation=activation,
+                                                   kernel_regularizer=regularizers.l2(l2_norm)))
+                dropout_layers.append(Dropout(rate=dropout))
+
+            GCN_layers.append(GraphConvolution(self.n_classes))
+            self.GCN_layers = GCN_layers
+            self.dropout_layers = dropout_layers
 
             logit = self.propagation(x, adj)
             output = tf.gather(logit, index)
@@ -116,11 +128,20 @@ class SBVAT(SupervisedModel):
         self.epsilon = epsilon  # Norm length for (virtual) adversarial training
         self.n_power_iterations = n_power_iterations  # Number of power iterations
 
+    # def propagation(self, x, adj, training=True):
+    #     h = x
+    #     for layer in self.GCN_layers:
+    #         h = self.dropout_layer(h, training=training)
+    #         h = layer([h, adj])
+    #     return h
+
     def propagation(self, x, adj, training=True):
         h = x
-        for layer in self.GCN_layers:
-            h = self.dropout_layer(h, training=training)
-            h = layer([h, adj])
+        for dropout_layer, GCN_layer in zip(self.dropout_layers, self.GCN_layers[:-1]):
+            h = dropout_layer(h, training=training)
+            h = GCN_layer([h, adj])
+        h = dropout_layer(h, training=training)
+        h = self.GCN_layers[-1]([h, adj])
         return h
 
     @tf.function

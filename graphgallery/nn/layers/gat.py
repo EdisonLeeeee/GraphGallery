@@ -179,7 +179,7 @@ class GraphAttention(Layer):
             attentions = tf.sparse.softmax(attentions)  # (N x N)
 
             # Apply dropout to features and attention coefficients
-            if self.dropout is not None:
+            if self.dropout:
                 attentions = tf.sparse.SparseTensor(indices=attentions.indices,
                                                     values=Dropout(rate=self.dropout)(attentions.values),
                                                     dense_shape=attentions.dense_shape

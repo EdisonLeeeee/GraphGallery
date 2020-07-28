@@ -77,12 +77,11 @@ def normalize_adj(adjacency, rate=-0.5, self_loop=1.0):
         if not alpha:
             return adj.astype(config.floatx(), copy=False)
 
+        adj = adj.tocoo(copy=False)         
         row_sum = adj.sum(1).A1
         d_inv_sqrt = np.power(row_sum, alpha)
-        # might not necessary
-        # d_inv_sqrt[np.isinf(d_inv_sqrt)] = 0.
-        d_mat_inv_sqrt = sp.diags(d_inv_sqrt)
-        return (d_mat_inv_sqrt @ adj @ d_mat_inv_sqrt).astype(config.floatx(), copy=False)
+        adj.data = d_inv_sqrt[adj.row] * adj.data * d_inv_sqrt[adj.col]
+        return adj.tocsr(copy=False)
 
     if is_list_like(adjacency) and not isinstance(adjacency[0], Number):
         size = len(adjacency)

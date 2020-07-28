@@ -9,17 +9,17 @@ from graphgallery import config
 from graphgallery.utils.type_check import is_list_like, is_interger_scalar, is_tensor_or_variable
 
 
-__all__ = ['chk_convert', 'sparse_adj_to_sparse_tensor', 'sparse_tensor_to_sparse_adj',
+__all__ = ['check_and_convert', 'sparse_adj_to_sparse_tensor', 'sparse_tensor_to_sparse_adj',
            'sparse_adj_to_edges', 'edges_to_sparse_adj', 'asintarr', 'astensor',
            ]
 
 
-def chk_convert(matrix, is_sparse):
+def check_and_convert(matrix, is_sparse):
     """Check the input matrix and convert it into a proper data type.
 
     Arguments:
     ----------
-        matrix: Scipy sparse matrix or Numpy array-like or Numpy matrix. 
+        matrix: Scipy sparse matrix or Numpy array-like or Numpy matrix.
         is_sparse: Indicating whether the input matrix is sparse matrix or not.
 
     Returns:
@@ -27,9 +27,8 @@ def chk_convert(matrix, is_sparse):
         A converted matrix with proper data type.
 
     """
-    # for multi inputs, only check for the first one
     if is_list_like(matrix):
-        return [chk_convert(m, is_sparse) for m in matrix]
+        return [check_and_convert(m, is_sparse) for m in matrix]
     if not is_sparse:
         if not isinstance(matrix, (np.ndarray, np.matrix)):
             raise TypeError("The input matrix must be Numpy array-like or `np.matrix`"
@@ -46,18 +45,18 @@ def sparse_adj_to_sparse_tensor(x):
     """Converts a Scipy sparse matrix to a SparseTensor."""
     sparse_coo = x.tocoo()
     row, col = sparse_coo.row, sparse_coo.col
-    data, shape = sparse_coo.data, sparse_coo.shape
-    if issubclass(data.dtype.type, np.floating):
-        data = data.astype(config.floatx())
+    data, shape = sparse_coo.data.astype(config.floatx()), sparse_coo.shape
     indices = np.concatenate(
         (np.expand_dims(row, axis=1), np.expand_dims(col, axis=1)), axis=1)
     return tf.sparse.SparseTensor(indices, data, shape)
 
 
 def sparse_tensor_to_sparse_adj(x):
-    """Converts a SparseTensor to a Scipy sparse matrix."""
-    # TODO
-    return x
+    """Converts a SparseTensor to a Scipy sparse matrix (CSR matrix)."""
+    data = x.values.astype(config.floatx())
+    indices = x.indices.numpy().T
+    shape = x.shape
+    return sp.csr_matrix((data, indices), shape=shape)
 
 
 def sparse_adj_to_edges(adj):
