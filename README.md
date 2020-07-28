@@ -65,7 +65,7 @@ pip install -U graphgallery
 + **MedianSAGE**: GraphSAGE using `Median` aggregation
 
 # Quick Start
-## Train a GCN model
+## Example of GCN model
 ```python
 from graphgallery.nn.models import GCN
 # adj is scipy sparse matrix, x is numpy array matrix
@@ -83,6 +83,29 @@ On `Cora` dataset:
 loss 1.02, acc 95.00%, val_loss 1.41, val_acc 77.40%: 100%|██████████| 100/100 [00:02<00:00, 37.07it/s]
 Test loss 1.4123, Test accuracy 81.20%
 ```
+
+## Build your model
+you can use the following statement to build your model
+```python
+# one hidden layer with hidden units 32 and activation function RELU
+>>> model.build(hiddens=32, activations='relu')
+
+# two hidden layer with hidden units 32, 64 and all activation functions are RELU
+>>> model.build(hiddens=[32, 64], activations='relu')
+
+# two hidden layer with hidden units 32, 64 and activation functions RELU and ELU
+>>> model.build(hiddens=[32, 64], activations=['relu', 'elu'])
+
+# other parameters like `dropouts` and `l2_norms` (if have) are the SAME.
+```
+## Train or test your model
+More details can be seen in the methods [model.train](./graphgallery/nn/models/supervised/supervised_model.py) and [model.test](./graphgallery/nn/models/supervised/supervised_model.py) 
+
+## Hyper-parameters
+you can simply use `model.show()` to show all your `Hyper-parameters`.
+Otherwise you can also use `model.show('model')` or `model.show('train')` to show your model parameters and training parameters.
+NOTE: you should install texttable first.
+
 ## Visualization
 + Accuracy
 ```python
