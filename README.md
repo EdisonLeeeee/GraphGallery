@@ -5,7 +5,7 @@
 
 
 <p align="center">
-  <img width = "1000" height = "300" src="./imgs/graphgallery.svg" />
+  <img width = "1000" height = "300" src="https://github.com/EdisonLeeeee/Graphgallery/blob/master/imgs/graphgallery.svg" />
 </p>
 
 [![PyPI Version][pypi-image]][pypi-url]
@@ -57,7 +57,7 @@ pip install -U graphgallery
 + **RGCN** from *Robust Graph Convolutional Networks Against Adversarial Attacks* [🌐Paper](https://dl.acm.org/doi/10.1145/3292500.3330851)
 + **SBVAT/OBVAT** from *Batch Virtual Adversarial Training for Graph Convolutional Networks* [🌐Paper](https://arxiv.org/abs/1902.09192)
 
-## Other models
+## Other custom models
 + **GCN_MIX**: Mixture of GCN and MLP
 + **GCNF**: GCN + feature
 + **DenseGCN**: Dense version of GCN
@@ -99,7 +99,7 @@ you can use the following statement to build your model
 # other parameters like `dropouts` and `l2_norms` (if have) are the SAME.
 ```
 ## Train or test your model
-More details can be seen in the methods [model.train](./graphgallery/nn/models/supervised/supervised_model.py) and [model.test](./graphgallery/nn/models/supervised/supervised_model.py) 
+More details can be seen in the methods [model.train](https://github.com/EdisonLeeeee/Graphgallery/blob/master/graphgallery/nn/models/supervised/supervised_model.py#L80) and [model.test](https://github.com/EdisonLeeeee/Graphgallery/blob/master/graphgallery/nn/models/supervised/supervised_model.py#L382) 
 
 ## Hyper-parameters
 you can simply use `model.show()` to show all your `Hyper-parameters`.
@@ -115,7 +115,7 @@ plt.plot(his.history['val_acc'])
 plt.legend(['Accuracy', 'Val Accuracy'])
 plt.xlabel('Epochs')
 ```
-![visualization](./imgs/visualization_acc.png)
+![visualization](https://github.com/EdisonLeeeee/Graphgallery/blob/master/imgs/visualization_acc.png)
 
 + Loss
 ```python
@@ -125,6 +125,6 @@ plt.plot(his.history['val_loss'])
 plt.legend(['Loss', 'Val Loss'])
 plt.xlabel('Epochs')
 ```
-![visualization](./imgs/visualization_loss.png)
+![visualization](https://github.com/EdisonLeeeee/Graphgallery/blob/master/imgs/visualization_loss.png)
 
 
