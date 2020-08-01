@@ -81,3 +81,6 @@ class UnsupervisedModel(BaseModel):
     @staticmethod
     def normalize_embedding(embeddings):
         return normalize(embeddings)
+    
+    def __repr__(self):
+        return 'UnSupervised model: ' + self.name + ' in ' + self.device    

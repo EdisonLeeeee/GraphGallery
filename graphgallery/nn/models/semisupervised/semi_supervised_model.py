@@ -580,3 +580,6 @@ class SemiSupervisedModel(BaseModel):
         """Close the session of model and set `built` to False."""
         self.model = None
         K.clear_session()
+        
+    def __repr__(self):
+        return 'Semi-Supervised model: ' + self.name + ' in ' + self.device
