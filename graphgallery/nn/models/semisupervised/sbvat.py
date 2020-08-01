@@ -10,7 +10,7 @@ from tensorflow.keras.activations import softmax
 from tensorflow.keras.metrics import SparseCategoricalAccuracy
 
 from graphgallery.nn.layers import GraphConvolution
-from graphgallery.nn.models import SupervisedModel
+from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import NodeSampleSequence
 from graphgallery.utils.sample_utils import find_4o_nbrs
 from graphgallery.utils.bvat_utils import get_normalized_vector, kl_divergence_with_logit, entropy_y_x
@@ -18,7 +18,7 @@ from graphgallery.utils.shape_utils import set_equal_in_length
 from graphgallery import astensor, asintarr, normalize_x, normalize_adj, Bunch
 
 
-class SBVAT(SupervisedModel):
+class SBVAT(SemiSupervisedModel):
     """
         Implementation of optimization-based Batch Virtual Adversarial Training  Graph Convolutional Networks (OBVAT). 
         `Batch Virtual Adversarial Training for Graph Convolutional Networks <https://arxiv.org/abs/1902.09192>`
@@ -117,7 +117,7 @@ class SBVAT(SupervisedModel):
             output = Softmax()(output)
             model = Model(inputs=[x, adj, index], outputs=output)
 
-            self.set_model(model)
+            self.model = model
             self.train_metric = SparseCategoricalAccuracy()
             self.test_metric = SparseCategoricalAccuracy()
             self.optimizer = Adam(lr=lr)

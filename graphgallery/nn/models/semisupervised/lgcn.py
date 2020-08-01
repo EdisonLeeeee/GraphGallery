@@ -7,14 +7,14 @@ from tensorflow.keras.optimizers import Nadam
 from tensorflow.keras import regularizers
 
 from graphgallery.nn.layers import Top_k_features, LGConvolution, DenseGraphConv
-from graphgallery.nn.models import SupervisedModel
+from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.shape_utils import set_equal_in_length, get_length
 from graphgallery.utils.graph_utils import get_indice_graph
 from graphgallery import astensor, asintarr, sample_mask, normalize_x, normalize_adj, Bunch, repeat
 
 
-class LGCN(SupervisedModel):
+class LGCN(SemiSupervisedModel):
     """
         Implementation of Large-Scale Learnable Graph Convolutional Networks (LGCN).
         `Large-Scale Learnable Graph Convolutional Networks <https://arxiv.org/abs/1808.03965>`
@@ -127,7 +127,7 @@ class LGCN(SupervisedModel):
             model.compile(loss='sparse_categorical_crossentropy', optimizer=Nadam(lr=lr), metrics=['accuracy'])
 
             self.k = k
-            self.set_model(model)
+            self.model = model
 
     def train_sequence(self, index, batch_size=np.inf):
         index = asintarr(index)

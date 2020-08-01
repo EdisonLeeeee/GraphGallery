@@ -18,11 +18,11 @@ class BaseModel:
     Arguments:
     ----------
         adj: shape (N, N), `scipy.sparse.csr_matrix` (or `csc_matrix`) if 
-            `is_adj_sparse=True`, Numpy array-like or `np.matrix` if `is_adj_sparse=False`.
+            `is_adj_sparse=True`, Numpy array-like or Numpy matrix if `is_adj_sparse=False`.
             The input `symmetric` adjacency matrix, where `N` is the number 
             of nodes in graph.
         x: shape (N, F), `scipy.sparse.csr_matrix` (or `csc_matrix`) if 
-            `is_x_sparse=True`, Numpy array-like or `np.matrix` if `is_x_sparse=False`.
+            `is_x_sparse=True`, Numpy array-like or Numpy matrix if `is_x_sparse=False`.
             The input node feature matrix, where `F` is the dimension of features.
         labels: shape (N,), array-like. Default: `None` for unsupervised learning.
             The class labels of the nodes in the graph. 
@@ -44,12 +44,12 @@ class BaseModel:
 
     def __init__(self, adj, x, labels=None, device="CPU:0", seed=None, name=None, **kwargs):
 
-        if seed:
+        if seed is not None:
             tf.random.set_seed(seed)
             np.random.seed(seed)
             random.seed(seed)
 
-        if not name:
+        if name is None:
             name = self.__class__.__name__
 
         # By default, adj is sparse matrix and x is dense array (matrix)
@@ -80,10 +80,10 @@ class BaseModel:
         self.device = device
         self.labels = asintarr(labels)
         self.name = name
-        self._model = None
-        self.index_train = None
-        self.index_val = None
-        self.index_test = None
+        self.__model = None
+        self.idx_train = None
+        self.idx_val = None
+        self.idx_test = None
         self.do_before_train = None
         self.do_before_validation = None
         self.do_before_test = None
@@ -112,11 +112,11 @@ class BaseModel:
         Arguments:
         ----------
             adj: shape (N, N), `scipy.sparse.csr_matrix` (or `csc_matrix`) if 
-                `is_adj_sparse=True`, Numpy array-like or `np.matrix` if `is_adj_sparse=False`.
+                `is_adj_sparse=True`, Numpy array-like or Numpy matrix if `is_adj_sparse=False`.
                 The input `symmetric` adjacency matrix, where `N` is the number 
                 of nodes in graph.
             x: shape (N, F), `scipy.sparse.csr_matrix` (or `csc_matrix`) if 
-                `is_x_sparse=True`, Numpy array-like or `np.matrix` if `is_x_sparse=False`.
+                `is_x_sparse=True`, Numpy array-like or Numpy matrix if `is_x_sparse=False`.
                 The input node feature matrix, where `F` is the dimension of features.
 
         Note:
@@ -147,10 +147,12 @@ class BaseModel:
 
     @property
     def model(self):
-        return self._model
+        return self.__model
 
-    def set_model(self, model):
-        self._model = model
+    @model.setter
+    def model(self, m):
+#         assert m is None or isinstance(m, tf.keras.Model)
+        self.__model = m
 
     def preprocess(self, adj, x):
         """Preprocess the input adjacency matrix and feature matrix, e.g., normalization.
@@ -202,7 +204,7 @@ class BaseModel:
             path += '.h5'
         if as_model:
             model = tf.keras.models.load_model(path, custom_objects=self.custom_objects)
-            self.set_model(model)
+            self.model = model
         else:
             try:
                 self.model.load_weights(path)
@@ -220,9 +222,9 @@ class BaseModel:
         ```
 
         """
-        if name=='train':
+        if name == 'train':
             paras = self.train_paras
-        elif name=='model':
+        elif name == 'model':
             paras = self.model_paras
         else:
             paras = self.paras

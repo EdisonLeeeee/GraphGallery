@@ -61,7 +61,7 @@ class Deepwalk(UnsupervisedModel):
         model = Word2Vec(sentences, size=embedding_dim, window=window_size, min_count=0, sg=1, workers=workers,
                          iter=iter, negative=num_neg_samples, hs=0, compute_loss=True)
 
-        self.set_model(model)
+        self.model = model
 
     @staticmethod
     @njit

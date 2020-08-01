@@ -5,20 +5,16 @@ from tensorflow.keras.layers import Dropout, Softmax
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 
-from graphgallery.nn.layers import MeanAggregator, GCNAggregator
-from graphgallery.nn.models import SupervisedModel
+from graphgallery.nn.layers import MedianAggregator, MedianGCNAggregator
+from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import SAGEMiniBatchSequence
 from graphgallery.utils.graph_utils import construct_neighbors
 from graphgallery.utils.shape_utils import set_equal_in_length
 from graphgallery import astensor, asintarr, normalize_x, Bunch
 
 
-class GraphSAGE(SupervisedModel):
+class MedianSAGE(SemiSupervisedModel):
     """
-        Implementation of SAmple and aggreGatE Graph Convolutional Networks (GraphSAGE). 
-        `Inductive Representation Learning on Large Graphs <https://arxiv.org/abs/1706.02216>`
-        Tensorflow 1.x implementation: <https://github.com/williamleif/GraphSAGE>
-        Pytorch implementation: <https://github.com/williamleif/graphsage-simple/>
 
 
         Arguments:
@@ -52,7 +48,7 @@ class GraphSAGE(SupervisedModel):
 
     """
 
-    def __init__(self, adj, x, labels, n_samples=[15, 5], norm_x_type='l1',
+    def __init__(self, adj, x, labels, n_samples=[15, 3], norm_x_type='l1',
                  device='CPU:0', seed=None, name=None, **kwargs):
 
         super().__init__(adj, x, labels, device=device, seed=seed, name=name, **kwargs)
@@ -75,10 +71,11 @@ class GraphSAGE(SupervisedModel):
         x = np.vstack([x, np.zeros(self.n_features, dtype=self.floatx)])
 
         with tf.device(self.device):
-            self.x_norm, self.neighbors = astensor(x), neighbors
+            x = astensor(x)
+            self.x_norm, self.neighbors = x, neighbors
 
     def build(self, hiddens=[32], activations=['relu'], dropouts=[0.5], l2_norms=[5e-4], lr=0.01,
-              output_normalize=False, aggrator='mean'):
+              output_normalize=False, aggrator='median'):
 
         local_paras = locals()
         local_paras.pop('self')
@@ -93,12 +90,12 @@ class GraphSAGE(SupervisedModel):
 
         with tf.device(self.device):
 
-            if aggrator == 'mean':
-                Agg = MeanAggregator
+            if aggrator == 'median':
+                Agg = MedianAggregator
             elif aggrator == 'gcn':
-                Agg = GCNAggregator
+                Agg = MedianGCNAggregator
             else:
-                raise ValueError(f'Invalid value of `aggrator`, allowed values (`mean`, `gcn`), but got `{aggrator}`.')
+                raise ValueError(f'Invalid value of `aggrator`, allowed values (`median`, `gcn`), but got `{aggrator}`')
 
             x = Input(batch_shape=[None, self.n_features], dtype=self.floatx, name='features')
             nodes = Input(batch_shape=[None], dtype=self.intx, name='nodes')
@@ -119,7 +116,7 @@ class GraphSAGE(SupervisedModel):
                 for hop in range(len(self.n_samples)-agg_i):
                     neighbor_shape = [-1, self.n_samples[hop], feature_shape]
                     h[hop] = aggrator([h[hop], tf.reshape(h[hop+1], neighbor_shape)])
-                    if hop!=len(self.n_samples)-1:
+                    if hop != len(self.n_samples)-1:
                         h[hop] = Dropout(rate=dropouts[hop])(h[hop])
                 h.pop()
 
@@ -131,13 +128,13 @@ class GraphSAGE(SupervisedModel):
             model = Model(inputs=[x, nodes, *neighbors], outputs=output)
             model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=lr), metrics=['accuracy'])
 
-            self.set_model(model)
+            self.model = model
 
     def train_sequence(self, index):
         index = asintarr(index)
         labels = self.labels[index]
         with tf.device(self.device):
-            sequence = SAGEMiniBatchSequence([self.x_norm, index], labels, neighbors=self.neighbors, n_samples=self.n_samples)
+            sequence = SAGEMiniBatchSequence([self.x, index], labels, self.neighbors, n_samples=self.n_samples)
         return sequence
 
     def predict(self, index):
@@ -145,7 +142,7 @@ class GraphSAGE(SupervisedModel):
         logit = []
         index = asintarr(index)
         with tf.device(self.device):
-            data = SAGEMiniBatchSequence([self.x_norm, index], neighbors=self.neighbors, n_samples=self.n_samples)
+            data = SAGEMiniBatchSequence([self.x, index], neighbors=self.neighbors, n_samples=self.n_samples)
             for inputs, labels in data:
                 output = self.model.predict_on_batch(inputs)
                 if tf.is_tensor(output):

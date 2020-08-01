@@ -5,16 +5,25 @@ import collections.abc as collections_abc
 
 
 def is_list_like(x):
-    """Check if x is list like: `List` or `Tuple`
+    """Check whether `x` is list like, e.g., Tuple or List.
+
+    Arguments:
+        x: A python object to check.
+
+    Returns:
+        `True` iff `x` is a list like sequence.
     """
     return isinstance(x, collections_abc.Sequence)
 
 
 def is_sparse(x):
-    """Check whether `x` is sparse.
+    """Check whether `x` is sparse Tensor.
 
     Check whether an object is a `tf.sparse.SparseTensor` or
     `tf.compat.v1.SparseTensorValue`.
+
+    NOTE: This method is different with `scipy.sparse.is_sparse`
+    which is checking  whether `x` is Scipy sparse matrix.
 
     Arguments:
         x: A python object to check.
@@ -39,12 +48,32 @@ def is_tensor_or_variable(x):
 
 
 def is_interger_scalar(x):
+    """Check whether `x` is an Integer scalar.
+
+    Arguments:
+        x: A python object to check.
+
+    Returns:
+        `True` iff `x` is a Integer scalar (built-in or Numpy integer).
+    """
     return isinstance(x, (int, np.int8,
-                           np.int16,
-                           np.int32,
-                           np.int64,
-                           np.uint8,
-                           np.uint16,
-                           np.uint32,
-                           np.uint64,
-                           ))
+                          np.int16,
+                          np.int32,
+                          np.int64,
+                          np.uint8,
+                          np.uint16,
+                          np.uint32,
+                          np.uint64,
+                          ))
+
+
+def is_scalar_like(x):
+    """Check whether `x` is a scalar, an array scalar, or a 0-dim array.
+
+    Arguments:
+        x: A python object to check.
+
+    Returns:
+        `True` iff `x` is a scalar, an array scalar, or a 0-dim array.
+    """
+    return np.isscalar(x) or (isinstance(x, np.ndarray) and x.ndim == 0)

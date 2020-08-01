@@ -3,10 +3,11 @@
 [pypi-image]: https://badge.fury.io/py/graphgallery.svg
 [pypi-url]: https://pypi.org/project/graphgallery/
 
-
 <p align="center">
-  <img width = "1000" height = "300" src="https://github.com/EdisonLeeeee/Graphgallery/blob/master/imgs/graphgallery.svg" />
+  <img width = "500" height = "300" src="https://github.com/EdisonLeeeee/Graphgallery/blob/master/imgs/graphgallery.svg" alt="logo"/>
 </p>
+
+---
 
 [![PyPI Version][pypi-image]][pypi-url]
 
@@ -32,7 +33,7 @@ This repo aims to achieve 4 goals:
 
 Other packages (not necessary）:
 
-+ metis==0.2a4 (used for `ClusterGCN`)
++ metis==0.2a4 (required for `ClusterGCN`)
 + texttable
 
 # Install
@@ -42,20 +43,20 @@ pip install -U graphgallery
 
 # Implementation
 ## General models
-+ **GCN** from *Semi-Supervised Classification with Graph Convolutional Networks* [🌐Paper](https://arxiv.org/abs/1609.02907)
-+ **GAT** from *Graph Attention Networks* [🌐Paper](https://arxiv.org/abs/1710.10903>)
-+ **SGC** from *Simplifying Graph Convolutional Networks* [🌐Paper](https://arxiv.org/abs/1902.07153)
-+ **GraphSAGE** from *Inductive Representation Learning on Large Graphs* [🌐Paper](https://arxiv.org/abs/1706.02216)
-+ **GWNN** from *Graph Wavelet Neural Network* [🌐Paper](https://arxiv.org/abs/1904.07785)
-+ **GMNN** from *Graph Markov Neural Networks* [🌐Paper](https://arxiv.org/abs/1905.06214>)
-+ **ChebyNet** from *Convolutional Neural Networks on Graphs with Fast Localized Spectral Filtering* [🌐Paper](https://arxiv.org/abs/1606.09375>)
-+ **ClusterGCN** from *Cluster-GCN: An Efficient Algorithm for Training Deep and Large Graph Convolutional Networks* [🌐Paper](https://arxiv.org/abs/1905.07953)
-+ **FastGCN** from *FastGCN: Fast Learning with Graph Convolutional Networks via Importance Sampling* [🌐Paper](https://arxiv.org/abs/1801.10247)
-+ **LGCN** from  *Large-Scale Learnable Graph Convolutional Networks* [🌐Paper](https://arxiv.org/abs/1808.03965)
++ **GCN** from *Semi-Supervised Classification with Graph Convolutional Networks* [📝Paper](https://arxiv.org/abs/1609.02907)
++ **GAT** from *Graph Attention Networks* [📝Paper](https://arxiv.org/abs/1710.10903>)
++ **SGC** from *Simplifying Graph Convolutional Networks* [📝Paper](https://arxiv.org/abs/1902.07153)
++ **GraphSAGE** from *Inductive Representation Learning on Large Graphs* [📝Paper](https://arxiv.org/abs/1706.02216)
++ **GWNN** from *Graph Wavelet Neural Network* [📝Paper](https://arxiv.org/abs/1904.07785)
++ **GMNN** from *Graph Markov Neural Networks* [📝Paper](https://arxiv.org/abs/1905.06214>)
++ **ChebyNet** from *Convolutional Neural Networks on Graphs with Fast Localized Spectral Filtering* [📝Paper](https://arxiv.org/abs/1606.09375>)
++ **ClusterGCN** from *Cluster-GCN: An Efficient Algorithm for Training Deep and Large Graph Convolutional Networks* [📝Paper](https://arxiv.org/abs/1905.07953)
++ **FastGCN** from *FastGCN: Fast Learning with Graph Convolutional Networks via Importance Sampling* [📝Paper](https://arxiv.org/abs/1801.10247)
++ **LGCN** from  *Large-Scale Learnable Graph Convolutional Networks* [📝Paper](https://arxiv.org/abs/1808.03965)
 
 ## Defense models
-+ **RGCN** from *Robust Graph Convolutional Networks Against Adversarial Attacks* [🌐Paper](https://dl.acm.org/doi/10.1145/3292500.3330851)
-+ **SBVAT/OBVAT** from *Batch Virtual Adversarial Training for Graph Convolutional Networks* [🌐Paper](https://arxiv.org/abs/1902.09192)
++ **RobustGCN** from *Robust Graph Convolutional Networks Against Adversarial Attacks* [📝Paper](https://dl.acm.org/doi/10.1145/3292500.3330851)
++ **SBVAT/OBVAT** from *Batch Virtual Adversarial Training for Graph Convolutional Networks* [📝Paper](https://arxiv.org/abs/1902.09192)
 
 ## Other custom models
 + **GCN_MIX**: Mixture of GCN and MLP
@@ -114,6 +115,7 @@ plt.plot(his.history['acc'])
 plt.plot(his.history['val_acc'])
 plt.legend(['Accuracy', 'Val Accuracy'])
 plt.xlabel('Epochs')
+plt.show()
 ```
 ![visualization](https://github.com/EdisonLeeeee/Graphgallery/blob/master/imgs/visualization_acc.png)
 
@@ -124,6 +126,7 @@ plt.plot(his.history['loss'])
 plt.plot(his.history['val_loss'])
 plt.legend(['Loss', 'Val Loss'])
 plt.xlabel('Epochs')
+plt.show()
 ```
 ![visualization](https://github.com/EdisonLeeeee/Graphgallery/blob/master/imgs/visualization_loss.png)
 

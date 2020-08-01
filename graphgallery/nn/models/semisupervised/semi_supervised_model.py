@@ -4,7 +4,6 @@ import numpy as np
 import tensorflow as tf
 import scipy.sparse as sp
 
-from graphgallery.utils.tqdm import tqdm
 from tensorflow.keras import backend as K
 from tensorflow.keras.utils import Sequence
 from tensorflow.python.keras import callbacks as callbacks_module
@@ -12,12 +11,13 @@ from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 
 from graphgallery.nn.models import BaseModel
 from graphgallery.utils.history import History
+from graphgallery.utils.tqdm import tqdm
 from graphgallery import asintarr, astensor, Bunch
 
 
-class SupervisedModel(BaseModel):
+class SemiSupervisedModel(BaseModel):
     """
-        Base model for supervised learning.
+        Base model for semi-supervised learning.
 
         Arguments:
         ----------
@@ -77,12 +77,12 @@ class SupervisedModel(BaseModel):
         """
         raise NotImplementedError
 
-    def train(self, index_train, index_val=None,
+    def train(self, idx_train, idx_val=None,
               epochs=200, early_stopping=None,
               verbose=False, save_best=True, weight_path=None, as_model=False,
               monitor='val_acc', early_stop_metric='val_loss'):
         """
-            Train the model for the input `index_train` of nodes or `sequence`.
+            Train the model for the input `idx_train` of nodes or `sequence`.
 
         Note:
         ----------
@@ -90,9 +90,9 @@ class SupervisedModel(BaseModel):
 
         Arguments:
         ----------
-            index_train: Numpy array-like, `list`, Integer scalar or `graphgallery.NodeSequence`
+            idx_train: Numpy array-like, `list`, Integer scalar or `graphgallery.NodeSequence`
                 the index of nodes (or sequence) that will be used during training.    
-            index_val: Numpy array-like, `list`, Integer scalar or `graphgallery.NodeSequence`, optional
+            idx_val: Numpy array-like, `list`, Integer scalar or `graphgallery.NodeSequence`, optional
                 the index of nodes (or sequence) that will be used for validation. 
                 (default :obj: `None`, i.e., do not use validation during training)
             epochs: Postive integer
@@ -129,30 +129,28 @@ class SupervisedModel(BaseModel):
 
         local_paras = locals()
         local_paras.pop('self')
-        local_paras.pop('index_train')
-        local_paras.pop('index_val')
+        local_paras.pop('idx_train')
+        local_paras.pop('idx_val')
         paras = Bunch(**local_paras)
 
         # Check if model has been built
         if not self.model:
             raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')
 
-        if isinstance(index_train, Sequence):
-            train_data = index_train
+        if isinstance(idx_train, Sequence):
+            train_data = idx_train
         else:
-            train_data = self.train_sequence(index_train)
-            self.index_train = asintarr(index_train)
+            train_data = self.train_sequence(idx_train)
+            self.idx_train = asintarr(idx_train)
 
-        validation = index_val
+        validation = idx_val
 
         if validation is not None:
-            if isinstance(index_val, Sequence):
-                val_data = index_val
+            if isinstance(idx_val, Sequence):
+                val_data = idx_val
             else:
-                val_data = self.test_sequence(index_val)
-                self.index_val = asintarr(index_val)
-
-
+                val_data = self.test_sequence(idx_val)
+                self.idx_val = asintarr(idx_val)
 
         history = History(monitor_metric=monitor,
                           early_stop_metric=early_stop_metric)
@@ -161,12 +159,12 @@ class SupervisedModel(BaseModel):
             weight_path = self.weight_path
         if not weight_path.endswith('.h5'):
             weight_path += '.h5'
-            
+
         paras.update(Bunch(weight_path=weight_path))
         # update all parameters
         self.paras.update(paras)
         self.train_paras.update(paras)
-        
+
         if validation is None:
             history.register_monitor_metric('acc')
             history.register_early_stop_metric('loss')
@@ -222,12 +220,12 @@ class SupervisedModel(BaseModel):
 
         return history
 
-    def train_v2(self, index_train, index_val=None,
+    def train_v2(self, idx_train, idx_val=None,
                  epochs=200, early_stopping=None,
                  verbose=False, save_best=True, weight_path=None, as_model=False,
                  monitor='val_acc', early_stop_metric='val_loss', callbacks=None, **kwargs):
         """
-            Train the model for the input `index_train` of nodes or `sequence`.
+            Train the model for the input `idx_train` of nodes or `sequence`.
 
         Note:
         ----------
@@ -235,9 +233,9 @@ class SupervisedModel(BaseModel):
 
         Arguments:
         ----------
-            index_train: Numpy array-like, `list`, Integer scalar or `graphgallery.NodeSequence`
+            idx_train: Numpy array-like, `list`, Integer scalar or `graphgallery.NodeSequence`
                 the index of nodes (or sequence) that will be used during training.    
-            index_val: Numpy array-like, `list`, Integer scalar or `graphgallery.NodeSequence`, optional
+            idx_val: Numpy array-like, `list`, Integer scalar or `graphgallery.NodeSequence`, optional
                 the index of nodes (or sequence) that will be used for validation. 
                 (default :obj: `None`, i.e., do not use validation during training)
             epochs: Postive integer
@@ -276,8 +274,8 @@ class SupervisedModel(BaseModel):
         """
         local_paras = locals()
         local_paras.pop('self')
-        local_paras.pop('index_train')
-        local_paras.pop('index_val')
+        local_paras.pop('idx_train')
+        local_paras.pop('idx_val')
         paras = Bunch(**local_paras)
 
         if not tf.__version__ >= '2.2.0':
@@ -287,20 +285,20 @@ class SupervisedModel(BaseModel):
         if not self.model:
             raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')
 
-        if isinstance(index_train, Sequence):
-            train_data = index_train
+        if isinstance(idx_train, Sequence):
+            train_data = idx_train
         else:
-            train_data = self.train_sequence(index_train)
-            self.index_train = asintarr(index_train)
+            train_data = self.train_sequence(idx_train)
+            self.idx_train = asintarr(idx_train)
 
-        validation = index_val
+        validation = idx_val
 
         if validation is not None:
-            if isinstance(index_val, Sequence):
-                val_data = index_val
+            if isinstance(idx_val, Sequence):
+                val_data = idx_val
             else:
-                val_data = self.test_sequence(index_val)
-                self.index_val = asintarr(index_val)
+                val_data = self.test_sequence(idx_val)
+                self.idx_val = asintarr(idx_val)
 
         model = self.model
         if not isinstance(callbacks, callbacks_module.CallbackList):
@@ -330,12 +328,12 @@ class SupervisedModel(BaseModel):
                                           verbose=verbose)
             callbacks.append(mc_callback)
         callbacks.set_model(model)
-        
+
         paras.update(Bunch(weight_path=weight_path))
         # update all parameters
         self.paras.update(paras)
         self.train_paras.update(paras)
-        
+
         # leave it blank for the future
         allowed_kwargs = set([])
         unknown_kwargs = set(kwargs.keys()) - allowed_kwargs
@@ -412,7 +410,7 @@ class SupervisedModel(BaseModel):
             test_data = index
         else:
             test_data = self.test_sequence(index)
-            self.index_test = asintarr(index)
+            self.idx_test = asintarr(index)
 
         if self.do_before_test:
             self.do_before_test(**kwargs)
@@ -557,7 +555,7 @@ class SupervisedModel(BaseModel):
         predict_class = logit.argmax(1)
         labels = self.labels[index]
         return (predict_class == labels).mean()
-
+        
 #     @tf.function
     def __call__(self, inputs):
         return self.model(inputs)
@@ -580,5 +578,5 @@ class SupervisedModel(BaseModel):
     @property
     def close(self):
         """Close the session of model and set `built` to False."""
-        self.set_model(None)
+        self.model = None
         K.clear_session()

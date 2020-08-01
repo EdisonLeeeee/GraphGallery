@@ -72,7 +72,7 @@ class Node2vec(UnsupervisedModel):
         model = Word2Vec(sentences, size=embedding_dim, window=window_size, min_count=0, sg=1, workers=workers,
                          iter=iter, negative=num_neg_samples, hs=0, compute_loss=True)
 
-        self.set_model(model)
+        self.model = model
 
     @staticmethod
     def node2vec_random_walk(G, alias_nodes, alias_edges, walk_length=80, walks_per_node=10):

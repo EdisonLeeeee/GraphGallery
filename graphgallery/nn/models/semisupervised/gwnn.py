@@ -4,16 +4,20 @@ from tensorflow.keras.layers import Dropout, Softmax
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 
-from graphgallery.nn.layers import GraphConvFeature
-from graphgallery.nn.models import SupervisedModel
+from graphgallery.nn.layers import WaveletConvolution
+from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
+from graphgallery.utils.wavelet_utils import wavelet_basis
 from graphgallery.utils.shape_utils import set_equal_in_length
-from graphgallery import astensor, asintarr, normalize_x, normalize_adj, Bunch
+from graphgallery import astensor, asintarr, normalize_x, Bunch
 
 
-class GCNF(SupervisedModel):
+class GWNN(SemiSupervisedModel):
     """
-        GCN + feature matrix
+        Implementation of Graph Wavelet Neural Networks (GWNN). 
+        `Graph Wavelet Neural Network <https://arxiv.org/abs/1904.07785>`
+        Tensorflow 1.x implementation: <https://github.com/Eilene/GWNN>
+        Pytorch implementation: <https://github.com/benedekrozemberczki/GraphWaveletNeuralNetwork>
 
         Arguments:
         ----------
@@ -26,12 +30,21 @@ class GCNF(SupervisedModel):
                 The input node feature matrix, where `F` is the dimension of features.
             labels: Numpy array-like with shape (N,)
                 The ground-truth labels for all nodes in graph.
-            norm_adj_rate (Float scalar, optional): 
-                The normalize rate for adjacency matrix `adj`. (default: :obj:`-0.5`, 
-                i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
-            norm_x_type (Boolean, optional): 
-                Whether to use row-wise normalization for node feature matrix. 
-                (default :bool: `True`)
+            order (Positive integer, optional): 
+                The power (order) of approximated wavelet matrix using Chebyshev polynomial 
+                filter. (default :obj: `3`)
+            wavelet_s (Float scalar, optional): 
+                The wavelet constant corresponding to a heat kernel. 
+                (default: :obj:`1.2`) 
+            threshold (Float scalar, optional): 
+                Used to sparsify the wavelet matrix. (default: :obj:`1e-4`, i.e., 
+                values less than `1e-4` will be set to zero to preserve the sparsity 
+                of wavelet matrix)       
+            wavelet_normalize (Boolean, optional): 
+                Whether to use row-normalize for wavelet matrix. (default :bool: `True`)
+            norm_x_type (String, optional): 
+                How to normalize the node feature matrix. See `graphgallery.normalize_x`
+                (default :str: `l1`)
             device (String, optional): 
                 The device where the model is running on. You can specified `CPU` or `GPU` 
                 for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
@@ -41,15 +54,18 @@ class GCNF(SupervisedModel):
                 (default :obj: `None`, i.e., using random seed)
             name (String, optional): 
                 Specified name for the model. (default: :str: `class.__name__`)
-
     """
 
-    def __init__(self, adj, x, labels, norm_adj_rate=-0.5, norm_x_type='l1',
+    def __init__(self, adj, x, labels, order=3, wavelet_s=1.2,
+                 threshold=1e-4, wavelet_normalize=True, norm_x_type='l1',
                  device='CPU:0', seed=None, name=None, **kwargs):
 
         super().__init__(adj, x, labels, device=device, seed=seed, name=name, **kwargs)
 
-        self.norm_adj_rate = norm_adj_rate
+        self.order = order
+        self.wavelet_s = wavelet_s
+        self.threshold = threshold
+        self.wavelet_normalize = wavelet_normalize
         self.norm_x_type = norm_x_type
         self.preprocess(adj, x)
 
@@ -58,17 +74,17 @@ class GCNF(SupervisedModel):
         # check the input adj and x, and convert them into proper data types
         adj, x = self._check_inputs(adj, x)
 
-        if self.norm_adj_rate:
-            adj = normalize_adj(adj, self.norm_adj_rate)
-
         if self.norm_x_type:
             x = normalize_x(x, norm=self.norm_x_type)
 
+        wavelet, inverse_wavelet = wavelet_basis(adj, wavelet_s=self.wavelet_s,
+                                                 order=self.order, threshold=self.threshold,
+                                                 wavelet_normalize=self.wavelet_normalize)
         with tf.device(self.device):
-            self.x_norm, self.adj_norm = astensor([x, adj])
+            self.x_norm, self.adj_norm = astensor([x, [wavelet, inverse_wavelet]])
 
-    def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5], l2_norms=[5e-4],
-              lr=0.01, use_bias=False):
+    def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5], l2_norms=[5e-4], lr=0.01,
+              ensure_shape=True):
 
         local_paras = locals()
         local_paras.pop('self')
@@ -81,37 +97,37 @@ class GCNF(SupervisedModel):
 
         with tf.device(self.device):
 
-            x = Input(batch_shape=[None, self.n_features], dtype=self.floatx, name='features')
-            adj = Input(batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix')
-            index = Input(batch_shape=[None], dtype=self.intx, name='index')
+            x = Input(batch_shape=[self.n_nodes, self.n_features], dtype=self.floatx, name='features')
+            wavelet = Input(batch_shape=[self.n_nodes, self.n_nodes], dtype=self.floatx, sparse=True, name='wavelet')
+            inverse_wavelet = Input(batch_shape=[self.n_nodes, self.n_nodes], dtype=self.floatx, sparse=True,
+                                    name='inverse_wavelet')
+            index = Input(batch_shape=[None],  dtype=self.intx, name='index')
 
             h = x
             for hid, activation, dropout, l2_norm in zip(hiddens, activations, dropouts, l2_norms):
-                h = GraphConvFeature(hid, use_bias=use_bias,
-                                     activation=activation,
-                                     concat=True,
-                                     kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
-
+                h = WaveletConvolution(hid, activation=activation,
+                                       kernel_regularizer=regularizers.l2(l2_norm))([h, wavelet, inverse_wavelet])
                 h = Dropout(rate=dropout)(h)
 
-            h = GraphConvFeature(self.n_classes, use_bias=use_bias)([h, adj])
+            h = WaveletConvolution(self.n_classes)([h, wavelet, inverse_wavelet])
             # To aviod the UserWarning of `tf.gather`, but it causes the shape
             # of the input data to remain the same
-            # if ensure_shape:
-            #     h = tf.ensure_shape(h, [self.n_nodes, self.n_classes])
+            if ensure_shape:
+                h = tf.ensure_shape(h, [self.n_nodes, self.n_classes])
             h = tf.gather(h, index)
             output = Softmax()(h)
 
-            model = Model(inputs=[x, adj, index], outputs=output)
+            model = Model(inputs=[x, wavelet, inverse_wavelet, index], outputs=output)
             model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=lr), metrics=['accuracy'])
 
-            self.set_model(model)
+            self.model = model
 
     def train_sequence(self, index):
         index = asintarr(index)
         labels = self.labels[index]
+
         with tf.device(self.device):
-            sequence = FullBatchNodeSequence([self.x_norm, self.adj_norm, index], labels)
+            sequence = FullBatchNodeSequence([self.x_norm, *self.adj_norm, index], labels)
         return sequence
 
     def predict(self, index):
@@ -119,7 +135,7 @@ class GCNF(SupervisedModel):
         index = asintarr(index)
         with tf.device(self.device):
             index = astensor(index)
-            logit = self.model.predict_on_batch([self.x_norm, self.adj_norm, index])
+            logit = self.model.predict_on_batch([self.x_norm, *self.adj_norm, index])
 
         if tf.is_tensor(logit):
             logit = logit.numpy()

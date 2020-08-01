@@ -1,55 +1,50 @@
-import scipy.sparse as sp
 import tensorflow as tf
 from tensorflow.keras import Model, Input
 from tensorflow.keras.layers import Dropout, Softmax
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 
-from graphgallery.nn.layers import GraphAttention
-from graphgallery.nn.models import SupervisedModel
+from graphgallery.nn.layers import GraphConvFeature
+from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.shape_utils import set_equal_in_length
 from graphgallery import astensor, asintarr, normalize_x, normalize_adj, Bunch
 
 
-class GAT(SupervisedModel):
+class GCNF(SemiSupervisedModel):
     """
-        Implementation of Graph Attention Networks (GAT).
-        `Graph Attention Networks <https://arxiv.org/abs/1710.10903>`
-        Tensorflow 1.x implementation: <https://github.com/PetarV-/GAT>
-        Pytorch implementation: <https://github.com/Diego999/pyGAT>
-        Keras implementation: <https://github.com/danielegrattarola/keras-gat>
+        GCN + feature matrix
 
         Arguments:
         ----------
-            adj: shape (N, N), Scipy sparse matrix if  `is_adj_sparse=True`,
+            adj: shape (N, N), Scipy sparse matrix if  `is_adj_sparse=True`, 
                 Numpy array-like (or matrix) if `is_adj_sparse=False`.
-                The input `symmetric` adjacency matrix, where `N` is the number
+                The input `symmetric` adjacency matrix, where `N` is the number 
                 of nodes in graph.
-            x: shape (N, F), Scipy sparse matrix if `is_x_sparse=True`,
+            x: shape (N, F), Scipy sparse matrix if `is_x_sparse=True`, 
                 Numpy array-like (or matrix) if `is_x_sparse=False`.
                 The input node feature matrix, where `F` is the dimension of features.
             labels: Numpy array-like with shape (N,)
                 The ground-truth labels for all nodes in graph.
-            norm_adj_rate (Float scalar, optional):
-                The normalize rate for adjacency matrix `adj`. (default: :obj: `None`)
-            norm_x_type (String, optional):
-                How to normalize the node feature matrix. See `graphgallery.normalize_x`
-                (default :str: `l1`)
-            device (String, optional):
-                The device where the model is running on. You can specified `CPU` or `GPU`
+            norm_adj_rate (Float scalar, optional): 
+                The normalize rate for adjacency matrix `adj`. (default: :obj:`-0.5`, 
+                i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
+            norm_x_type (Boolean, optional): 
+                Whether to use row-wise normalization for node feature matrix. 
+                (default :bool: `True`)
+            device (String, optional): 
+                The device where the model is running on. You can specified `CPU` or `GPU` 
                 for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
-            seed (Positive integer, optional):
-                Used in combination with `tf.random.set_seed` & `np.random.seed` & `random.seed`
-                to create a reproducible sequence of tensors across multiple calls.
+            seed (Positive integer, optional): 
+                Used in combination with `tf.random.set_seed` & `np.random.seed` & `random.seed`  
+                to create a reproducible sequence of tensors across multiple calls. 
                 (default :obj: `None`, i.e., using random seed)
-            name (String, optional):
+            name (String, optional): 
                 Specified name for the model. (default: :str: `class.__name__`)
-
 
     """
 
-    def __init__(self, adj, x, labels, norm_adj_rate=None, norm_x_type='l1',
+    def __init__(self, adj, x, labels, norm_adj_rate=-0.5, norm_x_type='l1',
                  device='CPU:0', seed=None, name=None, **kwargs):
 
         super().__init__(adj, x, labels, device=device, seed=seed, name=name, **kwargs)
@@ -65,8 +60,6 @@ class GAT(SupervisedModel):
 
         if self.norm_adj_rate:
             adj = normalize_adj(adj, self.norm_adj_rate)
-        else:
-            adj = adj + sp.eye(adj.shape[0])
 
         if self.norm_x_type:
             x = normalize_x(x, norm=self.norm_x_type)
@@ -74,17 +67,14 @@ class GAT(SupervisedModel):
         with tf.device(self.device):
             self.x_norm, self.adj_norm = astensor([x, adj])
 
-    def build(self, hiddens=[8], n_heads=[8], activations=['elu'], dropouts=[0.6], l2_norms=[5e-4],
-              lr=0.01, ensure_shape=True):
+    def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5], l2_norms=[5e-4],
+              lr=0.01, use_bias=False):
 
         local_paras = locals()
         local_paras.pop('self')
         paras = Bunch(**local_paras)
-        (hiddens, n_heads,
-         activations, dropouts,
-         l2_norms) = set_equal_in_length(hiddens, n_heads, activations, dropouts, l2_norms)
-        paras.update(Bunch(hiddens=hiddens, n_heads=n_heads, activations=activations,
-                           dropouts=dropouts, l2_norms=l2_norms))
+        hiddens, activations, dropouts, l2_norms = set_equal_in_length(hiddens, activations, dropouts, l2_norms)
+        paras.update(Bunch(hiddens=hiddens, activations=activations, dropouts=dropouts, l2_norms=l2_norms))
         # update all parameters
         self.paras.update(paras)
         self.model_paras.update(paras)
@@ -93,30 +83,29 @@ class GAT(SupervisedModel):
 
             x = Input(batch_shape=[None, self.n_features], dtype=self.floatx, name='features')
             adj = Input(batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix')
-            index = Input(batch_shape=[None],  dtype=self.intx, name='index')
+            index = Input(batch_shape=[None], dtype=self.intx, name='index')
 
             h = x
-            for hid, n_head, activation, dropout, l2_norm in zip(hiddens, n_heads, activations, dropouts, l2_norms):
-                h = GraphAttention(hid, attn_heads=n_head,
-                                   attn_heads_reduction='concat',
-                                   activation=activation,
-                                   kernel_regularizer=regularizers.l2(l2_norm),
-                                   attn_kernel_regularizer=regularizers.l2(l2_norm),
-                                   )([h, adj])
+            for hid, activation, dropout, l2_norm in zip(hiddens, activations, dropouts, l2_norms):
+                h = GraphConvFeature(hid, use_bias=use_bias,
+                                     activation=activation,
+                                     concat=True,
+                                     kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
+
                 h = Dropout(rate=dropout)(h)
 
-            h = GraphAttention(self.n_classes, attn_heads=1, attn_heads_reduction='average')([h, adj])
+            h = GraphConvFeature(self.n_classes, use_bias=use_bias)([h, adj])
             # To aviod the UserWarning of `tf.gather`, but it causes the shape
             # of the input data to remain the same
-            if ensure_shape:
-                h = tf.ensure_shape(h, [self.n_nodes, self.n_classes])
+            # if ensure_shape:
+            #     h = tf.ensure_shape(h, [self.n_nodes, self.n_classes])
             h = tf.gather(h, index)
             output = Softmax()(h)
 
             model = Model(inputs=[x, adj, index], outputs=output)
             model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=lr), metrics=['accuracy'])
 
-            self.set_model(model)
+            self.model = model
 
     def train_sequence(self, index):
         index = asintarr(index)

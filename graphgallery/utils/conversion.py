@@ -6,7 +6,7 @@ from numbers import Number
 from tensorflow.keras import backend as K
 
 from graphgallery import config
-from graphgallery.utils.type_check import is_list_like, is_interger_scalar, is_tensor_or_variable
+from graphgallery.utils.type_check import is_list_like, is_interger_scalar, is_tensor_or_variable, is_scalar_like
 
 
 __all__ = ['check_and_convert', 'sparse_adj_to_sparse_tensor', 'sparse_tensor_to_sparse_adj',
@@ -31,7 +31,7 @@ def check_and_convert(matrix, is_sparse):
         return [check_and_convert(m, is_sparse) for m in matrix]
     if not is_sparse:
         if not isinstance(matrix, (np.ndarray, np.matrix)):
-            raise TypeError("The input matrix must be Numpy array-like or `np.matrix`"
+            raise TypeError("The input matrix must be Numpy array-like or Numpy matrix"
                             f" when `is_sparse=False`, but got {type(x)}")
         return np.asarray(matrix, dtype=config.floatx())
     else:
@@ -123,10 +123,10 @@ def astensor(inputs):
             return matrix
         elif sp.isspmatrix_csr(matrix) or sp.isspmatrix_csc(matrix):
             return sparse_adj_to_sparse_tensor(matrix)
-        elif isinstance(matrix, (np.ndarray, np.matrix)) or is_list_like(matrix):
+        elif isinstance(matrix, (np.ndarray, np.matrix)) or is_list_like(matrix) or is_scalar_like(matrix):
             return tf.convert_to_tensor(matrix, dtype=inferer_type(matrix))
         else:
-            raise TypeError(f'Invalid type `{type(matrix)}` of inputs data. Allowed data type `(Tensor, SparseTensor, numpy array, scipy sparse tensor, None)`, but got {type(matrix)}.')
+            raise TypeError(f'Invalid type `{type(matrix)}` of inputs data. Allowed data type `(Tensor, SparseTensor, Numpy array, Scipy sparse tensor, None)`, but got {type(matrix)}.')
 
     # Check `not isinstance(inputs[0], Number)` to avoid the situation like [1,2,3],
     # where [1,2,3] will be converted to three tensors seperately.

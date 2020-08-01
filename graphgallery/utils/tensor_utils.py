@@ -7,9 +7,8 @@ from tensorflow.keras import backend as K
 from graphgallery import config
 
 
-def normalize_adj_tensor(adj, rate=-0.5, add_self_loop=True):
-    if add_self_loop:
-        adj = adj + tf.eye(adj.shape[0])
+def normalize_adj_tensor(adj, rate=-0.5, self_loop=1.0):
+    adj = adj + self_loop*tf.eye(adj.shape[0])
     row_sum = tf.reduce_sum(adj, 1)
     d_inv_sqrt = tf.pow(row_sum, rate)
     d_mat_inv_sqrt = tf.linalg.diag(d_inv_sqrt)

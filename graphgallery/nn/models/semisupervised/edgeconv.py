@@ -1,21 +1,32 @@
+import numpy as np
 import tensorflow as tf
 from tensorflow.keras import Model, Input
-from tensorflow.keras.layers import Dense, Dropout
+from tensorflow.keras.layers import Dropout, Softmax
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 
-from graphgallery.nn.layers import GraphConvolution
-from graphgallery.nn.models import SupervisedModel
-from graphgallery.sequence import FastGCNBatchSequence
+from graphgallery.nn.layers import GraphEdgeConvolution
+from graphgallery.nn.models import SemiSupervisedModel
+from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.shape_utils import set_equal_in_length
-from graphgallery import astensor, asintarr, normalize_x, normalize_adj, Bunch
+from graphgallery import astensor, asintarr, normalize_x, normalize_adj, sparse_adj_to_edges, Bunch
 
 
-class FastGCN(SupervisedModel):
+class EdgeGCN(SemiSupervisedModel):
     """
-        Implementation of Fast Graph Convolutional Networks (FastGCN).
-        `FastGCN: Fast Learning with Graph Convolutional Networks via Importance Sampling <https://arxiv.org/abs/1801.10247>`
-        Tensorflow 1.x implementation: <https://github.com/matenure/FastGCN>
+        Implementation of Graph Convolutional Networks (GCN) -- Edge Convolution version.
+        `Semi-Supervised Classification with Graph Convolutional Networks <https://arxiv.org/abs/1609.02907>`
+
+        Inspired by: tf_geometric and torch_geometric
+        tf_geometric: <https://github.com/CrawlScript/tf_geometric>
+        torch_geometric: <https://github.com/rusty1s/pytorch_geometric>
+
+        Note:
+        ----------
+        The Graph Edge Convolutional implements the operation using message passing framework,
+            i.e., using Tensor `edge index` and `edge weight` of adjacency matrix to aggregate neighbors'
+            message, instead of SparseTensor `adj`.
+
 
         Arguments:
         ----------
@@ -33,12 +44,7 @@ class FastGCN(SupervisedModel):
                 i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}})
             norm_x_type (String, optional):
                 How to normalize the node feature matrix. See `graphgallery.normalize_x`
-                (default :obj: `None`, i.e., do not enforce normalize)
-            batch_size (Positive integer, optional):
-                Batch size for the training nodes. (default :int: `256`)
-            rank (Positive integer, optional):
-                The selected nodes for each batch nodes, `rank` must be smaller than
-                `batch_size`. (default :int: `100`)
+                (default :str: `l1`)
             device (String, optional):
                 The device where the model is running on. You can specified `CPU` or `GPU`
                 for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
@@ -49,16 +55,13 @@ class FastGCN(SupervisedModel):
             name (String, optional):
                 Specified name for the model. (default: :str: `class.__name__`)
 
-
     """
 
-    def __init__(self, adj, x, labels, norm_adj_rate=-0.5, norm_x_type=None,
-                 batch_size=256, rank=100, device='CPU:0', seed=None, name=None, **kwargs):
+    def __init__(self, adj, x, labels, norm_adj_rate=-0.5, norm_x_type='l1',
+                 device='CPU:0', seed=None, name=None, **kwargs):
 
         super().__init__(adj, x, labels, device=device, seed=seed, name=name, **kwargs)
 
-        self.rank = rank
-        self.batch_size = batch_size
         self.norm_adj_rate = norm_adj_rate
         self.norm_x_type = norm_x_type
         self.preprocess(adj, x)
@@ -74,12 +77,11 @@ class FastGCN(SupervisedModel):
         if self.norm_x_type:
             x = normalize_x(x, norm=self.norm_x_type)
 
-        x = adj.dot(x)
-
         with tf.device(self.device):
-            self.x_norm, self.adj_norm = astensor(x), adj
+            edge_index, edge_weight = sparse_adj_to_edges(adj)
+            self.x_norm, self.edge_index, self.edge_weight = astensor([x, edge_index, edge_weight])
 
-    def build(self, hiddens=[32], activations=['relu'], dropouts=[0.5], l2_norms=[5e-4],
+    def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5], l2_norms=[5e-4],
               lr=0.01, use_bias=False):
 
         local_paras = locals()
@@ -92,55 +94,43 @@ class FastGCN(SupervisedModel):
         self.model_paras.update(paras)
 
         with tf.device(self.device):
-
             x = Input(batch_shape=[None, self.n_features], dtype=self.floatx, name='features')
-            adj = Input(batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix')
+            edge_index = Input(batch_shape=[None, 2], dtype=self.intx, name='edge_index')
+            edge_weight = Input(batch_shape=[None],  dtype=self.floatx, name='edge_weight')
+            index = Input(batch_shape=[None],  dtype=self.intx, name='index')
 
             h = x
             for hid, activation, dropout, l2_norm in zip(hiddens, activations, dropouts, l2_norms):
-                h = Dense(hid, use_bias=use_bias, activation=activation,
-                          kernel_regularizer=regularizers.l2(l2_norm))(h)
+                h = GraphEdgeConvolution(hid, use_bias=use_bias,
+                                         activation=activation,
+                                         kernel_regularizer=regularizers.l2(l2_norm))([h, edge_index, edge_weight])
+
                 h = Dropout(rate=dropout)(h)
 
-            output = GraphConvolution(self.n_classes, activation='softmax')([h, adj])
+            h = GraphEdgeConvolution(self.n_classes, use_bias=use_bias)([h, edge_index, edge_weight])
+            h = tf.gather(h, index)
+            output = Softmax()(h)
 
-            model = Model(inputs=[x, adj], outputs=output)
+            model = Model(inputs=[x, edge_index, edge_weight, index], outputs=output)
             model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=lr), metrics=['accuracy'])
-            self.set_model(model)
+            self.model = model
+
+    def train_sequence(self, index):
+        index = asintarr(index)
+        labels = self.labels[index]
+        with tf.device(self.device):
+            sequence = FullBatchNodeSequence([self.x_norm, self.edge_index, self.edge_weight, index], labels)
+        return sequence
 
     def predict(self, index):
         super().predict(index)
         index = asintarr(index)
-        adj = self.adj_norm[index]
         with tf.device(self.device):
-            adj = astensor(adj)
-            logit = self.model.predict_on_batch([self.x_norm, adj])
+            logit = self.model.predict_on_batch([self.x_norm, self.edge_index, self.edge_weight, index])
 
         if tf.is_tensor(logit):
             logit = logit.numpy()
         return logit
 
-    def train_sequence(self, index):
-        index = asintarr(index)
-        labels = self.labels[index]
-        adj = self.adj[index].tocsc(copy=False)[:, index]
-
-        if self.norm_adj_rate:
-            adj = normalize_adj(adj, self.norm_adj_rate)
-
-        with tf.device(self.device):
-            x = tf.gather(self.x_norm, index)
-            sequence = FastGCNBatchSequence([x, adj], labels,
-                                            batch_size=self.batch_size,
-                                            rank=self.rank)
-        return sequence
-
-    def test_sequence(self, index):
-        index = asintarr(index)
-        labels = self.labels[index]
-        adj = self.adj_norm[index]
-
-        with tf.device(self.device):
-            sequence = FastGCNBatchSequence([self.x_norm, adj],
-                                            labels, batch_size=None, rank=None)  # use full batch
-        return sequence
+    def __call__(self, inputs):
+        return self.model(inputs)

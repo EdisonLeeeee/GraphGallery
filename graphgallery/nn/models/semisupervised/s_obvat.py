@@ -6,14 +6,14 @@ from tensorflow.keras import regularizers
 from tensorflow.keras.initializers import TruncatedNormal
 
 from graphgallery.nn.layers import GraphConvolution
-from graphgallery.nn.models import SupervisedModel
+from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.bvat_utils import kl_divergence_with_logit, entropy_y_x, get_normalized_vector
 from graphgallery.utils.shape_utils import set_equal_in_length
 from graphgallery import astensor, asintarr, normalize_x, normalize_adj, Bunch
 
 
-class SimplifiedOBVAT(SupervisedModel):
+class SimplifiedOBVAT(SemiSupervisedModel):
     """
         Implementation of optimization-based Batch Virtual Adversarial Training  Graph Convolutional Networks (OBVAT). 
         `Batch Virtual Adversarial Training for Graph Convolutional Networks <https://arxiv.org/abs/1902.09192>`
@@ -121,7 +121,7 @@ class SimplifiedOBVAT(SupervisedModel):
             vat_loss = self.virtual_adversarial_loss(x, adj, logit, epsilon)
             model.add_loss(p1 * vat_loss + p2 * entropy_loss)
 
-            self.set_model(model)
+            self.model = model
             self.adv_optimizer = Adam(lr=lr/10)
 
     def virtual_adversarial_loss(self, x, adj, logit, epsilon):

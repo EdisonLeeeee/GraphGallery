@@ -7,12 +7,12 @@ from tensorflow.keras import regularizers
 
 from graphgallery.nn.layers import GraphConvolution
 from graphgallery.sequence import FullBatchNodeSequence
-from graphgallery.nn.models import SupervisedModel
+from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.utils.shape_utils import set_equal_in_length
 from graphgallery import astensor, asintarr, normalize_x, normalize_adj, Bunch
 
 
-class GMNN(SupervisedModel):
+class GMNN(SemiSupervisedModel):
     """
         Implementation of Graph Markov Neural Networks (GMNN). 
         `Graph Markov Neural Networks <https://arxiv.org/abs/1905.06214>`
@@ -118,9 +118,10 @@ class GMNN(SupervisedModel):
             model_q = build_GCN(x_q)
 
             self.model_p, self.model_q = model_p, model_q
-            self.set_model(self.model_q)
 
-    def train(self, index_train, index_val=None, pre_train_epochs=100,
+            self.model = self.model_q
+
+    def train(self, idx_train, idx_val=None, pre_train_epochs=100,
               epochs=100, early_stopping=None, verbose=None, save_best=True,
               weight_path=None, as_model=False,
               monitor='val_acc', early_stop_metric='val_loss'):
@@ -129,25 +130,25 @@ class GMNN(SupervisedModel):
         index_all = tf.range(self.n_nodes, dtype=self.intx)
 
         # pre train model_q
-        self.set_model(self.model_q)
-        history = super().train(index_train, index_val, epochs=pre_train_epochs,
+        self.model = self.model_q
+        history = super().train(idx_train, idx_val, epochs=pre_train_epochs,
                                 early_stopping=early_stopping,
                                 verbose=verbose, save_best=save_best, weight_path=weight_path, as_model=True,
                                 monitor=monitor, early_stop_metric=early_stop_metric)
         histories.append(history)
 
         label_predict = self.predict(index_all).argmax(1)
-        label_predict[index_train] = self.labels[index_train]
+        label_predict[idx_train] = self.labels[idx_train]
         label_predict = tf.one_hot(label_predict, depth=self.n_classes)
         # train model_p fitst
         with tf.device(self.device):
             train_sequence = FullBatchNodeSequence([label_predict, self.adj_norm, index_all], label_predict)
-            if index_val is not None:
-                val_sequence = FullBatchNodeSequence([label_predict, self.adj_norm, index_val], self.labels_onehot[index_val])
+            if idx_val is not None:
+                val_sequence = FullBatchNodeSequence([label_predict, self.adj_norm, idx_val], self.labels_onehot[idx_val])
             else:
                 val_sequence = None
 
-        self.set_model(self.model_p)
+        self.model = self.model_p
         history = super().train(train_sequence, val_sequence, epochs=epochs,
                                 early_stopping=early_stopping,
                                 verbose=verbose, save_best=save_best, weight_path=weight_path, as_model=as_model,
@@ -159,12 +160,12 @@ class GMNN(SupervisedModel):
         if tf.is_tensor(label_predict):
             label_predict = label_predict.numpy()
 
-        label_predict[index_train] = self.labels_onehot[index_train]
+        label_predict[idx_train] = self.labels_onehot[idx_train]
 
-        self.set_model(self.model_q)
+        self.model = self.model_q
         with tf.device(self.device):
             train_sequence = FullBatchNodeSequence([self.x_norm, self.adj_norm, index_all], label_predict)
-        history = super().train(train_sequence, index_val, epochs=epochs,
+        history = super().train(train_sequence, idx_val, epochs=epochs,
                                 early_stopping=early_stopping,
                                 verbose=verbose, save_best=save_best,
                                 weight_path=weight_path, as_model=as_model,
