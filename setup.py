@@ -3,7 +3,6 @@
 from setuptools import setup, find_packages
 from graphgallery import __version__
 
-# __version__ = '0.1.5'
 url = 'https://github.com/EdisonLeeeee/Graphgallery'
 
 install_requires = [

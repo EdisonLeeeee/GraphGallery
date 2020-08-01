@@ -42,7 +42,7 @@ class GWNN(SemiSupervisedModel):
                 of wavelet matrix)       
             wavelet_normalize (Boolean, optional): 
                 Whether to use row-normalize for wavelet matrix. (default :bool: `True`)
-            norm_x_type (String, optional): 
+            norm_x (String, optional): 
                 How to normalize the node feature matrix. See `graphgallery.normalize_x`
                 (default :str: `l1`)
             device (String, optional): 
@@ -57,7 +57,7 @@ class GWNN(SemiSupervisedModel):
     """
 
     def __init__(self, adj, x, labels, order=3, wavelet_s=1.2,
-                 threshold=1e-4, wavelet_normalize=True, norm_x_type='l1',
+                 threshold=1e-4, wavelet_normalize=True, norm_x='l1',
                  device='CPU:0', seed=None, name=None, **kwargs):
 
         super().__init__(adj, x, labels, device=device, seed=seed, name=name, **kwargs)
@@ -66,7 +66,7 @@ class GWNN(SemiSupervisedModel):
         self.wavelet_s = wavelet_s
         self.threshold = threshold
         self.wavelet_normalize = wavelet_normalize
-        self.norm_x_type = norm_x_type
+        self.norm_x = norm_x
         self.preprocess(adj, x)
 
     def preprocess(self, adj, x):
@@ -74,8 +74,8 @@ class GWNN(SemiSupervisedModel):
         # check the input adj and x, and convert them into proper data types
         adj, x = self._check_inputs(adj, x)
 
-        if self.norm_x_type:
-            x = normalize_x(x, norm=self.norm_x_type)
+        if self.norm_x:
+            x = normalize_x(x, norm=self.norm_x)
 
         wavelet, inverse_wavelet = wavelet_basis(adj, wavelet_s=self.wavelet_s,
                                                  order=self.order, threshold=self.threshold,

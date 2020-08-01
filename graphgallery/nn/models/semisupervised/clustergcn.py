@@ -41,10 +41,10 @@ class ClusterGCN(SemiSupervisedModel):
             n_clusters (Potitive integer):
                 The number of clusters that the graph being seperated, if not specified (`None`),
                 it will be set to the number of classes automatically. (default :obj: `None`).
-            norm_adj_rate (Float scalar, optional):
+            norm_adj (Float scalar, optional):
                 The normalize rate for adjacency matrix `adj`. (default: :obj:`-0.5`,
                 i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}})
-            norm_x_type (String, optional):
+            norm_x (String, optional):
                 How to normalize the node feature matrix. See `graphgallery.normalize_x`
                 (default :str: `l1`)
             device (String, optional):
@@ -60,7 +60,7 @@ class ClusterGCN(SemiSupervisedModel):
     """
 
     def __init__(self, adj, x, labels, graph=None, n_clusters=None,
-                 norm_adj_rate=-0.5, norm_x_type='l1', device='CPU:0', seed=None, name=None, **kwargs):
+                 norm_adj=-0.5, norm_x='l1', device='CPU:0', seed=None, name=None, **kwargs):
 
         super().__init__(adj, x, labels=labels, device=device, seed=seed, name=name, **kwargs)
 
@@ -68,8 +68,8 @@ class ClusterGCN(SemiSupervisedModel):
             n_clusters = self.n_classes
 
         self.n_clusters = n_clusters
-        self.norm_adj_rate = norm_adj_rate
-        self.norm_x_type = norm_x_type
+        self.norm_adj = norm_adj
+        self.norm_x = norm_x
         self.preprocess(adj, x, graph)
 
     def preprocess(self, adj, x, graph=None):
@@ -77,8 +77,8 @@ class ClusterGCN(SemiSupervisedModel):
         # check the input adj and x, and convert them into proper data types
         adj, x = self._check_inputs(adj, x)
 
-        if self.norm_x_type:
-            x = normalize_x(x, norm=self.norm_x_type)
+        if self.norm_x:
+            x = normalize_x(x, norm=self.norm_x)
 
         if graph is None:
             graph = nx.from_scipy_sparse_matrix(adj, create_using=nx.DiGraph)
@@ -86,8 +86,8 @@ class ClusterGCN(SemiSupervisedModel):
         batch_adj, batch_x, self.cluster_member = partition_graph(adj, x, graph,
                                                                   n_clusters=self.n_clusters)
 
-        if self.norm_adj_rate:
-            batch_adj = normalize_adj(batch_adj, self.norm_adj_rate)
+        if self.norm_adj:
+            batch_adj = normalize_adj(batch_adj, self.norm_adj)
 
         batch_adj = [sparse_adj_to_edges(b_adj) for b_adj in batch_adj]
         batch_edge_index, batch_edge_weight = tuple(zip(*batch_adj))

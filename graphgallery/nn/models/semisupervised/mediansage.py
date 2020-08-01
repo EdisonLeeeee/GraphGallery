@@ -32,7 +32,7 @@ class MedianSAGE(SemiSupervisedModel):
                 The number of sampled neighbors for each nodes in each layer. 
                 (default :obj: `[10, 5]`, i.e., sample `10` first-order neighbors and 
                 `5` sencond-order neighbors, and the radius for `GraphSAGE` is `2`)
-            norm_x_type (String, optional): 
+            norm_x (String, optional): 
                 How to normalize the node feature matrix. See `graphgallery.normalize_x`
                 (default :str: `l1`)
             device (String, optional): 
@@ -48,13 +48,13 @@ class MedianSAGE(SemiSupervisedModel):
 
     """
 
-    def __init__(self, adj, x, labels, n_samples=[15, 3], norm_x_type='l1',
+    def __init__(self, adj, x, labels, n_samples=[15, 3], norm_x='l1',
                  device='CPU:0', seed=None, name=None, **kwargs):
 
         super().__init__(adj, x, labels, device=device, seed=seed, name=name, **kwargs)
 
         self.n_samples = n_samples
-        self.norm_x_type = norm_x_type
+        self.norm_x = norm_x
         self.preprocess(adj, x)
 
     def preprocess(self, adj, x):
@@ -62,8 +62,8 @@ class MedianSAGE(SemiSupervisedModel):
         # check the input adj and x, and convert them into proper data types
         adj, x = self._check_inputs(adj, x)
 
-        if self.norm_x_type:
-            x = normalize_x(x, norm=self.norm_x_type)
+        if self.norm_x:
+            x = normalize_x(x, norm=self.norm_x)
 
         # Dense matrix, shape [n_nodes, max_degree]
         neighbors = construct_neighbors(adj, max_degree=max(self.n_samples))

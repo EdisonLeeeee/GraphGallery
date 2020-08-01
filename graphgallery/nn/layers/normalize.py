@@ -11,9 +11,9 @@ class NormalizeLayer(Layer):
         and it is deprecated because we use SparseTensor `adj` instead.
     """
 
-    def __init__(self, norm_adj_rate, **kwargs):
+    def __init__(self, norm_adj, **kwargs):
         super().__init__(**kwargs)
-        self.norm_adj_rate = norm_adj_rate
+        self.norm_adj = norm_adj
 
     def call(self, inputs, improved=False):
         edge_index, edge_weight = inputs
@@ -27,7 +27,7 @@ class NormalizeLayer(Layer):
         row = tf.gather(edge_index, 0, axis=1)
         col = tf.gather(edge_index, 1, axis=1)
         deg = tf.math.unsorted_segment_sum(edge_weight, row, num_segments=n_nodes)
-        deg_inv_sqrt = tf.pow(deg, self.norm_adj_rate)
+        deg_inv_sqrt = tf.pow(deg, self.norm_adj)
         deg_inv_sqrt = tf.where(tf.math.is_inf(deg_inv_sqrt), tf.zeros_like(deg_inv_sqrt), deg_inv_sqrt)
         deg_inv_sqrt = tf.where(tf.math.is_nan(deg_inv_sqrt), tf.zeros_like(deg_inv_sqrt), deg_inv_sqrt)
 
@@ -51,7 +51,7 @@ class NormalizeLayer(Layer):
         return updated_edge_index, updated_edge_weight
 
     def get_config(self):
-        config = {'norm_adj_rate': self.norm_adj_rate}
+        config = {'norm_adj': self.norm_adj}
 
         base_config = super().get_config()
         return {**base_config, **config}
