@@ -100,7 +100,7 @@ you can use the following statement to build your model
 # other parameters like `dropouts` and `l2_norms` (if have) are the SAME.
 ```
 ## Train or test your model
-More details can be seen in the methods [model.train](https://github.com/EdisonLeeeee/GraphGallery/blob/master/graphgallery/nn/models/supervised/supervised_model.py#L80) and [model.test](https://github.com/EdisonLeeeee/GraphGallery/blob/master/graphgallery/nn/models/supervised/supervised_model.py#L382) 
+More details can be seen in the methods [model.train](https://github.com/EdisonLeeeee/GraphGallery/blob/master/graphgallery/nn/models/semisupervised/semi_supervised_model.py#L80) and [model.test](https://github.com/EdisonLeeeee/GraphGallery/blob/master/graphgallery/nn/models/semisupervised/semi_supervised_model.py#L382) 
 
 ## Hyper-parameters
 you can simply use `model.show()` to show all your `Hyper-parameters`.
