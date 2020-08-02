@@ -4,7 +4,7 @@
 [pypi-url]: https://pypi.org/project/graphgallery/
 
 <p align="center">
-  <img width = "500" height = "300" src="https://github.com/EdisonLeeeee/Graphgallery/blob/master/imgs/graphgallery.svg" alt="logo"/>
+  <img width = "500" height = "300" src="https://github.com/EdisonLeeeee/GraphGallery/blob/master/imgs/graphgallery.svg" alt="logo"/>
 </p>
 
 ---
@@ -31,7 +31,7 @@ This repo aims to achieve 4 goals:
 + numba>=0.48
 + gensim>=3.8.1
 
-Other packages (not necessary）:
+Other packages (not necessary):
 
 + metis==0.2a4 (required for `ClusterGCN`)
 + texttable
@@ -100,7 +100,7 @@ you can use the following statement to build your model
 # other parameters like `dropouts` and `l2_norms` (if have) are the SAME.
 ```
 ## Train or test your model
-More details can be seen in the methods [model.train](https://github.com/EdisonLeeeee/Graphgallery/blob/master/graphgallery/nn/models/supervised/supervised_model.py#L80) and [model.test](https://github.com/EdisonLeeeee/Graphgallery/blob/master/graphgallery/nn/models/supervised/supervised_model.py#L382) 
+More details can be seen in the methods [model.train](https://github.com/EdisonLeeeee/GraphGallery/blob/master/graphgallery/nn/models/supervised/supervised_model.py#L80) and [model.test](https://github.com/EdisonLeeeee/GraphGallery/blob/master/graphgallery/nn/models/supervised/supervised_model.py#L382) 
 
 ## Hyper-parameters
 you can simply use `model.show()` to show all your `Hyper-parameters`.
@@ -117,7 +117,7 @@ plt.legend(['Accuracy', 'Val Accuracy'])
 plt.xlabel('Epochs')
 plt.show()
 ```
-![visualization](https://github.com/EdisonLeeeee/Graphgallery/blob/master/imgs/visualization_acc.png)
+![visualization](https://github.com/EdisonLeeeee/GraphGallery/blob/master/imgs/visualization_acc.png)
 
 + Loss
 ```python
@@ -128,6 +128,6 @@ plt.legend(['Loss', 'Val Loss'])
 plt.xlabel('Epochs')
 plt.show()
 ```
-![visualization](https://github.com/EdisonLeeeee/Graphgallery/blob/master/imgs/visualization_loss.png)
+![visualization](https://github.com/EdisonLeeeee/GraphGallery/blob/master/imgs/visualization_loss.png)
 
 
