@@ -8,7 +8,7 @@ from graphgallery.nn.layers import GraphConvolution
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FastGCNBatchSequence
 from graphgallery.utils.shape_utils import set_equal_in_length
-from graphgallery import astensor, asintarr, normalize_x, normalize_adj, Bunch
+from graphgallery import astensors, asintarr, normalize_x, normalize_adj, Bunch
 
 
 class FastGCN(SemiSupervisedModel):
@@ -65,8 +65,7 @@ class FastGCN(SemiSupervisedModel):
 
     def preprocess(self, adj, x):
         super().preprocess(adj, x)
-        # check the input adj and x, and convert them into proper data types
-        adj, x = self._check_inputs(adj, x)
+        adj, x = self.adj, self.x
 
         if self.norm_adj:
             adj = normalize_adj(adj, self.norm_adj)
@@ -77,11 +76,12 @@ class FastGCN(SemiSupervisedModel):
         x = adj.dot(x)
 
         with tf.device(self.device):
-            self.x_norm, self.adj_norm = astensor(x), adj
+            self.x_norm, self.adj_norm = astensors(x), adj
 
     def build(self, hiddens=[32], activations=['relu'], dropouts=[0.5], l2_norms=[5e-4],
               lr=0.01, use_bias=False):
 
+        ############# Record paras ###########
         local_paras = locals()
         local_paras.pop('self')
         paras = Bunch(**local_paras)
@@ -90,6 +90,7 @@ class FastGCN(SemiSupervisedModel):
         # update all parameters
         self.paras.update(paras)
         self.model_paras.update(paras)
+        ######################################
 
         with tf.device(self.device):
 
@@ -102,7 +103,7 @@ class FastGCN(SemiSupervisedModel):
                           kernel_regularizer=regularizers.l2(l2_norm))(h)
                 h = Dropout(rate=dropout)(h)
 
-            output = GraphConvolution(self.n_classes, activation='softmax')([h, adj])
+            output = GraphConvolution(self.n_classes, use_bias=use_bias, activation='softmax')([h, adj])
 
             model = Model(inputs=[x, adj], outputs=output)
             model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=lr), metrics=['accuracy'])
@@ -113,7 +114,7 @@ class FastGCN(SemiSupervisedModel):
         index = asintarr(index)
         adj = self.adj_norm[index]
         with tf.device(self.device):
-            adj = astensor(adj)
+            adj = astensors(adj)
             logit = self.model.predict_on_batch([self.x_norm, adj])
 
         if tf.is_tensor(logit):

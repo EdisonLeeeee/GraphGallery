@@ -9,7 +9,7 @@ from graphgallery.nn.layers import GraphEdgeConvolution
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.shape_utils import set_equal_in_length
-from graphgallery import astensor, asintarr, normalize_x, normalize_adj, sparse_adj_to_edges, Bunch
+from graphgallery import astensors, asintarr, normalize_x, normalize_adj, sparse_adj_to_edges, Bunch
 
 
 class EdgeGCN(SemiSupervisedModel):
@@ -68,8 +68,7 @@ class EdgeGCN(SemiSupervisedModel):
 
     def preprocess(self, adj, x):
         super().preprocess(adj, x)
-        # check the input adj and x, and convert them into proper data types
-        adj, x = self._check_inputs(adj, x)
+        adj, x = self.adj, self.x
 
         if self.norm_adj:
             adj = normalize_adj(adj, self.norm_adj)
@@ -79,11 +78,12 @@ class EdgeGCN(SemiSupervisedModel):
 
         with tf.device(self.device):
             edge_index, edge_weight = sparse_adj_to_edges(adj)
-            self.x_norm, self.edge_index, self.edge_weight = astensor([x, edge_index, edge_weight])
+            self.x_norm, self.edge_index, self.edge_weight = astensors([x, edge_index, edge_weight])
 
     def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5], l2_norms=[5e-4],
               lr=0.01, use_bias=False):
 
+        ############# Record paras ###########
         local_paras = locals()
         local_paras.pop('self')
         paras = Bunch(**local_paras)
@@ -92,6 +92,7 @@ class EdgeGCN(SemiSupervisedModel):
         # update all parameters
         self.paras.update(paras)
         self.model_paras.update(paras)
+        ######################################
 
         with tf.device(self.device):
             x = Input(batch_shape=[None, self.n_features], dtype=self.floatx, name='features')

@@ -9,7 +9,7 @@ from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.utils.misc import chebyshev_polynomials
 from graphgallery.utils.shape_utils import set_equal_in_length
-from graphgallery import astensor, asintarr, normalize_x, Bunch
+from graphgallery import astensors, asintarr, normalize_x, Bunch
 
 
 class ChebyNet(SemiSupervisedModel):
@@ -63,8 +63,7 @@ class ChebyNet(SemiSupervisedModel):
 
     def preprocess(self, adj, x):
         super().preprocess(adj, x)
-        # check the input adj and x, and convert them into proper data types
-        adj, x = self._check_inputs(adj, x)
+        adj, x = self.adj, self.x
 
         if self.norm_adj:
             adj = chebyshev_polynomials(adj, rate=self.norm_adj, order=self.order)
@@ -73,9 +72,12 @@ class ChebyNet(SemiSupervisedModel):
             x = normalize_x(x, norm=self.norm_x)
 
         with tf.device(self.device):
-            self.x_norm, self.adj_norm = astensor([x, adj])
+            self.x_norm, self.adj_norm = astensors([x, adj])
 
-    def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5], l2_norms=[5e-4], lr=0.01, ensure_shape=True):
+    def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5], l2_norms=[5e-4], lr=0.01,
+              use_bias=False, ensure_shape=True):
+
+        ############# Record paras ###########
         local_paras = locals()
         local_paras.pop('self')
         paras = Bunch(**local_paras)
@@ -84,6 +86,7 @@ class ChebyNet(SemiSupervisedModel):
         # update all parameters
         self.paras.update(paras)
         self.model_paras.update(paras)
+        ######################################
 
         with tf.device(self.device):
 
@@ -95,11 +98,11 @@ class ChebyNet(SemiSupervisedModel):
 
             h = x
             for hid, activation, dropout, l2_norm in zip(hiddens, activations, dropouts, l2_norms):
-                h = ChebyConvolution(hid, order=self.order, activation=activation,
+                h = ChebyConvolution(hid, order=self.order, use_bias=use_bias, activation=activation,
                                      kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
                 h = Dropout(rate=dropout)(h)
 
-            h = ChebyConvolution(self.n_classes, order=self.order)([h, adj])
+            h = ChebyConvolution(self.n_classes, order=self.order, use_bias=use_bias)([h, adj])
             # To aviod the UserWarning of `tf.gather`, but it causes the shape
             # of the input data to remain the same
             if ensure_shape:

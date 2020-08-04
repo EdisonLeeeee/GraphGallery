@@ -15,7 +15,7 @@ from graphgallery.sequence import NodeSampleSequence
 from graphgallery.utils.sample_utils import find_4o_nbrs
 from graphgallery.utils.bvat_utils import get_normalized_vector, kl_divergence_with_logit, entropy_y_x
 from graphgallery.utils.shape_utils import set_equal_in_length
-from graphgallery import astensor, asintarr, normalize_x, normalize_adj, Bunch
+from graphgallery import astensors, asintarr, normalize_x, normalize_adj, Bunch
 
 
 class SBVAT(SemiSupervisedModel):
@@ -68,8 +68,7 @@ class SBVAT(SemiSupervisedModel):
 
     def preprocess(self, adj, x):
         super().preprocess(adj, x)
-        # check the input adj and x, and convert them into proper data types
-        adj, x = self._check_inputs(adj, x)
+        adj, x = self.adj, self.x
 
         if self.norm_adj:
             adj = normalize_adj(adj, self.norm_adj)
@@ -80,12 +79,13 @@ class SBVAT(SemiSupervisedModel):
         self.neighbors = list(find_4o_nbrs(adj.indices, adj.indptr, np.arange(self.n_nodes)))
 
         with tf.device(self.device):
-            self.x_norm, self.adj_norm = astensor([x, adj])
+            self.x_norm, self.adj_norm = astensors([x, adj])
 
     def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5],
-              lr=0.01, l2_norms=[5e-4], p1=1., p2=1.,
+              lr=0.01, l2_norms=[5e-4], p1=1., p2=1., use_bias=False,
               n_power_iterations=1, epsilon=0.03, xi=1e-6):
 
+        ############# Record paras ###########
         local_paras = locals()
         local_paras.pop('self')
         paras = Bunch(**local_paras)
@@ -94,6 +94,7 @@ class SBVAT(SemiSupervisedModel):
         # update all parameters
         self.paras.update(paras)
         self.model_paras.update(paras)
+        ######################################
 
         with tf.device(self.device):
 
@@ -104,11 +105,11 @@ class SBVAT(SemiSupervisedModel):
             GCN_layers = []
             dropout_layers = []
             for hid, activation, dropout, l2_norm in zip(hiddens, activations, dropouts, l2_norms):
-                GCN_layers.append(GraphConvolution(hid, activation=activation,
+                GCN_layers.append(GraphConvolution(hid, activation=activation, use_bias=use_bias,
                                                    kernel_regularizer=regularizers.l2(l2_norm)))
                 dropout_layers.append(Dropout(rate=dropout))
 
-            GCN_layers.append(GraphConvolution(self.n_classes))
+            GCN_layers.append(GraphConvolution(self.n_classes, use_bias=use_bias))
             self.GCN_layers = GCN_layers
             self.dropout_layers = dropout_layers
 

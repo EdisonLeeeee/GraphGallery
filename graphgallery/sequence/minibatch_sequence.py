@@ -6,7 +6,7 @@ import scipy.sparse as sp
 from graphgallery.sequence.node_sequence import NodeSequence
 from graphgallery.utils.misc import column_prop
 from graphgallery.utils.graph_utils import sample_neighbors
-from graphgallery import astensor
+from graphgallery import astensors
 
 
 class ClusterMiniBatchSequence(NodeSequence):
@@ -19,7 +19,7 @@ class ClusterMiniBatchSequence(NodeSequence):
         batch_size=1,
     ):
         assert batch_size == 1
-        self.inputs, self.labels = astensor([inputs, labels])
+        self.inputs, self.labels = astensors([inputs, labels])
         self.n_batches = len(self.inputs)
         self.shuffle_batches = shuffle_batches
         self.batch_size = batch_size
@@ -64,7 +64,7 @@ class SAGEMiniBatchSequence(NodeSequence):
         self.indices = np.arange(len(self.nodes))
         self.n_samples = n_samples
 
-        self.x = astensor(self.x)
+        self.x = astensors(self.x)
 
     def __len__(self):
         return self.n_batches
@@ -82,7 +82,7 @@ class SAGEMiniBatchSequence(NodeSequence):
 
         labels = self.labels[idx] if self.labels is not None else None
 
-        return astensor([[self.x, *nodes_input], labels])
+        return astensors([[self.x, *nodes_input], labels])
 
     def on_epoch_end(self):
         if self.shuffle_batches:
@@ -139,7 +139,7 @@ class FastGCNBatchSequence(NodeSequence):
             else:
                 x = x[q]
 
-        return astensor([(x, adj), labels])
+        return astensors([(x, adj), labels])
 
     def full_batch(self, index):
         return (self.x, self.adj), self.labels

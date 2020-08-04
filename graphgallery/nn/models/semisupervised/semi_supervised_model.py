@@ -12,7 +12,7 @@ from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from graphgallery.nn.models import BaseModel
 from graphgallery.utils.history import History
 from graphgallery.utils.tqdm import tqdm
-from graphgallery import asintarr, astensor, Bunch
+from graphgallery import asintarr, astensors, Bunch
 
 
 class SemiSupervisedModel(BaseModel):
@@ -43,6 +43,29 @@ class SemiSupervisedModel(BaseModel):
 
     def __init__(self, adj, x, labels=None, device='CPU:0', seed=None, name=None, **kwargs):
         super().__init__(adj, x, labels, device, seed, name, **kwargs)
+
+    def preprocess(self, adj, x):
+        """Preprocess the input adjacency matrix and feature matrix, e.g., normalization.
+        And convert them to tf.tensor. 
+
+        Arguments:
+        ----------
+            adj: shape (N, N), `scipy.sparse.csr_matrix` (or `csc_matrix`) if 
+                `is_adj_sparse=True`, Numpy array-like if `is_adj_sparse=False`.
+                The input `symmetric` adjacency matrix, where `N` is the number 
+                of nodes in graph.
+            x: shape (N, F), `scipy.sparse.csr_matrix` (or `csc_matrix`) if 
+                `is_x_sparse=True`, Numpy array-like if `is_x_sparse=False`.
+                The input node feature matrix, where `F` is the dimension of node features.
+
+        Note:
+        ----------
+            By default, `adj` is sparse matrix and `x` is dense array. Both of them are 
+            2-D matrices.
+        """
+        # check the input adj and x, and convert them to appropriate forms
+        self.adj, self.x = self._check_inputs(adj, x)
+        self.n_nodes, self.n_features = x.shape
 
     def build(self):
         """
@@ -127,14 +150,16 @@ class SemiSupervisedModel(BaseModel):
 
         # TODO use tensorflow callbacks
 
+        ############# Record paras ###########
         local_paras = locals()
         local_paras.pop('self')
         local_paras.pop('idx_train')
         local_paras.pop('idx_val')
         paras = Bunch(**local_paras)
+        ######################################
 
         # Check if model has been built
-        if not self.model:
+        if self.model is None:
             raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')
 
         if isinstance(idx_train, Sequence):
@@ -160,10 +185,12 @@ class SemiSupervisedModel(BaseModel):
         if not weight_path.endswith('.h5'):
             weight_path += '.h5'
 
+        ############# Record paras ###########
         paras.update(Bunch(weight_path=weight_path))
         # update all parameters
         self.paras.update(paras)
         self.train_paras.update(paras)
+        ######################################
 
         if validation is None:
             history.register_monitor_metric('acc')
@@ -272,17 +299,19 @@ class SemiSupervisedModel(BaseModel):
             and validation metrics values (if applicable).
 
         """
+        ############# Record paras ###########
         local_paras = locals()
         local_paras.pop('self')
         local_paras.pop('idx_train')
         local_paras.pop('idx_val')
         paras = Bunch(**local_paras)
+        ######################################
 
         if not tf.__version__ >= '2.2.0':
             raise RuntimeError(f'This method is only work for tensorflow version >= 2.2.0.')
 
         # Check if model has been built
-        if not self.model:
+        if self.model is None:
             raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')
 
         if isinstance(idx_train, Sequence):
@@ -329,10 +358,12 @@ class SemiSupervisedModel(BaseModel):
             callbacks.append(mc_callback)
         callbacks.set_model(model)
 
+        ############# Record paras ###########
         paras.update(Bunch(weight_path=weight_path))
         # update all parameters
         self.paras.update(paras)
         self.train_paras.update(paras)
+        ######################################
 
         # leave it blank for the future
         allowed_kwargs = set([])
@@ -531,32 +562,12 @@ class SemiSupervisedModel(BaseModel):
         return self.train_sequence(index)
 
     def _test_predict(self, index):
-        """
-            Predict the output accuracy for the `index` of nodes.
-
-        Note:
-        ----------
-            You must compile your model before training/testing/predicting. 
-            Use `model.build()`.
-
-        Arguments:
-        ----------
-            index: Numpy array-like, `list` or integer scalar
-                The index of nodes that will be computed.    
-
-        Return:
-        ----------
-            accuracy: Float scalar
-                The output accuracy of the `index` of nodes.
-
-        """
         index = asintarr(index)
         logit = self.predict(index)
         predict_class = logit.argmax(1)
         labels = self.labels[index]
         return (predict_class == labels).mean()
-        
-#     @tf.function
+
     def __call__(self, inputs):
         return self.model(inputs)
 
@@ -580,6 +591,6 @@ class SemiSupervisedModel(BaseModel):
         """Close the session of model and set `built` to False."""
         self.model = None
         K.clear_session()
-        
+
     def __repr__(self):
         return 'Semi-Supervised model: ' + self.name + ' in ' + self.device

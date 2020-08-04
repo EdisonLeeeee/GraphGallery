@@ -23,17 +23,16 @@ def normalize_x(x, norm='l1'):
 
     Arguments
     ----------
-
+    x: Numpy array-like matrix
     norm: The specified type for the normalization.
-        `l1`: l1-norm for axis 1, from sklearn.preprocessing.
-        `l1_0`: l1-norm for axis 0, from sklearn.preprocessing.
-        `scale`: standard scale for axis 0, sklearn.preprocessing.scale
-        `robust_scale`, robust scale for axis 0, sklearn.preprocessing.robust_scale
-        None: return None
+        `l1`: l1-norm for axis 1, from `sklearn.preprocessing`.
+        `l1_0`: l1-norm for axis 0, from `sklearn.preprocessing`.
+        `scale`: standard scale for axis 0, `sklearn.preprocessing.scale`
+        `robust_scale`, robust scale for axis 0, `sklearn.preprocessing.robust_scale`
+        otherwise: not normalize, return the copy of `x`
 
     Returns
     ----------
-
         A normalized feature matrix.
     """
     if norm not in {'l1', 'l1_0', 'scale', 'robust_scale', None}:
@@ -49,48 +48,62 @@ def normalize_x(x, norm='l1'):
     elif norm == 'robust_scale':
         x_norm = RobustScaler().fit(x).transform(x)
     else:
-        x_norm = None
+        x_norm = x.copy()
     return x_norm
 
 
-def normalize_adj(adjacency, rate=-0.5, self_loop=1.0):
+def normalize_adj(adj_matrics, rate=-0.5, self_loop=1.0):
     """Normalize adjacency matrix.
-    
-    
+
+    >>> normalize_adj(adj, rate=-0.5) # return a normalized adjacency matrix
+
+    >>> normalize_adj([adj, adj], rate=[-0.5, 1.0]) # return a list of normalized adjacency matrices
+
+
     Arguments
     ----------
-    adjacency: Single or a list of Scipy sparse matrix.
-    rate: Single or a list of float scale, the normalize rate for adjacency.
-    self_loop: Float scalar, weight of self loops for the adjacency matrix.
-    
+    adj_matrics: Scipy matrix, Numpy array-like or list of them 
+        Single or a list of Scipy sparse matrices or Numpy matrices.
+    rate: Single or a list of float scale.
+        the normalize rate for `adj_matrics`.
+    self_loop: Float scalar.
+        weight of self loops for the adjacency matrix.
+
     Returns
     ----------
-    Single or a list of Scipy sparse matrix.
-    
+    Single or a list of Scipy sparse matrix or Numpy matrices.
+
     """
     def normalize(adj, alpha):
 
-        adj = adj.tocsr(copy=False)
-        
+        if sp.isspmatrix(adj) and not sp.isspmatrix_csr(adj):
+            adj = adj.tocsr(copy=False)
+
         adj = adj + self_loop*sp.eye(adj.shape[0])
 
-        if not alpha:
+        if alpha is None:
             return adj.astype(config.floatx(), copy=False)
 
-        adj = adj.tocoo(copy=False)         
         row_sum = adj.sum(1).A1
         d_inv_sqrt = np.power(row_sum, alpha)
-        adj.data = d_inv_sqrt[adj.row] * adj.data * d_inv_sqrt[adj.col]
-        return adj.tocsr(copy=False)
 
-    if is_list_like(adjacency) and not isinstance(adjacency[0], Number):
-        size = len(adjacency)
+        if sp.isspmatrix(adj):
+            adj = adj.tocoo(copy=False)
+            adj.data = d_inv_sqrt[adj.row] * adj.data * d_inv_sqrt[adj.col]
+            adj = adj.tocsr(copy=False)
+        else:
+            adj = sp.diags(d_inv_sqrt) @ adj @ sp.diags(d_inv_sqrt)
+
+        return adj.astype(config.floatx(), copy=False)
+
+    if is_list_like(adj_matrics) and not isinstance(adj_matrics[0], Number):
+        size = len(adj_matrics)
         rate = repeat(rate, size)
-        return [normalize(adj_, rate_) for adj_, rate_ in zip(adjacency, rate)]
+        return [normalize(adj_, rate_) for adj_, rate_ in zip(adj_matrics, rate)]
     else:
-        adjacency = normalize(adjacency, rate)
+        adj_matrics = normalize(adj_matrics, rate)
 
-    return adjacency
+    return adj_matrics
 
 
 class Bunch(dict):

@@ -8,8 +8,8 @@ from graphgallery import config
 
 
 def normalize_adj_tensor(adj, rate=-0.5, self_loop=1.0):
-    adj = adj + self_loop*tf.eye(adj.shape[0])
-    row_sum = tf.reduce_sum(adj, 1)
+    adj = adj + self_loop*tf.eye(adj.shape[0], dtype=config.floatx())
+    row_sum = tf.reduce_sum(adj, axis=1)
     d_inv_sqrt = tf.pow(row_sum, rate)
     d_mat_inv_sqrt = tf.linalg.diag(d_inv_sqrt)
     return d_mat_inv_sqrt @ adj @ d_mat_inv_sqrt
@@ -17,8 +17,11 @@ def normalize_adj_tensor(adj, rate=-0.5, self_loop=1.0):
 
 def add_self_loop_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0):
 
-    if not n_nodes:
+    if n_nodes is None:
         n_nodes = tf.reduce_max(edge_index) + 1
+        
+    if edge_weight is None:
+        edge_weight = tf.ones([edge_index.shape[0]], dtype=config.floatx())        
 
     range_arr = tf.range(n_nodes, dtype=config.intx())
     diagnal_edge_index = tf.stack([range_arr, range_arr], axis=1)
@@ -32,10 +35,10 @@ def add_self_loop_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0):
 
 def normalize_edge_tensor(edge_index, edge_weight=None, n_nodes=None, fill_weight=1.0, rate=-0.5):
 
-    if not edge_weight:
+    if edge_weight is None:
         edge_weight = tf.ones([edge_index.shape[0]], dtype=config.floatx())
 
-    if not n_nodes:
+    if n_nodes is None:
         n_nodes = tf.reduce_max(edge_index) + 1
 
     edge_index, edge_weight = add_self_loop_edge(edge_index, edge_weight, n_nodes=n_nodes, fill_weight=fill_weight)

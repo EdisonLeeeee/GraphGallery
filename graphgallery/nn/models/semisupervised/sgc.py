@@ -8,7 +8,7 @@ from graphgallery.nn.layers import SGConvolution
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.shape_utils import repeat
-from graphgallery import astensor, asintarr, normalize_x, normalize_adj, Bunch
+from graphgallery import astensors, asintarr, normalize_x, normalize_adj, Bunch
 
 
 class SGC(SemiSupervisedModel):
@@ -61,8 +61,7 @@ class SGC(SemiSupervisedModel):
 
     def preprocess(self, adj, x):
         super().preprocess(adj, x)
-        # check the input adj and x, and convert them into proper data types
-        adj, x = self._check_inputs(adj, x)
+        adj, x = self.adj, self.x
 
         if self.norm_adj:
             adj = normalize_adj(adj, self.norm_adj)
@@ -71,11 +70,12 @@ class SGC(SemiSupervisedModel):
             x = normalize_x(x, norm=self.norm_x)
 
         with tf.device(self.device):
-            x, adj = astensor([x, adj])
+            x, adj = astensors([x, adj])
             x = SGConvolution(order=self.order)([x, adj])
             self.x_norm, self.adj_norm = x, adj
 
-    def build(self, lr=0.2, l2_norms=5e-5):
+    def build(self, lr=0.2, l2_norms=5e-5, use_bias=True):
+        ############# Record paras ###########
         l2_norms = repeat(l2_norms, 1)
         local_paras = locals()
         local_paras.pop('self')
@@ -83,12 +83,13 @@ class SGC(SemiSupervisedModel):
         # update all parameters
         self.paras.update(paras)
         self.model_paras.update(paras)
+        ######################################
 
         with tf.device(self.device):
 
             x = Input(batch_shape=[None, self.n_features], dtype=self.floatx, name='features')
 
-            output = Dense(self.n_classes, activation='softmax', kernel_regularizer=regularizers.l2(l2_norms[0]))(x)
+            output = Dense(self.n_classes, activation='softmax', use_bias=use_bias, kernel_regularizer=regularizers.l2(l2_norms[0]))(x)
 
             model = Model(inputs=x, outputs=output)
             model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=lr), metrics=['accuracy'])

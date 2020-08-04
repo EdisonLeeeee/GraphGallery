@@ -1,13 +1,13 @@
 from graphgallery.sequence.node_sequence import NodeSequence
-from graphgallery import astensor
+from graphgallery import astensors
 
 
 class FullBatchNodeSequence(NodeSequence):
 
     def __init__(self, inputs, labels=None):
 
-        self.inputs = astensor(inputs)
-        self.labels = astensor(labels)
+        self.inputs = astensors(inputs)
+        self.labels = astensors(labels)
         self.n_batches = 1
 
     def __len__(self):

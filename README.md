@@ -36,7 +36,7 @@ Other packages (not necessary):
 + metis==0.2a4 (required for `ClusterGCN`)
 + texttable
 
-# Install
+# Installation
 ```bash
 pip install -U graphgallery
 ```

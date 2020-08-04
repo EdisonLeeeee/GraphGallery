@@ -51,6 +51,8 @@ class Node2vec(UnsupervisedModel):
     def build(self, walk_length=80, walks_per_node=10,
               embedding_dim=64, window_size=5, workers=16,
               iter=1, num_neg_samples=1, p=0.5, q=0.5):
+
+        ############# Record paras ###########
         local_paras = locals()
         local_paras.pop('self')
         paras = Bunch(**local_paras)

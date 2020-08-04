@@ -2,7 +2,7 @@
 import numpy as np
 import tensorflow as tf
 
-from graphgallery import astensor, sample_mask
+from graphgallery import astensors, sample_mask
 from graphgallery.sequence.node_sequence import NodeSequence
 
 
@@ -34,7 +34,7 @@ class NodeSampleSequence(NodeSequence):
         item = [*self.inputs, self.adv_mask], self.labels
         if self.resample:
             self.adv_mask = self.smple_nodes()
-        return astensor(item)
+        return astensors(item)
 
     def smple_nodes(self):
         N = self.n_nodes

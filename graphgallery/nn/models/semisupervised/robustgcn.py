@@ -8,7 +8,7 @@ from graphgallery.nn.layers import GaussionConvolution_F, GaussionConvolution_D,
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.shape_utils import set_equal_in_length, repeat
-from graphgallery import astensor, asintarr, normalize_x, normalize_adj, Bunch
+from graphgallery import astensors, asintarr, normalize_x, normalize_adj, Bunch
 
 
 class RobustGCN(SemiSupervisedModel):
@@ -59,8 +59,7 @@ class RobustGCN(SemiSupervisedModel):
 
     def preprocess(self, adj, x):
         super().preprocess(adj, x)
-        # check the input adj and x, and convert them into proper data types
-        adj, x = self._check_inputs(adj, x)
+        adj, x = self.adj, self.x
 
         if self.norm_adj:
             adj = normalize_adj([adj, adj], self.norm_adj)    # [adj_1, adj_2]
@@ -69,11 +68,12 @@ class RobustGCN(SemiSupervisedModel):
             x = normalize_x(x, norm=self.norm_x)
 
         with tf.device(self.device):
-            self.x_norm, self.adj_norm = astensor([x, adj])
+            self.x_norm, self.adj_norm = astensors([x, adj])
 
     def build(self, hiddens=[64], activations=['relu'], use_bias=False, dropouts=[0.5], l2_norms=[5e-4],
               lr=0.01, kl=5e-4, gamma=1., ensure_shape=True):
 
+        ############# Record paras ###########
         local_paras = locals()
         local_paras.pop('self')
         paras = Bunch(**local_paras)
@@ -83,6 +83,7 @@ class RobustGCN(SemiSupervisedModel):
         # update all parameters
         self.paras.update(paras)
         self.model_paras.update(paras)
+        ######################################
 
         with tf.device(self.device):
             x = Input(batch_shape=[None, self.n_features], dtype=self.floatx, name='features')
@@ -129,7 +130,7 @@ class RobustGCN(SemiSupervisedModel):
         index = asintarr(index)
 
         with tf.device(self.device):
-            index = astensor(index)
+            index = astensors(index)
             logit = self.model.predict_on_batch([self.x_norm, *self.adj_norm, index])
 
         if tf.is_tensor(logit):

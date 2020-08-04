@@ -9,7 +9,7 @@ from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.wavelet_utils import wavelet_basis
 from graphgallery.utils.shape_utils import set_equal_in_length
-from graphgallery import astensor, asintarr, normalize_x, Bunch
+from graphgallery import astensors, asintarr, normalize_x, Bunch
 
 
 class GWNN(SemiSupervisedModel):
@@ -71,8 +71,7 @@ class GWNN(SemiSupervisedModel):
 
     def preprocess(self, adj, x):
         super().preprocess(adj, x)
-        # check the input adj and x, and convert them into proper data types
-        adj, x = self._check_inputs(adj, x)
+        adj, x = self.adj, self.x
 
         if self.norm_x:
             x = normalize_x(x, norm=self.norm_x)
@@ -81,11 +80,12 @@ class GWNN(SemiSupervisedModel):
                                                  order=self.order, threshold=self.threshold,
                                                  wavelet_normalize=self.wavelet_normalize)
         with tf.device(self.device):
-            self.x_norm, self.adj_norm = astensor([x, [wavelet, inverse_wavelet]])
+            self.x_norm, self.adj_norm = astensors([x, [wavelet, inverse_wavelet]])
 
     def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5], l2_norms=[5e-4], lr=0.01,
-              ensure_shape=True):
+              use_bias=False, ensure_shape=True):
 
+        ############# Record paras ###########
         local_paras = locals()
         local_paras.pop('self')
         paras = Bunch(**local_paras)
@@ -94,6 +94,7 @@ class GWNN(SemiSupervisedModel):
         # update all parameters
         self.paras.update(paras)
         self.model_paras.update(paras)
+        ######################################
 
         with tf.device(self.device):
 
@@ -105,11 +106,11 @@ class GWNN(SemiSupervisedModel):
 
             h = x
             for hid, activation, dropout, l2_norm in zip(hiddens, activations, dropouts, l2_norms):
-                h = WaveletConvolution(hid, activation=activation,
+                h = WaveletConvolution(hid, activation=activation, use_bias=use_bias,
                                        kernel_regularizer=regularizers.l2(l2_norm))([h, wavelet, inverse_wavelet])
                 h = Dropout(rate=dropout)(h)
 
-            h = WaveletConvolution(self.n_classes)([h, wavelet, inverse_wavelet])
+            h = WaveletConvolution(self.n_classes, use_bias=use_bias)([h, wavelet, inverse_wavelet])
             # To aviod the UserWarning of `tf.gather`, but it causes the shape
             # of the input data to remain the same
             if ensure_shape:
@@ -134,7 +135,7 @@ class GWNN(SemiSupervisedModel):
         super().predict(index)
         index = asintarr(index)
         with tf.device(self.device):
-            index = astensor(index)
+            index = astensors(index)
             logit = self.model.predict_on_batch([self.x_norm, *self.adj_norm, index])
 
         if tf.is_tensor(logit):

@@ -9,7 +9,7 @@ from graphgallery.nn.layers import GraphConvolution
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.utils.shape_utils import set_equal_in_length
-from graphgallery import astensor, asintarr, normalize_x, normalize_adj, Bunch
+from graphgallery import astensors, asintarr, normalize_x, normalize_adj, Bunch
 
 
 class GMNN(SemiSupervisedModel):
@@ -56,12 +56,12 @@ class GMNN(SemiSupervisedModel):
         self.norm_x = norm_x
         self.preprocess(adj, x)
         self.labels_onehot = np.eye(self.n_classes)[labels]
+        
         self.custom_objects = {'GraphConvolution': GraphConvolution}
 
     def preprocess(self, adj, x):
         super().preprocess(adj, x)
-        # check the input adj and x, and convert them into proper data types
-        adj, x = self._check_inputs(adj, x)
+        adj, x = self.adj, self.x
 
         if self.norm_adj:
             adj = normalize_adj(adj, self.norm_adj)
@@ -70,11 +70,12 @@ class GMNN(SemiSupervisedModel):
             x = normalize_x(x, norm=self.norm_x)
 
         with tf.device(self.device):
-            self.x_norm, self.adj_norm = astensor([x, adj])
+            self.x_norm, self.adj_norm = astensors([x, adj])
 
     def build(self, hiddens=[16], activations=['relu'], dropouts=[0.6], l2_norms=[5e-4],
               lr=0.05, use_bias=False, ensure_shape=True):
 
+        ############# Record paras ###########
         local_paras = locals()
         local_paras.pop('self')
         paras = Bunch(**local_paras)
@@ -83,6 +84,7 @@ class GMNN(SemiSupervisedModel):
         # update all parameters
         self.paras.update(paras)
         self.model_paras.update(paras)
+        ######################################
 
         with tf.device(self.device):
             tf.random.set_seed(self.seed)
@@ -156,7 +158,7 @@ class GMNN(SemiSupervisedModel):
         histories.append(history)
 
         # then train model_q again
-        label_predict = self.model.predict_on_batch(astensor([label_predict, self.adj_norm, index_all]))
+        label_predict = self.model.predict_on_batch(astensors([label_predict, self.adj_norm, index_all]))
         if tf.is_tensor(label_predict):
             label_predict = label_predict.numpy()
 
@@ -189,7 +191,7 @@ class GMNN(SemiSupervisedModel):
         super().predict(index)
         index = asintarr(index)
         with tf.device(self.device):
-            index = astensor(index)
+            index = astensors(index)
             logit = self.model.predict_on_batch([self.x_norm, self.adj_norm, index])
 
         if tf.is_tensor(logit):

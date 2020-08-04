@@ -10,7 +10,7 @@ from graphgallery.utils.type_check import is_list_like, is_interger_scalar, is_t
 
 
 __all__ = ['check_and_convert', 'sparse_adj_to_sparse_tensor', 'sparse_tensor_to_sparse_adj',
-           'sparse_adj_to_edges', 'edges_to_sparse_adj', 'asintarr', 'astensor',
+           'sparse_adj_to_edges', 'edges_to_sparse_adj', 'asintarr', 'astensor', 'astensors',
            ]
 
 
@@ -29,6 +29,7 @@ def check_and_convert(matrix, is_sparse):
     """
     if is_list_like(matrix):
         return [check_and_convert(m, is_sparse) for m in matrix]
+
     if not is_sparse:
         if not isinstance(matrix, (np.ndarray, np.matrix)):
             raise TypeError("The input matrix must be Numpy array-like or Numpy matrix"
@@ -67,8 +68,8 @@ def sparse_adj_to_edges(adj):
 
     """
     adj = adj.tocoo()
-    edge_index = np.stack([adj.row, adj.col], axis=1).astype(config.intx())
-    edge_weight = adj.data.astype(config.floatx())
+    edge_index = np.stack([adj.row, adj.col], axis=1).astype(config.intx(), copy=False)
+    edge_weight = adj.data.astype(config.floatx(), copy=False)
 
     return edge_index, edge_weight
 
@@ -81,56 +82,137 @@ def edges_to_sparse_adj(edge_index, edge_weight):
 
     """
     n = np.max(edge_index) + 1
+    edge_index = edge_index.astype('int64', copy=False)
     adj = sp.csr_matrix((edge_weight, (edge_index[:, 0], edge_index[:, 1])), shape=(n, n))
     return adj.astype(config.floatx(), copy=False)
 
 
-def inferer_type(x):
-    x = np.asarray(x)
+def infer_type(x):
+    """Infer type of the input `x`.
+
+     Arguments:
+    ----------
+    x: tf.Tensor, tf.Variable, Scipy sparse matrix, 
+        Numpy array-like, etc.
+
+    Returns:
+    ----------      
+        The converted type of `x`:
+        1. `graphgallery.config.floatx()` if `x` is floating
+        2. `graphgallery.config.intx() ` if `x` is integer
+        3. `Bool` if `x` is bool.
+
+    """
+
+    # For tensor or variable
+    if is_tensor_or_variable(x):
+        if x.dtype.is_floating:
+            return config.floatx()
+        elif x.dtype.is_integer or x.dtype.is_unsigned:
+            return config.intx()
+        elif x.dtype.is_bool:
+            return 'bool'
+        else:
+            raise RuntimeError(f'Invalid input of `{type(x)}`')
+
+    # For Scipy sparse input
+    if not sp.isspmatrix(x):
+        x = np.asarray(x)
+
+    # For other array-like input
     if x.dtype.kind == 'f':
         return config.floatx()
-    elif x.dtype.kind == 'i':
+    elif x.dtype.kind == 'i' or x.dtype.kind == 'u':
         return config.intx()
     elif x.dtype.kind == 'b':
         return 'bool'
     else:
-        raise RuntimeError(f'Invalid types, type `{type(x)}`')
+        raise RuntimeError(f'Invalid input of `{type(x)}`')
 
 
-def asintarr(matrix, dtype=config.intx()):
-    """Convert `matrix` to interger data type.
+def asintarr(x, dtype=config.intx()):
+    """Convert `x` to interger Numpy array.
+
+    Arguments:
+    ----------
+    x: tf.Tensor, tf.Variable, Scipy sparse matrix, 
+        Numpy array-like, etc.
+
+    Returns:
+    ----------      
+        Integer Numpy array with dtype `graphgallery.config.intx()`
 
     """
-    if is_tensor_or_variable(matrix):
-        return tf.cast(matrix, dtype=dtype)
+    if is_tensor_or_variable(x):
+        if x.dtype != dtype:
+            x = tf.cast(x, dtype=dtype)
+        return x
 
-    if is_interger_scalar(matrix):
-        matrix = np.asarray([matrix], dtype=dtype)
-    elif is_list_like(matrix) or isinstance(matrix, (np.ndarray, np.matrix)):
-        matrix = np.asarray(matrix, dtype=dtype)
+    if is_interger_scalar(x):
+        x = np.asarray([x], dtype=dtype)
+    elif is_list_like(x) or isinstance(x, (np.ndarray, np.matrix)):
+        x = np.asarray(x, dtype=dtype)
     else:
-        raise TypeError(f'Invalid input matrix which should be either array-like or integer scalar, but got {type(matrix)}.')
-    return matrix
+        raise TypeError(f'Invalid input which should be either array-like or integer scalar, but got {type(x)}.')
+    return x
 
 
-def astensor(inputs):
-    """Convert input matrices to Tensors (SparseTensors).
+def astensor(x, dtype=None):
+    """Convert input matrices to Tensor or SparseTensor.
 
-    inputs: single or a list of array-like variables.
+    Arguments:
+    ----------
+    x: tf.Tensor, tf.Variable, Scipy sparse matrix, 
+        Numpy array-like, etc.
+
+    dtype: The type of Tensor `x`, if not specified,
+        it will automatically using appropriate data type.
+        See `graphgallery.infer_type`.
+
+    Returns:
+    ----------      
+        Tensor or SparseTensor with dtype:       
+        1. `graphgallery.config.floatx()` if `x` is floating
+        2. `graphgallery.config.intx() ` if `x` is integer
+        3. `Bool` if `x` is bool.
     """
-    def matrix_astensor(matrix):
-        if any((is_tensor_or_variable(matrix), K.is_sparse(matrix), matrix is None)):
-            return matrix
-        elif sp.isspmatrix_csr(matrix) or sp.isspmatrix_csc(matrix):
-            return sparse_adj_to_sparse_tensor(matrix)
-        elif isinstance(matrix, (np.ndarray, np.matrix)) or is_list_like(matrix) or is_scalar_like(matrix):
-            return tf.convert_to_tensor(matrix, dtype=inferer_type(matrix))
-        else:
-            raise TypeError(f'Invalid type `{type(matrix)}` of inputs data. Allowed data type `(Tensor, SparseTensor, Numpy array, Scipy sparse tensor, None)`, but got {type(matrix)}.')
 
-    # Check `not isinstance(inputs[0], Number)` to avoid the situation like [1,2,3],
+    if x is None:
+        return x
+
+    if dtype is None:
+        dtype = infer_type(x)
+
+    if is_tensor_or_variable(x) or K.is_sparse(x):
+        if x.dtype != dtype:
+            x = tf.cast(x, dtype=dtype)
+        return x
+    elif sp.isspmatrix(x):
+        return sparse_adj_to_sparse_tensor(x)
+    elif isinstance(x, (np.ndarray, np.matrix)) or is_list_like(x) or is_scalar_like(x):
+        return tf.convert_to_tensor(x, dtype=infer_type(x))
+    else:
+        raise TypeError(f'Invalid type of inputs data. Allowed data type `(Tensor, SparseTensor, Numpy array, Scipy sparse tensor, None)`, but got {type(x)}.')
+
+
+def astensors(xs):
+    """Convert input matrices to Tensor(s) or SparseTensor(s).
+
+    Arguments:
+    ----------
+    xs: tf.Tensor, tf.Variable, Scipy sparse matrix, 
+        Numpy array-like, or a list of them, etc.
+
+    Returns:
+    ----------      
+        Tensor(s) or SparseTensor(s) with dtype:       
+        1. `graphgallery.config.floatx()` if `x` in `xs` is floating
+        2. `graphgallery.config.intx() ` if `x` in `xs` is integer
+        3. `Bool` if `x` in `xs` is bool.
+    """
+    # Check `not isinstance(xs[0], Number)` to avoid the situation like [1,2,3],
     # where [1,2,3] will be converted to three tensors seperately.
-    if is_list_like(inputs) and not isinstance(inputs[0], Number):
-        return [astensor(matrix) for matrix in inputs]
+    if is_list_like(xs) and not isinstance(xs[0], Number):
+        return [astensors(x) for x in xs]
     else:
-        return matrix_astensor(inputs)
+        return astensor(xs)

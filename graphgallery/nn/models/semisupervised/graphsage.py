@@ -10,7 +10,7 @@ from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import SAGEMiniBatchSequence
 from graphgallery.utils.graph_utils import construct_neighbors
 from graphgallery.utils.shape_utils import set_equal_in_length
-from graphgallery import astensor, asintarr, normalize_x, Bunch
+from graphgallery import astensors, asintarr, normalize_x, Bunch
 
 
 class GraphSAGE(SemiSupervisedModel):
@@ -63,8 +63,7 @@ class GraphSAGE(SemiSupervisedModel):
 
     def preprocess(self, adj, x):
         super().preprocess(adj, x)
-        # check the input adj and x, and convert them into proper data types
-        adj, x = self._check_inputs(adj, x)
+        adj, x = self.adj, self.x
 
         if self.norm_x:
             x = normalize_x(x, norm=self.norm_x)
@@ -75,11 +74,12 @@ class GraphSAGE(SemiSupervisedModel):
         x = np.vstack([x, np.zeros(self.n_features, dtype=self.floatx)])
 
         with tf.device(self.device):
-            self.x_norm, self.neighbors = astensor(x), neighbors
+            self.x_norm, self.neighbors = astensors(x), neighbors
 
     def build(self, hiddens=[32], activations=['relu'], dropouts=[0.5], l2_norms=[5e-4], lr=0.01,
-              output_normalize=False, aggrator='mean'):
+              use_bias=True, output_normalize=False, aggrator='mean'):
 
+        ############# Record paras ###########
         local_paras = locals()
         local_paras.pop('self')
         paras = Bunch(**local_paras)
@@ -90,6 +90,7 @@ class GraphSAGE(SemiSupervisedModel):
         # update all parameters
         self.paras.update(paras)
         self.model_paras.update(paras)
+        ######################################
 
         with tf.device(self.device):
 
@@ -108,10 +109,10 @@ class GraphSAGE(SemiSupervisedModel):
             aggrators = []
             for i, (hid, activation, l2_norm) in enumerate(zip(hiddens, activations, l2_norms)):
                 # you can use `GCNAggregator` instead
-                aggrators.append(Agg(hid, concat=True, activation=activation,
+                aggrators.append(Agg(hid, concat=True, activation=activation, use_bias=use_bias,
                                      kernel_regularizer=regularizers.l2(l2_norm)))
 
-            aggrators.append(Agg(self.n_classes))
+            aggrators.append(Agg(self.n_classes, use_bias=use_bias))
 
             h = [tf.nn.embedding_lookup(x, node) for node in [nodes, *neighbors]]
             for agg_i, aggrator in enumerate(aggrators):

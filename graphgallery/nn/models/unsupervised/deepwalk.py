@@ -44,6 +44,7 @@ class Deepwalk(UnsupervisedModel):
               embedding_dim=64, window_size=5, workers=16,
               iter=1, num_neg_samples=1):
 
+        ############# Record paras ###########
         local_paras = locals()
         local_paras.pop('self')
         paras = Bunch(**local_paras)

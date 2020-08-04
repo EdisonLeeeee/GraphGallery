@@ -10,7 +10,7 @@ from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.bvat_utils import kl_divergence_with_logit, entropy_y_x
 from graphgallery.utils.shape_utils import set_equal_in_length
-from graphgallery import astensor, asintarr, normalize_x, normalize_adj, Bunch
+from graphgallery import astensors, asintarr, normalize_x, normalize_adj, Bunch
 
 
 class OBVAT(SemiSupervisedModel):
@@ -61,8 +61,7 @@ class OBVAT(SemiSupervisedModel):
 
     def preprocess(self, adj, x):
         super().preprocess(adj, x)
-        # check the input adj and x, and convert them into proper data types
-        adj, x = self._check_inputs(adj, x)
+        adj, x = self.adj, self.x
 
         if self.norm_adj:
             adj = normalize_adj(adj, self.norm_adj)
@@ -71,11 +70,12 @@ class OBVAT(SemiSupervisedModel):
             x = normalize_x(x, norm=self.norm_x)
 
         with tf.device(self.device):
-            self.x_norm, self.adj_norm = astensor([x, adj])
+            self.x_norm, self.adj_norm = astensors([x, adj])
 
     def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5], l2_norms=[5e-4],
-              lr=0.01, p1=1.4, p2=0.7, ensure_shape=True):
+              lr=0.01, p1=1.4, p2=0.7, use_bias=False, ensure_shape=True):
 
+        ############# Record paras ###########
         local_paras = locals()
         local_paras.pop('self')
         paras = Bunch(**local_paras)
@@ -84,6 +84,7 @@ class OBVAT(SemiSupervisedModel):
         # update all parameters
         self.paras.update(paras)
         self.model_paras.update(paras)
+        ######################################
 
         with tf.device(self.device):
 
@@ -93,11 +94,11 @@ class OBVAT(SemiSupervisedModel):
             GCN_layers = []
             dropout_layers = []
             for hid, activation, dropout, l2_norm in zip(hiddens, activations, dropouts, l2_norms):
-                GCN_layers.append(GraphConvolution(hid, activation=activation,
+                GCN_layers.append(GraphConvolution(hid, activation=activation, use_bias=use_bias,
                                                    kernel_regularizer=regularizers.l2(l2_norm)))
                 dropout_layers.append(Dropout(rate=dropout))
 
-            GCN_layers.append(GraphConvolution(self.n_classes))
+            GCN_layers.append(GraphConvolution(self.n_classes, use_bias=use_bias))
             self.GCN_layers = GCN_layers
             self.dropout_layers = dropout_layers
 
@@ -158,7 +159,7 @@ class OBVAT(SemiSupervisedModel):
         index = asintarr(index)
 
         with tf.device(self.device):
-            index = astensor(index)
+            index = astensors(index)
             logit = self.model.predict_on_batch([self.x_norm, self.adj_norm, index])
 
         if tf.is_tensor(logit):

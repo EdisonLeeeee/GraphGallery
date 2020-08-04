@@ -45,17 +45,19 @@ class BaseModel:
     def __init__(self, adj, x, labels=None, device="CPU:0", seed=None, name=None, **kwargs):
 
         if seed is not None:
-            tf.random.set_seed(seed)
             np.random.seed(seed)
             random.seed(seed)
+            tf.random.set_seed(seed)
 
         if name is None:
             name = self.__class__.__name__
 
-        # By default, adj is sparse matrix and x is dense array (matrix)
+        # By default, adj is a sparse matrix and x is a dense array (matrix)
         is_adj_sparse = kwargs.pop("is_adj_sparse", True)
         is_x_sparse = kwargs.pop("is_x_sparse", False)
         is_weighted = kwargs.pop("is_weighted", False)
+        
+        assert not is_x_sparse, "x is sparse matrix is NOT implemented"        
 
         # leave it blank for future
         allowed_kwargs = set([])
@@ -72,15 +74,15 @@ class BaseModel:
         self.adj, self.x = self._check_inputs(adj, x)
 
         if labels is not None:
+            labels = asintarr(labels)
             self.n_classes = np.max(labels) + 1
         else:
             self.n_classes = None
 
         self.seed = seed
         self.device = device
-        self.labels = asintarr(labels)
+        self.labels = labels
         self.name = name
-        self.__model = None
         self.idx_train = None
         self.idx_val = None
         self.idx_test = None
@@ -88,16 +90,20 @@ class BaseModel:
         self.do_before_validation = None
         self.do_before_test = None
         self.do_before_predict = None
-        self.sparse = True
-        self.norm_x_fn = None
-        self.custom_objects = None  # used for save/load model
+        
+        self.__model = None
+        self.__custom_objects = None  # used for save/load model
+        self.__sparse = is_adj_sparse
 
-        self.weight_path = f"./weight/{name}_weights"
+        # log path
+        self.weight_dir = "./weight"
+        self.weight_path = f"{self.weight_dir}/{name}_weights"
 
         # data types, default: `float32` and `int64`
         self.floatx = config.floatx()
         self.intx = config.intx()
-        # Paraneters
+        
+        # Parameters
         self.paras = Bunch(device=device, seed=seed, name=name,
                            is_adj_sparse=is_adj_sparse,
                            is_x_sparse=is_x_sparse,
@@ -105,6 +111,23 @@ class BaseModel:
 
         self.model_paras = Bunch(name=name)
         self.train_paras = Bunch(name=name)
+        
+    @property
+    def custom_objects(self):
+        return self.__custom_objects
+    
+    @custom_objects.setter
+    def custom_objects(self, value):
+        assert isinstance(value, dict)
+        self.__custom_objects = value
+        
+    @property
+    def sparse(self):
+        return self.__sparse
+    
+    @sparse.setter
+    def sparse(self, value):
+        self.__sparse = value
 
     def _check_inputs(self, adj, x):
         """Check the input adj and x and make sure they are legal forms of input.
@@ -128,6 +151,7 @@ class BaseModel:
         """
         adj = check_and_convert(adj, self.is_adj_sparse)
         x = check_and_convert(x, self.is_x_sparse)
+        
         if is_list_like(adj):
             adj_shape = adj[0].shape
         else:
@@ -154,35 +178,12 @@ class BaseModel:
 #         assert m is None or isinstance(m, tf.keras.Model)
         self.__model = m
 
-    def preprocess(self, adj, x):
-        """Preprocess the input adjacency matrix and feature matrix, e.g., normalization.
-        And convert them to tf.tensor. 
-
-        Arguments:
-        ----------
-            adj: shape (N, N), `scipy.sparse.csr_matrix` (or `csc_matrix`) if 
-                `is_adj_sparse=True`, Numpy array-like if `is_adj_sparse=False`.
-                The input `symmetric` adjacency matrix, where `N` is the number 
-                of nodes in graph.
-            x: shape (N, F), `scipy.sparse.csr_matrix` (or `csc_matrix`) if 
-                `is_x_sparse=True`, Numpy array-like if `is_x_sparse=False`.
-                The input node feature matrix, where `F` is the dimension of node features.
-
-        Note:
-        ----------
-            By default, `adj` is sparse matrix and `x` is dense array. Both of them are 
-            2-D matrices.
-        """
-        # check the input adj and x, and convert them to appropriate forms
-        self.adj, self.x = self._check_inputs(adj, x)
-        self.n_nodes, self.n_features = x.shape
-
     def save(self, path=None, as_model=False):
-        if not os.path.exists("weight"):
-            os.makedirs("weight")
-            logging.log(logging.WARNING, "Mkdir /weight")
+        if not os.path.exists(self.weight_dir):
+            os.makedirs(self.weight_dir)
+            logging.log(logging.WARNING, f"Mkdir {self.weight_dir}")
 
-        if not path:
+        if path is None:
             path = self.weight_path
 
         if not path.endswith('.h5'):
@@ -203,7 +204,7 @@ class BaseModel:
         if not path.endswith('.h5'):
             path += '.h5'
         if as_model:
-            model = tf.keras.models.load_model(path, custom_objects=self.custom_objects)
+            model = tf.keras.models.load_model(path, custom_objects=self.__custom_objects)
             self.model = model
         else:
             try:
@@ -216,8 +217,10 @@ class BaseModel:
 
     def show(self, name=None):
         """Show the parameters in a table.
+        
         Note: You must install `texttable` package first. Using
-        ```
+        
+        ```sh
         pip install texttable
         ```
 

@@ -11,7 +11,7 @@ from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.shape_utils import set_equal_in_length, get_length
 from graphgallery.utils.graph_utils import get_indice_graph
-from graphgallery import astensor, asintarr, sample_mask, normalize_x, normalize_adj, Bunch, repeat
+from graphgallery import astensors, asintarr, sample_mask, normalize_x, normalize_adj, Bunch, repeat
 
 
 class LGCN(SemiSupervisedModel):
@@ -63,8 +63,7 @@ class LGCN(SemiSupervisedModel):
 
     def preprocess(self, adj, x):
         super().preprocess(adj, x)
-        # check the input adj and x, and convert them into proper data types
-        adj, x = self._check_inputs(adj, x)
+        adj, x = self.adj, self.x
 
         if self.norm_adj:
             adj = normalize_adj(adj, self.norm_adj)
@@ -81,6 +80,7 @@ class LGCN(SemiSupervisedModel):
     def build(self, hiddens=[32], n_filters=[8, 8], activations=[None], dropouts=[0.8], l2_norms=[5e-4],
               lr=0.1, use_bias=False, k=8):
 
+        ############# Record paras ###########
         local_paras = locals()
         local_paras.pop('self')
         paras = Bunch(**local_paras)
@@ -95,6 +95,7 @@ class LGCN(SemiSupervisedModel):
         # update all parameters
         self.paras.update(paras)
         self.model_paras.update(paras)
+        ######################################
 
         with tf.device(self.device):
 
@@ -156,7 +157,7 @@ class LGCN(SemiSupervisedModel):
         mask = mask[index]
 
         with tf.device(self.device):
-            x, adj, mask = astensor([x, adj, mask])
+            x, adj, mask = astensors([x, adj, mask])
             logit = self.model.predict_on_batch([x, adj, mask])
 
         if tf.is_tensor(logit):

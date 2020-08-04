@@ -11,7 +11,7 @@ from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import ClusterMiniBatchSequence
 from graphgallery.utils.graph_utils import partition_graph
 from graphgallery.utils.shape_utils import set_equal_in_length
-from graphgallery import Bunch, sample_mask, normalize_x, normalize_adj, astensor, asintarr, sparse_adj_to_edges
+from graphgallery import Bunch, sample_mask, normalize_x, normalize_adj, astensors, asintarr, sparse_adj_to_edges
 
 
 class ClusterGCN(SemiSupervisedModel):
@@ -74,8 +74,7 @@ class ClusterGCN(SemiSupervisedModel):
 
     def preprocess(self, adj, x, graph=None):
         super().preprocess(adj, x)
-        # check the input adj and x, and convert them into proper data types
-        adj, x = self._check_inputs(adj, x)
+        adj, x = self.adj, self.x
 
         if self.norm_x:
             x = normalize_x(x, norm=self.norm_x)
@@ -95,9 +94,12 @@ class ClusterGCN(SemiSupervisedModel):
         with tf.device(self.device):
             (self.batch_edge_index,
              self.batch_edge_weight,
-             self.batch_x) = astensor([batch_edge_index, batch_edge_weight, batch_x])
+             self.batch_x) = astensors([batch_edge_index, batch_edge_weight, batch_x])
 
-    def build(self, hiddens=[32], activations=['relu'], dropouts=[0.5], l2_norms=[1e-5], lr=0.01):
+    def build(self, hiddens=[32], activations=['relu'], dropouts=[0.5], l2_norms=[1e-5], lr=0.01,
+              use_bias=False):
+
+        ############# Record paras ###########
         local_paras = locals()
         local_paras.pop('self')
         paras = Bunch(**local_paras)
@@ -106,6 +108,7 @@ class ClusterGCN(SemiSupervisedModel):
         # update all parameters
         self.paras.update(paras)
         self.model_paras.update(paras)
+        ######################################
 
         with tf.device(self.device):
 
@@ -118,11 +121,11 @@ class ClusterGCN(SemiSupervisedModel):
             h = x
             for hid, activation, dropout, l2_norm in zip(hiddens, activations, dropouts, l2_norms):
                 h = Dropout(rate=dropout)(h)
-                h = GraphConvolution(hid, activation=activation,
+                h = GraphConvolution(hid, use_bias=use_bias, activation=activation,
                                      kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
 
             h = Dropout(rate=dropout)(h)
-            h = GraphConvolution(self.n_classes)([h, adj])
+            h = GraphConvolution(self.n_classes, use_bias=use_bias)([h, adj])
             h = tf.boolean_mask(h, mask)
             output = Softmax()(h)
 
@@ -157,7 +160,7 @@ class ClusterGCN(SemiSupervisedModel):
 
         logit = np.zeros((index.size, self.n_classes), dtype=self.floatx)
         with tf.device(self.device):
-            batch_data = astensor(batch_data)
+            batch_data = astensors(batch_data)
             for order, inputs in zip(orders, batch_data):
                 output = self.model.predict_on_batch(inputs)
                 logit[order] = output
