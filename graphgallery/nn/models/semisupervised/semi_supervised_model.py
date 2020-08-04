@@ -576,16 +576,31 @@ class SemiSupervisedModel(BaseModel):
         """Return the weights of model, type `tf.Tensor`."""
         return self.model.weights
 
-    @property
-    def np_weights(self):
+    def get_weights(self):
         """Return the weights of model, type Numpy array-like."""
-        return [weight.numpy() for weight in self.weights]
+        return self.model.get_weights()
 
     @property
     def trainable_variables(self):
         """Return the trainable weights of model, type `tf.Tensor`."""
         return self.model.trainable_variables
-
+        
+    def reset_weights(self):
+        """reset the model to the first time.
+        
+        """
+        model = self.model
+        assert self.backup
+        for w, wb in zip(model.weights, self.backup):
+            w.assign(wb)
+        
+    def reset_optimizer(self):
+        
+        model = self.model
+        if hasattr(model, 'optimizer'):
+            for var in model.optimizer.variables():
+                var.assign(tf.zeros_like(var))            
+            
     @property
     def close(self):
         """Close the session of model and set `built` to False."""

@@ -12,7 +12,7 @@ from graphgallery.utils.misc import print_table
 
 
 class BaseModel:
-    """Base model for supervised learning and unsupervised learning.
+    """Base model for semi-supervised learning and unsupervised learning.
 
 
     Arguments:
@@ -90,6 +90,7 @@ class BaseModel:
         self.do_before_validation = None
         self.do_before_test = None
         self.do_before_predict = None
+        self.backup = None
         
         self.__model = None
         self.__custom_objects = None  # used for save/load model
@@ -175,8 +176,12 @@ class BaseModel:
 
     @model.setter
     def model(self, m):
-#         assert m is None or isinstance(m, tf.keras.Model)
+        # Back up
+        if isinstance(m, tf.keras.Model):
+            self.backup = tf.identity_n(m.weights)
+        # assert m is None or isinstance(m, tf.keras.Model)
         self.__model = m
+    
 
     def save(self, path=None, as_model=False):
         if not os.path.exists(self.weight_dir):
@@ -231,4 +236,5 @@ class BaseModel:
             paras = self.model_paras
         else:
             paras = self.paras
+            
         print_table(paras)
