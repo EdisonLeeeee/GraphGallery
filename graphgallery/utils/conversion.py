@@ -24,7 +24,7 @@ def check_and_convert(matrix, is_sparse):
 
     Returns:
     ----------
-        A converted matrix with proper data type.
+        A converted matrix with appropriate floating type.
 
     """
     if is_list_like(matrix):
@@ -46,7 +46,7 @@ def sparse_adj_to_sparse_tensor(x):
     """Converts a Scipy sparse matrix to a SparseTensor."""
     sparse_coo = x.tocoo()
     row, col = sparse_coo.row, sparse_coo.col
-    data, shape = sparse_coo.data.astype(config.floatx()), sparse_coo.shape
+    data, shape = sparse_coo.data, sparse_coo.shape
     indices = np.concatenate(
         (np.expand_dims(row, axis=1), np.expand_dims(col, axis=1)), axis=1)
     return tf.sparse.SparseTensor(indices, data, shape)
@@ -68,8 +68,8 @@ def sparse_adj_to_edges(adj):
 
     """
     adj = adj.tocoo()
-    edge_index = np.stack([adj.row, adj.col], axis=1).astype(config.intx(), copy=False)
-    edge_weight = adj.data.astype(config.floatx(), copy=False)
+    edge_index = np.stack([adj.row, adj.col], axis=1)
+    edge_weight = adj.data
 
     return edge_index, edge_weight
 
@@ -84,7 +84,7 @@ def edges_to_sparse_adj(edge_index, edge_weight):
     n = np.max(edge_index) + 1
     edge_index = edge_index.astype('int64', copy=False)
     adj = sp.csr_matrix((edge_weight, (edge_index[:, 0], edge_index[:, 1])), shape=(n, n))
-    return adj.astype(config.floatx(), copy=False)
+    return adj
 
 
 def infer_type(x):
@@ -115,11 +115,9 @@ def infer_type(x):
         else:
             raise RuntimeError(f'Invalid input of `{type(x)}`')
 
-    # For Scipy sparse input
-    if not sp.isspmatrix(x):
+    if not hasattr(x, 'dtype'):
         x = np.asarray(x)
 
-    # For other array-like input
     if x.dtype.kind == 'f':
         return config.floatx()
     elif x.dtype.kind == 'i' or x.dtype.kind == 'u':
@@ -188,7 +186,7 @@ def astensor(x, dtype=None):
             x = tf.cast(x, dtype=dtype)
         return x
     elif sp.isspmatrix(x):
-        return sparse_adj_to_sparse_tensor(x)
+        return sparse_adj_to_sparse_tensor(x.astype(dtype, copy=False))
     elif isinstance(x, (np.ndarray, np.matrix)) or is_list_like(x) or is_scalar_like(x):
         return tf.convert_to_tensor(x, dtype=infer_type(x))
     else:

@@ -21,4 +21,4 @@ from graphgallery import sequence
 
 __version__ = '0.1.7'
 
-__all__ = ['graphgallery', 'nn', 'utils', 'sequence', '__version__']
+__all__ = ['graphgallery', 'nn', 'utils', 'sequence', 'data', '__version__']
