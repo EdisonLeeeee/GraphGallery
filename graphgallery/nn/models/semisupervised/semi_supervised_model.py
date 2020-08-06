@@ -1,5 +1,5 @@
 import os
-import datetime
+import warnings
 import numpy as np
 import tensorflow as tf
 import scipy.sparse as sp
@@ -14,7 +14,14 @@ from graphgallery.utils.history import History
 from graphgallery.utils.tqdm import tqdm
 from graphgallery import asintarr, astensors, Bunch
 
+# Ignora warnings:
+#     UserWarning: Converting sparse IndexedSlices to a dense Tensor of unknown shape. This may consume a large amount of memory.
+#     This is caused by `tf.gather` and it will be solved in future tensorflow version.
 
+warnings.filterwarnings(
+    'ignore', '.*Converting sparse IndexedSlices to a dense Tensor of unknown shape.*')
+    
+    
 class SemiSupervisedModel(BaseModel):
     """
         Base model for semi-supervised learning.
@@ -354,7 +361,7 @@ class SemiSupervisedModel(BaseModel):
                                           monitor=monitor,
                                           save_best_only=True,
                                           save_weights_only=not as_model,
-                                          verbose=verbose)
+                                          verbose=0)
             callbacks.append(mc_callback)
         callbacks.set_model(model)
 
@@ -403,7 +410,7 @@ class SemiSupervisedModel(BaseModel):
 
         if save_best:
             self.load(weight_path, as_model=as_model)
-            if os.exist(weight_path):
+            if os.path.exists(weight_path):
                 os.remove(weight_path)
 
         return model.history

@@ -84,7 +84,7 @@ class DenseGCN(SemiSupervisedModel):
             self.x_norm, self.adj_norm = astensors([x, adj])
 
     def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5], l2_norms=[5e-4],
-              lr=0.01, use_bias=False, ensure_shape=True):
+              lr=0.01, use_bias=False):
 
         ############# Record paras ###########
         local_paras = locals()
@@ -112,10 +112,6 @@ class DenseGCN(SemiSupervisedModel):
                 h = Dropout(rate=dropout)(h)
 
             h = DenseGraphConv(self.n_classes, use_bias=use_bias)([h, adj])
-            # To aviod the UserWarning of `tf.gather`, but it causes the shape
-            # of the input data to remain the same
-            if ensure_shape:
-                h = tf.ensure_shape(h, [self.n_nodes, self.n_classes])
             h = tf.gather(h, index)
             output = Softmax()(h)
 

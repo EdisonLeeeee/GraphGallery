@@ -73,7 +73,7 @@ class OBVAT(SemiSupervisedModel):
             self.x_norm, self.adj_norm = astensors([x, adj])
 
     def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5], l2_norms=[5e-4],
-              lr=0.01, p1=1.4, p2=0.7, use_bias=False, ensure_shape=True):
+              lr=0.01, p1=1.4, p2=0.7, use_bias=False):
 
         ############# Record paras ###########
         local_paras = locals()
@@ -103,10 +103,6 @@ class OBVAT(SemiSupervisedModel):
             self.dropout_layers = dropout_layers
 
             logit = self.propagation(x, adj)
-            # To aviod the UserWarning of `tf.gather`, but it causes the shape
-            # of the input data to remain the same
-            if ensure_shape:
-                logit = tf.ensure_shape(logit, (self.n_nodes, self.n_classes))
             output = tf.gather(logit, index)
             output = Softmax()(output)
             model = Model(inputs=[x, adj, index], outputs=output)
@@ -159,7 +155,6 @@ class OBVAT(SemiSupervisedModel):
         index = asintarr(index)
 
         with tf.device(self.device):
-            index = astensors(index)
             logit = self.model.predict_on_batch([self.x_norm, self.adj_norm, index])
 
         if tf.is_tensor(logit):

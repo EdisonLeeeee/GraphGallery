@@ -78,7 +78,7 @@ class SimplifiedOBVAT(SemiSupervisedModel):
 
     def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5],
               lr=0.01, l2_norms=[5e-4], p1=1.4, p2=0.7, use_bias=False,
-              epsilon=0.01, ensure_shape=True):
+              epsilon=0.01):
 
         ############# Record paras ###########
         local_paras = locals()
@@ -109,10 +109,6 @@ class SimplifiedOBVAT(SemiSupervisedModel):
             self.dropout_layers = dropout_layers
 
             logit = self.propagation(x, adj)
-            # To aviod the UserWarning of `tf.gather`, but it causes the shape
-            # of the input data to remain the same
-            if ensure_shape:
-                logit = tf.ensure_shape(logit, (self.n_nodes, self.n_classes))
             output = tf.gather(logit, index)
             output = Softmax()(output)
             model = Model(inputs=[x, adj, index], outputs=output)

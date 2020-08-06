@@ -74,7 +74,7 @@ class GAT(SemiSupervisedModel):
             self.x_norm, self.adj_norm = astensors([x, adj])
 
     def build(self, hiddens=[8], n_heads=[8], activations=['elu'], dropouts=[0.6], l2_norms=[5e-4],
-              lr=0.01, use_bias=True, ensure_shape=True):
+              lr=0.01, use_bias=True):
 
         ############# Record paras ###########
         local_paras = locals()
@@ -109,10 +109,6 @@ class GAT(SemiSupervisedModel):
 
             h = GraphAttention(self.n_classes, use_bias=use_bias,
                                attn_heads=1, attn_heads_reduction='average')([h, adj])
-            # To aviod the UserWarning of `tf.gather`, but it causes the shape
-            # of the input data to remain the same
-            if ensure_shape:
-                h = tf.ensure_shape(h, [self.n_nodes, self.n_classes])
             h = tf.gather(h, index)
             output = Softmax()(h)
 

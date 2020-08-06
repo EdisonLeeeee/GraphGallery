@@ -71,7 +71,7 @@ class RobustGCN(SemiSupervisedModel):
             self.x_norm, self.adj_norm = astensors([x, adj])
 
     def build(self, hiddens=[64], activations=['relu'], use_bias=False, dropouts=[0.5], l2_norms=[5e-4],
-              lr=0.01, kl=5e-4, gamma=1., ensure_shape=True):
+              lr=0.01, kl=5e-4, gamma=1.):
 
         ############# Record paras ###########
         local_paras = locals()
@@ -108,8 +108,6 @@ class RobustGCN(SemiSupervisedModel):
             var = Dropout(rate=dropout)(var)
             mean, var = GaussionConvolution_D(self.n_classes, gamma=gamma, use_bias=use_bias)([mean, var, *adj])
             h = Sample(seed=self.seed)(mean, var)
-            if ensure_shape:
-                h = tf.ensure_shape(h, [self.n_nodes, self.n_classes])
             h = tf.gather(h, index)
             output = Softmax()(h)
 

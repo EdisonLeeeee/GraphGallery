@@ -118,6 +118,7 @@ class ClusterGCN(SemiSupervisedModel):
             mask = Input(batch_shape=[None],  dtype=tf.bool, name='mask')
 
             adj = SparseConversion()([edge_index, edge_weight])
+            
             h = x
             for hid, activation, dropout, l2_norm in zip(hiddens, activations, dropouts, l2_norms):
                 h = Dropout(rate=dropout)(h)
