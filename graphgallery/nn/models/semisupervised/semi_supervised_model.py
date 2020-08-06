@@ -600,7 +600,12 @@ class SemiSupervisedModel(BaseModel):
         if hasattr(model, 'optimizer'):
             for var in model.optimizer.variables():
                 var.assign(tf.zeros_like(var))            
-            
+                
+    def reset_lr(self, value):
+        model = self.model
+        assert hasattr(model, 'optimizer')
+        model.optimizer.learning_rate.assign(value)   
+        
     @property
     def close(self):
         """Close the session of model and set `built` to False."""
