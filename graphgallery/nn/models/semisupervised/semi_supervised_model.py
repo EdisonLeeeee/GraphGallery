@@ -12,7 +12,7 @@ from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from graphgallery.nn.models import BaseModel
 from graphgallery.utils.history import History
 from graphgallery.utils.tqdm import tqdm
-from graphgallery import asintarr, astensors, Bunch
+from graphgallery import asintarr, Bunch
 
 # Ignora warnings:
 #     UserWarning: Converting sparse IndexedSlices to a dense Tensor of unknown shape. This may consume a large amount of memory.
@@ -20,8 +20,8 @@ from graphgallery import asintarr, astensors, Bunch
 
 warnings.filterwarnings(
     'ignore', '.*Converting sparse IndexedSlices to a dense Tensor of unknown shape.*')
-    
-    
+
+
 class SemiSupervisedModel(BaseModel):
     """
         Base model for semi-supervised learning.
@@ -172,8 +172,9 @@ class SemiSupervisedModel(BaseModel):
         if isinstance(idx_train, Sequence):
             train_data = idx_train
         else:
+            idx_train = asintarr(idx_train)
             train_data = self.train_sequence(idx_train)
-            self.idx_train = asintarr(idx_train)
+            self.idx_train = idx_train
 
         validation = idx_val
 
@@ -181,8 +182,9 @@ class SemiSupervisedModel(BaseModel):
             if isinstance(idx_val, Sequence):
                 val_data = idx_val
             else:
+                idx_val = asintarr(idx_val)
                 val_data = self.test_sequence(idx_val)
-                self.idx_val = asintarr(idx_val)
+                self.idx_val = idx_val
 
         history = History(monitor_metric=monitor,
                           early_stop_metric=early_stop_metric)
@@ -324,8 +326,9 @@ class SemiSupervisedModel(BaseModel):
         if isinstance(idx_train, Sequence):
             train_data = idx_train
         else:
+            idx_train = asintarr(idx_train)
             train_data = self.train_sequence(idx_train)
-            self.idx_train = asintarr(idx_train)
+            self.idx_train = idx_train
 
         validation = idx_val
 
@@ -333,8 +336,9 @@ class SemiSupervisedModel(BaseModel):
             if isinstance(idx_val, Sequence):
                 val_data = idx_val
             else:
+                idx_val = asintarr(idx_val)
                 val_data = self.test_sequence(idx_val)
-                self.idx_val = asintarr(idx_val)
+                self.idx_val = idx_val
 
         model = self.model
         if not isinstance(callbacks, callbacks_module.CallbackList):
@@ -447,8 +451,9 @@ class SemiSupervisedModel(BaseModel):
         if isinstance(index, Sequence):
             test_data = index
         else:
+            index = asintarr(index)
             test_data = self.test_sequence(index)
-            self.idx_test = asintarr(index)
+            self.idx_test = index
 
         if self.do_before_test:
             self.do_before_test(**kwargs)
@@ -591,28 +596,30 @@ class SemiSupervisedModel(BaseModel):
     def trainable_variables(self):
         """Return the trainable weights of model, type `tf.Tensor`."""
         return self.model.trainable_variables
-        
+
     def reset_weights(self):
         """reset the model to the first time.
-        
         """
         model = self.model
-        assert self.backup
+        if self.backup is None:
+            raise RuntimeError("You must store the `backup` before `reset_weights`."
+                               "`backup` will be automatically stored when the model is built.")
         for w, wb in zip(model.weights, self.backup):
             w.assign(wb)
-        
+
     def reset_optimizer(self):
-        
+
         model = self.model
         if hasattr(model, 'optimizer'):
             for var in model.optimizer.variables():
-                var.assign(tf.zeros_like(var))            
-                
+                var.assign(tf.zeros_like(var))
+
     def reset_lr(self, value):
         model = self.model
-        assert hasattr(model, 'optimizer')
-        model.optimizer.learning_rate.assign(value)   
-        
+        if not hasattr(model, 'optimizer'):
+            raise RuntimeError("The model has not attribute `optimizer`!")
+        model.optimizer.learning_rate.assign(value)
+
     @property
     def close(self):
         """Close the session of model and set `built` to False."""

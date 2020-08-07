@@ -1,11 +1,13 @@
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras import Model, Input
-from tensorflow.keras.layers import Dropout, Softmax
+from tensorflow.keras.layers import Dropout
 from tensorflow.keras.optimizers import RMSprop, Adam
 from tensorflow.keras import regularizers
+from tensorflow.keras.losses import CategoricalCrossentropy
+from tensorflow.keras.activations import softmax
 
-from graphgallery.nn.layers import GraphConvolution
+from graphgallery.nn.layers import GraphConvolution, Gather
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.utils.shape_utils import set_equal_in_length
@@ -34,7 +36,7 @@ class GMNN(SemiSupervisedModel):
                 i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
             norm_x (String, optional): 
                 How to normalize the node feature matrix. See `graphgallery.normalize_x`
-                (default :str: `l1`)
+                (default :obj: `None`)
             device (String, optional): 
                 The device where the model is running on. You can specified `CPU` or `GPU` 
                 for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
@@ -47,7 +49,7 @@ class GMNN(SemiSupervisedModel):
 
     """
 
-    def __init__(self, adj, x, labels, norm_adj=-0.5, norm_x='l1',
+    def __init__(self, adj, x, labels, norm_adj=-0.5, norm_x=None,
                  device='CPU:0', seed=None, name=None, **kwargs):
 
         super().__init__(adj, x, labels, device=device, seed=seed, name=name, **kwargs)
@@ -56,8 +58,8 @@ class GMNN(SemiSupervisedModel):
         self.norm_x = norm_x
         self.preprocess(adj, x)
         self.labels_onehot = np.eye(self.n_classes)[labels]
-        
-        self.custom_objects = {'GraphConvolution': GraphConvolution}
+
+        self.custom_objects = {'GraphConvolution': GraphConvolution, 'Gather': Gather}
 
     def preprocess(self, adj, x):
         super().preprocess(adj, x)
@@ -102,11 +104,11 @@ class GMNN(SemiSupervisedModel):
                     h = Dropout(rate=dropout)(h)
 
                 h = GraphConvolution(self.n_classes, use_bias=use_bias)([h, adj])
-                h = tf.gather(h, index)
-                output = Softmax()(h)
+                h = Gather()([h, index])
 
-                model = Model(inputs=[x, adj, index], outputs=output)
-                model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=lr), metrics=['accuracy'])
+                model = Model(inputs=[x, adj, index], outputs=h)
+                model.compile(loss=CategoricalCrossentropy(from_logits=True),
+                              optimizer=RMSprop(lr=lr), metrics=['accuracy'])
                 return model
 
             # model_p
@@ -155,6 +157,7 @@ class GMNN(SemiSupervisedModel):
 
         # then train model_q again
         label_predict = self.model.predict_on_batch(astensors([label_predict, self.adj_norm, index_all]))
+        label_predict = softmax(label_predict)
         if tf.is_tensor(label_predict):
             label_predict = label_predict.numpy()
 
@@ -170,9 +173,11 @@ class GMNN(SemiSupervisedModel):
                                 monitor=monitor, early_stop_metric=early_stop_metric)
 
         histories.append(history)
-        # update training paras and all paras
+        
+        ############# Record paras ###########
         self.train_paras.update(Bunch(pre_train_epochs=pre_train_epochs))
         self.paras.update(Bunch(pre_train_epochs=pre_train_epochs))
+        ######################################
 
         return histories
 

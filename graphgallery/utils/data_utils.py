@@ -93,6 +93,7 @@ def normalize_adj(adj_matrics, rate=-0.5, self_loop=1.0):
             adj = adj.tocsr(copy=False)
         else:
             adj = sp.diags(d_inv_sqrt) @ adj @ sp.diags(d_inv_sqrt)
+            adj = adj.A
 
         return adj.astype(config.floatx(), copy=False)
 

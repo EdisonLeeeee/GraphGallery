@@ -3,6 +3,7 @@ from tensorflow.keras import Model, Input
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
+from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 from graphgallery.nn.layers import SGConvolution
 from graphgallery.nn.models import SemiSupervisedModel
@@ -35,7 +36,7 @@ class SGC(SemiSupervisedModel):
                 i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
             norm_x (String, optional): 
                 How to normalize the node feature matrix. See `graphgallery.normalize_x`
-                (default :str: `l1`)
+                (default :obj: `None`)
             device (String, optional): 
                 The device where the model is running on. You can specified `CPU` or `GPU` 
                 for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
@@ -49,7 +50,7 @@ class SGC(SemiSupervisedModel):
     """
 
     def __init__(self, adj, x, labels, order=2,
-                 norm_adj=-0.5, norm_x='l1',
+                 norm_adj=-0.5, norm_x=None,
                  device='CPU:0', seed=None, name=None, **kwargs):
 
         super().__init__(adj, x, labels, device=device, seed=seed, name=name, **kwargs)
@@ -74,7 +75,7 @@ class SGC(SemiSupervisedModel):
             x = SGConvolution(order=self.order)([x, adj])
             self.x_norm, self.adj_norm = x, adj
 
-    def build(self, lr=0.2, l2_norms=5e-5, use_bias=True):
+    def build(self, lr=0.2, l2_norms=[5e-5], use_bias=True):
         ############# Record paras ###########
         l2_norms = repeat(l2_norms, 1)
         local_paras = locals()
@@ -89,10 +90,11 @@ class SGC(SemiSupervisedModel):
 
             x = Input(batch_shape=[None, self.n_features], dtype=self.floatx, name='features')
 
-            output = Dense(self.n_classes, activation='softmax', use_bias=use_bias, kernel_regularizer=regularizers.l2(l2_norms[0]))(x)
+            output = Dense(self.n_classes, activation=None, use_bias=use_bias, kernel_regularizer=regularizers.l2(l2_norms[0]))(x)
 
             model = Model(inputs=x, outputs=output)
-            model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=lr), metrics=['accuracy'])
+            model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
+                          optimizer=Adam(lr=lr), metrics=['accuracy'])
 
             self.model = model
 

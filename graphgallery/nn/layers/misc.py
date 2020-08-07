@@ -57,3 +57,24 @@ class Sample(Layer):
 
     def compute_output_shape(self, input_shapes):
         return tf.TensorShape(input_shapes[0])
+
+
+class Gather(Layer):
+    def __init__(self, axis=0, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.axis = axis
+
+    def call(self, inputs):
+        params, indices = inputs
+        output = tf.gather(params, indices, axis=self.axis)
+        return output
+
+    def get_config(self):
+        base_config = super().get_config()
+        return base_config
+
+    def compute_output_shape(self, input_shapes):
+        axis = self.axis
+        params_shape, indices_shape = input_shapes
+        output_shape = params_shape[:axis] + indices_shape + params_shape[axis + 1:]
+        return tf.TensorShape(output_shape)

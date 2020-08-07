@@ -86,7 +86,7 @@ def sample_neighbors(adj, nodes, n_neighbors):
 def get_indice_graph(adj, indices, size=np.inf, dropout=0.):
     if dropout > 0.:
         indices = np.random.choice(indices, int(indices.size*(1-dropout)), False)
-    neighbors = adj[indices].sum(axis=0).nonzero()[1]
+    neighbors = adj[indices].sum(axis=0).nonzero()[0]
     if neighbors.size > size - indices.size:
         neighbors = np.random.choice(list(neighbors), size-len(indices), False)
     indices = np.union1d(indices, neighbors)
@@ -115,5 +115,4 @@ def largest_connected_components(adj, n_components=1):
     nodes_to_keep = [
         idx for (idx, component) in enumerate(component_indices) if component in components_to_keep
     ]
-    # print("Selecting {0} largest connected components".format(n_components))
     return nodes_to_keep

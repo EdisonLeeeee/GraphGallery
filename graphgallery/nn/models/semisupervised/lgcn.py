@@ -2,9 +2,10 @@ import numpy as np
 import scipy.sparse as sp
 import tensorflow as tf
 from tensorflow.keras import Model, Input
-from tensorflow.keras.layers import Dropout, Softmax, Concatenate, BatchNormalization
+from tensorflow.keras.layers import Dropout, Concatenate, BatchNormalization
 from tensorflow.keras.optimizers import Nadam
 from tensorflow.keras import regularizers
+from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 from graphgallery.nn.layers import Top_k_features, LGConvolution, DenseGraphConv
 from graphgallery.nn.models import SemiSupervisedModel
@@ -36,7 +37,7 @@ class LGCN(SemiSupervisedModel):
                 i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}})
             norm_x (String, optional):
                 How to normalize the node feature matrix. See `graphgallery.normalize_x`
-                (default :str: `l1`)
+                (default :obj: `None`)
             device (String, optional):
                 The device where the model is running on. You can specified `CPU` or `GPU`
                 for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
@@ -50,7 +51,7 @@ class LGCN(SemiSupervisedModel):
 
     """
 
-    def __init__(self, adj, x, labels, norm_adj=-0.5, norm_x='l1',
+    def __init__(self, adj, x, labels, norm_adj=-0.5, norm_x=None,
                  device='CPU:0', seed=None, name=None, **kwargs):
 
         super().__init__(adj, x, labels, device=device, seed=seed, name=name, **kwargs)
@@ -68,9 +69,8 @@ class LGCN(SemiSupervisedModel):
         if self.norm_adj:
             adj = normalize_adj(adj, self.norm_adj)
 
-        # TODO: the input adj can be dense matrix
-#         if sp.isspmatrix(adj):
-#             adj = adj.toarray()
+        if sp.isspmatrix(adj):
+            adj = adj.toarray()
 
         if self.norm_x:
             x = normalize_x(x, norm=self.norm_x)
@@ -122,10 +122,10 @@ class LGCN(SemiSupervisedModel):
                                kernel_regularizer=regularizers.l2(l2_norms[-1]))([h, adj])
 
             h = tf.boolean_mask(h, mask)
-            output = Softmax()(h)
 
-            model = Model(inputs=[x, adj, mask], outputs=output)
-            model.compile(loss='sparse_categorical_crossentropy', optimizer=Nadam(lr=lr), metrics=['accuracy'])
+            model = Model(inputs=[x, adj, mask], outputs=h)
+            model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
+                          optimizer=Nadam(lr=lr), metrics=['accuracy'])
 
             self.k = k
             self.model = model
@@ -136,7 +136,8 @@ class LGCN(SemiSupervisedModel):
         index = get_indice_graph(self.adj_norm, index, batch_size)
         while index.size < self.k:
             index = get_indice_graph(self.adj_norm, index)
-        adj = self.adj_norm[index][:, index].toarray()
+            
+        adj = self.adj_norm[index][:, index]
         x = self.x_norm[index]
         mask = mask[index]
         labels = self.labels[index[mask]]
@@ -150,9 +151,10 @@ class LGCN(SemiSupervisedModel):
         index = asintarr(index)
         mask = sample_mask(index, self.n_nodes)
         index = get_indice_graph(self.adj_norm, index)
+        
         while index.size < self.k:
             index = get_indice_graph(self.adj_norm, index)
-        adj = self.adj_norm[index][:, index].toarray()
+        adj = self.adj_norm[index][:, index]
         x = self.x_norm[index]
         mask = mask[index]
 

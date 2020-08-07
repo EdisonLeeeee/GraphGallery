@@ -3,6 +3,7 @@ from tensorflow.keras import Model, Input
 from tensorflow.keras.layers import Dense, Dropout
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
+from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 from graphgallery.nn.layers import GraphConvolution
 from graphgallery.nn.models import SemiSupervisedModel
@@ -103,10 +104,11 @@ class FastGCN(SemiSupervisedModel):
                           kernel_regularizer=regularizers.l2(l2_norm))(h)
                 h = Dropout(rate=dropout)(h)
 
-            output = GraphConvolution(self.n_classes, use_bias=use_bias, activation='softmax')([h, adj])
+            h = GraphConvolution(self.n_classes, use_bias=use_bias)([h, adj])
 
-            model = Model(inputs=[x, adj], outputs=output)
-            model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=lr), metrics=['accuracy'])
+            model = Model(inputs=[x, adj], outputs=h)
+            model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
+                          optimizer=Adam(lr=lr), metrics=['accuracy'])
             self.model = model
 
     def predict(self, index):

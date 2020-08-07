@@ -1,11 +1,12 @@
 import tensorflow as tf
 from tensorflow.keras import Model, Input
-from tensorflow.keras.layers import Dropout, Softmax
+from tensorflow.keras.layers import Dropout
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.initializers import TruncatedNormal
+from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers import GraphConvolution
+from graphgallery.nn.layers import GraphConvolution, Gather
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.bvat_utils import kl_divergence_with_logit, entropy_y_x, get_normalized_vector
@@ -40,7 +41,7 @@ class SimplifiedOBVAT(SemiSupervisedModel):
                 i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
             norm_x (String, optional): 
                 How to normalize the node feature matrix. See `graphgallery.normalize_x`
-                (default :str: `l1`)
+                (default :obj: `None`)
             device (String, optional): 
                 The device where the model is running on. You can specified `CPU` or `GPU` 
                 for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
@@ -54,7 +55,7 @@ class SimplifiedOBVAT(SemiSupervisedModel):
 
     """
 
-    def __init__(self, adj, x, labels, norm_adj=-0.5, norm_x='l1',
+    def __init__(self, adj, x, labels, norm_adj=-0.5, norm_x=None,
                  device='CPU:0', seed=None, name=None, **kwargs):
 
         super().__init__(adj, x, labels, device=device, seed=seed, name=name, **kwargs)
@@ -109,10 +110,11 @@ class SimplifiedOBVAT(SemiSupervisedModel):
             self.dropout_layers = dropout_layers
 
             logit = self.propagation(x, adj)
-            output = tf.gather(logit, index)
-            output = Softmax()(output)
+            output = Gather()([logit, index])
+
             model = Model(inputs=[x, adj, index], outputs=output)
-            model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=lr), metrics=['accuracy'])
+            model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
+                          optimizer=Adam(lr=lr), metrics=['accuracy'])
 
             entropy_loss = entropy_y_x(logit)
             vat_loss = self.virtual_adversarial_loss(x, adj, logit, epsilon)

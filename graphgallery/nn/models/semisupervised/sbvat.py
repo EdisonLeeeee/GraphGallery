@@ -2,14 +2,14 @@ import numpy as np
 import tensorflow as tf
 
 from tensorflow.keras import Model, Input
-from tensorflow.keras.layers import Dropout, Softmax
+from tensorflow.keras.layers import Dropout
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import sparse_categorical_crossentropy
 from tensorflow.keras.activations import softmax
 from tensorflow.keras.metrics import SparseCategoricalAccuracy
 
-from graphgallery.nn.layers import GraphConvolution
+from graphgallery.nn.layers import GraphConvolution, Gather
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import NodeSampleSequence
 from graphgallery.utils.sample_utils import find_4o_nbrs
@@ -43,7 +43,7 @@ class SBVAT(SemiSupervisedModel):
                 i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
             norm_x (String, optional): 
                 How to normalize the node feature matrix. See `graphgallery.normalize_x`
-                (default :str: `l1`)
+                (default :obj: `None`)
             device (String, optional): 
                 The device where the model is running on. You can specified `CPU` or `GPU` 
                 for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
@@ -57,7 +57,7 @@ class SBVAT(SemiSupervisedModel):
     """
 
     def __init__(self, adj, x, labels, n_samples=100,
-                 norm_adj=-0.5, norm_x='l1', device='CPU:0', seed=None, name=None, **kwargs):
+                 norm_adj=-0.5, norm_x=None, device='CPU:0', seed=None, name=None, **kwargs):
 
         super().__init__(adj, x, labels, device=device, seed=seed, name=name, **kwargs)
 
@@ -114,8 +114,7 @@ class SBVAT(SemiSupervisedModel):
             self.dropout_layers = dropout_layers
 
             logit = self.propagation(x, adj)
-            output = tf.gather(logit, index)
-            output = Softmax()(output)
+            output = Gather()([logit, index])
             model = Model(inputs=[x, adj, index], outputs=output)
 
             self.model = model

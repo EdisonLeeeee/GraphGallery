@@ -4,7 +4,6 @@ from graphgallery.nn.models.basemodel import BaseModel
 # (semi-)supervised model
 from graphgallery.nn.models.semisupervised.semi_supervised_model import SemiSupervisedModel
 from graphgallery.nn.models.semisupervised.gcn import GCN
-from graphgallery.nn.models.semisupervised.gcn_mix import GCN_MIX
 from graphgallery.nn.models.semisupervised.sgc import SGC
 from graphgallery.nn.models.semisupervised.gat import GAT
 from graphgallery.nn.models.semisupervised.clustergcn import ClusterGCN
@@ -17,11 +16,14 @@ from graphgallery.nn.models.semisupervised.densegcn import DenseGCN
 from graphgallery.nn.models.semisupervised.lgcn import LGCN
 from graphgallery.nn.models.semisupervised.obvat import OBVAT
 from graphgallery.nn.models.semisupervised.sbvat import SBVAT
-from graphgallery.nn.models.semisupervised.s_obvat import SimplifiedOBVAT
 from graphgallery.nn.models.semisupervised.gmnn import GMNN
-from graphgallery.nn.models.semisupervised.edgeconv import EdgeGCN
-from graphgallery.nn.models.semisupervised.mediansage import MedianSAGE
-from graphgallery.nn.models.semisupervised.gcnf import GCNF
+
+# experimental
+from graphgallery.nn.models.semisupervised.experimental.gcnf import GCNF
+from graphgallery.nn.models.semisupervised.experimental.gcn_mix import GCN_MIX
+from graphgallery.nn.models.semisupervised.experimental.s_obvat import SimplifiedOBVAT
+from graphgallery.nn.models.semisupervised.experimental.edgeconv import EdgeGCN
+from graphgallery.nn.models.semisupervised.experimental.mediansage import MedianSAGE
 
 
 # unsupervised model

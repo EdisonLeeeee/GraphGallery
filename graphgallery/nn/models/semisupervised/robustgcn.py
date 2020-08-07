@@ -1,10 +1,11 @@
 import tensorflow as tf
 from tensorflow.keras import Model, Input
-from tensorflow.keras.layers import Dropout, Softmax
+from tensorflow.keras.layers import Dropout
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
+from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers import GaussionConvolution_F, GaussionConvolution_D, Sample
+from graphgallery.nn.layers import GaussionConvolution_F, GaussionConvolution_D, Sample, Gather
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.shape_utils import set_equal_in_length, repeat
@@ -35,7 +36,7 @@ class RobustGCN(SemiSupervisedModel):
                 and `-1.0`, respectively) 
             norm_x (String, optional): 
                 How to normalize the node feature matrix. See `graphgallery.normalize_x`
-                (default :str: `l1`)
+                (default :obj: `None`)
             device (String, optional): 
                 The device where the model is running on. You can specified `CPU` or `GPU` 
                 for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
@@ -48,7 +49,7 @@ class RobustGCN(SemiSupervisedModel):
 
     """
 
-    def __init__(self, adj, x, labels, norm_adj=[-0.5, -1], norm_x='l1',
+    def __init__(self, adj, x, labels, norm_adj=[-0.5, -1], norm_x=None,
                  device='CPU:0', seed=None, name=None, **kwargs):
 
         super().__init__(adj, x, labels, device=device, seed=seed, name=name, **kwargs)
@@ -108,11 +109,11 @@ class RobustGCN(SemiSupervisedModel):
             var = Dropout(rate=dropout)(var)
             mean, var = GaussionConvolution_D(self.n_classes, gamma=gamma, use_bias=use_bias)([mean, var, *adj])
             h = Sample(seed=self.seed)(mean, var)
-            h = tf.gather(h, index)
-            output = Softmax()(h)
+            h = Gather()([h, index])
 
-            model = Model(inputs=[x, *adj, index], outputs=output)
-            model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=lr), metrics=['accuracy'])
+            model = Model(inputs=[x, *adj, index], outputs=h)
+            model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
+                          optimizer=Adam(lr=lr), metrics=['accuracy'])
 
             self.model = model
 
