@@ -10,7 +10,7 @@ set_floatx = K.set_floatx
 epsilon = K.epsilon
 set_epsilon = K.set_epsilon
 
-_INTX = 'int64'
+_INTX = 'int32'
 
 def intx():
     """Returns the default integer type, as a string.

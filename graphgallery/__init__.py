@@ -6,7 +6,7 @@ from graphgallery.utils.conversion import (check_and_convert, sparse_adj_to_edge
                                            astensors)
 
 from graphgallery.utils.data_utils import normalize_adj, normalize_x, Bunch, sample_mask
-from graphgallery.config import set_epsilon, set_floatx, set_intx, floatx, intx
+from graphgallery.config import set_epsilon, set_floatx, set_intx, epsilon, floatx, intx
 from graphgallery.utils.tensor_utils import normalize_adj_tensor, normalize_edge_tensor
 from graphgallery.utils.shape_utils import repeat
 from graphgallery.utils.type_check import *

@@ -77,7 +77,7 @@ class SimplifiedOBVAT(SemiSupervisedModel):
         with tf.device(self.device):
             self.x_norm, self.adj_norm = astensors([x, adj])
 
-    def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5],
+    def build(self, hiddens=[16], activations=['relu'], dropouts=[0.],
               lr=0.01, l2_norms=[5e-4], p1=1.4, p2=0.7, use_bias=False,
               epsilon=0.01):
 
