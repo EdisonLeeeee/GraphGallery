@@ -58,19 +58,13 @@ pip install -U graphgallery
 + **RobustGCN** from *Robust Graph Convolutional Networks Against Adversarial Attacks* [📝Paper](https://dl.acm.org/doi/10.1145/3292500.3330851)
 + **SBVAT/OBVAT** from *Batch Virtual Adversarial Training for Graph Convolutional Networks* [📝Paper](https://arxiv.org/abs/1902.09192)
 
-## Other custom models
-+ **GCN_MIX**: Mixture of GCN and MLP
-+ **GCNF**: GCN + feature
-+ **DenseGCN**: Dense version of GCN
-+ **EdgeGCN**: GCN using message passing framework
-+ **MedianSAGE**: GraphSAGE using `Median` aggregation
 
 # Quick Start
 ## Example of GCN model
 ```python
 from graphgallery.nn.models import GCN
 # adj is scipy sparse matrix, x is numpy array matrix
-model = GCN(adj, x, labels, device='GPU', seed=123)
+model = GCN(adj, x, labels, device='GPU', norm_x='l1', seed=123)
 # build your GCN model with custom hyper-parameters
 model.build()
 # train your model. here idx_train and idx_val are numpy arrays
