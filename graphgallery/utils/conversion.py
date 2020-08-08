@@ -33,7 +33,7 @@ def check_and_convert(matrix, is_sparse):
     if not is_sparse:
         if not isinstance(matrix, (np.ndarray, np.matrix)):
             raise TypeError("The input matrix must be Numpy array-like or Numpy matrix"
-                            f" when `is_sparse=False`, but got {type(x)}")
+                            f" when `is_sparse=False`, but got {type(matrix)}")
         return np.asarray(matrix, dtype=config.floatx())
     else:
         if not sp.issparse(matrix):
