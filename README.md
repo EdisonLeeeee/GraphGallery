@@ -10,7 +10,7 @@
 ---
 
 [![PyPI Version][pypi-image]][pypi-url]
-
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A gallery of state-of-the-arts graph neural networks. Implemented with [TensorFlow](https://github.com/tensorflow/tensorflow) 2.x.
 
