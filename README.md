@@ -11,9 +11,13 @@
 ![Python](https://img.shields.io/badge/python-%3E%3D3.6-blue)
 ![tensorflow](https://img.shields.io/badge/tensorflow-%3E%3D2.1.0-orange)
 [![PyPI Version][pypi-image]][pypi-url]
+![](https://img.shields.io/github/stars/EdisonLeeeee/GraphGallery)
+![](https://img.shields.io/github/forks/EdisonLeeeee/GraphGallery)
+![](https://img.shields.io/github/issues/EdisonLeeeee/GraphGallery)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A gallery of state-of-the-arts graph neural networks. Implemented with [TensorFlow](https://github.com/tensorflow/tensorflow) 2.x.
+
 
 This repo aims to achieve 4 goals:
 + Similar or higher performance
