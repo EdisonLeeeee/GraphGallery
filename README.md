@@ -8,7 +8,8 @@
 </p>
 
 ---
-
+![Python](https://img.shields.io/badge/python-%3E%3D3.6-blue)
+![tensorflow](https://img.shields.io/badge/tensorflow-%3E%3D2.1.0-orange)
 [![PyPI Version][pypi-image]][pypi-url]
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
