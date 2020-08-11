@@ -48,21 +48,22 @@ pip install -U graphgallery
 
 # Implementation
 ## General models
-+ **GCN** from *Semi-Supervised Classification with Graph Convolutional Networks*, *ICLR'17*, [📝Paper](https://arxiv.org/abs/1609.02907) [:octocat:Official Implementation](https://github.com/tkipf/gcn)
-+ **GAT** from *Graph Attention Networks*, *ICLR'18,* [📝Paper](https://arxiv.org/abs/1710.10903>) [:octocat:Official Implementation](https://github.com/PetarV-/GAT)
-+ **SGC** from *Simplifying Graph Convolutional Networks*, *ICML'19*, [📝Paper](https://arxiv.org/abs/1902.07153) [:octocat:Official Implementation](https://github.com/Tiiiger/SGC)
-+ **GraphSAGE** from *Inductive Representation Learning on Large Graphs*, *NIPS'17*, [📝Paper](https://arxiv.org/abs/1706.02216) [:octocat:Official Implementation](https://github.com/williamleif/GraphSAGE)
-+ **GWNN** from *Graph Wavelet Neural Network*, *ICLR'19,* [📝Paper](https://arxiv.org/abs/1904.07785) [:octocat:Official Implementation](https://github.com/Eilene/GWNN)
-+ **GMNN** from *Graph Markov Neural Networks*, *ICML'19,* [📝Paper](https://arxiv.org/abs/1905.06214>) [:octocat:Official Implementation](https://github.com/DeepGraphLearning/GMNN)
-+ **ChebyNet** from *Convolutional Neural Networks on Graphs with Fast Localized Spectral Filtering*, *NIPS'16*, [📝Paper](https://arxiv.org/abs/1606.09375>) [:octocat:Official Implementation](https://github.com/mdeff/cnn_graph)
-+ **ClusterGCN** from *Cluster-GCN: An Efficient Algorithm for Training Deep and Large Graph Convolutional Networks*, *KDD'19*, [📝Paper](https://arxiv.org/abs/1905.07953) [:octocat:Official Implementation](https://github.com/google-research/google-research/tree/master/cluster_gcn)
-+ **FastGCN** from *FastGCN: Fast Learning with Graph Convolutional Networks via Importance Sampling*, *ICLR'18*, [📝Paper](https://arxiv.org/abs/1801.10247) [:octocat:Official Implementation](https://github.com/matenure/FastGCN)
-+ **LGCN** from  *Large-Scale Learnable Graph Convolutional Networks*, *KDD'18*, [📝Paper](https://arxiv.org/abs/1808.03965) [:octocat:Official Implementation](https://github.com/divelab/lgcn)
-+ **DAGNN** from *Towards Deeper Graph Neural Networks*, *KDD'20*, [📝Paper](https://arxiv.org/abs/2007.09296>) [:octocat:Official Implementation](https://github.com/mengliu1998/DeeperGNN)
+
++ **ChebyNet** from [📝Convolutional Neural Networks on Graphs with Fast Localized Spectral Filtering](https://arxiv.org/abs/1606.09375), *NIPS'16*, [:octocat:Official Implementation](https://github.com/mdeff/cnn_graph)
++ **GCN** from [📝Semi-Supervised Classification with Graph Convolutional Networks](https://arxiv.org/abs/1609.02907), *ICLR'17*, [:octocat:Official Implementation](https://github.com/tkipf/gcn)
++ **GraphSAGE** from [📝Inductive Representation Learning on Large Graphs](https://arxiv.org/abs/1706.02216), *NIPS'17*, [:octocat:Official Implementation](https://github.com/williamleif/GraphSAGE)
++ **FastGCN** from [FastGCN: Fast Learning with Graph Convolutional Networks via Importance Sampling](https://arxiv.org/abs/1801.10247) , *ICLR'18*,[:octocat:Official Implementation](https://github.com/matenure/FastGCN)
++ **LGCN** from  [📝Large-Scale Learnable Graph Convolutional Networks](https://arxiv.org/abs/1808.03965), *KDD'18*, [:octocat:Official Implementation](https://github.com/divelab/lgcn)
++ **GAT** from [📝Graph Attention Networks](https://arxiv.org/abs/1710.10903), *ICLR'18,* [:octocat:Official Implementation](https://github.com/PetarV-/GAT)
++ **SGC** from [📝Simplifying Graph Convolutional Networks](https://arxiv.org/abs/1902.07153), *ICML'19*, [:octocat:Official Implementation](https://github.com/Tiiiger/SGC)
++ **GWNN** from [📝Graph Wavelet Neural Network](https://arxiv.org/abs/1904.07785), *ICLR'19,*[:octocat:Official Implementation](https://github.com/Eilene/GWNN)
++ **GMNN** from [📝Graph Markov Neural Networks](https://arxiv.org/abs/1905.06214>), *ICML'19,*[:octocat:Official Implementation](https://github.com/DeepGraphLearning/GMNN)
++ **ClusterGCN** from [📝Cluster-GCN: An Efficient Algorithm for Training Deep and Large Graph Convolutional Networks](https://arxiv.org/abs/1905.07953), *KDD'19*, [:octocat:Official Implementation](https://github.com/google-research/google-research/tree/master/cluster_gcn)
++ **DAGNN** from [📝Towards Deeper Graph Neural Networks](https://arxiv.org/abs/2007.09296), *KDD'20*, [:octocat:Official Implementation](https://github.com/mengliu1998/DeeperGNN)
 
 ## Defense models
-+ **RobustGCN** from *Robust Graph Convolutional Networks Against Adversarial Attacks*, [📝Paper](https://dl.acm.org/doi/10.1145/3292500.3330851) [:octocat:Official Implementation](https://github.com/thumanlab/nrlweb/blob/master/static/assets/download/RGCN.zip)
-+ **SBVAT/OBVAT** from *Batch Virtual Adversarial Training for Graph Convolutional Networks*, [📝Paper](https://arxiv.org/abs/1902.09192) [:octocat:Official Implementation](https://github.com/thudzj/BVAT)
++ **RobustGCN** from [📝Robust Graph Convolutional Networks Against Adversarial Attacks](https://dl.acm.org/doi/10.1145/3292500.3330851), *KDD'19*, [:octocat:Official Implementation](https://github.com/thumanlab/nrlweb/blob/master/static/assets/download/RGCN.zip)
++ **SBVAT/OBVAT** from [📝Batch Virtual Adversarial Training for Graph Convolutional Networks](https://arxiv.org/abs/1902.09192), *ICML'19*, [:octocat:Official Implementation](https://github.com/thudzj/BVAT)
 
 
 # Quick Start
@@ -130,4 +131,6 @@ plt.show()
 ```
 ![visualization](https://github.com/EdisonLeeeee/GraphGallery/blob/master/imgs/visualization_loss.png)
 
+# Acknowledgement
+This project is motivated by [Pytorch Geometric](https://github.com/rusty1s/pytorch_geometric), [Tensorflow Geometric](https://github.com/CrawlScript/tf_geometric) and [Stellargraph](https://github.com/stellargraph/stellargraph), thanks for their excellent works!
 
