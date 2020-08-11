@@ -4,16 +4,20 @@ from tensorflow.keras.layers import Layer
 import tensorflow as tf
 
 
-class GraphConvolution(Layer):
+class PropConvolution(Layer):
     """
         Basic graph convolution layer as in: 
-        [Semi-Supervised Classification with Graph Convolutional Networks](https://arxiv.org/abs/1606.09375)
-        Tensorflow 1.x implementation: https://github.com/tkipf/gcn
-        Pytorch implementation: https://github.com/tkipf/pygcn
-
-        `GraphConvolution` implements the operation:
-        `output = activation(adj @ x @ kernel + bias)`
+        [Towards Deeper Graph Neural Networks](https://arxiv.org/abs/2007.09296)
+        Pytorch implementation: <https://github.com/mengliu1998/DeeperGNN>
+        
+        `PropConvolution` implements the operation:
+        
+        `propagations = Stack(\sum_k^K adj^k @ x)
+        output = activation(propagations @ kernel + bias).transpose([0, 2, 1])
+        output = (output @ propagationsoutput).squeeze()`
+        
         where `x` is the feature matrix, `adj` is the adjacency matrix,
+        K is the propagation steps of adjacency matrix.
         `activation` is the element-wise activation function
         passed as the `activation` argument, `kernel` is a weights matrix
         created by the layer, and `bias` is a bias vector created by the layer
@@ -21,7 +25,7 @@ class GraphConvolution(Layer):
 
 
         Arguments:
-          units: Positive integer, dimensionality of the output space.
+          K: Propagation steps of adjacency matrix.
           activation: Activation function to use.
             If you don't specify anything, no activation is applied
             (ie. "linear" activation: `a(x) = x`).
@@ -42,10 +46,10 @@ class GraphConvolution(Layer):
           The former one is the feature matrix (Tensor) and the last is adjacency matrix (SparseTensor).
 
         Output shape:
-          2-D tensor with shape: `(n_nodes, units)`.       
+          2-D tensor with the same shape as `x`: `(n_nodes, n_features)`.       
     """
 
-    def __init__(self, units,
+    def __init__(self, K=10,
                  use_bias=False,
                  activation=None,
                  kernel_initializer='glorot_uniform',
@@ -58,7 +62,8 @@ class GraphConvolution(Layer):
                  **kwargs):
 
         super().__init__(**kwargs)
-        self.units = units
+        self.units = 1 # units must be 1
+        self.K = K
         self.use_bias = use_bias
 
         self.activation = activations.get(activation)
@@ -90,16 +95,30 @@ class GraphConvolution(Layer):
     def call(self, inputs):
 
         x, adj = inputs
-        h = x @ self.kernel
-        output = tf.sparse.sparse_dense_matmul(adj, h)
+        
+        propagations = [x]
+        for _ in range(self.K):
+            x = tf.sparse.sparse_dense_matmul(adj, x)          
+            propagations.append(x)
 
+        h = tf.stack(propagations, axis=1)
+        
+        retrain_score = h @ self.kernel
+        
         if self.use_bias:
-            output += self.bias
-
-        return self.activation(output)
+            retrain_score += self.bias
+            
+        retrain_score = self.activation(retrain_score)
+        retrain_score = tf.transpose(retrain_score, [0, 2, 1])
+        
+        output = tf.matmul(retrain_score, h)
+        output = tf.squeeze(output, axis=1)
+            
+        return output
 
     def get_config(self):
         config = {'units': self.units,
+                  'K': self.K,
                   'use_bias': self.use_bias,
                   'activation': activations.serialize(self.activation),
                   'kernel_initializer': initializers.serialize(

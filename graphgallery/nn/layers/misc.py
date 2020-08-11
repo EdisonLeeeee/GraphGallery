@@ -46,7 +46,8 @@ class Sample(Layer):
             tf.random.set_seed(seed)
         super().__init__(*args, **kwargs)
 
-    def call(self, mean, var):
+    def call(self, inputs):
+        mean, var = inputs
         sample = tf.random.normal(tf.shape(var), 0, 1, dtype=config.floatx())
         output = mean + tf.math.sqrt(var + 1e-8) * sample
         return output

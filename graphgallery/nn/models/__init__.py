@@ -17,6 +17,8 @@ from graphgallery.nn.models.semisupervised.lgcn import LGCN
 from graphgallery.nn.models.semisupervised.obvat import OBVAT
 from graphgallery.nn.models.semisupervised.sbvat import SBVAT
 from graphgallery.nn.models.semisupervised.gmnn import GMNN
+from graphgallery.nn.models.semisupervised.dagnn import DAGNN
+
 
 # experimental
 from graphgallery.nn.models.semisupervised.experimental.gcnf import GCNF

@@ -58,6 +58,7 @@ pip install -U graphgallery
 + **ClusterGCN** from *Cluster-GCN: An Efficient Algorithm for Training Deep and Large Graph Convolutional Networks* [📝Paper](https://arxiv.org/abs/1905.07953)
 + **FastGCN** from *FastGCN: Fast Learning with Graph Convolutional Networks via Importance Sampling* [📝Paper](https://arxiv.org/abs/1801.10247)
 + **LGCN** from  *Large-Scale Learnable Graph Convolutional Networks* [📝Paper](https://arxiv.org/abs/1808.03965)
++ **DAGNN** from *Towards Deeper Graph Neural Networks*, *KDD'20*, [📝Paper](https://arxiv.org/abs/2007.09296>)
 
 ## Defense models
 + **RobustGCN** from *Robust Graph Convolutional Networks Against Adversarial Attacks* [📝Paper](https://dl.acm.org/doi/10.1145/3292500.3330851)

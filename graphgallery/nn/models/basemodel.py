@@ -177,7 +177,7 @@ class BaseModel:
     @model.setter
     def model(self, m):
         # Back up
-        if isinstance(m, tf.keras.Model):
+        if isinstance(m, tf.keras.Model) and m.weights:
             self.backup = tf.identity_n(m.weights)
         # assert m is None or isinstance(m, tf.keras.Model)
         self.__model = m
