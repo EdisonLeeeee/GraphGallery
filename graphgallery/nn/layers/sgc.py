@@ -13,7 +13,7 @@ class SGConvolution(Layer):
         where `x` is the feature matrix, `adj` is the adjacency matrix.
         
         Note:
-          This `SGConvolution` layer does not contain any trainable parameters.
+          This `SGConvolution` layer has NOT any trainable parameters.
         
         
         Arguments:
@@ -26,7 +26,7 @@ class SGConvolution(Layer):
         Output shape:
           2-D tensor with shape: `(n_nodes, n_features)`.       
     """
-    def __init__(self, order=2, **kwargs):
+    def __init__(self, order=1, **kwargs):
         super().__init__(**kwargs)
         self.order = order
         

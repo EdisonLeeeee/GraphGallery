@@ -30,11 +30,11 @@ This repo aims to achieve 4 goals:
 + python>=3.6
 + tensorflow>=2.1 (2.1 is recommended)
 + networkx==2.3
-+ scipy>=1.4.1
-+ scikit_learn>=0.22
-+ numpy>=1.17.4
-+ numba>=0.48
-+ gensim>=3.8.1
++ scipy
++ scikit_learn
++ numpy
++ numba
++ gensim
 
 Other packages (not necessary):
 
@@ -48,21 +48,21 @@ pip install -U graphgallery
 
 # Implementation
 ## General models
-+ **GCN** from *Semi-Supervised Classification with Graph Convolutional Networks* [📝Paper](https://arxiv.org/abs/1609.02907)
-+ **GAT** from *Graph Attention Networks* [📝Paper](https://arxiv.org/abs/1710.10903>)
-+ **SGC** from *Simplifying Graph Convolutional Networks* [📝Paper](https://arxiv.org/abs/1902.07153)
-+ **GraphSAGE** from *Inductive Representation Learning on Large Graphs* [📝Paper](https://arxiv.org/abs/1706.02216)
-+ **GWNN** from *Graph Wavelet Neural Network* [📝Paper](https://arxiv.org/abs/1904.07785)
-+ **GMNN** from *Graph Markov Neural Networks* [📝Paper](https://arxiv.org/abs/1905.06214>)
-+ **ChebyNet** from *Convolutional Neural Networks on Graphs with Fast Localized Spectral Filtering* [📝Paper](https://arxiv.org/abs/1606.09375>)
-+ **ClusterGCN** from *Cluster-GCN: An Efficient Algorithm for Training Deep and Large Graph Convolutional Networks* [📝Paper](https://arxiv.org/abs/1905.07953)
-+ **FastGCN** from *FastGCN: Fast Learning with Graph Convolutional Networks via Importance Sampling* [📝Paper](https://arxiv.org/abs/1801.10247)
-+ **LGCN** from  *Large-Scale Learnable Graph Convolutional Networks* [📝Paper](https://arxiv.org/abs/1808.03965)
-+ **DAGNN** from *Towards Deeper Graph Neural Networks*, *KDD'20*, [📝Paper](https://arxiv.org/abs/2007.09296>)
++ **GCN** from *Semi-Supervised Classification with Graph Convolutional Networks*, *ICLR'17*, [📝Paper](https://arxiv.org/abs/1609.02907) [:octocat:Official Implementation](https://github.com/tkipf/gcn)
++ **GAT** from *Graph Attention Networks*, *ICLR'18,* [📝Paper](https://arxiv.org/abs/1710.10903>) [:octocat:Official Implementation](https://github.com/PetarV-/GAT)
++ **SGC** from *Simplifying Graph Convolutional Networks*, *ICML'19*, [📝Paper](https://arxiv.org/abs/1902.07153) [:octocat:Official Implementation](https://github.com/Tiiiger/SGC)
++ **GraphSAGE** from *Inductive Representation Learning on Large Graphs*, *NIPS'17*, [📝Paper](https://arxiv.org/abs/1706.02216) [:octocat:Official Implementation](https://github.com/williamleif/GraphSAGE)
++ **GWNN** from *Graph Wavelet Neural Network*, *ICLR'19,* [📝Paper](https://arxiv.org/abs/1904.07785) [:octocat:Official Implementation](https://github.com/Eilene/GWNN)
++ **GMNN** from *Graph Markov Neural Networks*, *ICML'19,* [📝Paper](https://arxiv.org/abs/1905.06214>) [:octocat:Official Implementation](https://github.com/DeepGraphLearning/GMNN)
++ **ChebyNet** from *Convolutional Neural Networks on Graphs with Fast Localized Spectral Filtering*, *NIPS'16*, [📝Paper](https://arxiv.org/abs/1606.09375>) [:octocat:Official Implementation](https://github.com/mdeff/cnn_graph)
++ **ClusterGCN** from *Cluster-GCN: An Efficient Algorithm for Training Deep and Large Graph Convolutional Networks*, *KDD'19*, [📝Paper](https://arxiv.org/abs/1905.07953) [:octocat:Official Implementation](https://github.com/google-research/google-research/tree/master/cluster_gcn)
++ **FastGCN** from *FastGCN: Fast Learning with Graph Convolutional Networks via Importance Sampling*, *ICLR'18*, [📝Paper](https://arxiv.org/abs/1801.10247) [:octocat:Official Implementation](https://github.com/matenure/FastGCN)
++ **LGCN** from  *Large-Scale Learnable Graph Convolutional Networks*, *KDD'18*, [📝Paper](https://arxiv.org/abs/1808.03965) [:octocat:Official Implementation](https://github.com/divelab/lgcn)
++ **DAGNN** from *Towards Deeper Graph Neural Networks*, *KDD'20*, [📝Paper](https://arxiv.org/abs/2007.09296>) [:octocat:Official Implementation](https://github.com/mengliu1998/DeeperGNN)
 
 ## Defense models
-+ **RobustGCN** from *Robust Graph Convolutional Networks Against Adversarial Attacks* [📝Paper](https://dl.acm.org/doi/10.1145/3292500.3330851)
-+ **SBVAT/OBVAT** from *Batch Virtual Adversarial Training for Graph Convolutional Networks* [📝Paper](https://arxiv.org/abs/1902.09192)
++ **RobustGCN** from *Robust Graph Convolutional Networks Against Adversarial Attacks*, [📝Paper](https://dl.acm.org/doi/10.1145/3292500.3330851) [:octocat:Official Implementation](https://github.com/thumanlab/nrlweb/blob/master/static/assets/download/RGCN.zip)
++ **SBVAT/OBVAT** from *Batch Virtual Adversarial Training for Graph Convolutional Networks*, [📝Paper](https://arxiv.org/abs/1902.09192) [:octocat:Official Implementation](https://github.com/thudzj/BVAT)
 
 
 # Quick Start
