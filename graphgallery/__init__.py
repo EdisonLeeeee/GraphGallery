@@ -14,6 +14,7 @@ from graphgallery.utils.tqdm import tqdm
 from graphgallery.utils.gdc import GDC
 from graphgallery.utils.degree import degree_mixing_matrix, degree_assortativity_coefficient
 from graphgallery.utils.context_manager import nullcontext
+from graphgallery.utils.misc import set_memory_growth
 
 from graphgallery import nn
 from graphgallery import utils

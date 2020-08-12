@@ -27,6 +27,10 @@ class SparseConversion(Layer):
         return tf.TensorShape([self.n_nodes, self.n_nodes])
 
 
+    def get_config(self):
+        base_config = super().get_config()
+        return base_config
+
 class Scale(Layer):
     def call(self, inputs):
         output = (inputs - tf.reduce_mean(inputs, axis=0, keepdims=True)) / tf.keras.backend.std(inputs, axis=0, keepdims=True)

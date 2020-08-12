@@ -8,6 +8,7 @@ from tensorflow.keras import backend as K
 from tensorflow.keras.utils import Sequence
 from tensorflow.python.keras import callbacks as callbacks_module
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+from tensorflow.keras.callbacks import History as tf_History
 
 from graphgallery.nn.models import BaseModel
 from graphgallery.utils.history import History
@@ -107,7 +108,7 @@ class SemiSupervisedModel(BaseModel):
         """
         raise NotImplementedError
 
-    def train(self, idx_train, idx_val=None,
+    def train_v1(self, idx_train, idx_val=None,
               epochs=200, early_stopping=None,
               verbose=False, save_best=True, weight_path=None, as_model=False,
               monitor='val_acc', early_stop_metric='val_loss'):
@@ -191,6 +192,7 @@ class SemiSupervisedModel(BaseModel):
 
         if not weight_path:
             weight_path = self.weight_path
+        
         if not weight_path.endswith('.h5'):
             weight_path += '.h5'
 
@@ -255,6 +257,180 @@ class SemiSupervisedModel(BaseModel):
             os.remove(weight_path)
 
         return history
+
+    def train(self, idx_train, idx_val=None,
+                 epochs=200, early_stopping=None,
+                 verbose=False, save_best=True, weight_path=None, as_model=False,
+                 monitor='val_acc', early_stop_metric='val_loss', callbacks=None, **kwargs):
+        """
+            Train the model for the input `idx_train` of nodes or `sequence`.
+
+        Note:
+        ----------
+            You must compile your model before training/testing/predicting. Use `model.build()`.
+
+        Arguments:
+        ----------
+            idx_train: Numpy array-like, `list`, Integer scalar or `graphgallery.NodeSequence`
+                the index of nodes (or sequence) that will be used during training.    
+            idx_val: Numpy array-like, `list`, Integer scalar or `graphgallery.NodeSequence`, optional
+                the index of nodes (or sequence) that will be used for validation. 
+                (default :obj: `None`, i.e., do not use validation during training)
+            epochs: Postive integer
+                The number of epochs of training.(default :obj: `200`)
+            early_stopping: Postive integer or None
+                The number of early stopping patience during training. (default :obj: `None`, 
+                i.e., do not use early stopping during training)
+            verbose: Boolean
+                Whether to show the training details. (default :obj: `None`)
+            save_best: Boolean
+                Whether to save the best weights (accuracy of loss depend on `monitor`) 
+                of training or validation (depend on `validation` is `False` or `True`). 
+                (default :bool: `True`)
+            weight_path: String or None
+                The path of saved weights/model. (default :obj: `None`, i.e., 
+                `./log/{self.name}_weights`)
+            as_model: Boolean
+                Whether to save the whole model or weights only, if `True`, the `self.custom_objects`
+                must be speficied if you are using customized `layer` or `loss` and so on.
+            monitor: String
+                One of (val_loss, val_acc, loss, acc), it determines which metric will be
+                used for `save_best`. (default :obj: `val_acc`)
+            early_stop_metric: String
+                One of (val_loss, val_acc, loss, acc), it determines which metric will be 
+                used for early stopping. (default :obj: `val_loss`)
+            callbacks: tensorflow.keras.callbacks. (default :obj: `None`)
+            kwargs: other keyword arguments.
+
+        Return:
+        ----------
+            A `tf.keras.callbacks.History` object. Its `History.history` attribute is
+            a record of training loss values and metrics values
+            at successive epochs, as well as validation loss values
+            and validation metrics values (if applicable).
+
+        """
+        ############# Record paras ###########
+        local_paras = locals()
+        local_paras.pop('self')
+        local_paras.pop('idx_train')
+        local_paras.pop('idx_val')
+        paras = Bunch(**local_paras)
+        ######################################
+        model = self.model
+        model.stop_training = False
+        
+        # Check if model has been built
+        if model is None:
+            raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')
+
+        if isinstance(idx_train, Sequence):
+            train_data = idx_train
+        else:
+            idx_train = asintarr(idx_train)
+            train_data = self.train_sequence(idx_train)
+            self.idx_train = idx_train
+
+        validation = idx_val
+
+        if validation is not None:
+            if isinstance(idx_val, Sequence):
+                val_data = idx_val
+            else:
+                idx_val = asintarr(idx_val)
+                val_data = self.test_sequence(idx_val)
+                self.idx_val = idx_val
+
+
+        if not isinstance(callbacks, callbacks_module.CallbackList):
+            callbacks = callbacks_module.CallbackList(callbacks)
+            
+        his = tf_History()
+        callbacks.append(his) 
+        
+        if early_stopping:
+            es_callback = EarlyStopping(monitor=early_stop_metric,
+                                        patience=early_stopping,
+                                        mode='auto',
+                                        verbose=kwargs.pop('es_verbose', 1))
+            callbacks.append(es_callback)
+
+        if save_best:
+            if not weight_path:
+                weight_path = self.weight_path
+
+            if not weight_path.endswith('.h5'):
+                weight_path += '.h5'
+
+            mc_callback = ModelCheckpoint(weight_path,
+                                          monitor=monitor,
+                                          save_best_only=True,
+                                          save_weights_only=not as_model,
+                                          verbose=0)
+            callbacks.append(mc_callback)
+        callbacks.set_model(model)
+
+        ############# Record paras ###########
+        paras.update(Bunch(weight_path=weight_path))
+        # update all parameters
+        self.paras.update(paras)
+        self.train_paras.update(paras)
+        ######################################
+
+        # leave it blank for the future
+        allowed_kwargs = set([])
+        unknown_kwargs = set(kwargs.keys()) - allowed_kwargs
+        if unknown_kwargs:
+            raise TypeError(
+                "Invalid keyword argument(s) in `__init__`: %s" % (unknown_kwargs,))
+
+        callbacks.on_train_begin()
+        
+        if verbose:
+            pbar = tqdm(range(1, epochs+1))
+        else:
+            pbar = range(1, epochs+1)
+            
+        for epoch in pbar:
+            callbacks.on_epoch_begin(epoch)
+
+            if self.do_before_train:
+                self.do_before_train()
+
+            callbacks.on_train_batch_begin(0)
+            loss, accuracy = self.do_forward(train_data)
+            train_data.on_epoch_end()
+
+            training_logs = {'loss': loss, 'acc': accuracy}
+            callbacks.on_train_batch_end(0, training_logs)
+
+            if validation is not None:
+                if self.do_before_validation:
+                    self.do_before_validation()
+
+                val_loss, val_accuracy = self.do_forward(val_data, training=False)
+                training_logs.update({'val_loss': val_loss, 'val_acc': val_accuracy})
+
+            callbacks.on_epoch_end(epoch, training_logs)
+            
+            if verbose:
+                msg = "<"
+                for key, val in training_logs.items():
+                    msg += f"{key.title()} = {val:.4f} "
+                msg += ">"
+                pbar.set_description(msg)            
+
+            if model.stop_training:
+                break
+
+        callbacks.on_train_end()
+
+        if save_best:
+            self.load(weight_path, as_model=as_model)
+            if os.path.exists(weight_path):
+                os.remove(weight_path)
+
+        return his
 
     def train_v2(self, idx_train, idx_val=None,
                  epochs=200, early_stopping=None,
@@ -418,7 +594,7 @@ class SemiSupervisedModel(BaseModel):
                 os.remove(weight_path)
 
         return model.history
-
+    
     def test(self, index, **kwargs):
         """
             Test the output accuracy for the `index` of nodes or `sequence`.

@@ -8,7 +8,7 @@ from graphgallery import config
 
 
 def normalize_adj_tensor(adj, rate=-0.5, self_loop=1.0):
-    adj = adj + self_loop*tf.eye(adj.shape[0], dtype=config.floatx())
+    adj = adj + self_loop*tf.eye(adj.shape[0], dtype=adj.dtype)
     row_sum = tf.reduce_sum(adj, axis=1)
     d_inv_sqrt = tf.pow(row_sum, rate)
     d_mat_inv_sqrt = tf.linalg.diag(d_inv_sqrt)
