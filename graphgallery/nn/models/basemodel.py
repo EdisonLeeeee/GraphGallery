@@ -174,6 +174,16 @@ class BaseModel:
     def model(self):
         return self.__model
 
+    ################### TODO: This may cause ERROR #############
+    def __getattr__(self, attr):
+        try:
+            return self.__dict__[attr]
+        except KeyError:
+            if hasattr(self.model, attr):
+                return getattr(self.model, attr)
+            raise AttributeError(f"'{self.name}' and '{self.name}.model' objects have no attribute '{attr}'")
+        
+        
     @model.setter
     def model(self, m):
         # Back up

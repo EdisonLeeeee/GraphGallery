@@ -583,19 +583,19 @@ class SemiSupervisedModel(BaseModel):
     def __call__(self, inputs):
         return self.model(inputs)
 
-    @property
-    def weights(self):
-        """Return the weights of model, type `tf.Tensor`."""
-        return self.model.weights
+#     @property
+#     def weights(self):
+#         """Return the weights of model, type `tf.Tensor`."""
+#         return self.model.weights
 
-    def get_weights(self):
-        """Return the weights of model, type Numpy array-like."""
-        return self.model.get_weights()
+#     def get_weights(self):
+#         """Return the weights of model, type Numpy array-like."""
+#         return self.model.get_weights()
 
-    @property
-    def trainable_variables(self):
-        """Return the trainable weights of model, type `tf.Tensor`."""
-        return self.model.trainable_variables
+#     @property
+#     def trainable_variables(self):
+#         """Return the trainable weights of model, type `tf.Tensor`."""
+#         return self.model.trainable_variables
 
     def reset_weights(self):
         """reset the model to the first time.
