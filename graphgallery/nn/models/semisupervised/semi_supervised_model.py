@@ -1,4 +1,5 @@
 import os
+import logging
 import warnings
 import numpy as np
 import tensorflow as tf
@@ -177,15 +178,17 @@ class SemiSupervisedModel(BaseModel):
             train_data = self.train_sequence(idx_train)
             self.idx_train = idx_train
 
-        validation = idx_val
+        validation = idx_val is not None
 
-        if validation is not None:
+        if validation:
             if isinstance(idx_val, Sequence):
                 val_data = idx_val
             else:
                 idx_val = asintarr(idx_val)
                 val_data = self.test_sequence(idx_val)
                 self.idx_val = idx_val
+        else:
+            monitor = 'acc' if monitor[:3] == 'val' else monitor
 
         history = History(monitor_metric=monitor,
                           early_stop_metric=early_stop_metric)
@@ -223,7 +226,7 @@ class SemiSupervisedModel(BaseModel):
             history.add_results(loss, 'loss')
             history.add_results(accuracy, 'acc')
 
-            if validation is not None:
+            if validation:
                 if self.do_before_validation:
                     self.do_before_validation()
 
@@ -248,7 +251,7 @@ class SemiSupervisedModel(BaseModel):
 
             if verbose:
                 msg = f'loss {loss:.2f}, acc {accuracy:.2%}'
-                if validation is not None:
+                if validation:
                     msg += f', val_loss {val_loss:.2f}, val_acc {val_accuracy:.2%}'
                 pbar.set_description(msg)
 
@@ -331,15 +334,18 @@ class SemiSupervisedModel(BaseModel):
             train_data = self.train_sequence(idx_train)
             self.idx_train = idx_train
 
-        validation = idx_val
+        validation = idx_val is not None
 
-        if validation is not None:
+        if validation:
             if isinstance(idx_val, Sequence):
                 val_data = idx_val
             else:
                 idx_val = asintarr(idx_val)
                 val_data = self.test_sequence(idx_val)
                 self.idx_val = idx_val
+        else:
+            monitor = 'acc' if monitor[:3] == 'val' else monitor
+
 
 
         if not isinstance(callbacks, callbacks_module.CallbackList):
@@ -357,10 +363,15 @@ class SemiSupervisedModel(BaseModel):
 
         if save_best:
             if not weight_path:
+                if not os.path.exists(self.weight_dir):
+                    os.makedirs(self.weight_dir)
+                    logging.log(logging.WARNING, f"Make Directory in {self.weight_dir}")
+                    
                 weight_path = self.weight_path
 
             if not weight_path.endswith('.h5'):
                 weight_path += '.h5'
+                
 
             mc_callback = ModelCheckpoint(weight_path,
                                           monitor=monitor,
@@ -404,7 +415,7 @@ class SemiSupervisedModel(BaseModel):
             training_logs = {'loss': loss, 'acc': accuracy}
             callbacks.on_train_batch_end(0, training_logs)
 
-            if validation is not None:
+            if validation:
                 if self.do_before_validation:
                     self.do_before_validation()
 
@@ -506,15 +517,17 @@ class SemiSupervisedModel(BaseModel):
             train_data = self.train_sequence(idx_train)
             self.idx_train = idx_train
 
-        validation = idx_val
+        validation = idx_val is not None
 
-        if validation is not None:
+        if validation:
             if isinstance(idx_val, Sequence):
                 val_data = idx_val
             else:
                 idx_val = asintarr(idx_val)
                 val_data = self.test_sequence(idx_val)
                 self.idx_val = idx_val
+        else:
+            monitor = 'acc' if monitor[:3] == 'val' else monitor
 
         model = self.model
         if not isinstance(callbacks, callbacks_module.CallbackList):
@@ -532,6 +545,9 @@ class SemiSupervisedModel(BaseModel):
 
         if save_best:
             if not weight_path:
+                if not os.path.exists(self.weight_dir):
+                    os.makedirs(self.weight_dir)
+                    logging.log(logging.WARNING, f"Make Directory in {self.weight_dir}")                
                 weight_path = self.weight_path
 
             if not weight_path.endswith('.h5'):
@@ -574,7 +590,7 @@ class SemiSupervisedModel(BaseModel):
             training_logs = {'loss': loss, 'acc': accuracy}
             callbacks.on_train_batch_end(0, training_logs)
 
-            if validation is not None:
+            if validation:
                 if self.do_before_validation:
                     self.do_before_validation()
 

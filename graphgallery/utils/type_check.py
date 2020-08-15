@@ -36,15 +36,15 @@ def is_sparse(x):
 
 
 def is_tensor_or_variable(x):
-    """Check whether `x` is tf.Tensor or tf.Variable.
+    """Check whether `x` is tf.Tensor or tf.Variable or tf.RaggedTensor.
 
     Arguments:
         x: A python object to check.
 
     Returns:
-        `True` iff `x` is a `tf.Tensor` or `tf.Variable`.
+        `True` iff `x` is a `tf.Tensor` or `tf.Variable` or `tf.RaggedTensor`.
     """
-    return tf.is_tensor(x) or isinstance(x, tf.Variable)
+    return tf.is_tensor(x) or isinstance(x, tf.Variable) or isinstance(x, tf.RaggedTensor)
 
 
 def is_interger_scalar(x):

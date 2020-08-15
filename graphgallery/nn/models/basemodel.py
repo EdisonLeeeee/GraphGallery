@@ -97,7 +97,7 @@ class BaseModel:
         self.__sparse = is_adj_sparse
 
         # log path
-        self.weight_dir = "./weight"
+        self.weight_dir = "/tmp/weight"
         self.weight_path = f"{self.weight_dir}/{name}_weights"
 
         # data types, default: `float32` and `int64`
@@ -196,7 +196,7 @@ class BaseModel:
     def save(self, path=None, as_model=False):
         if not os.path.exists(self.weight_dir):
             os.makedirs(self.weight_dir)
-            logging.log(logging.WARNING, f"Mkdir {self.weight_dir}")
+            logging.log(logging.WARNING, f"Make Directory in {self.weight_dir}")
 
         if path is None:
             path = self.weight_path
