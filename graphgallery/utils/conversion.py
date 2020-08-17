@@ -188,7 +188,7 @@ def astensor(x, dtype=None):
     elif sp.isspmatrix(x):
         return sparse_adj_to_sparse_tensor(x.astype(dtype, copy=False))
     elif isinstance(x, (np.ndarray, np.matrix)) or is_list_like(x) or is_scalar_like(x):
-        return tf.convert_to_tensor(x, dtype=infer_type(x))
+        return tf.convert_to_tensor(x, dtype=dtype)
     else:
         raise TypeError(f'Invalid type of inputs data. Allowed data type `(Tensor, SparseTensor, Numpy array, Scipy sparse tensor, None)`, but got {type(x)}.')
 
