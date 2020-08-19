@@ -13,7 +13,7 @@ install_requires = [
             'numpy>=1.17.4',
             'gensim>=3.8.0',
             'texttable>=1.6.2',
-            'numba=0.46.0',
+            'numba==0.46.0',
             'llvmlite==0.30',
             'tqdm>=4.40.2',
             'scikit_learn>=0.22',
