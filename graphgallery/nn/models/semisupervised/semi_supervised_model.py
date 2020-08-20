@@ -220,7 +220,7 @@ class SemiSupervisedModel(BaseModel):
             if self.do_before_train:
                 self.do_before_train()
 
-            loss, accuracy = self.do_forward(train_data)
+            loss, accuracy = self.train_step(train_data)
             train_data.on_epoch_end()
 
             history.add_results(loss, 'loss')
@@ -230,7 +230,7 @@ class SemiSupervisedModel(BaseModel):
                 if self.do_before_validation:
                     self.do_before_validation()
 
-                val_loss, val_accuracy = self.do_forward(val_data, training=False)
+                val_loss, val_accuracy = self.test_step(val_data)
 
                 history.add_results(val_loss, 'val_loss')
                 history.add_results(val_accuracy, 'val_acc')
@@ -409,7 +409,7 @@ class SemiSupervisedModel(BaseModel):
                 self.do_before_train()
 
             callbacks.on_train_batch_begin(0)
-            loss, accuracy = self.do_forward(train_data)
+            loss, accuracy = self.train_step(train_data)
             train_data.on_epoch_end()
 
             training_logs = {'loss': loss, 'acc': accuracy}
@@ -419,7 +419,7 @@ class SemiSupervisedModel(BaseModel):
                 if self.do_before_validation:
                     self.do_before_validation()
 
-                val_loss, val_accuracy = self.do_forward(val_data, training=False)
+                val_loss, val_accuracy = self.test_step(val_data)
                 training_logs.update({'val_loss': val_loss, 'val_acc': val_accuracy})
 
             callbacks.on_epoch_end(epoch, training_logs)
@@ -584,7 +584,7 @@ class SemiSupervisedModel(BaseModel):
                 self.do_before_train()
 
             callbacks.on_train_batch_begin(0)
-            loss, accuracy = self.do_forward(train_data)
+            loss, accuracy = self.train_step(train_data)
             train_data.on_epoch_end()
 
             training_logs = {'loss': loss, 'acc': accuracy}
@@ -594,7 +594,7 @@ class SemiSupervisedModel(BaseModel):
                 if self.do_before_validation:
                     self.do_before_validation()
 
-                val_loss, val_accuracy = self.do_forward(val_data, training=False)
+                val_loss, val_accuracy = self.test_step(val_data)
                 training_logs.update({'val_loss': val_loss, 'val_acc': val_accuracy})
 
             callbacks.on_epoch_end(epoch, training_logs)
@@ -650,16 +650,15 @@ class SemiSupervisedModel(BaseModel):
         if self.do_before_test:
             self.do_before_test(**kwargs)
 
-        loss, accuracy = self.do_forward(test_data, training=False)
+        loss, accuracy = self.test_step(test_data)
 
         return loss, accuracy
 
-    def do_forward(self, sequence, training=True):
+    def train_step(self, sequence):
         """
             Forward propagation for the input `sequence`. This method will be called 
-            in `train` and `test`, you can rewrite it for you customized training/testing 
-            process. If you want to specify your customized data during traing/testing/predicting, 
-            you can implement a sub-class of `graphgallery.NodeSequence`, wich is iterable 
+            in `train`. If you want to specify your customized data during traing/testing/predicting, 
+            you can implement a subclass of `graphgallery.NodeSequence`, wich is iterable 
             and yields `inputs` and `labels` in each iteration. 
 
 
@@ -672,8 +671,6 @@ class SemiSupervisedModel(BaseModel):
         ----------
             sequence: `graphgallery.NodeSequence`
                 The input `sequence`.    
-            trainng (Boolean, optional): 
-                Indicating training or test procedure. (default: :obj:`True`)
 
         Return:
         ----------
@@ -684,20 +681,49 @@ class SemiSupervisedModel(BaseModel):
 
         """
         model = self.model
-
-        if training:
-            forward_fn = model.train_on_batch
-        else:
-            forward_fn = model.test_on_batch
-
         model.reset_metrics()
 
         with tf.device(self.device):
             for inputs, labels in sequence:
-                loss, accuracy = forward_fn(x=inputs, y=labels, reset_metrics=False)
+                loss, accuracy = model.train_on_batch(x=inputs, y=labels, reset_metrics=False)
 
         return loss, accuracy
+    
+    def test_step(self, sequence):
+        """
+            Forward propagation for the input `sequence`. This method will be called 
+            in `test`. If you want to specify your customized data during traing/testing/predicting, 
+            you can implement a subclass of `graphgallery.NodeSequence`, wich is iterable 
+            and yields `inputs` and `labels` in each iteration. 
 
+
+        Note:
+        ----------
+            You must compile your model before training/testing/predicting. 
+            Use `model.build()`.
+
+        Arguments:
+        ----------
+            sequence: `graphgallery.NodeSequence`
+                The input `sequence`.    
+
+        Return:
+        ----------
+            loss: Float scalar
+                Output loss of forward propagation.
+            accuracy: Float scalar
+                Output accuracy of prediction.
+
+        """
+        model = self.model
+        model.reset_metrics()
+
+        with tf.device(self.device):
+            for inputs, labels in sequence:
+                loss, accuracy = model.test_on_batch(x=inputs, y=labels, reset_metrics=False)
+
+        return loss, accuracy
+    
     def predict(self, index, **kwargs):
         """
             Predict the output probability for the `index` of nodes.

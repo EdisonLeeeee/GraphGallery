@@ -109,25 +109,32 @@ Otherwise you can also use `model.show('model')` or `model.show('train')` to sho
 NOTE: you should install texttable first.
 
 ## Visualization
+NOTE: you must install [SciencePlots](https://github.com/garrettj403/SciencePlots) package for a better preview.
 + Accuracy
 ```python
 import matplotlib.pyplot as plt
-plt.plot(his.history['acc'])
-plt.plot(his.history['val_acc'])
-plt.legend(['Accuracy', 'Val Accuracy'])
-plt.xlabel('Epochs')
-plt.show()
+with plt.style.context(['science', 'no-latex']):
+    plt.plot(his.history['acc'])
+    plt.plot(his.history['val_acc'])
+    plt.legend(['Train Accuracy', 'Val Accuracy'])
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epochs')
+    plt.autoscale(tight=True)
+    plt.show()    
 ```
 ![visualization](https://github.com/EdisonLeeeee/GraphGallery/blob/master/imgs/visualization_acc.png)
 
 + Loss
 ```python
 import matplotlib.pyplot as plt
-plt.plot(his.history['loss'])
-plt.plot(his.history['val_loss'])
-plt.legend(['Loss', 'Val Loss'])
-plt.xlabel('Epochs')
-plt.show()
+with plt.style.context(['science', 'no-latex']):
+    plt.plot(his.history['loss'])
+    plt.plot(his.history['val_loss'])
+    plt.legend(['Train Loss', 'Val Loss'])
+    plt.ylabel('Loss')
+    plt.xlabel('Epochs')
+    plt.autoscale(tight=True)
+    plt.show()    
 ```
 ![visualization](https://github.com/EdisonLeeeee/GraphGallery/blob/master/imgs/visualization_loss.png)
 

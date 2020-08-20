@@ -2,6 +2,7 @@ import os
 import random
 import logging
 
+import os.path as osp
 import numpy as np
 import tensorflow as tf
 import scipy.sparse as sp
@@ -9,6 +10,8 @@ import scipy.sparse as sp
 from graphgallery import config, check_and_convert, asintarr, Bunch
 from graphgallery.utils.type_check import is_list_like
 from graphgallery.utils.misc import print_table
+from graphgallery.data.utils import makedirs
+
 
 
 class BaseModel:
@@ -97,8 +100,8 @@ class BaseModel:
         self.__sparse = is_adj_sparse
 
         # log path
-        self.weight_dir = "/tmp/weight"
-        self.weight_path = f"{self.weight_dir}/{name}_weights"
+        self.weight_dir = osp.expanduser(osp.normpath("/tmp/weight"))
+        self.weight_path = osp.join(self.weight_dir, f"{name}_weights")
 
         # data types, default: `float32` and `int64`
         self.floatx = config.floatx()
@@ -170,12 +173,8 @@ class BaseModel:
             raise RuntimeError(f"The adjacency matrix should be N by N square matrix.")
         return adj, x
 
-    @property
-    def model(self):
-        return self.__model
-
-    ################### TODO: This may cause ERROR #############
     def __getattr__(self, attr):
+    ################### TODO: This may cause ERROR #############
         try:
             return self.__dict__[attr]
         except KeyError:
@@ -183,7 +182,10 @@ class BaseModel:
                 return getattr(self.model, attr)
             raise AttributeError(f"'{self.name}' and '{self.name}.model' objects have no attribute '{attr}'")
         
-        
+    @property
+    def model(self):
+        return self.__model
+    
     @model.setter
     def model(self, m):
         # Back up
@@ -194,8 +196,8 @@ class BaseModel:
     
 
     def save(self, path=None, as_model=False):
-        if not os.path.exists(self.weight_dir):
-            os.makedirs(self.weight_dir)
+        if not osp.exists(self.weight_dir):
+            makedirs(self.weight_dir)
             logging.log(logging.WARNING, f"Make Directory in {self.weight_dir}")
 
         if path is None:
@@ -216,6 +218,7 @@ class BaseModel:
     def load(self, path=None, as_model=False):
         if not path:
             path = self.weight_path
+            
         if not path.endswith('.h5'):
             path += '.h5'
         if as_model:

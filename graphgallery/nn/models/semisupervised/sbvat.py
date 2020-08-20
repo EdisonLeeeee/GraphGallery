@@ -128,13 +128,6 @@ class SBVAT(SemiSupervisedModel):
         self.epsilon = epsilon  # Norm length for (virtual) adversarial training
         self.n_power_iterations = n_power_iterations  # Number of power iterations
 
-    # def propagation(self, x, adj, training=True):
-    #     h = x
-    #     for layer in self.GCN_layers:
-    #         h = self.dropout_layer(h, training=training)
-    #         h = layer([h, adj])
-    #     return h
-
     def propagation(self, x, adj, training=True):
         h = x
         for dropout_layer, GCN_layer in zip(self.dropout_layers, self.GCN_layers[:-1]):
@@ -145,7 +138,7 @@ class SBVAT(SemiSupervisedModel):
         return h
 
     @tf.function
-    def do_train_forward(self, sequence):
+    def train_step(self, sequence):
 
         with tf.device(self.device):
             self.train_metric.reset_states()
@@ -171,7 +164,7 @@ class SBVAT(SemiSupervisedModel):
         return loss, self.train_metric.result()
 
     @tf.function
-    def do_test_forward(self, sequence):
+    def test_step(self, sequence):
 
         with tf.device(self.device):
             self.test_metric.reset_states()
@@ -185,14 +178,6 @@ class SBVAT(SemiSupervisedModel):
                 self.test_metric.update_state(labels, output)
 
         return loss, self.test_metric.result()
-
-    def do_forward(self, sequence, training=True):
-        if training:
-            loss, accuracy = self.do_train_forward(sequence)
-        else:
-            loss, accuracy = self.do_test_forward(sequence)
-
-        return loss.numpy(), accuracy.numpy()
 
     def virtual_adversarial_loss(self, x, adj, logit, adv_mask):
         d = tf.random.normal(shape=tf.shape(x), dtype=self.floatx)

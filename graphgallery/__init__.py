@@ -23,6 +23,6 @@ from graphgallery import sequence
 from graphgallery import data
 
 
-__version__ = '0.1.9'
+__version__ = '0.1.10'
 
 __all__ = ['graphgallery', 'nn', 'utils', 'sequence', 'data', '__version__']

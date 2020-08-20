@@ -70,10 +70,19 @@ class SGC(SemiSupervisedModel):
         if self.norm_x:
             x = normalize_x(x, norm=self.norm_x)
 
-# InvalidArgumentError: Cannot use GPU when output.shape[1] * nnz(a) > 2^31 [Op:SparseTensorDenseMatMul]
-        with tf.device(self.device):
+            
+        # To avoid this tensorflow error in large dataset:
+        # InvalidArgumentError: Cannot use GPU when output.shape[1] * nnz(a) > 2^31 [Op:SparseTensorDenseMatMul]
+        if self.n_features*adj.nnz>2**31:
+            device = "CPU"
+        else:
+            device = self.device
+            
+        with tf.device(device):
             x, adj = astensors([x, adj])
             x = SGConvolution(order=self.order)([x, adj])
+            
+        with tf.device(self.device):
             self.x_norm, self.adj_norm = x, adj
 
     def build(self, lr=0.2, l2_norms=[5e-5], use_bias=True):
