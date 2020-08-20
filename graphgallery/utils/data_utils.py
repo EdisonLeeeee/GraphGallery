@@ -5,7 +5,7 @@ import tensorflow as tf
 from numbers import Number
 from sklearn.preprocessing import normalize, StandardScaler, RobustScaler
 
-from graphgallery.utils.shape_utils import repeat
+from graphgallery.utils.shape import repeat
 from graphgallery.utils.type_check import is_list_like
 from graphgallery import config
 

@@ -10,8 +10,8 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy
 from graphgallery.nn.layers import Top_k_features, LGConvolution, DenseGraphConv
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
-from graphgallery.utils.shape_utils import set_equal_in_length, get_length
-from graphgallery.utils.graph_utils import get_indice_graph
+from graphgallery.utils.shape import set_equal_in_length, get_length
+from graphgallery.utils.graph import get_indice_graph
 from graphgallery import astensors, asintarr, sample_mask, normalize_x, normalize_adj, Bunch, repeat
 
 
@@ -136,7 +136,7 @@ class LGCN(SemiSupervisedModel):
         index = get_indice_graph(self.adj_norm, index, batch_size)
         while index.size < self.k:
             index = get_indice_graph(self.adj_norm, index)
-            
+
         adj = self.adj_norm[index][:, index]
         x = self.x_norm[index]
         mask = mask[index]
@@ -151,7 +151,7 @@ class LGCN(SemiSupervisedModel):
         index = asintarr(index)
         mask = sample_mask(index, self.n_nodes)
         index = get_indice_graph(self.adj_norm, index)
-        
+
         while index.size < self.k:
             index = get_indice_graph(self.adj_norm, index)
         adj = self.adj_norm[index][:, index]

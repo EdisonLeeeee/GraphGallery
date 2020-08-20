@@ -10,7 +10,7 @@ from graphgallery.nn.layers import GraphConvolution, Gather
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.bvat_utils import kl_divergence_with_logit, entropy_y_x, get_normalized_vector
-from graphgallery.utils.shape_utils import set_equal_in_length
+from graphgallery.utils.shape import set_equal_in_length
 from graphgallery import astensors, asintarr, normalize_x, normalize_adj, Bunch
 
 

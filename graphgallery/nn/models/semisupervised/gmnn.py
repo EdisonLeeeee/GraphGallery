@@ -10,7 +10,7 @@ from tensorflow.keras.activations import softmax
 from graphgallery.nn.layers import GraphConvolution, Gather
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.nn.models import SemiSupervisedModel
-from graphgallery.utils.shape_utils import set_equal_in_length
+from graphgallery.utils.shape import set_equal_in_length
 from graphgallery import astensors, asintarr, normalize_x, normalize_adj, Bunch
 
 
@@ -173,7 +173,7 @@ class GMNN(SemiSupervisedModel):
                                 monitor=monitor, early_stop_metric=early_stop_metric)
 
         histories.append(history)
-        
+
         ############# Record paras ###########
         self.train_paras.update(Bunch(pre_train_epochs=pre_train_epochs))
         self.paras.update(Bunch(pre_train_epochs=pre_train_epochs))

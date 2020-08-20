@@ -9,7 +9,7 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy
 from graphgallery.nn.layers import GraphEdgeConvolution, Gather
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
-from graphgallery.utils.shape_utils import set_equal_in_length
+from graphgallery.utils.shape import set_equal_in_length
 from graphgallery import astensors, asintarr, normalize_x, normalize_adj, sparse_adj_to_edges, Bunch
 
 
@@ -111,7 +111,7 @@ class EdgeGCN(SemiSupervisedModel):
 
             h = GraphEdgeConvolution(self.n_classes, use_bias=use_bias)([h, edge_index, edge_weight])
             h = Gather()([h, index])
-            
+
             model = Model(inputs=[x, edge_index, edge_weight, index], outputs=h)
             model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
                           optimizer=Adam(lr=lr), metrics=['accuracy'])

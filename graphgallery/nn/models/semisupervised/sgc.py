@@ -8,7 +8,7 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy
 from graphgallery.nn.layers import SGConvolution
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
-from graphgallery.utils.shape_utils import repeat
+from graphgallery.utils.shape import repeat
 from graphgallery import astensors, asintarr, normalize_x, normalize_adj, Bunch
 
 
@@ -69,7 +69,7 @@ class SGC(SemiSupervisedModel):
 
         if self.norm_x:
             x = normalize_x(x, norm=self.norm_x)
-            
+
 # InvalidArgumentError: Cannot use GPU when output.shape[1] * nnz(a) > 2^31 [Op:SparseTensorDenseMatMul]
         with tf.device(self.device):
             x, adj = astensors([x, adj])

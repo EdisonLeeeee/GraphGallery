@@ -9,7 +9,7 @@ from graphgallery.nn.layers import ChebyConvolution, Gather
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.utils.misc import chebyshev_polynomials
-from graphgallery.utils.shape_utils import set_equal_in_length
+from graphgallery.utils.shape import set_equal_in_length
 from graphgallery import astensors, asintarr, normalize_x, Bunch
 
 

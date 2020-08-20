@@ -5,7 +5,7 @@ import scipy.sparse as sp
 
 from graphgallery.sequence.node_sequence import NodeSequence
 from graphgallery.utils.misc import column_prop
-from graphgallery.utils.graph_utils import sample_neighbors
+from graphgallery.utils.graph import sample_neighbors
 from graphgallery import astensors
 
 

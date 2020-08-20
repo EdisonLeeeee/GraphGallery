@@ -9,8 +9,8 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy
 from graphgallery.nn.layers import MedianAggregator, MedianGCNAggregator
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import SAGEMiniBatchSequence
-from graphgallery.utils.graph_utils import construct_neighbors
-from graphgallery.utils.shape_utils import set_equal_in_length
+from graphgallery.utils.graph import construct_neighbors
+from graphgallery.utils.shape import set_equal_in_length
 from graphgallery import astensors, asintarr, normalize_x, Bunch
 
 

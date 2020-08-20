@@ -12,9 +12,9 @@ from tensorflow.keras.metrics import SparseCategoricalAccuracy
 from graphgallery.nn.layers import GraphConvolution, Gather
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import NodeSampleSequence
-from graphgallery.utils.sample_utils import find_4o_nbrs
+from graphgallery.utils.sample import find_4o_nbrs
 from graphgallery.utils.bvat_utils import get_normalized_vector, kl_divergence_with_logit, entropy_y_x
-from graphgallery.utils.shape_utils import set_equal_in_length
+from graphgallery.utils.shape import set_equal_in_length
 from graphgallery import astensors, asintarr, normalize_x, normalize_adj, Bunch
 
 

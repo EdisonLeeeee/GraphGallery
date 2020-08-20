@@ -8,7 +8,7 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy
 from graphgallery.nn.layers import PropConvolution, Gather
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
-from graphgallery.utils.shape_utils import set_equal_in_length
+from graphgallery.utils.shape import set_equal_in_length
 from graphgallery import astensors, asintarr, normalize_x, normalize_adj, Bunch
 
 
@@ -92,15 +92,15 @@ class DAGNN(SemiSupervisedModel):
             x = Input(batch_shape=[None, self.n_features], dtype=self.floatx, name='features')
             adj = Input(batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix')
             index = Input(batch_shape=[None], dtype=self.intx, name='index')
-            
+
             h = x
             for hid, activation, dropout, l2_norm in zip(hiddens, activations, dropouts, l2_norms):
                 h = Dense(hid, use_bias=use_bias, activation=activation, kernel_regularizer=regularizers.l2(l2_norm))(h)
                 h = Dropout(dropout)(h)
-                
+
             h = Dense(self.n_classes, use_bias=use_bias, activation=activation, kernel_regularizer=regularizers.l2(l2_norm))(h)
             h = Dropout(dropout)(h)
-                
+
             h = PropConvolution(self.K, use_bias=use_bias, activation='sigmoid', kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
             h = Gather()([h, index])
 
