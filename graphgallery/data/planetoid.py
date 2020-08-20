@@ -21,10 +21,16 @@ class Planetoid(Dataset):
     
     github_url = "https://raw.githubusercontent.com/EdisonLeeeee/GraphData/master/datasets/planetoid"
     obj_names = ["adj.pkl", "feature.npy", "label.npy", "idx_train.npy", "idx_val.npy", "idx_test.npy"]
+    supported_datasets = ('citeseer', 'cora', 'pubmed')
     
     def __init__(self, name, root=None):
+        name = name.lower()
+
+        if not name in self.supported_datasets:
+            raise ValueError(f"Currently only support for these datasets {self.supported_datasets}.")        
+            
         super().__init__(name, root)
-        
+       
         self.download_dir = osp.join(self.root, 'planetoid', name, 'raw')
         self.processed_dir = osp.join(self.root, 'planetoid', name, 'processed')
         
