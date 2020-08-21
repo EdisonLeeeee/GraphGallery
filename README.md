@@ -50,7 +50,7 @@ pip install -U graphgallery
 ## General models
 
 + **ChebyNet** from *Michaël Defferrard et al*, [📝Convolutional Neural Networks on Graphs with Fast Localized Spectral Filtering](https://arxiv.org/abs/1606.09375), *NIPS'16*, [:octocat:Codes](https://github.com/mdeff/cnn_graph)
-+ **GCN** from *Thomas N. Kipf et al*, [📝Semi-Supervised Classification with Graph Convolutional Networks](https://arxiv.org/abs/1609.02907), *ICLR'17*, [:octocat:Codes](https://github.com/tkipf/gcn), [Example](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/test_GCN.ipynb)
++ **GCN** from *Thomas N. Kipf et al*, [📝Semi-Supervised Classification with Graph Convolutional Networks](https://arxiv.org/abs/1609.02907), *ICLR'17*, [:octocat:Codes](https://github.com/tkipf/gcn), [🌈Example](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/test_GCN.ipynb)
 + **GraphSAGE** from *William L. Hamilton et al*, [📝Inductive Representation Learning on Large Graphs](https://arxiv.org/abs/1706.02216), *NIPS'17*, [:octocat:Codes](https://github.com/williamleif/GraphSAGE)
 + **FastGCN** from *Jie Chen et al*, [FastGCN: Fast Learning with Graph Convolutional Networks via Importance Sampling](https://arxiv.org/abs/1801.10247) , *ICLR'18*,[:octocat:Codes](https://github.com/matenure/FastGCN)
 + **LGCN** from  *Hongyang Gao et al*, [📝Large-Scale Learnable Graph Convolutional Networks](https://arxiv.org/abs/1808.03965), *KDD'18*, [:octocat:Codes](https://github.com/divelab/lgcn)
@@ -82,7 +82,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 ```
 On `Cora` dataset:
 ```
-loss 1.02, acc 95.00%, val_loss 1.41, val_acc 77.40%: 100%|██████████| 100/100 [00:02<00:00, 37.07it/s]
+<Loss = 1.0161 Acc = 0.9500 Val_Loss = 1.4101 Val_Acc = 0.7740 >: 100%|██████████| 100/100 [00:01<00:00, 68.02it/s]
 Test loss 1.4123, Test accuracy 81.20%
 ```
 
