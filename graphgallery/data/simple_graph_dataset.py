@@ -8,13 +8,13 @@ class SimpleGraphDataset(ZippedGraphDataset):
     supported_datasets = ('citeseer', 'cora', 'cora_ml', 'polblogs', 'pubmed', 'reddit')
 
     def __init__(self, name, train_size=0.1, val_size=0.1, test_size=0.8,
-                 root=None, url=None, seed=None, largest_cc=False):
+                 root=None, url=None, verbose=True, seed=None, largest_cc=False):
         name = name.lower()
 
         if not name in self.supported_datasets:
             raise ValueError(f"Currently only support for these datasets {self.supported_datasets}.")
 
-        super().__init__(name, root, url)
+        super().__init__(name, root, url, verbose)
 
         adj, x, labels = self.load()
         adj = adj.maximum(adj.T)

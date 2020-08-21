@@ -78,8 +78,7 @@ class RobustGCN(SemiSupervisedModel):
         local_paras = locals()
         local_paras.pop('self')
         paras = Bunch(**local_paras)
-        hiddens, activations, l2_norms = set_equal_in_length(hiddens, activations, l2_norms)
-        dropouts = repeat(dropouts, len(hiddens)+1)
+        hiddens, activations, dropouts, l2_norms = set_equal_in_length(hiddens, activations, dropouts, l2_norms)
         paras.update(Bunch(hiddens=hiddens, activations=activations, dropouts=dropouts, l2_norms=l2_norms))
         # update all parameters
         self.paras.update(paras)
@@ -92,21 +91,19 @@ class RobustGCN(SemiSupervisedModel):
                    Input(batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix_2')]
             index = Input(batch_shape=[None],  dtype=self.intx, name='index')
 
-            h = Dropout(rate=dropouts[0])(x)
+            h = x
             mean, var = GaussionConvolution_F(hiddens[0], gamma=gamma, kl=kl,
                                               use_bias=use_bias,
                                               activation=activations[0],
                                               kernel_regularizer=regularizers.l2(l2_norms[0]))([h, *adj])
 
             # additional layers (usually unnecessay)
-            for hid, activation, dropout, l2_norm in zip(hiddens[1:], activations[1:], dropouts[1:-1], l2_norms[1:]):
-                mean = Dropout(rate=dropout)(mean)
-                var = Dropout(rate=dropout)(var)
-                mean, var = GaussionConvolution_D(hid, gamma=gamma, use_bias=use_bias, activation=activation)([mean, var, *adj])
+            for hid, activation, dropout, l2_norm in zip(hiddens[1:], activations[1:], dropouts[1:], l2_norms[1:]):
 
-            dropout = dropouts[-1]
-            mean = Dropout(rate=dropout)(mean)
-            var = Dropout(rate=dropout)(var)
+                mean, var = GaussionConvolution_D(hid, gamma=gamma, use_bias=use_bias, activation=activation)([mean, var, *adj])
+                mean = Dropout(rate=dropout)(mean)
+                var = Dropout(rate=dropout)(var)                
+
             mean, var = GaussionConvolution_D(self.n_classes, gamma=gamma, use_bias=use_bias)([mean, var, *adj])
             h = Sample(seed=self.seed)([mean, var])
             h = Gather()([h, index])

@@ -23,13 +23,13 @@ class Planetoid(Dataset):
     obj_names = ["adj.pkl", "feature.npy", "label.npy", "idx_train.npy", "idx_val.npy", "idx_test.npy"]
     supported_datasets = ('citeseer', 'cora', 'pubmed')
     
-    def __init__(self, name, root=None):
+    def __init__(self, name, root=None, verbose=True):
         name = name.lower()
 
         if not name in self.supported_datasets:
             raise ValueError(f"Currently only support for these datasets {self.supported_datasets}.")        
             
-        super().__init__(name, root)
+        super().__init__(name, root, verbose)
        
         self.download_dir = osp.join(self.root, 'planetoid', name, 'raw')
         self.processed_dir = osp.join(self.root, 'planetoid', name, 'processed')
@@ -46,7 +46,9 @@ class Planetoid(Dataset):
     def download(self):
         
         if files_exist(self.raw_paths):
-            print(f"Downloaded dataset files exist in {self.raw_paths}")
+            print(f"Downloaded dataset files have existed.")
+            if self.verbose:
+                self.print_files(self.raw_paths)
             return 
         
         print("Downloading...")
@@ -56,7 +58,9 @@ class Planetoid(Dataset):
     def process(self):
         
         if files_exist(self.processed_paths):
-            print(f"Processed dataset files exist in {self.processed_paths}")
+            print(f"Processed dataset files have existed.")
+            if self.verbose:
+                self.print_files(self.processed_paths)
             return 
         
         print("Processing...")

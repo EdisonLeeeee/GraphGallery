@@ -12,8 +12,8 @@ class ZippedGraphDataset(Dataset):
     github_url = "https://raw.githubusercontent.com/EdisonLeeeee/GraphData/master/datasets/{}.zip"
     obj_names = ["adj.pkl", "feature.npy", "label.npy"]
 
-    def __init__(self, name, root=None, url=None):
-        super().__init__(name, root)
+    def __init__(self, name, root=None, url=None, verbose=True):
+        super().__init__(name, root, verbose)
         
         self._url = url
     
@@ -29,7 +29,9 @@ class ZippedGraphDataset(Dataset):
     def download(self):
         
         if files_exist(self.raw_paths):
-            print(f"Downloaded dataset files exist in {self.raw_paths}")
+            print(f"Downloaded dataset files have existed.")
+            if self.verbose:
+                self.print_files(self.raw_paths)
             return 
         
         print("Downloading...")
@@ -39,7 +41,9 @@ class ZippedGraphDataset(Dataset):
     def process(self):
         
         if files_exist(self.processed_paths):
-            print(f"Processed dataset files exist in {self.processed_paths}")
+            print(f"Processed dataset files have existed.")
+            if self.verbose:
+                self.print_files(self.processed_paths)
             return      
         
         print("Processing...")

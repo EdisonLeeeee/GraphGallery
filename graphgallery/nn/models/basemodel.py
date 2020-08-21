@@ -116,22 +116,7 @@ class BaseModel:
         self.model_paras = Bunch(name=name)
         self.train_paras = Bunch(name=name)
         
-    @property
-    def custom_objects(self):
-        return self.__custom_objects
-    
-    @custom_objects.setter
-    def custom_objects(self, value):
-        assert isinstance(value, dict)
-        self.__custom_objects = value
-        
-    @property
-    def sparse(self):
-        return self.__sparse
-    
-    @sparse.setter
-    def sparse(self, value):
-        self.__sparse = value
+
 
     def _check_inputs(self, adj, x):
         """Check the input adj and x and make sure they are legal forms of input.
@@ -172,28 +157,6 @@ class BaseModel:
         if adj_shape[0] != adj_shape[1]:
             raise RuntimeError(f"The adjacency matrix should be N by N square matrix.")
         return adj, x
-
-    def __getattr__(self, attr):
-    ################### TODO: This may cause ERROR #############
-        try:
-            return self.__dict__[attr]
-        except KeyError:
-            if hasattr(self.model, attr):
-                return getattr(self.model, attr)
-            raise AttributeError(f"'{self.name}' and '{self.name}.model' objects have no attribute '{attr}'")
-        
-    @property
-    def model(self):
-        return self.__model
-    
-    @model.setter
-    def model(self, m):
-        # Back up
-        if isinstance(m, tf.keras.Model) and m.weights:
-            self.backup = tf.identity_n(m.weights)
-        # assert m is None or isinstance(m, tf.keras.Model)
-        self.__model = m
-    
 
     def save(self, path=None, as_model=False):
         if not osp.exists(self.weight_dir):
@@ -251,3 +214,42 @@ class BaseModel:
             paras = self.paras
             
         print_table(paras)
+        
+ 
+    def __getattr__(self, attr):
+    ################### TODO: This may cause ERROR #############
+        try:
+            return self.__dict__[attr]
+        except KeyError:
+            if hasattr(self.model, attr):
+                return getattr(self.model, attr)
+            raise AttributeError(f"'{self.name}' and '{self.name}.model' objects have no attribute '{attr}'")
+        
+    @property
+    def model(self):
+        return self.__model
+    
+    @model.setter
+    def model(self, m):
+        # Back up
+        if isinstance(m, tf.keras.Model) and m.weights:
+            self.backup = tf.identity_n(m.weights)
+        # assert m is None or isinstance(m, tf.keras.Model)
+        self.__model = m
+        
+    @property
+    def custom_objects(self):
+        return self.__custom_objects
+    
+    @custom_objects.setter
+    def custom_objects(self, value):
+        assert isinstance(value, dict)
+        self.__custom_objects = value
+        
+    @property
+    def sparse(self):
+        return self.__sparse
+    
+    @sparse.setter
+    def sparse(self, value):
+        self.__sparse = value

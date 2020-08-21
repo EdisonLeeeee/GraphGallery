@@ -1,9 +1,12 @@
 import numpy as np
 import os.path as osp
-
+try:
+    import texttable
+except ImportError:
+    texttable = None
 
 class Dataset:
-    def __init__(self, name, root=None):
+    def __init__(self, name, root=None, verbose=True):
         if root is None:
             root = 'data'
             
@@ -13,7 +16,8 @@ class Dataset:
         root = osp.abspath(root)
         
         self.root = root
-        self.name = name           
+        self.name = name          
+        self.verbose = verbose
         self.download_dir = None
         self.processed_dir = None
             
@@ -45,3 +49,14 @@ class Dataset:
             objs.append(obj)
             
         return objs
+    
+    @staticmethod   
+    def print_files(file_paths):
+        if not texttable:
+            print(file_paths)
+        else:
+            t = texttable.Texttable()
+            items = [(path.split('/')[-1], path) for path in file_paths]
+
+            t.add_rows([['File', 'path'], *items])
+            print(t.draw())    
