@@ -36,7 +36,6 @@ def column_prop(adj):
     norm_sum = column_norm.sum()
     return column_norm/norm_sum
 
-# LGCN
 def set_memory_growth():
     """Set if memory growth should be enabled for ALL `PhysicalDevice`.
 

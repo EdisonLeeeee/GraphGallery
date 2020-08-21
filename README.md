@@ -50,7 +50,7 @@ pip install -U graphgallery
 ## General models
 
 + **ChebyNet** from *Michaël Defferrard et al*, [📝Convolutional Neural Networks on Graphs with Fast Localized Spectral Filtering](https://arxiv.org/abs/1606.09375), *NIPS'16*, [:octocat:Codes](https://github.com/mdeff/cnn_graph)
-+ **GCN** from *Thomas N. Kipf et al*, [📝Semi-Supervised Classification with Graph Convolutional Networks](https://arxiv.org/abs/1609.02907), *ICLR'17*, [:octocat:Codes](https://github.com/tkipf/gcn)
++ **GCN** from *Thomas N. Kipf et al*, [📝Semi-Supervised Classification with Graph Convolutional Networks](https://arxiv.org/abs/1609.02907), *ICLR'17*, [:octocat:Codes](https://github.com/tkipf/gcn), [Example](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/test_GCN.ipynb)
 + **GraphSAGE** from *William L. Hamilton et al*, [📝Inductive Representation Learning on Large Graphs](https://arxiv.org/abs/1706.02216), *NIPS'17*, [:octocat:Codes](https://github.com/williamleif/GraphSAGE)
 + **FastGCN** from *Jie Chen et al*, [FastGCN: Fast Learning with Graph Convolutional Networks via Importance Sampling](https://arxiv.org/abs/1801.10247) , *ICLR'18*,[:octocat:Codes](https://github.com/matenure/FastGCN)
 + **LGCN** from  *Hongyang Gao et al*, [📝Large-Scale Learnable Graph Convolutional Networks](https://arxiv.org/abs/1808.03965), *KDD'18*, [:octocat:Codes](https://github.com/divelab/lgcn)
@@ -101,7 +101,7 @@ you can use the following statement to build your model
 # other parameters like `dropouts` and `l2_norms` (if have) are the SAME.
 ```
 ## Train or test your model
-More details can be seen in the methods [model.train](https://github.com/EdisonLeeeee/GraphGallery/blob/master/graphgallery/nn/models/semisupervised/semi_supervised_model.py#L80) and [model.test](https://github.com/EdisonLeeeee/GraphGallery/blob/master/graphgallery/nn/models/semisupervised/semi_supervised_model.py#L382) 
+More details can be seen in the `examples/`.
 
 ## Hyper-parameters
 you can simply use `model.show()` to show all your `Hyper-parameters`.
