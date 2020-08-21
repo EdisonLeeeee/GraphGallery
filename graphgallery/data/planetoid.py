@@ -40,8 +40,9 @@ class Planetoid(Dataset):
         self.download()
         self.process()
         
-        self.adj, self.x, self.labels, self.idx_train, self.idx_val, self.idx_test = self.load()        
-    
+        adj, self.x, self.labels, self.idx_train, self.idx_val, self.idx_test = self.load()        
+        self.adj = adj.maximum(adj.T)
+        
     def download(self):
         
         if files_exist(self.raw_paths):

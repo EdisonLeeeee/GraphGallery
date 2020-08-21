@@ -17,6 +17,7 @@ class SimpleGraphDataset(ZippedGraphDataset):
         super().__init__(name, root, url)
 
         adj, x, labels = self.load()
+        adj = adj.maximum(adj.T)
 
         if largest_cc:
             '''select the largest connected components (LCC)'''
