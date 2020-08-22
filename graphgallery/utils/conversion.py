@@ -118,9 +118,9 @@ def infer_type(x):
     if not hasattr(x, 'dtype'):
         x = np.asarray(x)
 
-    if x.dtype.kind == 'f':
+    if x.dtype.kind in {'f', 'c'}:
         return config.floatx()
-    elif x.dtype.kind == 'i' or x.dtype.kind == 'u':
+    elif x.dtype.kind in {'i', 'u'}:
         return config.intx()
     elif x.dtype.kind == 'b':
         return 'bool'

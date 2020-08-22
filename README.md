@@ -14,7 +14,7 @@
 ![](https://img.shields.io/github/stars/EdisonLeeeee/GraphGallery)
 ![](https://img.shields.io/github/forks/EdisonLeeeee/GraphGallery)
 ![](https://img.shields.io/github/issues/EdisonLeeeee/GraphGallery)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub license](https://img.shields.io/github/license/EdisonLeeeee/GraphGallery)](https://github.com/EdisonLeeeee/GraphGallery/blob/master/LICENSE)
 
 A gallery of state-of-the-arts graph neural networks. Implemented with [TensorFlow](https://github.com/tensorflow/tensorflow) 2.x.
 
