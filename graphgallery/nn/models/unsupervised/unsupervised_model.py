@@ -30,7 +30,8 @@ class UnsupervisedModel(BaseModel):
                 The input `symmetric` adjacency matrix, where `N` is the number 
                 of nodes in graph.
             x: shape (N, F), Scipy sparse matrix if `is_x_sparse=True`, 
-                Numpy array-like (or matrix) if `is_x_sparse=False`.
+                Numpy array-like (or matrix) if `is_x_sparse=False`,
+                or `None` for not given.
                 The input node feature matrix, where `F` is the dimension of features.
             labels: Numpy array-like with shape (N,)
                 The ground-truth labels for all nodes in graph.
@@ -46,7 +47,7 @@ class UnsupervisedModel(BaseModel):
 
     """
 
-    def __init__(self, adj, x, labels=None, device='CPU:0', seed=None, name=None, **kwargs):
+    def __init__(self, adj, x=None, labels=None, device='CPU:0', seed=None, name=None, **kwargs):
         super().__init__(adj, x, labels, device, seed, name, **kwargs)
 
         self.embeddings = None

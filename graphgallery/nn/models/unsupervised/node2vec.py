@@ -21,9 +21,6 @@ class Node2vec(UnsupervisedModel):
                 Numpy array-like (or matrix) if `is_adj_sparse=False`.
                 The input `symmetric` adjacency matrix, where `N` is the number 
                 of nodes in graph.
-            x: shape (N, F), Scipy sparse matrix if `is_x_sparse=True`, 
-                Numpy array-like (or matrix) if `is_x_sparse=False`.
-                The input node feature matrix, where `F` is the dimension of features.
             labels: Numpy array-like with shape (N,)
                 The ground-truth labels for all nodes in graph.
             device (String, optional): 
@@ -38,9 +35,9 @@ class Node2vec(UnsupervisedModel):
 
     """
 
-    def __init__(self, adj, x, labels, graph=None, device='CPU:0', seed=None, name=None, **kwargs):
+    def __init__(self, adj, labels, graph=None, device='CPU:0', seed=None, name=None, **kwargs):
 
-        super().__init__(adj, x, labels, device=device, seed=seed, name=name, **kwargs)
+        super().__init__(adj, labels=labels, device=device, seed=seed, name=name, **kwargs)
 
         if not graph:
             graph = nx.from_scipy_sparse_matrix(adj, create_using=nx.DiGraph)

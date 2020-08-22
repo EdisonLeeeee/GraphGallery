@@ -19,7 +19,7 @@ def check_and_convert(matrix, is_sparse):
 
     Arguments:
     ----------
-        matrix: Scipy sparse matrix or Numpy array-like or Numpy matrix.
+        matrix: Scipy sparse matrix or Numpy array-like or Numpy matrix or None.
         is_sparse: Indicating whether the input matrix is sparse matrix or not.
 
     Returns:
@@ -29,7 +29,10 @@ def check_and_convert(matrix, is_sparse):
     """
     if is_list_like(matrix):
         return [check_and_convert(m, is_sparse) for m in matrix]
-
+    
+    if matrix is None:
+        return matrix
+    
     if not is_sparse:
         if not isinstance(matrix, (np.ndarray, np.matrix)):
             raise TypeError("The input matrix must be Numpy array-like or Numpy matrix"

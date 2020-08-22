@@ -45,7 +45,7 @@ class BaseModel:
 
     """
 
-    def __init__(self, adj, x, labels=None, device="CPU:0", seed=None, name=None, **kwargs):
+    def __init__(self, adj, x=None, labels=None, device="CPU:0", seed=None, name=None, **kwargs):
 
         if seed is not None:
             np.random.seed(seed)
@@ -70,7 +70,7 @@ class BaseModel:
                 "Invalid keyword argument(s) in `__init__`: %s" % (unknown_kwargs,))
 
         # check the input adj and x, and convert them to appropriate forms
-        self.n_nodes, self.n_features = x.shape
+        self.n_nodes = adj.shape[0]
 
         self.is_adj_sparse = is_adj_sparse
         self.is_x_sparse = is_x_sparse
@@ -81,6 +81,11 @@ class BaseModel:
             self.n_classes = np.max(labels) + 1
         else:
             self.n_classes = None
+            
+        if x is not None:
+            self.n_features = x.shape[1]
+        else:
+            self.n_features = None
 
         self.seed = seed
         self.device = device
@@ -145,17 +150,18 @@ class BaseModel:
             adj_shape = adj[0].shape
         else:
             adj_shape = adj.shape
+        
+        if x is not None:
+            x_shape = x.shape
 
-        x_shape = x.shape
+            if adj_shape[0] != x_shape[0]:
+                raise RuntimeError(f"The first dimension of adjacency matrix and feature matrix should be equal.")
 
-        if adj_shape[0] != x_shape[0]:
-            raise RuntimeError(f"The first dimension of adjacency matrix and feature matrix should be equal.")
+            if len(adj_shape) != len(x_shape) != 2:
+                raise RuntimeError(f"The adjacency matrix and feature matrix should have the SAME dimensions 2.")
 
-        if len(adj_shape) != len(x_shape) != 2:
-            raise RuntimeError(f"The adjacency matrix and feature matrix should have the SAME dimensions 2.")
-
-        if adj_shape[0] != adj_shape[1]:
-            raise RuntimeError(f"The adjacency matrix should be N by N square matrix.")
+            if adj_shape[0] != adj_shape[1]:
+                raise RuntimeError(f"The adjacency matrix should be N by N square matrix.")
         return adj, x
 
     def save(self, path=None, as_model=False):
