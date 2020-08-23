@@ -8,8 +8,8 @@
 </p>
 
 ---
-![Python](https://img.shields.io/badge/python-%3E%3D3.6-blue)
-![tensorflow](https://img.shields.io/badge/tensorflow-%3E%3D2.1.0-orange)
+[![Python 3.6](https://img.shields.io/badge/Python->=3.6-3776AB)](https://www.python.org/downloads/release/python-360/)
+[![TensorFlow >=2.1](https://img.shields.io/badge/TensorFlow->=2.1-FF6F00?logo=tensorflow)](https://github.com/tensorflow/tensorflow/releases/tag/v2.1.0)
 [![PyPI Version][pypi-image]][pypi-url]
 ![](https://img.shields.io/github/stars/EdisonLeeeee/GraphGallery)
 ![](https://img.shields.io/github/forks/EdisonLeeeee/GraphGallery)
