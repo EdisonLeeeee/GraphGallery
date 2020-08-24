@@ -10,8 +10,8 @@ from graphgallery import Bunch
 class Deepwalk(UnsupervisedModel):
     """
         Implementation of DeepWalk Unsupervised Graph Neural Networks (DeepWalk). 
-        [DeepWalk: Online Learning of Social Representations](https://arxiv.org/abs/1403.6652)
-        Implementation: https://github.com/phanein/deepwalk
+        `DeepWalk: Online Learning of Social Representations <https://arxiv.org/abs/1403.6652>`
+        Implementation: <https://github.com/phanein/deepwalk>
 
         Arguments:
         ----------

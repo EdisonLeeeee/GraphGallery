@@ -11,9 +11,9 @@ from graphgallery import Bunch
 class Node2vec(UnsupervisedModel):
     """
         Implementation of Node2vec Unsupervised Graph Neural Networks (Node2vec). 
-        [node2vec: Scalable Feature Learning for Networks](https://arxiv.org/abs/1607.00653)
-        Implementation: https://github.com/aditya-grover/node2vec
-        Cpp implementation: https://github.com/snap-stanford/snap/tree/master/examples/node2vec
+        `node2vec: Scalable Feature Learning for Networks <https://arxiv.org/abs/1607.00653>`
+        Implementation: <https://github.com/aditya-grover/node2vec>
+        Cpp implementation: <https://github.com/snap-stanford/snap/tree/master/examples/node2vec>
 
         Arguments:
         ----------
