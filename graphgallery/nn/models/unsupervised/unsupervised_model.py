@@ -53,6 +53,8 @@ class UnsupervisedModel(BaseModel):
         self.embeddings = None
         self.classifier = LogisticRegression(solver='lbfgs', max_iter=1000, multi_class='auto', random_state=seed)
         self.train_paras.update(Bunch(classifier=self.classifier))
+        self.paras.update(Bunch(classifier=self.classifier))
+
 
     def build(self):
         raise NotImplementedError
