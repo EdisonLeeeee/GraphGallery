@@ -33,6 +33,7 @@ pip install -U graphgallery
 
 # Implementations
 In detail, the following methods are currently implemented:
+
 ## Semi-supervised models
 ### General 
 
@@ -79,17 +80,17 @@ from graphgallery.data import Planetoid
 
 # set `verbose=False` to avoid these printed tables
 data = Planetoid('cora', verbose=False)
-adj = data.adj
-x = data.x
-labels = data.labels
-idx_train = data.idx_train
-idx_val = data.idx_val
-idx_test = data.idx_test
+adj = data.adj # adjacency matrix: 2D Scipy sparse matrix
+x = data.x # feature matrix: 2D Numpy array
+labels = data.labels # class labels: 1D Numpy array
+idx_train = data.idx_train # training indices: 1D Numpy array
+idx_val = data.idx_val # validation indices: 1D Numpy array
+idx_test = data.idx_test # testing indices: 1D Numpy array
 ```
 currently the supported datasets are:
 ```python
 >>> data.supported_datasets
->>> ('citeseer', 'cora', 'pubmed')
+('citeseer', 'cora', 'pubmed')
 ```
 
 ## Example of GCN model
@@ -97,7 +98,7 @@ currently the supported datasets are:
 from graphgallery.nn.models import GCN
 # adj is scipy sparse matrix, x is numpy array matrix
 model = GCN(adj, x, labels, device='GPU', norm_x='l1', seed=123)
-# build your GCN model with custom hyper-parameters
+# build your GCN model with default hyper-parameters
 model.build()
 # train your model. here idx_train and idx_val are numpy arrays
 his = model.train(idx_train, idx_val, verbose=1, epochs=100)
@@ -107,7 +108,7 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 ```
 On `Cora` dataset:
 ```
-<Loss = 1.0161 Acc = 0.9500 Val_Loss = 1.4101 Val_Acc = 0.7740 >: 100%|██████████| 100/100 [00:01<00:00, 68.02it/s]
+<Loss = 1.0161 Acc = 0.9500 Val_Loss = 1.4101 Val_Acc = 0.7740 >: 100%|██████████| 100/100 [00:01<00:00, 118.02it/s]
 Test loss 1.4123, Test accuracy 81.20%
 ```
 ## Customization
@@ -181,10 +182,11 @@ Please refer to the [examples](https://github.com/EdisonLeeeee/GraphGallery/blob
 
 # TODO Lists
 - [ ] Add Docstrings and Documentation
+- [ ] Add PyTorch models support
 - [ ] Support for `graph Classification` and `link prediction` tasks
 - [ ] Support for Heterogeneous graphs
-- [ ] Add PyTorch models support
+
 
 # Acknowledgement
-This project is motivated by [Pytorch Geometric](https://github.com/rusty1s/pytorch_geometric), [Tensorflow Geometric](https://github.com/CrawlScript/tf_geometric) and [Stellargraph](https://github.com/stellargraph/stellargraph), and the original implementations from the authors, thanks for their excellent works!
+This project is motivated by [Pytorch Geometric](https://github.com/rusty1s/pytorch_geometric), [Tensorflow Geometric](https://github.com/CrawlScript/tf_geometric) and [Stellargraph](https://github.com/stellargraph/stellargraph), and the original implementations of the authors, thanks for their excellent works!
 

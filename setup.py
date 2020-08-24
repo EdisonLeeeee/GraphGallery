@@ -38,12 +38,12 @@ setup(
     python_requires='>=3.6',
     license="MIT LICENSE",    
     install_requires=install_requires,
-    packages=setuptools.find_packages(exclude=("examples", "imgs")),
+    packages=find_packages(exclude=("examples", "imgs")),
     classifiers=[
         "Programming Language :: Python :: 3",
         "Operating System :: OS Independent",
         "Intended Audience :: Science/Research",
-        "License :: MIT License",
+        "License :: OSI Approved :: MIT License",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
     ],
 )
