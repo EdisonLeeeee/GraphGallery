@@ -40,8 +40,9 @@ class ClusterGCN(SemiSupervisedModel):
                 the graph will be converted by `adj` automatically, but it will comsum lots
                 of time. (default :obj: `None`)
             n_clusters (Potitive integer):
-                The number of clusters that the graph being seperated, if not specified (`None`),
-                it will be set to the number of classes automatically. (default :obj: `None`).
+                The number of clusters that the graph being seperated, 
+                if not specified (`None`), it will be set to the number 
+                of classes automatically. (default :obj: `None`).
             norm_adj (Float scalar, optional):
                 The normalize rate for adjacency matrix `adj`. (default: :obj:`-0.5`,
                 i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}})
