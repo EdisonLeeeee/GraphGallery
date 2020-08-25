@@ -56,7 +56,7 @@ class Planetoid(Dataset):
         
         print("Processing...")
         adj, features, labels, idx_train, idx_val, idx_test = process_planetoid_datasets(self.name, self.raw_paths)
-        self.graph = SparseGraph(adj, features, labels).to_undirected().to_dense_attrs()
+        self.graph = SparseGraph(adj, features, labels).eliminate_self_loops().to_undirected().to_dense_attrs()
         self.idx_train = idx_train
         self.idx_val = idx_val
         self.idx_test = idx_test

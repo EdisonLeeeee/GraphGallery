@@ -49,7 +49,7 @@ class NPZDataset(Dataset):
     def process(self):
         
         print("Processing...")
-        dataset_graph = load_dataset(self.raw_paths[0]).to_undirected().to_dense_attrs()
+        dataset_graph = load_dataset(self.raw_paths[0]).eliminate_self_loops().to_undirected().to_dense_attrs()
         if self.standardize:
             dataset_graph.standardize()
         self.graph = dataset_graph
