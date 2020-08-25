@@ -10,7 +10,7 @@ import scipy.sparse as sp
 from graphgallery import config, check_and_convert, asintarr, Bunch
 from graphgallery.utils.type_check import is_list_like
 from graphgallery.utils.misc import print_table
-from graphgallery.data.utils import makedirs
+from graphgallery.data.io import makedirs
 
 
 
