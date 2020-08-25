@@ -5,7 +5,8 @@ import pickle as pkl
 
 
 from graphgallery.data import Dataset
-from graphgallery.data.utils import makedirs, files_exist, download_file, process_planetoid_datasets
+from graphgallery.data.io import makedirs, files_exist, download_file, SparseGraph
+from graphgallery.data.preprocess import process_planetoid_datasets
 
 
 class Planetoid(Dataset):
@@ -20,8 +21,7 @@ class Planetoid(Dataset):
     
     
     github_url = "https://raw.githubusercontent.com/EdisonLeeeee/GraphData/master/datasets/planetoid"
-    obj_names = ["adj.pkl", "feature.npy", "label.npy", "idx_train.npy", "idx_val.npy", "idx_test.npy"]
-    supported_datasets = ('citeseer', 'cora', 'pubmed')
+    supported_datasets = {'citeseer', 'cora', 'pubmed'}
     
     def __init__(self, name, root=None, verbose=True):
         name = name.lower()
@@ -31,17 +31,12 @@ class Planetoid(Dataset):
             
         super().__init__(name, root, verbose)
        
-        self.download_dir = osp.join(self.root, 'planetoid', name, 'raw')
-        self.processed_dir = osp.join(self.root, 'planetoid', name, 'processed')
+        self.download_dir = osp.join(self.root, 'planetoid')
         
         makedirs(self.download_dir)
-        makedirs(self.processed_dir)
         
         self.download()
         self.process()
-        
-        adj, self.x, self.labels, self.idx_train, self.idx_val, self.idx_test = self.load()        
-        self.adj = adj.maximum(adj.T)
         
     def download(self):
         
@@ -53,41 +48,26 @@ class Planetoid(Dataset):
         
         print("Downloading...")
         download_file(self.raw_paths, self.urls)
-        print("Download done.")
+        if self.verbose:
+            self.print_files(self.raw_paths)        
+        print("Downloading done.")
         
     def process(self):
         
-        if files_exist(self.processed_paths):
-            print(f"Processed dataset files have existed.")
-            if self.verbose:
-                self.print_files(self.processed_paths)
-            return 
-        
         print("Processing...")
-        objs = process_planetoid_datasets(self.name, self.raw_paths)
-        for fname, obj in zip(self.processed_paths, objs):
-            if fname.endswith('pkl'):
-                with open(fname, 'wb') as f:
-                    pkl.dump(obj, f)
-            elif fname.endswith('npy'):
-                np.save(fname, obj)
-            else:
-                raise OSError(f"Unrecognized file name {fname}. Allowed file name `*.pkl` or `*.npy`.")               
-        print("Process done.")
-
-    def load(self):
+        adj, features, labels, idx_train, idx_val, idx_test = process_planetoid_datasets(self.name, self.raw_paths)
+        self.graph = SparseGraph(adj, features, labels).to_undirected().to_dense_attrs()
+        self.idx_train = idx_train
+        self.idx_val = idx_val
+        self.idx_test = idx_test
+        print("Processing done.")
         
-        objs = []
-        for fname in self.processed_paths:
-            if fname.endswith('pkl') or fname.endswith('npy'):
-                with open(fname, 'rb') as f:
-                    obj = np.load(f, allow_pickle=True)
-            else:
-                raise OSError(f"Unrecognized file name {fname}. Allowed file name `*.pkl` or `*.npy`.")
-                
-            objs.append(obj)
-            
-        return objs
+    def split(self, train_size=None, val_size=None, test_size=None,
+              random_state=None):
+        if train_size is None:
+            return self.idx_train, self.idx_val, self.idx_test
+        else:
+            return super().split(train_size, val_size, test_size, random_state)
     
     @property
     def urls(self):
@@ -101,13 +81,4 @@ class Planetoid(Dataset):
     @property
     def raw_paths(self):
         return [f"{osp.join(self.download_dir, raw_file_name)}" for raw_file_name in self.raw_file_names]    
-    
-    @property
-    def processed_obj_names(self):
-        return self.obj_names
-    
-    @property
-    def processed_paths(self):
-        return [osp.join(self.processed_dir, fname) for fname in self.processed_obj_names]    
-    
     
