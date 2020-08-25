@@ -13,7 +13,7 @@ class GraphAttention(Layer):
         Keras implementation: https://github.com/danielegrattarola/keras-gat
 
 
-        Arguments:
+        Parameters:
           units: Positive integer, dimensionality of the output space.
           atten_heads: Positive integer, number of attention heads.
           attn_heads_reduction: {'concat', 'average'}, whether to enforce concat or average for the outputs from different heads.
@@ -21,7 +21,7 @@ class GraphAttention(Layer):
           activation: Activation function to use.
             If you don't specify anything, no activation is applied
             (ie. "linear" activation: `a(x) = x`).
-          use_bias: Boolean, whether the layer uses a bias vector.
+          use_bias: bool, whether the layer uses a bias vector.
           kernel_initializer: Initializer for the `kernel` weights matrix.
           attn_kernel_initializer: Initializer for the `attn_kernel` weights matrix.
           bias_initializer: Initializer for the bias vector.
@@ -39,8 +39,8 @@ class GraphAttention(Layer):
           bias_constraint: Constraint function applied to the bias vector.
 
         Input shape:
-          tuple/list with two 2-D tensor: Tensor `x` and SparseTensor `adj`: `[(n_nodes, n_features), (n_nodes, n_nodes)]`.
-          The former one is the feature matrix (Tensor) and the last is adjacency matrix (SparseTensor).
+          tuple/list with two 2-D tensor: Tensor `x` and SparseTensor `adj`: `[(n_nodes, n_attributes), (n_nodes, n_nodes)]`.
+          The former one is the attribute matrix (Tensor) and the last is adjacency matrix (SparseTensor).
 
         Output shape:
           2-D tensor with shape: `(n_nodes, units)` (use average) or `(n_nodes, attn_heads * units)` (use concat).       
@@ -70,7 +70,7 @@ class GraphAttention(Layer):
         if attn_heads_reduction not in {'concat', 'average'}:
             raise ValueError('Possbile reduction methods: concat, average')
 
-        self.units = units  # Number of output features (F' in the paper)
+        self.units = units  # Number of output attributes (F' in the paper)
         self.attn_heads = attn_heads  # Number of attention heads (K in the paper)
         self.attn_heads_reduction = attn_heads_reduction  # Eq. 5 and 6 in the paper
         self.dropout = dropout  # Internal dropout rate
@@ -141,7 +141,7 @@ class GraphAttention(Layer):
 
     def call(self, inputs):
         '''
-        inputs: (x, adj), x is node feature matrix with shape [N, F], 
+        inputs: (x, adj), x is node attribute matrix with shape [N, F], 
         adj is adjacency matrix with shape [N, N].
 
         Note:
@@ -178,7 +178,7 @@ class GraphAttention(Layer):
             # Apply softmax to get attention coefficients
             attentions = tf.sparse.softmax(attentions)  # (N x N)
 
-            # Apply dropout to features and attention coefficients
+            # Apply dropout to attributes and attention coefficients
             if self.dropout:
                 attentions = tf.sparse.SparseTensor(indices=attentions.indices,
                                                     values=Dropout(rate=self.dropout)(attentions.values),
@@ -186,7 +186,7 @@ class GraphAttention(Layer):
                                                     )  # (N x N)
                 h = Dropout(self.dropout)(h)  # (N x F')
 
-            # Linear combination with neighbors' features
+            # Linear combination with neighbors' attributes
             h = tf.sparse.sparse_dense_matmul(attentions, h)  # (N x F')
 
             if self.use_bias:

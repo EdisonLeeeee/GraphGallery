@@ -15,7 +15,7 @@ class GraphEdgeConvolution(Layer):
 
         `GraphEdgeConvolution` implements the operation using message passing framework:
         `output = activation(adj @ x @ kernel + bias)`
-        where `x` is the feature matrix, `adj` is the adjacency matrix,
+        where `x` is the attribute matrix, `adj` is the adjacency matrix,
         `activation` is the element-wise activation function
         passed as the `activation` argument, `kernel` is a weights matrix
         created by the layer, and `bias` is a bias vector created by the layer
@@ -27,13 +27,13 @@ class GraphEdgeConvolution(Layer):
             of adjacency matrix to aggregate neighbors' message, instead of SparseTensor `adj`.
 
 
-        Arguments:
+        Parameters:
         ----------
           units: Positive integer, dimensionality of the output space.
           activation: Activation function to use.
               If you don't specify anything, no activation is applied
               (ie. "linear" activation: `a(x) = x`).
-          use_bias: Boolean, whether the layer uses a bias vector.
+          use_bias: bool, whether the layer uses a bias vector.
           kernel_initializer: Initializer for the `kernel` weights matrix.
           bias_initializer: Initializer for the bias vector.
           kernel_regularizer: Regularizer function applied to
@@ -47,8 +47,8 @@ class GraphEdgeConvolution(Layer):
 
         Input shape:
             tuple/list with three tensor: Tensor `x`, `edge_index` and `edge_weight`: 
-                `[(n_nodes, n_features), (n_edges, 2), (n_edges,)]`. The former one is the 
-                feature matrix (Tensor) and the last two are edge index and edge weight of 
+                `[(n_nodes, n_attributes), (n_edges, 2), (n_edges,)]`. The former one is the 
+                attribute matrix (Tensor) and the last two are edge index and edge weight of 
                 the adjacency matrix.
 
         Output shape:
@@ -140,6 +140,6 @@ class GraphEdgeConvolution(Layer):
         return {**base_config, **config}
 
     def compute_output_shape(self, input_shapes):
-        features_shape = input_shapes[0]
-        output_shape = (features_shape[0], self.units)
+        attributes_shape = input_shapes[0]
+        output_shape = (attributes_shape[0], self.units)
         return tf.TensorShape(output_shape)  # (n_nodes, output_dim)

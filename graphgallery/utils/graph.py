@@ -91,28 +91,3 @@ def get_indice_graph(adj, indices, size=np.inf, dropout=0.):
         neighbors = np.random.choice(list(neighbors), size-len(indices), False)
     indices = np.union1d(indices, neighbors)
     return indices
-
-
-def largest_connected_components(adj, n_components=1):
-    """Select the largest connected components in the graph.
-
-    Parameters
-    ----------
-    sparse_graph : scipy.sparse.csr_matrix
-        Input graph.
-    n_components : int, default 1
-        Number of largest connected components to keep.
-
-    Returns
-    -------
-    sparse_graph : gust.SparseGraph
-        Subgraph of the input graph where only the nodes in largest n_components are kept.
-
-    """
-    _, component_indices = connected_components(adj)
-    component_sizes = np.bincount(component_indices)
-    components_to_keep = np.argsort(component_sizes)[::-1][:n_components]  # reverse order to sort descending
-    nodes_to_keep = [
-        idx for (idx, component) in enumerate(component_indices) if component in components_to_keep
-    ]
-    return nodes_to_keep

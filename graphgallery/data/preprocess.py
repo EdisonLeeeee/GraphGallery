@@ -30,7 +30,7 @@ def train_val_test_split_tabular(N,
                                               test_size=(val_size / (train_size + val_size)),
                                               stratify=stratify)
 
-    return idx_train, idx_val, idx_test 
+    return idx_train, idx_val, idx_test
 
 
 def largest_connected_components(sparse_graph, n_components=1):
@@ -58,13 +58,13 @@ def largest_connected_components(sparse_graph, n_components=1):
 def create_subgraph(sparse_graph, _sentinel=None, nodes_to_remove=None, nodes_to_keep=None):
     """Create a graph with the specified subset of nodes.
     Exactly one of (nodes_to_remove, nodes_to_keep) should be provided, while the other stays None.
-    Note that to avoid confusion, it is required to pass node indices as named arguments to this function.
+    Note that to avoid confusion, it is required to pass node indices as named Parameters to this function.
     Parameters
     ----------
     sparse_graph : SparseGraph
         Input graph.
     _sentinel : None
-        Internal, to prevent passing positional arguments. Do not use.
+        Internal, to prevent passing positional Parameters. Do not use.
     nodes_to_remove : array-like of int
         Indices of nodes that have to removed.
     nodes_to_keep : array-like of int
@@ -74,9 +74,9 @@ def create_subgraph(sparse_graph, _sentinel=None, nodes_to_remove=None, nodes_to
     sparse_graph : SparseGraph
         Graph with specified nodes removed.
     """
-    # Check that arguments are passed correctly
+    # Check that Parameters are passed correctly
     if _sentinel is not None:
-        raise ValueError("Only call `create_subgraph` with named arguments',"
+        raise ValueError("Only call `create_subgraph` with named Parameters',"
                          " (nodes_to_remove=...) or (nodes_to_keep=...)")
     if nodes_to_remove is None and nodes_to_keep is None:
         raise ValueError("Either nodes_to_remove or nodes_to_keep must be provided.")
@@ -144,7 +144,6 @@ def remove_underrepresented_classes(g, train_examples_per_class, val_examples_pe
     return create_subgraph(g, nodes_to_keep=keep_indices)
 
 
-
 def to_sparse_tensor(M, value=False):
     """Convert a scipy sparse matrix to a tf SparseTensor or SparseTensorValue.
     Parameters
@@ -164,14 +163,15 @@ def to_sparse_tensor(M, value=False):
         return tf.SparseTensorValue(np.vstack((M.row, M.col)).T, M.data, M.shape)
     else:
         return tf.SparseTensor(np.vstack((M.row, M.col)).T, M.data, M.shape)
-    
-    
+
+
 def parse_index_file(filename):
     """Parse index file."""
     index = []
     for line in open(filename):
         index.append(int(line.strip()))
     return index
+
 
 def process_planetoid_datasets(name, paths):
     objs = []
@@ -198,24 +198,21 @@ def process_planetoid_datasets(name, paths):
         ty_extended[test_idx_range-min(test_idx_range), :] = ty
         ty = ty_extended
 
-
-    features = sp.vstack((allx, tx)).tolil()
-    features[test_idx_reorder, :] = features[test_idx_range, :]
+    attributes = sp.vstack((allx, tx)).tolil()
+    attributes[test_idx_reorder, :] = attributes[test_idx_range, :]
 
     adj = nx.adjacency_matrix(nx.from_dict_of_lists(graph, create_using=nx.DiGraph()))
 
     labels = np.vstack((ally, ty))
     labels[test_idx_reorder, :] = labels[test_idx_range, :]
 
-
     idx_train = np.arange(len(y))
     idx_val = np.arange(len(y), len(y)+500)
     idx_test = test_idx_range
 
     labels = labels.argmax(1)
-    
+
     adj = adj.astype('float32')
-    features = features.astype('float32')
-    
-    return adj, features, labels, idx_train, idx_val, idx_test    
-    
+    attributes = attributes.astype('float32')
+
+    return adj, attributes, labels, idx_train, idx_val, idx_test

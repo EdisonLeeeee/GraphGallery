@@ -17,7 +17,7 @@ __all__ = ['check_and_convert', 'sparse_adj_to_sparse_tensor', 'sparse_tensor_to
 def check_and_convert(matrix, is_sparse):
     """Check the input matrix and convert it into a proper data type.
 
-    Arguments:
+    Parameters:
     ----------
         matrix: Scipy sparse matrix or Numpy array-like or Numpy matrix or None.
         is_sparse: Indicating whether the input matrix is sparse matrix or not.
@@ -29,10 +29,10 @@ def check_and_convert(matrix, is_sparse):
     """
     if is_list_like(matrix):
         return [check_and_convert(m, is_sparse) for m in matrix]
-    
+
     if matrix is None:
         return matrix
-    
+
     if not is_sparse:
         if not isinstance(matrix, (np.ndarray, np.matrix)):
             raise TypeError("The input matrix must be Numpy array-like or Numpy matrix"
@@ -93,7 +93,7 @@ def edges_to_sparse_adj(edge_index, edge_weight):
 def infer_type(x):
     """Infer type of the input `x`.
 
-     Arguments:
+     Parameters:
     ----------
     x: tf.Tensor, tf.Variable, Scipy sparse matrix, 
         Numpy array-like, etc.
@@ -134,7 +134,7 @@ def infer_type(x):
 def asintarr(x, dtype=config.intx()):
     """Convert `x` to interger Numpy array.
 
-    Arguments:
+    Parameters:
     ----------
     x: tf.Tensor, tf.Variable, Scipy sparse matrix, 
         Numpy array-like, etc.
@@ -161,7 +161,7 @@ def asintarr(x, dtype=config.intx()):
 def astensor(x, dtype=None):
     """Convert input matrices to Tensor or SparseTensor.
 
-    Arguments:
+    Parameters:
     ----------
     x: tf.Tensor, tf.Variable, Scipy sparse matrix, 
         Numpy array-like, etc.
@@ -199,7 +199,7 @@ def astensor(x, dtype=None):
 def astensors(xs):
     """Convert input matrices to Tensor(s) or SparseTensor(s).
 
-    Arguments:
+    Parameters:
     ----------
     xs: tf.Tensor, tf.Variable, Scipy sparse matrix, 
         Numpy array-like, or a list of them, etc.

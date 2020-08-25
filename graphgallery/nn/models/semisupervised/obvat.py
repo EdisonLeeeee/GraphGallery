@@ -16,49 +16,60 @@ from graphgallery import astensors, asintarr, normalize_x, normalize_adj, Bunch
 
 class OBVAT(SemiSupervisedModel):
     """
-        Implementation of optimization-based Batch Virtual Adversarial Training  Graph Convolutional Networks (OBVAT).
-        `Batch Virtual Adversarial Training for Graph Convolutional Networks <https://arxiv.org/abs/1902.09192>`
+        Implementation of optimization-based Batch Virtual Adversarial Training 
+        Graph Convolutional Networks (OBVAT).
+        `Batch Virtual Adversarial Training for Graph Convolutional Networks 
+        <https://arxiv.org/abs/1902.09192>`
         Tensorflow 1.x implementation: <https://github.com/thudzj/BVAT>
-
-        Arguments:
-        ----------
-            adj: shape (N, N), Scipy sparse matrix if  `is_adj_sparse=True`,
-                Numpy array-like (or matrix) if `is_adj_sparse=False`.
-                The input `symmetric` adjacency matrix, where `N` is the number
-                of nodes in graph.
-            x: shape (N, F), Scipy sparse matrix if `is_x_sparse=True`,
-                Numpy array-like (or matrix) if `is_x_sparse=False`.
-                The input node feature matrix, where `F` is the dimension of features.
-            labels: Numpy array-like with shape (N,)
-                The ground-truth labels for all nodes in graph.
-            norm_adj (Float scalar, optional):
-                The normalize rate for adjacency matrix `adj`. (default: :obj:`-0.5`,
-                i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}})
-            norm_x (String, optional):
-                How to normalize the node feature matrix. See `graphgallery.normalize_x`
-                (default :obj: `None`)
-            device (String, optional):
-                The device where the model is running on. You can specified `CPU` or `GPU`
-                for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
-            seed (Positive integer, optional):
-                Used in combination with `tf.random.set_seed` & `np.random.seed` & `random.seed`
-                to create a reproducible sequence of tensors across multiple calls.
-                (default :obj: `None`, i.e., using random seed)
-            name (String, optional):
-                Specified name for the model. (default: :str: `class.__name__`)
-
 
     """
 
     def __init__(self, adj, x, labels, norm_adj=-0.5, norm_x=None,
                  device='CPU:0', seed=None, name=None, **kwargs):
+        """Creat an optimization-based Batch Virtual Adversarial Training 
+        Graph Convolutional Networks (OBVAT) model.
+
+        Parameters:
+        ----------
+            adj: Scipy.sparse.csr_matrix or Numpy.ndarray, shape [n_nodes, n_nodes]
+                The input `symmetric` adjacency matrix in
+                CSR format if `is_adj_sparse=True` (default)
+                or Numpy format if `is_adj_sparse=False`.
+            x: Scipy.sparse.csr_matrix or Numpy.ndarray, shape [n_nodes, n_attrs], optional.
+                Node attribute matrix in
+                CSR format if `is_attribute_sparse=True`
+                or Numpy format if `is_attribute_sparse=False` (default).
+            labels: Numpy.ndarray, shape [n_nodes], optional
+                Array, where each entry represents respective node's label(s).
+            norm_adj: float scalar. optional
+                The normalize rate for adjacency matrix `adj`. (default: :obj:`-0.5`,
+                i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}})
+            norm_x: string. optional
+                How to normalize the node attribute matrix. See `graphgallery.normalize_x`
+                (default :obj: `None`)
+            device: string. optional
+                The device where the model is running on. You can specified `CPU` or `GPU`
+                for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
+            seed: interger scalar. optional 
+                Used in combination with `tf.random.set_seed` & `np.random.seed` 
+                & `random.seed` to create a reproducible sequence of tensors across 
+                multiple calls. (default :obj: `None`, i.e., using random seed)
+            name: string. optional
+                Specified name for the model. (default: :str: `class.__name__`)
+            kwargs: other customed keyword Parameters.
+                `is_adj_sparse`: bool, (default: :obj: True)
+                    specify the input adjacency matrix is Scipy sparse matrix or not.
+                `is_attribute_sparse`: bool, (default: :obj: False)
+                    specify the input attribute matrix is Scipy sparse matrix or not.
+                `is_weighted`: bool, (default: :obj: False)
+                    specify the input adjacency matrix is weighted or not.
+        """
 
         super().__init__(adj, x, labels, device=device, seed=seed, name=name, **kwargs)
 
         self.norm_adj = norm_adj
         self.norm_x = norm_x
         self.preprocess(adj, x)
-        self.do_before_train = self.extra_train
 
     def preprocess(self, adj, x):
         super().preprocess(adj, x)
@@ -89,7 +100,7 @@ class OBVAT(SemiSupervisedModel):
 
         with tf.device(self.device):
 
-            x = Input(batch_shape=[None, self.n_features], dtype=self.floatx, name='features')
+            x = Input(batch_shape=[None, self.n_attributes], dtype=self.floatx, name='attributes')
             adj = Input(batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix')
             index = Input(batch_shape=[None],  dtype=self.intx, name='index')
             GCN_layers = []
@@ -110,7 +121,7 @@ class OBVAT(SemiSupervisedModel):
             model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
                           optimizer=Adam(lr=lr), metrics=['accuracy'])
 
-            self.r_vadv = tf.Variable(TruncatedNormal(stddev=0.01)(shape=[self.n_nodes, self.n_features]), name="r_vadv")
+            self.r_vadv = tf.Variable(TruncatedNormal(stddev=0.01)(shape=[self.n_nodes, self.n_attributes]), name="r_vadv")
             entropy_loss = entropy_y_x(logit)
             vat_loss = self.virtual_adversarial_loss(x, adj, logit)
             model.add_loss(p1 * vat_loss + p2 * entropy_loss)
@@ -151,6 +162,10 @@ class OBVAT(SemiSupervisedModel):
                     loss = rnorm - vloss
                 gradient = tape.gradient(loss, r_vadv)
                 optimizer.apply_gradients(zip([gradient], [r_vadv]))
+
+    def train_step(self, sequence):
+        self.extra_train()
+        return super().train_step(sequence)
 
     def predict(self, index):
         super().predict(index)

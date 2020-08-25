@@ -7,7 +7,7 @@ import collections.abc as collections_abc
 def is_list_like(x):
     """Check whether `x` is list like, e.g., Tuple or List.
 
-    Arguments:
+    Parameters:
         x: A python object to check.
 
     Returns:
@@ -25,7 +25,7 @@ def is_sparse(x):
     NOTE: This method is different with `scipy.sparse.is_sparse`
     which is checking  whether `x` is Scipy sparse matrix.
 
-    Arguments:
+    Parameters:
         x: A python object to check.
 
     Returns:
@@ -38,7 +38,7 @@ def is_sparse(x):
 def is_tensor_or_variable(x):
     """Check whether `x` is tf.Tensor or tf.Variable or tf.RaggedTensor.
 
-    Arguments:
+    Parameters:
         x: A python object to check.
 
     Returns:
@@ -50,7 +50,7 @@ def is_tensor_or_variable(x):
 def is_interger_scalar(x):
     """Check whether `x` is an Integer scalar.
 
-    Arguments:
+    Parameters:
         x: A python object to check.
 
     Returns:
@@ -70,7 +70,7 @@ def is_interger_scalar(x):
 def is_scalar_like(x):
     """Check whether `x` is a scalar, an array scalar, or a 0-dim array.
 
-    Arguments:
+    Parameters:
         x: A python object to check.
 
     Returns:

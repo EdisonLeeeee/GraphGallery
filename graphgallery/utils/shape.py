@@ -19,7 +19,7 @@ def set_equal_in_length(*inputs, max_length=None):
         and convert them into lists with the same lengths (max lengths
         of the inputs). The shorter ones will repeted.
 
-        Arguments:
+        Parameters:
         ----------
         inputs: list of scalar, list, tuple.
         max_length: The maximum length of the input list.

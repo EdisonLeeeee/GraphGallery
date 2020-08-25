@@ -14,7 +14,7 @@ class WaveletConvolution(Layer):
 
         `WaveletConvolution` implements the operation:
         `output = activation(wavelet @ filter @ inverse_wavelet @ x @ kernel + bias)`
-        where `x` is the feature matrix, `wavelet` is the wavelet matrix,
+        where `x` is the attribute matrix, `wavelet` is the wavelet matrix,
         `inverse_wavelet` is the inversed wavelet matrix, filter is the trainable diagnal matrix.
         `activation` is the element-wise activation function
         passed as the `activation` argument, `kernel` is a weights matrix
@@ -22,12 +22,12 @@ class WaveletConvolution(Layer):
         (only applicable if `use_bias` is `True`).
 
 
-        Arguments:
+        Parameters:
           units: Positive integer, dimensionality of the output space.
           activation: Activation function to use.
             If you don't specify anything, no activation is applied
             (ie. "linear" activation: `a(x) = x`).
-          use_bias: Boolean, whether the layer uses a bias vector.
+          use_bias: bool, whether the layer uses a bias vector.
           kernel_initializer: Initializer for the `kernel` weights matrix.
           bias_initializer: Initializer for the bias vector.
           kernel_regularizer: Regularizer function applied to
@@ -40,8 +40,8 @@ class WaveletConvolution(Layer):
           bias_constraint: Constraint function applied to the bias vector.
 
         Input shape:
-          tuple/list with three 2-D tensor: Tensor `x`, SparseTensor `wavelet` and inverse_wavelet: `[(n_nodes, n_features), (n_nodes, n_nodes), (n_nodes, n_nodes)]`.
-          The former one is the feature matrix (Tensor) and the others is wavelet matrix (SparseTensor) and inversed wavelet matrix (SparseTensor).
+          tuple/list with three 2-D tensor: Tensor `x`, SparseTensor `wavelet` and inverse_wavelet: `[(n_nodes, n_attributes), (n_nodes, n_nodes), (n_nodes, n_nodes)]`.
+          The former one is the attribute matrix (Tensor) and the others is wavelet matrix (SparseTensor) and inversed wavelet matrix (SparseTensor).
 
         Output shape:
           2-D tensor with shape: `(n_nodes, units)`.       
@@ -152,6 +152,6 @@ class WaveletConvolution(Layer):
         return {**base_config, **config}
 
     def compute_output_shape(self, input_shapes):
-        features_shape = input_shapes[0]
-        output_shape = (features_shape[0], self.units)
+        attributes_shape = input_shapes[0]
+        output_shape = (attributes_shape[0], self.units)
         return tf.TensorShape(output_shape)  # (batch_size, output_dim)

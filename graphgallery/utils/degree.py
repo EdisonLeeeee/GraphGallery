@@ -64,19 +64,19 @@ def degree_assortativity_coefficient(adj):
     Assortativity measures the similarity of connections
     in the graph with respect to the node degree.
 
-    Arguments
+    Parameters
     ----------
     adj : Scipy sparse adjacency matrix representing a graph
 
     Returns
     -------
     r : float
-    Assortativity of graph by degree.
+        Assortativity of graph by degree.
 
     Notes
     --------
     This is a faster implementation of 
-    `networkx.degree_assortativity_coefficient`
+        networkx.degree_assortativity_coefficient
 
     See Also
     --------

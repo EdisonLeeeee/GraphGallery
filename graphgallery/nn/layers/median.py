@@ -7,6 +7,7 @@ try:
 except ImportError:
     tfp = None
 
+
 class MedianConvolution(Layer):
 
     def __init__(self, units,
@@ -50,19 +51,19 @@ class MedianConvolution(Layer):
             self.bias = None
 
         super().build(input_shapes)
-        
+
     @tf.function
     def call(self, inputs):
 
-        x, neighbors = inputs        
+        x, neighbors = inputs
         h = x @ self.kernel
-        
+
         aggregation = tf.TensorArray(tf.float32, size=0, dynamic_size=True, clear_after_read=False)
         for neighbor in neighbors:
             msg = tf.gather(h, neighbor)
             agg = tfp.stats.percentile(msg, q=50., axis=0, interpolation='midpoint')
             aggregation = aggregation.write(aggregation.size(), agg)
-            
+
         output = aggregation.stack()
         if self.use_bias:
             output += self.bias
@@ -91,6 +92,6 @@ class MedianConvolution(Layer):
         return {**base_config, **config}
 
     def compute_output_shape(self, input_shapes):
-        features_shape = input_shapes[0]
-        output_shape = (features_shape[0], self.units)
+        attributes_shape = input_shapes[0]
+        output_shape = (attributes_shape[0], self.units)
         return tf.TensorShape(output_shape)  # (n_nodes, output_dim)

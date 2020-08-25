@@ -13,20 +13,20 @@ class ChebyConvolution(Layer):
 
         `ChebyConvolution` implements the operation:
         `output = activation(adj_0 @ x @ kernel + bias) + activation(adj_1 @ x @ kernel + bias) + ...`
-        where `x` is the feature matrix, `adj_i` is the i-th adjacency matrix, 0<=i<=`order`,
+        where `x` is the attribute matrix, `adj_i` is the i-th adjacency matrix, 0<=i<=`order`,
         `activation` is the element-wise activation function
         passed as the `activation` argument, `kernel` is a weights matrix
         created by the layer, and `bias` is a bias vector created by the layer
         (only applicable if `use_bias` is `True`).
 
 
-        Arguments:
+        Parameters:
           units: Positive integer, dimensionality of the output space.
           order: Positive integer, the order of `Chebyshev polynomials`.
           activation: Activation function to use.
             If you don't specify anything, no activation is applied
             (ie. "linear" activation: `a(x) = x`).
-          use_bias: Boolean, whether the layer uses a bias vector.
+          use_bias: bool, whether the layer uses a bias vector.
           kernel_initializer: Initializer for the `kernel` weights matrix.
           bias_initializer: Initializer for the bias vector.
           kernel_regularizer: Regularizer function applied to
@@ -40,8 +40,8 @@ class ChebyConvolution(Layer):
 
         Input shape:
           tuple/list with `order + 2` 2-D tensor: Tensor `x` and `order + 1` SparseTensor `adj`: 
-          `[(n_nodes, n_features), (n_nodes, n_nodes), (n_nodes, n_nodes), ...]`.
-          The former one is the feature matrix (Tensor) and the last is adjacency matrix (SparseTensor).
+          `[(n_nodes, n_attributes), (n_nodes, n_nodes), (n_nodes, n_nodes), ...]`.
+          The former one is the attribute matrix (Tensor) and the last is adjacency matrix (SparseTensor).
 
         Output shape:
           2-D tensor with shape: `(n_nodes, units)`.  
@@ -135,6 +135,6 @@ class ChebyConvolution(Layer):
         return {**base_config, **config}
 
     def compute_output_shape(self, input_shapes):
-        features_shape = input_shapes[0]
-        output_shape = (features_shape[0], self.units)
+        attributes_shape = input_shapes[0]
+        output_shape = (attributes_shape[0], self.units)
         return tf.TensorShape(output_shape)  # (n_nodes, output_dim)

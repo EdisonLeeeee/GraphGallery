@@ -152,9 +152,9 @@ class FastGCNBatchSequence(NodeSequence):
 
         labels = self.labels[idx]
         adj = self.adj[idx]
-        features = self.x
+        attributes = self.x
 
-        return (features, adj), labels
+        return (attributes, adj), labels
 
     def on_epoch_end(self):
         if self.shuffle_batches:

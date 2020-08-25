@@ -23,26 +23,26 @@ class UnsupervisedModel(BaseModel):
     """
         Base model for unsupervised learning.
 
-        Arguments:
+        Parameters:
         ----------
-            adj: shape (N, N), Scipy sparse matrix if  `is_adj_sparse=True`, 
-                Numpy array-like (or matrix) if `is_adj_sparse=False`.
-                The input `symmetric` adjacency matrix, where `N` is the number 
-                of nodes in graph.
-            x: shape (N, F), Scipy sparse matrix if `is_x_sparse=True`, 
-                Numpy array-like (or matrix) if `is_x_sparse=False`,
+            adj: Scipy.sparse.csr_matrix or Numpy.ndarray, shape [n_nodes, n_nodes]
+                The input `symmetric` adjacency matrix in 
+                CSR format if `is_adj_sparse=True` (default)
+                or Numpy format if `is_adj_sparse=False`.
+            x: shape (N, F), Scipy sparse matrix if `is_attribute_sparse=True`, 
+                Numpy array-like (or matrix) if `is_attribute_sparse=False`,
                 or `None` for not given.
-                The input node feature matrix, where `F` is the dimension of features.
-            labels: Numpy array-like with shape (N,)
-                The ground-truth labels for all nodes in graph.
-            device (String, optional): 
+                The input node attribute matrix, where `F` is the dimension of attributes.
+            labels: Numpy.ndarray, shape [n_nodes], optional
+                Array, where each entry represents respective node's label(s).
+            device: string. optional 
                 The device where the model is running on. You can specified `CPU` or `GPU` 
                 for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
-            seed (Positive integer, optional): 
-                Used in combination with `tf.random.set_seed` & `np.random.seed` & `random.seed`  
-                to create a reproducible sequence of tensors across multiple calls. 
-                (default :obj: `None`, i.e., using random seed)
-            name (String, optional): 
+            seed: interger scalar. optional 
+                Used in combination with `tf.random.set_seed` & `np.random.seed` 
+                & `random.seed` to create a reproducible sequence of tensors across 
+                multiple calls. (default :obj: `None`, i.e., using random seed)
+            name: string. optional
                 Specified name for the model. (default: :str: `class.__name__`)
 
     """
@@ -54,7 +54,6 @@ class UnsupervisedModel(BaseModel):
         self.classifier = LogisticRegression(solver='lbfgs', max_iter=1000, multi_class='auto', random_state=seed)
         self.train_paras.update(Bunch(classifier=self.classifier))
         self.paras.update(Bunch(classifier=self.classifier))
-
 
     def build(self):
         raise NotImplementedError
@@ -84,6 +83,6 @@ class UnsupervisedModel(BaseModel):
     @staticmethod
     def normalize_embedding(embeddings):
         return normalize(embeddings)
-    
+
     def __repr__(self):
-        return 'UnSupervised model: ' + self.name + ' in ' + self.device    
+        return 'UnSupervised model: ' + self.name + ' in ' + self.device

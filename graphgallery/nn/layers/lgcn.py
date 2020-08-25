@@ -10,11 +10,11 @@ class LGConvolution(Layer):
         Tensorflow 1.x implementation: https://github.com/divelab/lgcn
 
         `LGConvolution` implements the operation:
-        `output = Conv1d(Conv1d(x))`, where `x` is the input feature matrix, 
+        `output = Conv1d(Conv1d(x))`, where `x` is the input attribute matrix, 
         and the dropout will be used in `x` and hidden outpus.
 
 
-        Arguments:
+        Parameters:
             filters: Integer, related to the dimensionality of the output space
               (i.e. the number of output filters in the convolution).
             kernel_size: An integer, related to the
@@ -22,7 +22,7 @@ class LGConvolution(Layer):
               Can be a single integer to specify the same value for
               all spatial dimensions.              
             dropout: Float, the dropout rate of inputs and hidden outputs.
-            use_bias: Boolean, whether the layer uses a bias vector.
+            use_bias: bool, whether the layer uses a bias vector.
             activation: Activation function to use.
               If you don't specify anything, no activation is applied
               (ie. "linear" activation: `a(x) = x`).
@@ -38,7 +38,7 @@ class LGConvolution(Layer):
             bias_constraint: Constraint function applied to the bias vector.
 
         Input shape:
-            2-D tensor: Tensor `x`: `(n_nodes, n_features)`. where `x` is the node feature matrix (Tensor).
+            2-D tensor: Tensor `x`: `(n_nodes, n_attributes)`. where `x` is the node attribute matrix (Tensor).
 
         Output shape:
             2-D tensor with shape: `(n_nodes, filters)`.

@@ -15,9 +15,9 @@ class MeanAggregator(Layer):
 
         `MeanAggregator` implements the operation:
         `output = activation(Concat(x @ kernel_0, Agg(neigh_x) @ kernel_1) + bias)`
-        where `x` is the feature matrix, `neigh_x` is the feature matrix of neighbors,
+        where `x` is the attribute matrix, `neigh_x` is the attribute matrix of neighbors,
         `Agg` is the operation of aggregation (`mean`, `sum`, `max`, `min`) along the last dimension,
-        `Concat` is the operation of concatenation between transformed node features and neighbor features,
+        `Concat` is the operation of concatenation between transformed node attributes and neighbor attributes,
         and it could be replaced with `Add` operation.
         `activation` is the element-wise activation function
         passed as the `activation` argument, `kernel` is a weights matrix
@@ -25,14 +25,14 @@ class MeanAggregator(Layer):
         (only applicable if `use_bias` is `True`).
 
 
-        Arguments:
+        Parameters:
           units: Positive integer, dimensionality of the output space.
-          concat: Boolean, whether the layer uses concatenation 
-            between transformed node features and neighbor features, 
+          concat: bool, whether the layer uses concatenation 
+            between transformed node attributes and neighbor attributes, 
             if `False`, the `Add` operation will be used.
-          use_bias: Boolean, whether the layer uses a bias vector.
+          use_bias: bool, whether the layer uses a bias vector.
           agg_method: String, which method of aggregation will be used for neighbor 
-            feature matrix, one of (`mean`, `sum`, `max`, `min`) will be used.
+            attribute matrix, one of (`mean`, `sum`, `max`, `min`) will be used.
           activation: Activation function to use.
             If you don't specify anything, no activation is applied
             (ie. "linear" activation: `a(x) = x`).            
@@ -49,12 +49,12 @@ class MeanAggregator(Layer):
 
         Input shape:
           tuple/list with two tensor: 2-D Tensor `x` and 3-D Tensor `neigh_x`: 
-          `[(batch_n_nodes, n_features), (batch_n_nodes, n_samples, n_features)]`.
-          The former one is the node feature matrix (Tensor) and the last is the neighbor feature matrix (Tensor).
+          `[(batch_n_nodes, n_attributes), (batch_n_nodes, n_samples, n_attributes)]`.
+          The former one is the node attribute matrix (Tensor) and the last is the neighbor attribute matrix (Tensor).
 
         Output shape:
           2-D tensor with shape: `(batch_n_nodes, units)` or `(batch_n_nodes, units * 2)`,
-          depend on using `Add` or `Concat` for the node and neighbor features.       
+          depend on using `Add` or `Concat` for the node and neighbor attributes.       
     """
 
     def __init__(self,
@@ -180,7 +180,7 @@ class GCNAggregator(Layer):
 
         `GCNAggregator` implements the operation:
         `output = activation(Agg(Concat(neigh_x, x)) @ kernel) + bias)`
-        where `x` is the feature matrix, `neigh_x` is the feature matrix of neighbors,
+        where `x` is the attribute matrix, `neigh_x` is the attribute matrix of neighbors,
         `Agg` is the operation of aggregation (`mean`, `sum`, `max`, `min`) along the last dimension,
         `activation` is the element-wise activation function
         passed as the `activation` argument, `kernel` is a weights matrix
@@ -188,10 +188,10 @@ class GCNAggregator(Layer):
         (only applicable if `use_bias` is `True`).
 
 
-        Arguments:
+        Parameters:
           units: Positive integer, dimensionality of the output space.
-          use_bias: Boolean, whether the layer uses a bias vector.
-          agg_method: String, which method of aggregation will be used for neighbor feature matrix,
+          use_bias: bool, whether the layer uses a bias vector.
+          agg_method: String, which method of aggregation will be used for neighbor attribute matrix,
             one of (`mean`, `sum`, `max`, `min`) will be used.
           activation: Activation function to use.
             If you don't specify anything, no activation is applied
@@ -209,12 +209,12 @@ class GCNAggregator(Layer):
 
         Input shape:
           tuple/list with two tensor: 2-D Tensor `x` and 3-D Tensor `neigh_x`: 
-          `[(batch_n_nodes, n_features), (batch_n_nodes, n_samples, n_features)]`.
-          The former one is the node feature matrix (Tensor) and the last is the neighbor feature matrix (Tensor).
+          `[(batch_n_nodes, n_attributes), (batch_n_nodes, n_samples, n_attributes)]`.
+          The former one is the node attribute matrix (Tensor) and the last is the neighbor attribute matrix (Tensor).
 
         Output shape:
           2-D tensor with shape: `(batch_n_nodes, units)` or `(batch_n_nodes, units * 2)`,
-          depend on using `Add` or `Concat` for the node and neighbor features.       
+          depend on using `Add` or `Concat` for the node and neighbor attributes.       
     """
 
     def __init__(self,

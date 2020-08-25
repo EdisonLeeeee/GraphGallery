@@ -19,9 +19,9 @@ def sample_mask(indices, shape):
 
 
 def normalize_x(x, norm='l1'):
-    """Normalize the feature matrix with given type.
+    """Normalize the attribute matrix with given type.
 
-    Arguments
+    Parameters
     ----------
     x: Numpy array-like matrix
     norm: The specified type for the normalization.
@@ -33,7 +33,7 @@ def normalize_x(x, norm='l1'):
 
     Returns
     ----------
-        A normalized feature matrix.
+        A normalized attribute matrix.
     """
     if norm not in {'l1', 'l1_0', 'scale', 'robust_scale', None}:
         raise ValueError(f'{norm} is not a supported norm.')
@@ -57,16 +57,17 @@ def normalize_adj(adj_matrics, rate=-0.5, self_loop=1.0):
 
     >>> normalize_adj(adj, rate=-0.5) # return a normalized adjacency matrix
 
-    >>> normalize_adj([adj, adj], rate=[-0.5, 1.0]) # return a list of normalized adjacency matrices
+    # return a list of normalized adjacency matrices
+    >>> normalize_adj([adj, adj], rate=[-0.5, 1.0]) 
 
 
-    Arguments
+    Parameters
     ----------
-    adj_matrics: Scipy matrix, Numpy array-like or list of them 
+    adj_matrics: Scipy matrix, Numpy array or list of them 
         Single or a list of Scipy sparse matrices or Numpy matrices.
-    rate: Single or a list of float scale.
+    rate: Single or a list of float scale, optional.
         the normalize rate for `adj_matrics`.
-    self_loop: Float scalar.
+    self_loop: float scalar, optional.
         weight of self loops for the adjacency matrix.
 
     Returns
@@ -84,15 +85,16 @@ def normalize_adj(adj_matrics, rate=-0.5, self_loop=1.0):
         if alpha is None:
             return adj.astype(config.floatx(), copy=False)
 
-        row_sum = adj.sum(1).A1
-        d_inv_sqrt = np.power(row_sum, alpha)
+        d = adj.sum(1).A1
+        d_power = np.power(d, alpha)
 
         if sp.isspmatrix(adj):
             adj = adj.tocoo(copy=False)
-            adj.data = d_inv_sqrt[adj.row] * adj.data * d_inv_sqrt[adj.col]
+            adj.data = d_power[adj.row] * adj.data * d_power[adj.col]
             adj = adj.tocsr(copy=False)
         else:
-            adj = sp.diags(d_inv_sqrt) @ adj @ sp.diags(d_inv_sqrt)
+            diags = sp.diags(d_power)
+            adj = diags @ adj @ diags
             adj = adj.A
 
         return adj.astype(config.floatx(), copy=False)

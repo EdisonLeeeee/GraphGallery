@@ -7,10 +7,10 @@ import numpy as np
 import scipy.sparse as sp
 import tensorflow as tf
 
-from gnnbench.data.io import load_dataset
-from gnnbench.data.preprocess import to_binary_bag_of_words, remove_underrepresented_classes, \
-    eliminate_self_loops, binarize_labels
-from gnnbench.util import is_binary_bag_of_words
+# from gnnbench.data.io import load_dataset
+# from gnnbench.data.preprocess import to_binary_bag_of_words, remove_underrepresented_classes, \
+#     eliminate_self_loops, binarize_labels
+# from gnnbench.util import is_binary_bag_of_words
 
 
 def get_dataset(name, data_path, standardize, _log, train_examples_per_class=None, val_examples_per_class=None):
@@ -35,22 +35,22 @@ def get_dataset(name, data_path, standardize, _log, train_examples_per_class=Non
             # To avoid future bugs: the above two lines should be repeated to a fixpoint, otherwise code below might
             # fail. However, for cora_full the fixpoint is reached after one iteration, so leave it like this for now.
 
-    graph_adj, node_features, labels = dataset_graph.unpack()
+    graph_adj, node_attributes, labels = dataset_graph.unpack()
     labels = binarize_labels(labels)
 
-    # convert to binary bag-of-words feature representation if necessary
-    if not is_binary_bag_of_words(node_features):
+    # convert to binary bag-of-words attribute representation if necessary
+    if not is_binary_bag_of_words(node_attributes):
         if _log is not None:
-            _log.debug(f"Converting features of dataset {name} to binary bag-of-words representation.")
-        node_features = to_binary_bag_of_words(node_features)
+            _log.debug(f"Converting attributes of dataset {name} to binary bag-of-words representation.")
+        node_attributes = to_binary_bag_of_words(node_attributes)
 
     # some assertions that need to hold for all datasets
     # adj matrix needs to be symmetric
     assert (graph_adj != graph_adj.T).nnz == 0
-    # features need to be binary bag-of-word vectors
-    assert is_binary_bag_of_words(node_features), f"Non-binary node_features entry!"
+    # attributes need to be binary bag-of-word vectors
+    assert is_binary_bag_of_words(node_attributes), f"Non-binary node_attributes entry!"
 
-    return graph_adj, node_features, labels
+    return graph_adj, node_attributes, labels
 
 
 def get_train_val_test_split(random_state,
@@ -134,7 +134,6 @@ def sample_per_class(random_state, labels, num_examples_per_class, forbidden_ind
          ])
 
 
-
 def get_dataset_and_split_planetoid(dataset, data_path, _log):
     def parse_index_file(filename):
         """Parse index file."""
@@ -171,14 +170,14 @@ def get_dataset_and_split_planetoid(dataset, data_path, _log):
         ty_extended[test_idx_range - min(test_idx_range), :] = ty
         ty = ty_extended
 
-    features = sp.vstack((allx, tx)).tolil()
-    features[test_idx_reorder, :] = features[test_idx_range, :]
+    attributes = sp.vstack((allx, tx)).tolil()
+    attributes[test_idx_reorder, :] = attributes[test_idx_range, :]
     adj = nx.adjacency_matrix(nx.from_dict_of_lists(graph))
 
     # cast!!!
     adj = adj.astype(np.float32)
-    features = features.tocsr()
-    features = features.astype(np.float32)
+    attributes = attributes.tocsr()
+    attributes = attributes.astype(np.float32)
 
     labels = np.vstack((ally, ty))
     labels[test_idx_reorder, :] = labels[test_idx_range, :]
@@ -187,4 +186,4 @@ def get_dataset_and_split_planetoid(dataset, data_path, _log):
     idx_train = list(range(len(y)))
     idx_val = list(range(len(y), len(y) + 500))
 
-    return adj, features, labels, idx_train, idx_val, idx_test
+    return adj, attributes, labels, idx_train, idx_val, idx_test

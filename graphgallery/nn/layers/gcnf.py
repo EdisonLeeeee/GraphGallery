@@ -4,8 +4,8 @@ from tensorflow.keras.layers import Layer
 import tensorflow as tf
 
 
-class GraphConvFeature(Layer):
-    """GCN + Feature"""
+class GraphConvattribute(Layer):
+    """GCN + attribute"""
 
     def __init__(self, units,
                  use_bias=False,
@@ -92,6 +92,6 @@ class GraphConvFeature(Layer):
         return {**base_config, **config}
 
     def compute_output_shape(self, input_shapes):
-        features_shape = input_shapes[0]
-        output_shape = (features_shape[0], self.output_dim)
+        attributes_shape = input_shapes[0]
+        output_shape = (attributes_shape[0], self.output_dim)
         return tf.TensorShape(output_shape)  # (n_nodes, output_dim)

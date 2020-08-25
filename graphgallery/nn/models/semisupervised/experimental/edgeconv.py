@@ -16,51 +16,59 @@ from graphgallery import astensors, asintarr, normalize_x, normalize_adj, sparse
 class EdgeGCN(SemiSupervisedModel):
     """
         Implementation of Graph Convolutional Networks (GCN) -- Edge Convolution version.
-        `Semi-Supervised Classification with Graph Convolutional Networks <https://arxiv.org/abs/1609.02907>`
+        `Semi-Supervised Classification with Graph Convolutional Networks 
+        <https://arxiv.org/abs/1609.02907>`
 
         Inspired by: tf_geometric and torch_geometric
         tf_geometric: <https://github.com/CrawlScript/tf_geometric>
         torch_geometric: <https://github.com/rusty1s/pytorch_geometric>
 
-        Note:
-        ----------
-        The Graph Edge Convolutional implements the operation using message passing framework,
-            i.e., using Tensor `edge index` and `edge weight` of adjacency matrix to aggregate neighbors'
-            message, instead of SparseTensor `adj`.
-
-
-        Arguments:
-        ----------
-            adj: shape (N, N), Scipy sparse matrix if  `is_adj_sparse=True`,
-                Numpy array-like (or matrix) if `is_adj_sparse=False`.
-                The input `symmetric` adjacency matrix, where `N` is the number
-                of nodes in graph.
-            x: shape (N, F), Scipy sparse matrix if `is_x_sparse=True`,
-                Numpy array-like (or matrix) if `is_x_sparse=False`.
-                The input node feature matrix, where `F` is the dimension of features.
-            labels: Numpy array-like with shape (N,)
-                The ground-truth labels for all nodes in graph.
-            norm_adj (Float scalar, optional):
-                The normalize rate for adjacency matrix `adj`. (default: :obj:`-0.5`,
-                i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}})
-            norm_x (String, optional):
-                How to normalize the node feature matrix. See `graphgallery.normalize_x`
-                (default :obj: `None`)
-            device (String, optional):
-                The device where the model is running on. You can specified `CPU` or `GPU`
-                for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
-            seed (Positive integer, optional):
-                Used in combination with `tf.random.set_seed` & `np.random.seed` & `random.seed`
-                to create a reproducible sequence of tensors across multiple calls.
-                (default :obj: `None`, i.e., using random seed)
-            name (String, optional):
-                Specified name for the model. (default: :str: `class.__name__`)
-
     """
 
     def __init__(self, adj, x, labels, norm_adj=-0.5, norm_x=None,
                  device='CPU:0', seed=None, name=None, **kwargs):
+        """Creat a Edge Convolution version of Graph Convolutional Networks (GCN) model.
 
+        Parameters:
+        ----------
+            adj: Scipy.sparse.csr_matrix or Numpy.ndarray, shape [n_nodes, n_nodes]
+                The input `symmetric` adjacency matrix in 
+                CSR format if `is_adj_sparse=True` (default)
+                or Numpy format if `is_adj_sparse=False`.
+            x: Scipy.sparse.csr_matrix or Numpy.ndarray, shape [n_nodes, n_attrs], optional. 
+                Node attribute matrix in 
+                CSR format if `is_attribute_sparse=True` 
+                or Numpy format if `is_attribute_sparse=False` (default).
+            labels: Numpy.ndarray, shape [n_nodes], optional
+                Array, where each entry represents respective node's label(s).
+            norm_adj: float scalar. optional
+                The normalize rate for adjacency matrix `adj`. (default: :obj:`-0.5`,
+                i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}})
+            norm_x: string. optional
+                How to normalize the node attribute matrix. See `graphgallery.normalize_x`
+                (default :obj: `None`)
+            device: string. optional
+                The device where the model is running on. You can specified `CPU` or `GPU`
+                for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
+            seed: interger scalar. optional 
+                Used in combination with `tf.random.set_seed` & `np.random.seed` 
+                & `random.seed` to create a reproducible sequence of tensors across 
+                multiple calls. (default :obj: `None`, i.e., using random seed)
+            name: string. optional
+                Specified name for the model. (default: :str: `class.__name__`)
+            kwargs: other customed keyword Parameters.
+                `is_adj_sparse`: bool, (default: :obj: True)
+                    specify the input adjacency matrix is Scipy sparse matrix or not.
+                `is_attribute_sparse`: bool, (default: :obj: False)
+                    specify the input attribute matrix is Scipy sparse matrix or not.
+                `is_weighted`: bool, (default: :obj: False)
+                    specify the input adjacency matrix is weighted or not.                   
+            Note:
+            ----------
+            The Graph Edge Convolutional implements the operation using message passing framework,
+                i.e., using Tensor `edge index` and `edge weight` of adjacency matrix to aggregate neighbors'
+                message, instead of SparseTensor `adj`.
+        """
         super().__init__(adj, x, labels, device=device, seed=seed, name=name, **kwargs)
 
         self.norm_adj = norm_adj
@@ -96,7 +104,7 @@ class EdgeGCN(SemiSupervisedModel):
         ######################################
 
         with tf.device(self.device):
-            x = Input(batch_shape=[None, self.n_features], dtype=self.floatx, name='features')
+            x = Input(batch_shape=[None, self.n_attributes], dtype=self.floatx, name='attributes')
             edge_index = Input(batch_shape=[None, 2], dtype=self.intx, name='edge_index')
             edge_weight = Input(batch_shape=[None],  dtype=self.floatx, name='edge_weight')
             index = Input(batch_shape=[None],  dtype=self.intx, name='index')

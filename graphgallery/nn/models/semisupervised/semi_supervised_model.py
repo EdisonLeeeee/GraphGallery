@@ -28,24 +28,25 @@ class SemiSupervisedModel(BaseModel):
     """
         Base model for semi-supervised learning.
 
-        Arguments:
+        Parameters:
         ----------
-            adj: shape (N, N), Scipy sparse matrix if  `is_adj_sparse=True`, 
-                Numpy array-like (or matrix) if `is_adj_sparse=False`.
-                The input `symmetric` adjacency matrix, where `N` is the number 
-                of nodes in graph.
-            features: Numpy array-like with shape (N, F)
-                The input node feature matrix, where `F` is the dimension of node features.
-            labels: Numpy array-like with shape (N,)
+            adj: Scipy.sparse.csr_matrix or Numpy.ndarray, shape [n_nodes, n_nodes]
+                The input `symmetric` adjacency matrix in 
+                CSR format if `is_adj_sparse=True` (default)
+                or Numpy format if `is_adj_sparse=False`.
+            x: Scipy.sparse.csr_matrix or Numpy.ndarray, shape [n_nodes, n_attrs], optional. 
+                Node attribute matrix in 
+                CSR format if `is_attribute_sparse=True` 
+                or Numpy format if `is_attribute_sparse=False` (default).
                 The ground-truth labels for all nodes in graph.
-            device (String, optional): 
+            device: string. optional 
                 The device where the model is running on. You can specified `CPU` or `GPU` 
                 for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
-            seed (Positive integer, optional): 
-                Used in combination with `tf.random.set_seed` & `np.random.seed` & `random.seed`  
-                to create a reproducible sequence of tensors across multiple calls. 
-                (default :obj: `None`, i.e., using random seed)
-            name (String, optional): 
+            seed: interger scalar. optional 
+                Used in combination with `tf.random.set_seed` & `np.random.seed` 
+                & `random.seed` to create a reproducible sequence of tensors across 
+                multiple calls. (default :obj: `None`, i.e., using random seed)
+            name: string. optional
                 Specified name for the model. (default: :str: `class.__name__`)
 
     """
@@ -54,40 +55,41 @@ class SemiSupervisedModel(BaseModel):
         super().__init__(adj, x, labels, device, seed, name, **kwargs)
 
     def preprocess(self, adj, x):
-        """Preprocess the input adjacency matrix and feature matrix, e.g., normalization.
+        """Preprocess the input adjacency matrix and attribute matrix, e.g., normalization.
         And convert them to tf.tensor. 
 
-        Arguments:
+        Parameters:
         ----------
-            adj: shape (N, N), `scipy.sparse.csr_matrix` (or `csc_matrix`) if 
-                `is_adj_sparse=True`, Numpy array-like if `is_adj_sparse=False`.
-                The input `symmetric` adjacency matrix, where `N` is the number 
-                of nodes in graph.
-            x: shape (N, F), `scipy.sparse.csr_matrix` (or `csc_matrix`) if 
-                `is_x_sparse=True`, Numpy array-like if `is_x_sparse=False`.
-                The input node feature matrix, where `F` is the dimension of node features.
+            adj: Scipy.sparse.csr_matrix or Numpy.ndarray, shape [n_nodes, n_nodes]
+                The input `symmetric` adjacency matrix in 
+                CSR format if `is_adj_sparse=True` (default)
+                or Numpy format if `is_adj_sparse=False`.
+            x: Scipy.sparse.csr_matrix or Numpy.ndarray, shape [n_nodes, n_attrs], optional. 
+                Node attribute matrix in 
+                CSR format if `is_attribute_sparse=True` 
+                or Numpy format if `is_attribute_sparse=False` (default).
 
         Note:
         ----------
-            By default, `adj` is sparse matrix and `x` is dense array. Both of them are 
-            2-D matrices.
+            By default, `adj` is Scipy sparse matrix and `x` is Numpy array. 
+                Both of them are 2-D matrices.
+
         """
         # check the input adj and x, and convert them to appropriate forms
         self.adj, self.x = self._check_inputs(adj, x)
-        self.n_nodes, self.n_features = x.shape
+        self.n_nodes, self.n_attributes = x.shape
 
     def build(self):
-        """
-            Build the model using customized hyperparameters.
+        """Build the model using customized hyperparameters.
 
         Note:
         ----------
             This method must be called before training/testing/predicting. 
-            Use `model.build()`. The following `Arguments` are only commonly used 
-            arguments, and other model-specific arguments are not introduced as follows.
+            Use `model.build()`. The following `Parameters` are only commonly used 
+            Parameters, and other model-specific Parameters are not introduced as follows.
 
 
-        Arguments:
+        Parameters:
         ----------
             hiddens: `list` of integer or integer scalar 
                 The number of hidden units of model. Note: the last hidden unit (`n_classes`)
@@ -103,45 +105,44 @@ class SemiSupervisedModel(BaseModel):
                 L2 normalize parameters for the hidden layers. (only used in the hidden layers)
             lr: Float scalar
                 Learning rate for the training model.
-            use_bias: Boolean
+            use_bias: bool
                 Whether to use bias in the hidden layers.
 
         """
         raise NotImplementedError
 
     def train_v1(self, idx_train, idx_val=None,
-              epochs=200, early_stopping=None,
-              verbose=False, save_best=True, weight_path=None, as_model=False,
-              monitor='val_acc', early_stop_metric='val_loss'):
-        """
-            Train the model for the input `idx_train` of nodes or `sequence`.
+                 epochs=200, early_stopping=None,
+                 verbose=False, save_best=True, weight_path=None, as_model=False,
+                 monitor='val_acc', early_stop_metric='val_loss'):
+        """Train the model for the input `idx_train` of nodes or `sequence`.
 
         Note:
         ----------
             You must compile your model before training/testing/predicting. Use `model.build()`.
 
-        Arguments:
+        Parameters:
         ----------
             idx_train: Numpy array-like, `list`, Integer scalar or `graphgallery.NodeSequence`
                 the index of nodes (or sequence) that will be used during training.    
             idx_val: Numpy array-like, `list`, Integer scalar or `graphgallery.NodeSequence`, optional
                 the index of nodes (or sequence) that will be used for validation. 
                 (default :obj: `None`, i.e., do not use validation during training)
-            epochs: Postive integer
+            epochs: integer
                 The number of epochs of training.(default :obj: `200`)
-            early_stopping: Postive integer or None
+            early_stopping: integer or None
                 The number of early stopping patience during training. (default :obj: `None`, 
                 i.e., do not use early stopping during training)
-            verbose: Boolean
+            verbose: bool
                 Whether to show the training details. (default :obj: `None`)
-            save_best: Boolean
+            save_best: bool
                 Whether to save the best weights (accuracy of loss depend on `monitor`) 
                 of training or validation (depend on `validation` is `False` or `True`). 
                 (default :bool: `True`)
             weight_path: String or None
                 The path of saved weights/model. (default :obj: `None`, i.e., 
                 `./log/{self.name}_weights`)
-            as_model: Boolean
+            as_model: bool
                 Whether to save the whole model or weights only, if `True`, the `self.custom_objects`
                 must be speficied if you are using customized `layer` or `loss` and so on.
             monitor: String
@@ -195,7 +196,7 @@ class SemiSupervisedModel(BaseModel):
 
         if not weight_path:
             weight_path = self.weight_path
-        
+
         if not weight_path.endswith('.h5'):
             weight_path += '.h5'
 
@@ -217,9 +218,6 @@ class SemiSupervisedModel(BaseModel):
 
         for epoch in pbar:
 
-            if self.do_before_train:
-                self.do_before_train()
-
             loss, accuracy = self.train_step(train_data)
             train_data.on_epoch_end()
 
@@ -227,8 +225,6 @@ class SemiSupervisedModel(BaseModel):
             history.add_results(accuracy, 'acc')
 
             if validation:
-                if self.do_before_validation:
-                    self.do_before_validation()
 
                 val_loss, val_accuracy = self.test_step(val_data)
 
@@ -262,9 +258,9 @@ class SemiSupervisedModel(BaseModel):
         return history
 
     def train(self, idx_train, idx_val=None,
-                 epochs=200, early_stopping=None,
-                 verbose=False, save_best=True, weight_path=None, as_model=False,
-                 monitor='val_acc', early_stop_metric='val_loss', callbacks=None, **kwargs):
+              epochs=200, early_stopping=None,
+              verbose=False, save_best=True, weight_path=None, as_model=False,
+              monitor='val_acc', early_stop_metric='val_loss', callbacks=None, **kwargs):
         """
             Train the model for the input `idx_train` of nodes or `sequence`.
 
@@ -272,7 +268,7 @@ class SemiSupervisedModel(BaseModel):
         ----------
             You must compile your model before training/testing/predicting. Use `model.build()`.
 
-        Arguments:
+        Parameters:
         ----------
             idx_train: Numpy array-like, `list`, Integer scalar or `graphgallery.NodeSequence`
                 the index of nodes (or sequence) that will be used during training.    
@@ -284,16 +280,16 @@ class SemiSupervisedModel(BaseModel):
             early_stopping: Postive integer or None
                 The number of early stopping patience during training. (default :obj: `None`, 
                 i.e., do not use early stopping during training)
-            verbose: Boolean
+            verbose: bool
                 Whether to show the training details. (default :obj: `None`)
-            save_best: Boolean
+            save_best: bool
                 Whether to save the best weights (accuracy of loss depend on `monitor`) 
                 of training or validation (depend on `validation` is `False` or `True`). 
                 (default :bool: `True`)
             weight_path: String or None
                 The path of saved weights/model. (default :obj: `None`, i.e., 
                 `./log/{self.name}_weights`)
-            as_model: Boolean
+            as_model: bool
                 Whether to save the whole model or weights only, if `True`, the `self.custom_objects`
                 must be speficied if you are using customized `layer` or `loss` and so on.
             monitor: String
@@ -303,7 +299,7 @@ class SemiSupervisedModel(BaseModel):
                 One of (val_loss, val_acc, loss, acc), it determines which metric will be 
                 used for early stopping. (default :obj: `val_loss`)
             callbacks: tensorflow.keras.callbacks. (default :obj: `None`)
-            kwargs: other keyword arguments.
+            kwargs: other keyword Parameters.
 
         Return:
         ----------
@@ -322,7 +318,7 @@ class SemiSupervisedModel(BaseModel):
         ######################################
         model = self.model
         model.stop_training = False
-        
+
         # Check if model has been built
         if model is None:
             raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')
@@ -346,14 +342,12 @@ class SemiSupervisedModel(BaseModel):
         else:
             monitor = 'acc' if monitor[:3] == 'val' else monitor
 
-
-
         if not isinstance(callbacks, callbacks_module.CallbackList):
             callbacks = callbacks_module.CallbackList(callbacks)
-            
+
         his = tf_History()
-        callbacks.append(his) 
-        
+        callbacks.append(his)
+
         if early_stopping:
             es_callback = EarlyStopping(monitor=early_stop_metric,
                                         patience=early_stopping,
@@ -366,12 +360,11 @@ class SemiSupervisedModel(BaseModel):
                 if not os.path.exists(self.weight_dir):
                     os.makedirs(self.weight_dir)
                     logging.log(logging.WARNING, f"Make Directory in {self.weight_dir}")
-                    
+
                 weight_path = self.weight_path
 
             if not weight_path.endswith('.h5'):
                 weight_path += '.h5'
-                
 
             mc_callback = ModelCheckpoint(weight_path,
                                           monitor=monitor,
@@ -396,17 +389,14 @@ class SemiSupervisedModel(BaseModel):
                 "Invalid keyword argument(s) in `__init__`: %s" % (unknown_kwargs,))
 
         callbacks.on_train_begin()
-        
+
         if verbose:
             pbar = tqdm(range(1, epochs+1))
         else:
             pbar = range(1, epochs+1)
-            
+
         for epoch in pbar:
             callbacks.on_epoch_begin(epoch)
-
-            if self.do_before_train:
-                self.do_before_train()
 
             callbacks.on_train_batch_begin(0)
             loss, accuracy = self.train_step(train_data)
@@ -416,20 +406,18 @@ class SemiSupervisedModel(BaseModel):
             callbacks.on_train_batch_end(0, training_logs)
 
             if validation:
-                if self.do_before_validation:
-                    self.do_before_validation()
 
                 val_loss, val_accuracy = self.test_step(val_data)
                 training_logs.update({'val_loss': val_loss, 'val_acc': val_accuracy})
 
             callbacks.on_epoch_end(epoch, training_logs)
-            
+
             if verbose:
                 msg = "<"
                 for key, val in training_logs.items():
                     msg += f"{key.title()} = {val:.4f} "
                 msg += ">"
-                pbar.set_description(msg)            
+                pbar.set_description(msg)
 
             if model.stop_training:
                 break
@@ -454,7 +442,7 @@ class SemiSupervisedModel(BaseModel):
         ----------
             You must compile your model before training/testing/predicting. Use `model.build()`.
 
-        Arguments:
+        Parameters:
         ----------
             idx_train: Numpy array-like, `list`, Integer scalar or `graphgallery.NodeSequence`
                 the index of nodes (or sequence) that will be used during training.    
@@ -466,16 +454,16 @@ class SemiSupervisedModel(BaseModel):
             early_stopping: Postive integer or None
                 The number of early stopping patience during training. (default :obj: `None`, 
                 i.e., do not use early stopping during training)
-            verbose: Boolean
+            verbose: bool
                 Whether to show the training details. (default :obj: `None`)
-            save_best: Boolean
+            save_best: bool
                 Whether to save the best weights (accuracy of loss depend on `monitor`) 
                 of training or validation (depend on `validation` is `False` or `True`). 
                 (default :bool: `True`)
             weight_path: String or None
                 The path of saved weights/model. (default :obj: `None`, i.e., 
                 `./log/{self.name}_weights`)
-            as_model: Boolean
+            as_model: bool
                 Whether to save the whole model or weights only, if `True`, the `self.custom_objects`
                 must be speficied if you are using customized `layer` or `loss` and so on.
             monitor: String
@@ -485,7 +473,7 @@ class SemiSupervisedModel(BaseModel):
                 One of (val_loss, val_acc, loss, acc), it determines which metric will be 
                 used for early stopping. (default :obj: `val_loss`)
             callbacks: tensorflow.keras.callbacks. (default :obj: `None`)
-            kwargs: other keyword arguments.
+            kwargs: other keyword Parameters.
 
         Return:
         ----------
@@ -547,7 +535,7 @@ class SemiSupervisedModel(BaseModel):
             if not weight_path:
                 if not os.path.exists(self.weight_dir):
                     os.makedirs(self.weight_dir)
-                    logging.log(logging.WARNING, f"Make Directory in {self.weight_dir}")                
+                    logging.log(logging.WARNING, f"Make Directory in {self.weight_dir}")
                 weight_path = self.weight_path
 
             if not weight_path.endswith('.h5'):
@@ -580,9 +568,6 @@ class SemiSupervisedModel(BaseModel):
         for epoch in range(epochs):
             callbacks.on_epoch_begin(epoch)
 
-            if self.do_before_train:
-                self.do_before_train()
-
             callbacks.on_train_batch_begin(0)
             loss, accuracy = self.train_step(train_data)
             train_data.on_epoch_end()
@@ -591,8 +576,6 @@ class SemiSupervisedModel(BaseModel):
             callbacks.on_train_batch_end(0, training_logs)
 
             if validation:
-                if self.do_before_validation:
-                    self.do_before_validation()
 
                 val_loss, val_accuracy = self.test_step(val_data)
                 training_logs.update({'val_loss': val_loss, 'val_acc': val_accuracy})
@@ -610,8 +593,8 @@ class SemiSupervisedModel(BaseModel):
                 os.remove(weight_path)
 
         return model.history
-    
-    def test(self, index, **kwargs):
+
+    def test(self, index):
         """
             Test the output accuracy for the `index` of nodes or `sequence`.
 
@@ -620,13 +603,11 @@ class SemiSupervisedModel(BaseModel):
             You must compile your model before training/testing/predicting.
             Use `model.build()`.
 
-        Arguments:
+        Parameters:
         ----------
             index: Numpy array-like, `list`, Integer scalar or `graphgallery.NodeSequence`
                 The index of nodes (or sequence) that will be tested.    
 
-            **kwargs (optional): Additional arguments of
-                :method:`do_before_test`.   
 
         Return:
         ----------
@@ -636,7 +617,7 @@ class SemiSupervisedModel(BaseModel):
                 Output accuracy of prediction.        
         """
 
-        # TODO record test logs like self.train() or self.train_v2()
+        # TODO record test logs like self.train()
         if not self.model:
             raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')
 
@@ -646,9 +627,6 @@ class SemiSupervisedModel(BaseModel):
             index = asintarr(index)
             test_data = self.test_sequence(index)
             self.idx_test = index
-
-        if self.do_before_test:
-            self.do_before_test(**kwargs)
 
         loss, accuracy = self.test_step(test_data)
 
@@ -667,7 +645,7 @@ class SemiSupervisedModel(BaseModel):
             You must compile your model before training/testing/predicting. 
             Use `model.build()`.
 
-        Arguments:
+        Parameters:
         ----------
             sequence: `graphgallery.NodeSequence`
                 The input `sequence`.    
@@ -688,7 +666,7 @@ class SemiSupervisedModel(BaseModel):
                 loss, accuracy = model.train_on_batch(x=inputs, y=labels, reset_metrics=False)
 
         return loss, accuracy
-    
+
     def test_step(self, sequence):
         """
             Forward propagation for the input `sequence`. This method will be called 
@@ -702,7 +680,7 @@ class SemiSupervisedModel(BaseModel):
             You must compile your model before training/testing/predicting. 
             Use `model.build()`.
 
-        Arguments:
+        Parameters:
         ----------
             sequence: `graphgallery.NodeSequence`
                 The input `sequence`.    
@@ -723,8 +701,8 @@ class SemiSupervisedModel(BaseModel):
                 loss, accuracy = model.test_on_batch(x=inputs, y=labels, reset_metrics=False)
 
         return loss, accuracy
-    
-    def predict(self, index, **kwargs):
+
+    def predict(self, index):
         """
             Predict the output probability for the `index` of nodes.
 
@@ -733,13 +711,10 @@ class SemiSupervisedModel(BaseModel):
             You must compile your model before training/testing/predicting. 
             Use `model.build()`.
 
-        Arguments:
+        Parameters:
         ----------
             index: Numpy array-like, `list` or integer scalar
                 The index of nodes that will be computed.    
-
-            **kwargs (optional): Additional arguments of
-                :method:`do_before_predict`.   
 
         Return:
         ----------
@@ -751,15 +726,12 @@ class SemiSupervisedModel(BaseModel):
         if not self.model:
             raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')
 
-        if self.do_before_predict:
-            self.do_before_predict(**kwargs)
-
     def train_sequence(self, index):
         """
             Construct the training sequence for the `index` of nodes.
 
 
-        Arguments:
+        Parameters:
         ----------
             index: Numpy array-like, `list` or integer scalar
                 The index of nodes used in training.
@@ -780,7 +752,7 @@ class SemiSupervisedModel(BaseModel):
         ----------
             If not implemented, this method will call `train_sequence` automatically.
 
-        Arguments:
+        Parameters:
         ----------
             index: Numpy array-like, `list` or integer scalar
                 The index of nodes used in testing.

@@ -4,6 +4,7 @@ from numba import njit
 from numba import types
 from numba.typed import Dict
 
+
 @njit
 def extra_edges(indices, indptr, last_level, seen, hops):
     edges = []
@@ -20,11 +21,12 @@ def extra_edges(indices, indptr, last_level, seen, hops):
                 edges.append((u, v))
     return edges
 
+
 def ego_graph(adj, targets, hops=1):
     """Returns induced subgraph of neighbors centered at node n within
     a given radius.
 
-    Arguments
+    Parameters
     ----------
     adj : A Scipy sparse adjacency matrix
         representing a graph
@@ -39,20 +41,20 @@ def ego_graph(adj, targets, hops=1):
     --------
     This is a faster implementation of 
     `networkx.ego_graph`
-    
-        
+
+
     See Also
     --------
     networkx.ego_graph
-    
+
     """
-    
+
     if np.ndim(targets) == 0:
         nodes = [targets]
-        
+
     indices = adj.indices
     indptr = adj.indptr
-    
+
     edges = {}
     start = 0
     N = adj.shape[0]
@@ -71,10 +73,10 @@ def ego_graph(adj, targets, hops=1):
                     edges[(head, u)] = level + 1
 
             start += 1
-            
+
     if len(nodes[start:]):
         e = extra_edges(indices, indptr, np.array(nodes[start:]), seen, hops)
     else:
         e = []
-    
-    return np.asarray(list(edges.keys())  + e), np.asarray(nodes)
+
+    return np.asarray(list(edges.keys()) + e), np.asarray(nodes)

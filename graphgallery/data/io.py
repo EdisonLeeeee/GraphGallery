@@ -7,24 +7,25 @@ import scipy.sparse as sp
 from tensorflow.keras.utils import get_file
 from graphgallery.data.preprocess import largest_connected_components
 
+
 class SparseGraph:
     """Attributed labeled graph stored in sparse matrix form."""
-    
+
     def __init__(self, adj_matrix, attr_matrix=None, labels=None,
                  node_names=None, attr_names=None, class_names=None, metadata=None):
         """Create an (attributed and labeled) graph.
-        
+
         Parameters
         ----------
         adj_matrix : sp.csr_matrix, shape [n_nodes, n_nodes]
             Adjacency matrix in CSR format.
-        attr_matrix : sp.csr_matrix or np.ndarray, shape [n_nodes, n_attr], optional
+        attr_matrix : sp.csr_matrix or np.ndarray, shape [n_nodes, n_attrs], optional
             Attribute matrix in CSR or numpy format.
         labels : np.ndarray, shape [n_nodes], optional
             Array, where each entry represents respective node's label(s).
         node_names : np.ndarray, shape [n_nodes], optional
             Names of nodes (as strings).
-        attr_names : np.ndarray, shape [n_attr]
+        attr_names : np.ndarray, shape [n_attrs]
             Names of the attributes (as strings).
         class_names : np.ndarray, shape [n_classes], optional
             Names of the class labels (as strings).
@@ -90,7 +91,7 @@ class SparseGraph:
             return int(self.adj_matrix.nnz)
         else:
             return int(self.adj_matrix.nnz / 2)
-        
+
     @property
     def n_classes(self):
         """Get the number of classes labels of the nodes."""
@@ -98,7 +99,7 @@ class SparseGraph:
             return self.labels.max()+1
         else:
             raise ValueError("The node labels are not specified.")
-            
+
     @property
     def n_attributes(self):
         """Get the number of attribute dimensions of the nodes."""
@@ -109,13 +110,14 @@ class SparseGraph:
 
     def get_neighbors(self, idx):
         """Get the indices of neighbors of a given node.
+
         Parameters
         ----------
         idx : int
             Index of the node whose neighbors are of interest.
         """
-        return self.adj_matrix[:, idx].indices
-    
+        return self.adj_matrix[idx].indices
+
     def to_dense_attrs(self):
         """Convert to dense attribute matrix (convert attribute matrix to Numpy array)."""
         attr_matrix = self.attr_matrix
@@ -139,15 +141,15 @@ class SparseGraph:
         """Convert to an unweighted graph (set all edge weights to 1)."""
         self.adj_matrix.data = np.ones_like(self.adj_matrix.data)
         return self
-    
+
     def eliminate_self_loops(self):
         """Remove self-loops from the adjacency matrix."""
         A = self.adj_matrix
         A -= sp.diags(A.diagonal())
         A.eliminate_zeros()
         self.adj_matrix = A
-        return self    
-    
+        return self
+
     def add_self_loops(self, value=1.0):
         """Set the diagonal."""
         self.eliminate_self_loops()
@@ -156,9 +158,8 @@ class SparseGraph:
         if value == 0:
             A.eliminate_zeros()
         self.adj_matrix = A
-        return self     
+        return self
 
-    # Quality of life (shortcuts)
     def standardize(self):
         """Select the LCC of the unweighted/undirected/no-self-loop graph.
         All changes are done inplace.
@@ -170,20 +171,20 @@ class SparseGraph:
     def unpack(self):
         """Return the (A, X, Y) triplet."""
         return self.adj_matrix, self.attr_matrix, self.labels
-    
+
     def to_npz(self, filepath):
         filepath = save_sparse_graph_to_npz(filepath, self)
         print(f"save to {filepath}.")
-        
+
     @classmethod
     def from_npz(cls, filepath):
         return load_dataset(filepath)
-    
+
     def copy(self):
-        return SparseGraph(*self.unpack(), node_names=self.node_names, 
-                           attr_names=self.attr_names, class_names=self.class_names, 
+        return SparseGraph(*self.unpack(), node_names=self.node_names,
+                           attr_names=self.attr_names, class_names=self.class_names,
                            metadata=self.metadata)
-    
+
     def is_singleton(self):
         """Check if the input adjacency matrix has singletons."""
         A = self.adj_matrix
@@ -198,17 +199,18 @@ class SparseGraph:
     def is_binary(self):
         '''Check if the attribute matrix has binary attributes.'''
         return np.any(np.unique(self.attr_matrix[self.attr_matrix != 0].A1) != 1)
- 
+
     def is_weighted(self):
         """Check if the graph is weighted (edge weights other than 1)."""
         return np.any(np.unique(self.adj_matrix[self.adj_matrix != 0].A1) != 1)
-    
+
     def is_directed(self):
         """Check if the graph is directed (adjacency matrix is not symmetric)."""
-        return (self.adj_matrix != self.adj_matrix.T).sum() != 0    
-    
+        return (self.adj_matrix != self.adj_matrix.T).sum() != 0
+
+
 def download_file(raw_paths, urls):
-    
+
     last_except = None
     for file_name, url in zip(raw_paths, urls):
         try:
@@ -219,9 +221,11 @@ def download_file(raw_paths, urls):
 
     if last_except is not None:
         raise last_except
-        
+
+
 def files_exist(files):
     return len(files) != 0 and all([osp.exists(f) for f in files])
+
 
 def makedirs(path):
     try:
@@ -229,22 +233,23 @@ def makedirs(path):
     except OSError as e:
         if e.errno != errno.EEXIST and osp.isdir(path):
             raise e
-            
+
+
 def load_dataset(data_path):
     """Load a dataset.
-    
+
     Parameters
     ----------
     name : str
         Name of the dataset to load.
-        
+
     Returns
     -------
     sparse_graph : SparseGraph
         The requested dataset in sparse format.
     """
     data_path = osp.abspath(osp.expanduser(osp.normpath(data_path)))
-    
+
     if not data_path.endswith('.npz'):
         data_path = data_path + '.npz'
     if osp.isfile(data_path):
@@ -252,20 +257,21 @@ def load_dataset(data_path):
     else:
         raise ValueError(f"{data_path} doesn't exist.")
 
+
 def load_npz_to_sparse_graph(file_name):
     """Load a SparseGraph from a Numpy binary file.
-    
+
     Parameters
     ----------
     file_name : str
         Name of the file to load.
-        
+
     Returns
     -------
     sparse_graph : SparseGraph
         Graph in sparse matrix format.
     """
-    
+
     with np.load(file_name, allow_pickle=True) as loader:
         loader = dict(loader)
         adj_matrix = sp.csr_matrix((loader['adj_data'], loader['adj_indices'], loader['adj_indptr']),
@@ -301,7 +307,7 @@ def load_npz_to_sparse_graph(file_name):
 
 def save_sparse_graph_to_npz(filepath, sparse_graph):
     """Save a SparseGraph to a Numpy binary file.
-    
+
     Parameters
     ----------
     filepath : str

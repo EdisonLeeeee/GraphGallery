@@ -20,42 +20,48 @@ class GraphSAGE(SemiSupervisedModel):
         `Inductive Representation Learning on Large Graphs <https://arxiv.org/abs/1706.02216>`
         Tensorflow 1.x implementation: <https://github.com/williamleif/GraphSAGE>
         Pytorch implementation: <https://github.com/williamleif/graphsage-simple/>
-
-
-        Arguments:
-        ----------
-            adj: shape (N, N), Scipy sparse matrix if  `is_adj_sparse=True`, 
-                Numpy array-like (or matrix) if `is_adj_sparse=False`.
-                The input `symmetric` adjacency matrix, where `N` is the number 
-                of nodes in graph.
-            x: shape (N, F), Scipy sparse matrix if `is_x_sparse=True`, 
-                Numpy array-like (or matrix) if `is_x_sparse=False`.
-                The input node feature matrix, where `F` is the dimension of features.
-            labels: Numpy array-like with shape (N,)
-                The ground-truth labels for all nodes in graph.
-            n_samples (List of positive integer, optional): 
-                The number of sampled neighbors for each nodes in each layer. 
-                (default :obj: `[10, 5]`, i.e., sample `10` first-order neighbors and 
-                `5` sencond-order neighbors, and the radius for `GraphSAGE` is `2`)
-            norm_x (String, optional): 
-                How to normalize the node feature matrix. See `graphgallery.normalize_x`
-                (default :obj: `None`)
-            device (String, optional): 
-                The device where the model is running on. You can specified `CPU` or `GPU` 
-                for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
-            seed (Positive integer, optional): 
-                Used in combination with `tf.random.set_seed` & `np.random.seed` & `random.seed`  
-                to create a reproducible sequence of tensors across multiple calls. 
-                (default :obj: `None`, i.e., using random seed)
-            name (String, optional): 
-                Specified name for the model. (default: :str: `class.__name__`)
-
-
     """
 
     def __init__(self, adj, x, labels, n_samples=[15, 5], norm_x=None,
                  device='CPU:0', seed=None, name=None, **kwargs):
+        """Creat a SAmple and aggreGatE Graph Convolutional Networks (GraphSAGE) model.
+        Parameters:
+        ----------
+            adj: Scipy.sparse.csr_matrix or Numpy.ndarray, shape [n_nodes, n_nodes]
+                The input `symmetric` adjacency matrix in 
+                CSR format if `is_adj_sparse=True` (default)
+                or Numpy format if `is_adj_sparse=False`.
+            x: Scipy.sparse.csr_matrix or Numpy.ndarray, shape [n_nodes, n_attrs], optional. 
+                Node attribute matrix in 
+                CSR format if `is_attribute_sparse=True` 
+                or Numpy format if `is_attribute_sparse=False` (default).
+            labels: Numpy.ndarray, shape [n_nodes], optional
+                Array, where each entry represents respective node's label(s).
+            n_samples: List of positive integer. optional
+                The number of sampled neighbors for each nodes in each layer. 
+                (default :obj: `[10, 5]`, i.e., sample `10` first-order neighbors and 
+                `5` sencond-order neighbors, and the radius for `GraphSAGE` is `2`)
+            norm_x: string. optional 
+                How to normalize the node attribute matrix. See `graphgallery.normalize_x`
+                (default :obj: `None`)
+            device: string. optional 
+                The device where the model is running on. You can specified `CPU` or `GPU` 
+                for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
+            seed: interger scalar. optional 
+                Used in combination with `tf.random.set_seed` & `np.random.seed` 
+                & `random.seed` to create a reproducible sequence of tensors across 
+                multiple calls. (default :obj: `None`, i.e., using random seed)
+            name: string. optional
+                Specified name for the model. (default: :str: `class.__name__`)
+            kwargs: other customed keyword Parameters.
+                `is_adj_sparse`: bool, (default: :obj: True)
+                    specify the input adjacency matrix is Scipy sparse matrix or not.
+                `is_attribute_sparse`: bool, (default: :obj: False)
+                    specify the input attribute matrix is Scipy sparse matrix or not.
+                `is_weighted`: bool, (default: :obj: False)
+                    specify the input adjacency matrix is weighted or not.                   
 
+        """
         super().__init__(adj, x, labels, device=device, seed=seed, name=name, **kwargs)
 
         self.n_samples = n_samples
@@ -72,7 +78,7 @@ class GraphSAGE(SemiSupervisedModel):
         # Dense matrix, shape [n_nodes, max_degree]
         neighbors = construct_neighbors(adj, max_degree=max(self.n_samples))
         # pad with a dummy zero vector
-        x = np.vstack([x, np.zeros(self.n_features, dtype=self.floatx)])
+        x = np.vstack([x, np.zeros(self.n_attributes, dtype=self.floatx)])
 
         with tf.device(self.device):
             self.x_norm, self.neighbors = astensors(x), neighbors
@@ -102,7 +108,7 @@ class GraphSAGE(SemiSupervisedModel):
             else:
                 raise ValueError(f'Invalid value of `aggrator`, allowed values (`mean`, `gcn`), but got `{aggrator}`.')
 
-            x = Input(batch_shape=[None, self.n_features], dtype=self.floatx, name='features')
+            x = Input(batch_shape=[None, self.n_attributes], dtype=self.floatx, name='attributes')
             nodes = Input(batch_shape=[None], dtype=self.intx, name='nodes')
             neighbors = [Input(batch_shape=[None], dtype=self.intx, name=f'neighbors_{hop}')
                          for hop, n_sample in enumerate(self.n_samples)]
@@ -117,9 +123,9 @@ class GraphSAGE(SemiSupervisedModel):
 
             h = [tf.nn.embedding_lookup(x, node) for node in [nodes, *neighbors]]
             for agg_i, aggrator in enumerate(aggrators):
-                feature_shape = h[0].shape[-1]
+                attribute_shape = h[0].shape[-1]
                 for hop in range(len(self.n_samples)-agg_i):
-                    neighbor_shape = [-1, self.n_samples[hop], feature_shape]
+                    neighbor_shape = [-1, self.n_samples[hop], attribute_shape]
                     h[hop] = aggrator([h[hop], tf.reshape(h[hop+1], neighbor_shape)])
                     if hop != len(self.n_samples)-1:
                         h[hop] = Dropout(rate=dropouts[hop])(h[hop])

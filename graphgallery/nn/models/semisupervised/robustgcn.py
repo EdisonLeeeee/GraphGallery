@@ -19,39 +19,48 @@ class RobustGCN(SemiSupervisedModel):
         <https://dl.acm.org/doi/10.1145/3292500.3330851>`
         Tensorflow 1.x implementation: <https://github.com/thumanlab/nrlweb/blob/master/static/assets/download/RGCN.zip>
 
-        Arguments:
-        ----------
-            adj: shape (N, N), Scipy sparse matrix if  `is_adj_sparse=True`, 
-                Numpy array-like (or matrix) if `is_adj_sparse=False`.
-                The input `symmetric` adjacency matrix, where `N` is the number 
-                of nodes in graph.
-            x: shape (N, F), Scipy sparse matrix if `is_x_sparse=True`, 
-                Numpy array-like (or matrix) if `is_x_sparse=False`.
-                The input node feature matrix, where `F` is the dimension of features.
-            labels: Numpy array-like with shape (N,)
-                The ground-truth labels for all nodes in graph.
-            norm_adj (List of float scalar, optional): 
-                The normalize rate for adjacency matrix `adj`. 
-                (default: :obj:`[-0.5, -1]`, i.e., two normalized `adj` with rate `-0.5` 
-                and `-1.0`, respectively) 
-            norm_x (String, optional): 
-                How to normalize the node feature matrix. See `graphgallery.normalize_x`
-                (default :obj: `None`)
-            device (String, optional): 
-                The device where the model is running on. You can specified `CPU` or `GPU` 
-                for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
-            seed (Positive integer, optional): 
-                Used in combination with `tf.random.set_seed` & `np.random.seed` & `random.seed`  
-                to create a reproducible sequence of tensors across multiple calls. 
-                (default :obj: `None`, i.e., using random seed)
-            name (String, optional): 
-                Specified name for the model. (default: :str: `class.__name__`)
-
     """
 
     def __init__(self, adj, x, labels, norm_adj=[-0.5, -1], norm_x=None,
                  device='CPU:0', seed=None, name=None, **kwargs):
+        """Creat a Robust Graph Convolutional Networks (RobustGCN or RGCN) model.
 
+        Parameters:
+        ----------
+            adj: Scipy.sparse.csr_matrix or Numpy.ndarray, shape [n_nodes, n_nodes]
+                The input `symmetric` adjacency matrix in 
+                CSR format if `is_adj_sparse=True` (default)
+                or Numpy format if `is_adj_sparse=False`.
+            x: Scipy.sparse.csr_matrix or Numpy.ndarray, shape [n_nodes, n_attrs], optional. 
+                Node attribute matrix in 
+                CSR format if `is_attribute_sparse=True` 
+                or Numpy format if `is_attribute_sparse=False` (default).
+            labels: Numpy.ndarray, shape [n_nodes], optional
+                Array, where each entry represents respective node's label(s).
+            norm_adj: List of float scalar, optional 
+                The normalize rate for adjacency matrix `adj`. 
+                (default: :obj:`[-0.5, -1]`, i.e., two normalized `adj` with rate `-0.5` 
+                and `-1.0`, respectively) 
+            norm_x: string. optional 
+                How to normalize the node attribute matrix. See `graphgallery.normalize_x`
+                (default :obj: `None`)
+            device: string. optional 
+                The device where the model is running on. You can specified `CPU` or `GPU` 
+                for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
+            seed: interger scalar. optional 
+                Used in combination with `tf.random.set_seed` & `np.random.seed` 
+                & `random.seed` to create a reproducible sequence of tensors across 
+                multiple calls. (default :obj: `None`, i.e., using random seed)
+            name: string. optional
+                Specified name for the model. (default: :str: `class.__name__`)
+            kwargs: other customed keyword Parameters.
+                `is_adj_sparse`: bool, (default: :obj: True)
+                    specify the input adjacency matrix is Scipy sparse matrix or not.
+                `is_attribute_sparse`: bool, (default: :obj: False)
+                    specify the input attribute matrix is Scipy sparse matrix or not.
+                `is_weighted`: bool, (default: :obj: False)
+                    specify the input adjacency matrix is weighted or not.                
+        """
         super().__init__(adj, x, labels, device=device, seed=seed, name=name, **kwargs)
 
         self.norm_adj = norm_adj
@@ -86,7 +95,7 @@ class RobustGCN(SemiSupervisedModel):
         ######################################
 
         with tf.device(self.device):
-            x = Input(batch_shape=[None, self.n_features], dtype=self.floatx, name='features')
+            x = Input(batch_shape=[None, self.n_attributes], dtype=self.floatx, name='attributes')
             adj = [Input(batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix_1'),
                    Input(batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix_2')]
             index = Input(batch_shape=[None],  dtype=self.intx, name='index')
@@ -102,7 +111,7 @@ class RobustGCN(SemiSupervisedModel):
 
                 mean, var = GaussionConvolution_D(hid, gamma=gamma, use_bias=use_bias, activation=activation)([mean, var, *adj])
                 mean = Dropout(rate=dropout)(mean)
-                var = Dropout(rate=dropout)(var)                
+                var = Dropout(rate=dropout)(var)
 
             mean, var = GaussionConvolution_D(self.n_classes, gamma=gamma, use_bias=use_bias)([mean, var, *adj])
             h = Sample(seed=self.seed)([mean, var])

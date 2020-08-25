@@ -9,14 +9,14 @@ class PropConvolution(Layer):
         Basic graph convolution layer as in: 
         [Towards Deeper Graph Neural Networks](https://arxiv.org/abs/2007.09296)
         Pytorch implementation: <https://github.com/mengliu1998/DeeperGNN>
-        
+
         `PropConvolution` implements the operation:
-        
+
         `propagations = Stack(\sum_k^K adj^k @ x)
         output = activation(propagations @ kernel + bias).transpose([0, 2, 1])
         output = (output @ propagationsoutput).squeeze()`
-        
-        where `x` is the feature matrix, `adj` is the adjacency matrix,
+
+        where `x` is the attribute matrix, `adj` is the adjacency matrix,
         K is the propagation steps of adjacency matrix.
         `activation` is the element-wise activation function
         passed as the `activation` argument, `kernel` is a weights matrix
@@ -24,12 +24,12 @@ class PropConvolution(Layer):
         (only applicable if `use_bias` is `True`).
 
 
-        Arguments:
+        Parameters:
           K: Propagation steps of adjacency matrix.
           activation: Activation function to use.
             If you don't specify anything, no activation is applied
             (ie. "linear" activation: `a(x) = x`).
-          use_bias: Boolean, whether the layer uses a bias vector.
+          use_bias: bool, whether the layer uses a bias vector.
           kernel_initializer: Initializer for the `kernel` weights matrix.
           bias_initializer: Initializer for the bias vector.
           kernel_regularizer: Regularizer function applied to
@@ -42,11 +42,11 @@ class PropConvolution(Layer):
           bias_constraint: Constraint function applied to the bias vector.
 
         Input shape:
-          tuple/list with two 2-D tensor: Tensor `x` and SparseTensor `adj`: `[(n_nodes, n_features), (n_nodes, n_nodes)]`.
-          The former one is the feature matrix (Tensor) and the last is adjacency matrix (SparseTensor).
+          tuple/list with two 2-D tensor: Tensor `x` and SparseTensor `adj`: `[(n_nodes, n_attributes), (n_nodes, n_nodes)]`.
+          The former one is the attribute matrix (Tensor) and the last is adjacency matrix (SparseTensor).
 
         Output shape:
-          2-D tensor with the same shape as `x`: `(n_nodes, n_features)`.       
+          2-D tensor with the same shape as `x`: `(n_nodes, n_attributes)`.       
     """
 
     def __init__(self, K=10,
@@ -62,7 +62,7 @@ class PropConvolution(Layer):
                  **kwargs):
 
         super().__init__(**kwargs)
-        self.units = 1 # units must be 1
+        self.units = 1  # units must be 1
         self.K = K
         self.use_bias = use_bias
 
@@ -95,25 +95,25 @@ class PropConvolution(Layer):
     def call(self, inputs):
 
         x, adj = inputs
-        
+
         propagations = [x]
         for _ in range(self.K):
-            x = tf.sparse.sparse_dense_matmul(adj, x)          
+            x = tf.sparse.sparse_dense_matmul(adj, x)
             propagations.append(x)
 
         h = tf.stack(propagations, axis=1)
-        
+
         retrain_score = h @ self.kernel
-        
+
         if self.use_bias:
             retrain_score += self.bias
-            
+
         retrain_score = self.activation(retrain_score)
         retrain_score = tf.transpose(retrain_score, [0, 2, 1])
-        
+
         output = tf.matmul(retrain_score, h)
         output = tf.squeeze(output, axis=1)
-            
+
         return output
 
     def get_config(self):
@@ -140,6 +140,6 @@ class PropConvolution(Layer):
         return {**base_config, **config}
 
     def compute_output_shape(self, input_shapes):
-        features_shape = input_shapes[0]
-        output_shape = (features_shape[0], self.units)
+        attributes_shape = input_shapes[0]
+        output_shape = (attributes_shape[0], self.units)
         return tf.TensorShape(output_shape)  # (n_nodes, output_dim)

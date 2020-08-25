@@ -13,19 +13,19 @@ class DenseGraphConv(Layer):
 
         `DenseGraphConv` implements the `Dense` operation:
         `output = activation(adj @ x @ kernel + bias)`
-        where `x` is the feature matrix, `adj` is the adjacency matrix with dense form,
+        where `x` is the attribute matrix, `adj` is the adjacency matrix with dense form,
         `activation` is the element-wise activation function
         passed as the `activation` argument, `kernel` is a weights matrix
         created by the layer, and `bias` is a bias vector created by the layer
         (only applicable if `use_bias` is `True`).
 
 
-        Arguments:
+        Parameters:
           units: Positive integer, dimensionality of the output space.
           activation: Activation function to use.
             If you don't specify anything, no activation is applied
             (ie. "linear" activation: `a(x) = x`).
-          use_bias: Boolean, whether the layer uses a bias vector.
+          use_bias: bool, whether the layer uses a bias vector.
           kernel_initializer: Initializer for the `kernel` weights matrix.
           bias_initializer: Initializer for the bias vector.
           kernel_regularizer: Regularizer function applied to
@@ -38,8 +38,8 @@ class DenseGraphConv(Layer):
           bias_constraint: Constraint function applied to the bias vector.
 
         Input shape:
-          tuple/list with two 2-D tensor: Tensor `x` and SparseTensor `adj`: `[(n_nodes, n_features), (n_nodes, n_nodes)]`.
-          The former one is the feature matrix (Tensor) and the last is adjacency matrix (Tensor).
+          tuple/list with two 2-D tensor: Tensor `x` and SparseTensor `adj`: `[(n_nodes, n_attributes), (n_nodes, n_nodes)]`.
+          The former one is the attribute matrix (Tensor) and the last is adjacency matrix (Tensor).
 
         Output shape:
           2-D tensor with shape: `(n_nodes, units)`.       
@@ -121,6 +121,6 @@ class DenseGraphConv(Layer):
         return {**base_config, **config}
 
     def compute_output_shape(self, input_shapes):
-        features_shape = input_shapes[0]
-        output_shape = (features_shape[0], self.units)
+        attributes_shape = input_shapes[0]
+        output_shape = (attributes_shape[0], self.units)
         return tf.TensorShape(output_shape)  # (n_nodes, output_dim)

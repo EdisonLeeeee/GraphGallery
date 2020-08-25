@@ -18,49 +18,60 @@ class GWNN(SemiSupervisedModel):
         Implementation of Graph Wavelet Neural Networks (GWNN). 
         `Graph Wavelet Neural Network <https://arxiv.org/abs/1904.07785>`
         Tensorflow 1.x implementation: <https://github.com/Eilene/GWNN>
-        Pytorch implementation: <https://github.com/benedekrozemberczki/GraphWaveletNeuralNetwork>
+        Pytorch implementation: 
+        <https://github.com/benedekrozemberczki/GraphWaveletNeuralNetwork>
 
-        Arguments:
-        ----------
-            adj: shape (N, N), Scipy sparse matrix if  `is_adj_sparse=True`, 
-                Numpy array-like (or matrix) if `is_adj_sparse=False`.
-                The input `symmetric` adjacency matrix, where `N` is the number 
-                of nodes in graph.
-            x: shape (N, F), Scipy sparse matrix if `is_x_sparse=True`, 
-                Numpy array-like (or matrix) if `is_x_sparse=False`.
-                The input node feature matrix, where `F` is the dimension of features.
-            labels: Numpy array-like with shape (N,)
-                The ground-truth labels for all nodes in graph.
-            order (Positive integer, optional): 
-                The power (order) of approximated wavelet matrix using Chebyshev polynomial 
-                filter. (default :obj: `3`)
-            wavelet_s (Float scalar, optional): 
-                The wavelet constant corresponding to a heat kernel. 
-                (default: :obj:`1.2`) 
-            threshold (Float scalar, optional): 
-                Used to sparsify the wavelet matrix. (default: :obj:`1e-4`, i.e., 
-                values less than `1e-4` will be set to zero to preserve the sparsity 
-                of wavelet matrix)       
-            wavelet_normalize (Boolean, optional): 
-                Whether to use row-normalize for wavelet matrix. (default :bool: `True`)
-            norm_x (String, optional): 
-                How to normalize the node feature matrix. See `graphgallery.normalize_x`
-                (default :obj: `None`)
-            device (String, optional): 
-                The device where the model is running on. You can specified `CPU` or `GPU` 
-                for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
-            seed (Positive integer, optional): 
-                Used in combination with `tf.random.set_seed` & `np.random.seed` & `random.seed`  
-                to create a reproducible sequence of tensors across multiple calls. 
-                (default :obj: `None`, i.e., using random seed)
-            name (String, optional): 
-                Specified name for the model. (default: :str: `class.__name__`)
     """
 
     def __init__(self, adj, x, labels, order=3, wavelet_s=1.2,
                  threshold=1e-4, wavelet_normalize=True, norm_x=None,
                  device='CPU:0', seed=None, name=None, **kwargs):
+        """Creat a Graph Wavelet Neural Networks (GWNN) model.
 
+        Parameters:
+        ----------
+            adj: Scipy.sparse.csr_matrix or Numpy.ndarray, shape [n_nodes, n_nodes]
+                The input `symmetric` adjacency matrix in 
+                CSR format if `is_adj_sparse=True` (default)
+                or Numpy format if `is_adj_sparse=False`.
+            x: Scipy.sparse.csr_matrix or Numpy.ndarray, shape [n_nodes, n_attrs], optional. 
+                Node attribute matrix in 
+                CSR format if `is_attribute_sparse=True` 
+                or Numpy format if `is_attribute_sparse=False` (default).
+            labels: Numpy.ndarray, shape [n_nodes], optional
+                Array, where each entry represents respective node's label(s).
+            order: positive integer. optional 
+                The power (order) of approximated wavelet matrix using Chebyshev polynomial 
+                filter. (default :obj: `3`)
+            wavelet_s: float scalar. optional 
+                The wavelet constant corresponding to a heat kernel. 
+                (default: :obj:`1.2`) 
+            threshold: float scalar. optional 
+                Used to sparsify the wavelet matrix. (default: :obj:`1e-4`, i.e., 
+                values less than `1e-4` will be set to zero to preserve the sparsity 
+                of wavelet matrix)       
+            wavelet_normalize: bool. optional 
+                Whether to use row-normalize for wavelet matrix. (default :bool: `True`)
+            norm_x: string. optional 
+                How to normalize the node attribute matrix. See `graphgallery.normalize_x`
+                (default :obj: `None`)
+            device: string. optional 
+                The device where the model is running on. You can specified `CPU` or `GPU` 
+                for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
+            seed: interger scalar. optional 
+                Used in combination with `tf.random.set_seed` & `np.random.seed` 
+                & `random.seed` to create a reproducible sequence of tensors across 
+                multiple calls. (default :obj: `None`, i.e., using random seed)
+            name: string. optional
+                Specified name for the model. (default: :str: `class.__name__`)
+            kwargs: other customed keyword Parameters.
+                `is_adj_sparse`: bool, (default: :obj: True)
+                    specify the input adjacency matrix is Scipy sparse matrix or not.
+                `is_attribute_sparse`: bool, (default: :obj: False)
+                    specify the input attribute matrix is Scipy sparse matrix or not.
+                `is_weighted`: bool, (default: :obj: False)
+                    specify the input adjacency matrix is weighted or not.                   
+        """
         super().__init__(adj, x, labels, device=device, seed=seed, name=name, **kwargs)
 
         self.order = order
@@ -99,7 +110,7 @@ class GWNN(SemiSupervisedModel):
 
         with tf.device(self.device):
 
-            x = Input(batch_shape=[self.n_nodes, self.n_features], dtype=self.floatx, name='features')
+            x = Input(batch_shape=[self.n_nodes, self.n_attributes], dtype=self.floatx, name='attributes')
             wavelet = Input(batch_shape=[self.n_nodes, self.n_nodes], dtype=self.floatx, sparse=True, name='wavelet')
             inverse_wavelet = Input(batch_shape=[self.n_nodes, self.n_nodes], dtype=self.floatx, sparse=True,
                                     name='inverse_wavelet')
