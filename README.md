@@ -77,15 +77,16 @@ In detail, the following methods are currently implemented:
 ## Datasets
 ```python
 from graphgallery.data import Planetoid
-
 # set `verbose=False` to avoid these printed tables
 data = Planetoid('cora', verbose=False)
-adj = data.adj # adjacency matrix: 2D Scipy sparse matrix
-x = data.x # feature matrix: 2D Numpy array
-labels = data.labels # class labels: 1D Numpy array
-idx_train = data.idx_train # training indices: 1D Numpy array
-idx_val = data.idx_val # validation indices: 1D Numpy array
-idx_test = data.idx_test # testing indices: 1D Numpy array
+adj, x, labels = data.graph.unpack()
+idx_train, idx_val, idx_test = data.split()
+# adj:  adjacency matrix: 2D Scipy sparse matrix
+# x:  feature matrix: 2D Numpy array
+# labels:  class labels: 1D Numpy array
+# idx_train:  training indices: 1D Numpy array
+# idx_val:  validation indices: 1D Numpy array
+# idx_test:  testing indices: 1D Numpy array
 ```
 currently the supported datasets are:
 ```python
