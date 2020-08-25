@@ -5,7 +5,6 @@ import os.path as osp
 import scipy.sparse as sp
 
 from tensorflow.keras.utils import get_file
-
 from graphgallery.data.preprocess import largest_connected_components
 
 class SparseGraph:
@@ -17,17 +16,17 @@ class SparseGraph:
         
         Parameters
         ----------
-        adj_matrix : sp.csr_matrix, shape [num_nodes, num_nodes]
+        adj_matrix : sp.csr_matrix, shape [n_nodes, n_nodes]
             Adjacency matrix in CSR format.
-        attr_matrix : sp.csr_matrix or np.ndarray, shape [num_nodes, num_attr], optional
+        attr_matrix : sp.csr_matrix or np.ndarray, shape [n_nodes, n_attr], optional
             Attribute matrix in CSR or numpy format.
-        labels : np.ndarray, shape [num_nodes], optional
+        labels : np.ndarray, shape [n_nodes], optional
             Array, where each entry represents respective node's label(s).
-        node_names : np.ndarray, shape [num_nodes], optional
+        node_names : np.ndarray, shape [n_nodes], optional
             Names of nodes (as strings).
-        attr_names : np.ndarray, shape [num_attr]
+        attr_names : np.ndarray, shape [n_attr]
             Names of the attributes (as strings).
-        class_names : np.ndarray, shape [num_classes], optional
+        class_names : np.ndarray, shape [n_classes], optional
             Names of the class labels (as strings).
         metadata : object
             Additional metadata such as text.
@@ -78,12 +77,12 @@ class SparseGraph:
         self.metadata = metadata
 
     @property
-    def num_nodes(self):
+    def n_nodes(self):
         """Get the number of nodes in the graph."""
         return self.adj_matrix.shape[0]
 
     @property
-    def num_edges(self):
+    def n_edges(self):
         """Get the number of edges in the graph.
         For undirected graphs, (i, j) and (j, i) are counted as single edge.
         """
@@ -93,7 +92,7 @@ class SparseGraph:
             return int(self.adj_matrix.nnz / 2)
         
     @property
-    def num_classes(self):
+    def n_classes(self):
         """Get the number of classes labels of the nodes."""
         if self.labels is not None:
             return self.labels.max()+1
@@ -101,12 +100,12 @@ class SparseGraph:
             raise ValueError("The node labels are not specified.")
             
     @property
-    def num_attrs(self):
+    def n_attributes(self):
         """Get the number of attribute dimensions of the nodes."""
         if self.attr_matrix is not None:
             return self.attr_matrix.shape[1]
         else:
-            raise ValueError("The node labels are not specified.")
+            raise ValueError("The node attribute matrix is not specified.")
 
     def get_neighbors(self, idx):
         """Get the indices of neighbors of a given node.
@@ -118,7 +117,7 @@ class SparseGraph:
         return self.adj_matrix[:, idx].indices
     
     def to_dense_attrs(self):
-        """Convert to an undirected graph (make adjacency matrix symmetric)."""
+        """Convert to dense attribute matrix (convert attribute matrix to Numpy array)."""
         attr_matrix = self.attr_matrix
         if sp.isspmatrix(attr_matrix):
             self.attr_matrix = attr_matrix.A
@@ -181,7 +180,9 @@ class SparseGraph:
         return load_dataset(filepath)
     
     def copy(self):
-        return SparseGraph(*self.unpack())
+        return SparseGraph(*self.unpack(), node_names=self.node_names, 
+                           attr_names=self.attr_names, class_names=self.class_names, 
+                           metadata=self.metadata)
     
     def is_singleton(self):
         """Check if the input adjacency matrix has singletons."""
@@ -300,11 +301,12 @@ def load_npz_to_sparse_graph(file_name):
 
 def save_sparse_graph_to_npz(filepath, sparse_graph):
     """Save a SparseGraph to a Numpy binary file.
+    
     Parameters
     ----------
     filepath : str
         Name of the output file.
-    sparse_graph : gust.SparseGraph
+    sparse_graph : graphgalllery.data.SparseGraph
         Graph in sparse matrix format.
     """
     data_dict = {
