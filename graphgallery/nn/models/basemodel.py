@@ -21,15 +21,11 @@ class BaseModel:
 
         Parameters:
         ----------
-            adj: Scipy.sparse.csr_matrix or Numpy.ndarray, shape [n_nodes, n_nodes]
-                The input `symmetric` adjacency matrix in 
-                CSR format if `is_adj_sparse=True` (default)
-                or Numpy format if `is_adj_sparse=False`.
-            x: Scipy.sparse.csr_matrix or Numpy.ndarray, shape [n_nodes, n_attrs], optional. 
-                Node attribute matrix in 
-                CSR format if `is_attribute_sparse=True` 
-                or Numpy format if `is_attribute_sparse=False` (default).
-            labels: Numpy.ndarray, shape [n_nodes], optional
+            adj: Scipy.sparse.csr_matrix, shape [n_nodes, n_nodes]
+                The input `symmetric` adjacency matrix in CSR format.
+            x: Numpy.ndarray, shape [n_nodes, n_attrs]. 
+                Node attribute matrix in Numpy format.
+            labels: Numpy.ndarray, shape [n_nodes]
                 Array, where each entry represents respective node's label(s).
             device: string. optional
                 The device where the model running on.
@@ -40,12 +36,7 @@ class BaseModel:
             name: string. optional
                 Specified name for the model. (default: :str: `class.__name__`)
             kwargs: other customed keyword Parameters.
-                `is_adj_sparse`: bool, (default: :obj: True)
-                    specify the input adjacency matrix is Scipy sparse matrix or not.
-                `is_attribute_sparse`: bool, (default: :obj: False)
-                    specify the input attribute matrix is Scipy sparse matrix or not.
-                `is_weighted`: bool, (default: :obj: False)
-                    specify the input adjacency matrix is weighted or not.                    
+
         Note:
         ----------
             By default, `adj` is Scipy sparse matrix and `x` is Numpy array. 
@@ -60,13 +51,6 @@ class BaseModel:
         if name is None:
             name = self.__class__.__name__
 
-        # By default, adj is a sparse matrix and x is a dense array (matrix)
-        is_adj_sparse = kwargs.pop("is_adj_sparse", True)
-        is_attribute_sparse = kwargs.pop("is_attribute_sparse", False)
-        is_weighted = kwargs.pop("is_weighted", False)
-
-        assert not is_attribute_sparse, "Node attributes matrix `x` is sparse matrix is NOT implemented"
-
         # leave it blank for future
         allowed_kwargs = set([])
         unknown_kwargs = set(kwargs.keys()) - allowed_kwargs
@@ -77,8 +61,6 @@ class BaseModel:
         # check the input adj and x, and convert them to appropriate forms
         self.n_nodes = adj.shape[0]
 
-        self.is_adj_sparse = is_adj_sparse
-        self.is_attribute_sparse = is_attribute_sparse
         self.adj, self.x = self._check_inputs(adj, x)
 
         if labels is not None:
@@ -88,9 +70,9 @@ class BaseModel:
             self.n_classes = None
 
         if x is not None:
-            self.n_attributes = x.shape[1]
+            self.n_attrs = x.shape[1]
         else:
-            self.n_attributes = None
+            self.n_attrs = None
 
         self.seed = seed
         self.device = device
@@ -103,7 +85,7 @@ class BaseModel:
 
         self.__model = None
         self.__custom_objects = None  # used for save/load model
-        self.__sparse = is_adj_sparse
+        self.__sparse = True
 
         # log path
         self.weight_dir = osp.expanduser(osp.normpath("/tmp/weight"))
@@ -114,10 +96,7 @@ class BaseModel:
         self.intx = config.intx()
 
         ############# Record paras ###########
-        self.paras = Bunch(device=device, seed=seed, name=name,
-                           is_adj_sparse=is_adj_sparse,
-                           is_attribute_sparse=is_attribute_sparse,
-                           is_weighted=is_weighted)
+        self.paras = Bunch(device=device, seed=seed, name=name)
 
         self.model_paras = Bunch(name=name)
         self.train_paras = Bunch(name=name)
@@ -128,14 +107,10 @@ class BaseModel:
 
         Parameters:
         ----------
-            adj: Scipy.sparse.csr_matrix or Numpy.ndarray, shape [n_nodes, n_nodes]
-                The input `symmetric` adjacency matrix in 
-                CSR format if `is_adj_sparse=True` (default)
-                or Numpy format if `is_adj_sparse=False`.
-            x: Scipy.sparse.csr_matrix or Numpy.ndarray, shape [n_nodes, n_attrs], optional. 
-                Node attribute matrix in 
-                CSR format if `is_attribute_sparse=True` 
-                or Numpy format if `is_attribute_sparse=False` (default).
+            adj: Scipy.sparse.csr_matrix, shape [n_nodes, n_nodes]
+                The input `symmetric` adjacency matrix in CSR format.
+            x: Numpy.ndarray, shape [n_nodes, n_attrs]. 
+                Node attribute matrix in Numpy format.
 
         Note:
         ----------
@@ -143,8 +118,8 @@ class BaseModel:
                 Both of them are 2-D matrices.
 
         """
-        adj = check_and_convert(adj, self.is_adj_sparse)
-        x = check_and_convert(x, self.is_attribute_sparse)
+        adj = check_and_convert(adj, True)
+        x = check_and_convert(x, False)
 
         if is_list_like(adj):
             adj_shape = adj[0].shape

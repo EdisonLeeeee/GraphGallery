@@ -42,11 +42,11 @@ class PropConvolution(Layer):
           bias_constraint: Constraint function applied to the bias vector.
 
         Input shape:
-          tuple/list with two 2-D tensor: Tensor `x` and SparseTensor `adj`: `[(n_nodes, n_attributes), (n_nodes, n_nodes)]`.
+          tuple/list with two 2-D tensor: Tensor `x` and SparseTensor `adj`: `[(n_nodes, n_attrs), (n_nodes, n_nodes)]`.
           The former one is the attribute matrix (Tensor) and the last is adjacency matrix (SparseTensor).
 
         Output shape:
-          2-D tensor with the same shape as `x`: `(n_nodes, n_attributes)`.       
+          2-D tensor with the same shape as `x`: `(n_nodes, n_attrs)`.       
     """
 
     def __init__(self, K=10,

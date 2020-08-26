@@ -19,7 +19,7 @@ def check_and_convert(matrix, is_sparse):
 
     Parameters:
     ----------
-        matrix: Scipy sparse matrix or Numpy array-like or Numpy matrix or None.
+        matrix: Scipy sparse matrix or Numpy array or Numpy matrix or None.
         is_sparse: Indicating whether the input matrix is sparse matrix or not.
 
     Returns:
@@ -39,8 +39,8 @@ def check_and_convert(matrix, is_sparse):
                             f" when `is_sparse=False`, but got {type(matrix)}")
         return np.asarray(matrix, dtype=config.floatx())
     else:
-        if not sp.issparse(matrix):
-            raise TypeError(f"The input matrix must be Scipy sparse matrix when `is_sparse=True`, but got {type(matrix)}")
+        if not sp.isspmatrix_csr(matrix):
+            raise TypeError(f"The input matrix must be Scipy CSR sparse matrix when `is_sparse=True`, but got {type(matrix)}")
 
         return matrix.astype(dtype=config.floatx(), copy=False)
 

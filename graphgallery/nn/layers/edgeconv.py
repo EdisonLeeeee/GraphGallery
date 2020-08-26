@@ -47,7 +47,7 @@ class GraphEdgeConvolution(Layer):
 
         Input shape:
             tuple/list with three tensor: Tensor `x`, `edge_index` and `edge_weight`: 
-                `[(n_nodes, n_attributes), (n_edges, 2), (n_edges,)]`. The former one is the 
+                `[(n_nodes, n_attrs), (n_edges, 2), (n_edges,)]`. The former one is the 
                 attribute matrix (Tensor) and the last two are edge index and edge weight of 
                 the adjacency matrix.
 

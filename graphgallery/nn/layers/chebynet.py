@@ -40,7 +40,7 @@ class ChebyConvolution(Layer):
 
         Input shape:
           tuple/list with `order + 2` 2-D tensor: Tensor `x` and `order + 1` SparseTensor `adj`: 
-          `[(n_nodes, n_attributes), (n_nodes, n_nodes), (n_nodes, n_nodes), ...]`.
+          `[(n_nodes, n_attrs), (n_nodes, n_nodes), (n_nodes, n_nodes), ...]`.
           The former one is the attribute matrix (Tensor) and the last is adjacency matrix (SparseTensor).
 
         Output shape:

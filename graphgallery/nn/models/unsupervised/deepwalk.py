@@ -15,11 +15,9 @@ class Deepwalk(UnsupervisedModel):
 
         Parameters:
         ----------
-            adj: Scipy.sparse.csr_matrix or Numpy.ndarray, shape [n_nodes, n_nodes]
-                The input `symmetric` adjacency matrix in 
-                CSR format if `is_adj_sparse=True` (default)
-                or Numpy format if `is_adj_sparse=False`.
-            labels: Numpy.ndarray, shape [n_nodes], optional
+            adj: Scipy.sparse.csr_matrix, shape [n_nodes, n_nodes]
+                The input `symmetric` adjacency matrix in CSR format.
+            labels: Numpy.ndarray, shape [n_nodes]
                 Array, where each entry represents respective node's label(s).
             device: string. optional 
                 The device where the model is running on. You can specified `CPU` or `GPU` 

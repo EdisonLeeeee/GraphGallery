@@ -29,15 +29,11 @@ class DenseGCN(SemiSupervisedModel):
 
         Parameters:
         ----------
-            adj: Scipy.sparse.csr_matrix or Numpy.ndarray, shape [n_nodes, n_nodes]
-                The input `symmetric` adjacency matrix in 
-                CSR format if `is_adj_sparse=True` (default)
-                or Numpy format if `is_adj_sparse=False`.
-            x: Scipy.sparse.csr_matrix or Numpy.ndarray, shape [n_nodes, n_attrs], optional. 
-                Node attribute matrix in 
-                CSR format if `is_attribute_sparse=True` 
-                or Numpy format if `is_attribute_sparse=False` (default).
-            labels: Numpy.ndarray, shape [n_nodes], optional
+            adj: Scipy.sparse.csr_matrix, shape [n_nodes, n_nodes]
+                The input `symmetric` adjacency matrix in CSR format.
+            x: Numpy.ndarray, shape [n_nodes, n_attrs]. 
+                Node attribute matrix in Numpy format.
+            labels: Numpy.ndarray, shape [n_nodes]
                 Array, where each entry represents respective node's label(s).
             norm_adj: float scalar. optional
                 The normalize rate for adjacency matrix `adj`. (default: :obj:`-0.5`,
@@ -55,12 +51,7 @@ class DenseGCN(SemiSupervisedModel):
             name: string. optional
                 Specified name for the model. (default: :str: `class.__name__`)
                         kwargs: other customed keyword Parameters.
-                `is_adj_sparse`: bool, (default: :obj: True)
-                    specify the input adjacency matrix is Scipy sparse matrix or not.
-                `is_attribute_sparse`: bool, (default: :obj: False)
-                    specify the input attribute matrix is Scipy sparse matrix or not.
-                `is_weighted`: bool, (default: :obj: False)
-                    specify the input adjacency matrix is weighted or not.       
+
 
         Note:
         ----------
@@ -109,7 +100,7 @@ class DenseGCN(SemiSupervisedModel):
 
         with tf.device(self.device):
 
-            x = Input(batch_shape=[None, self.n_attributes], dtype=self.floatx, name='attributes')
+            x = Input(batch_shape=[None, self.n_attrs], dtype=self.floatx, name='attributes')
             adj = Input(batch_shape=[None, None], dtype=self.floatx, name='adj_matrix')
             index = Input(batch_shape=[None],  dtype=self.intx, name='index')
 

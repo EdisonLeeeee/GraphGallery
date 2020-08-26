@@ -60,11 +60,10 @@ def normalize_adj(adj_matrics, rate=-0.5, self_loop=1.0):
     # return a list of normalized adjacency matrices
     >>> normalize_adj([adj, adj], rate=[-0.5, 1.0]) 
 
-
     Parameters
     ----------
-    adj_matrics: Scipy matrix, Numpy array or list of them 
-        Single or a list of Scipy sparse matrices or Numpy matrices.
+    adj_matrics: Scipy matrix or a list of them 
+        Single or a list of Scipy sparse matrices.
     rate: Single or a list of float scale, optional.
         the normalize rate for `adj_matrics`.
     self_loop: float scalar, optional.
@@ -75,38 +74,29 @@ def normalize_adj(adj_matrics, rate=-0.5, self_loop=1.0):
     Single or a list of Scipy sparse matrix or Numpy matrices.
 
     """
-    def normalize(adj, alpha):
+    def normalize(adj, r):
 
-        if sp.isspmatrix(adj) and not sp.isspmatrix_csr(adj):
-            adj = adj.tocsr(copy=False)
-
+        # here creats a new copy of adj
         adj = adj + self_loop*sp.eye(adj.shape[0])
 
-        if alpha is None:
+        if r is None:
             return adj.astype(config.floatx(), copy=False)
 
-        d = adj.sum(1).A1
-        d_power = np.power(d, alpha)
+        degree = adj.sum(1).A1
+        degree_power = np.power(degree, r)
 
-        if sp.isspmatrix(adj):
-            adj = adj.tocoo(copy=False)
-            adj.data = d_power[adj.row] * adj.data * d_power[adj.col]
-            adj = adj.tocsr(copy=False)
-        else:
-            diags = sp.diags(d_power)
-            adj = diags @ adj @ diags
-            adj = adj.A
+        adj = adj.tocoo(copy=False)
+        adj.data = degree_power[adj.row] * adj.data * degree_power[adj.col]
+        adj = adj.tocsr(copy=False)
 
         return adj.astype(config.floatx(), copy=False)
 
     if is_list_like(adj_matrics) and not isinstance(adj_matrics[0], Number):
         size = len(adj_matrics)
         rate = repeat(rate, size)
-        return [normalize(adj_, rate_) for adj_, rate_ in zip(adj_matrics, rate)]
+        return [normalize(A, r) for A, r in zip(adj_matrics, rate)]
     else:
-        adj_matrics = normalize(adj_matrics, rate)
-
-    return adj_matrics
+        return normalize(adj_matrics, rate)
 
 
 class Bunch(dict):

@@ -20,11 +20,11 @@ class SGConvolution(Layer):
           order: Positive integer, the power of adjacency matrix, i.e., adj^{order}.
 
         Input shape:
-          tuple/list with two 2-D tensor: Tensor `x` and SparseTensor `adj`: `[(n_nodes, n_attributes), (n_nodes, n_nodes)]`.
+          tuple/list with two 2-D tensor: Tensor `x` and SparseTensor `adj`: `[(n_nodes, n_attrs), (n_nodes, n_nodes)]`.
           The former one is the attribute matrix (Tensor) and the other is adjacency matrix (SparseTensor).
 
         Output shape:
-          2-D tensor with shape: `(n_nodes, n_attributes)`.       
+          2-D tensor with shape: `(n_nodes, n_attrs)`.       
     """
 
     def __init__(self, order=1, **kwargs):
@@ -47,4 +47,4 @@ class SGConvolution(Layer):
 
     def compute_output_shape(self, input_shapes):
         attributes_shape = input_shapes[0]
-        return tf.TensorShape(attributes_shape)  # (n_nodes, n_attributes)
+        return tf.TensorShape(attributes_shape)  # (n_nodes, n_attrs)

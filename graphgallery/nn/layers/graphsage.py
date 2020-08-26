@@ -49,7 +49,7 @@ class MeanAggregator(Layer):
 
         Input shape:
           tuple/list with two tensor: 2-D Tensor `x` and 3-D Tensor `neigh_x`: 
-          `[(batch_n_nodes, n_attributes), (batch_n_nodes, n_samples, n_attributes)]`.
+          `[(batch_n_nodes, n_attrs), (batch_n_nodes, n_samples, n_attrs)]`.
           The former one is the node attribute matrix (Tensor) and the last is the neighbor attribute matrix (Tensor).
 
         Output shape:
@@ -209,7 +209,7 @@ class GCNAggregator(Layer):
 
         Input shape:
           tuple/list with two tensor: 2-D Tensor `x` and 3-D Tensor `neigh_x`: 
-          `[(batch_n_nodes, n_attributes), (batch_n_nodes, n_samples, n_attributes)]`.
+          `[(batch_n_nodes, n_attrs), (batch_n_nodes, n_samples, n_attrs)]`.
           The former one is the node attribute matrix (Tensor) and the last is the neighbor attribute matrix (Tensor).
 
         Output shape:

@@ -40,7 +40,7 @@ class WaveletConvolution(Layer):
           bias_constraint: Constraint function applied to the bias vector.
 
         Input shape:
-          tuple/list with three 2-D tensor: Tensor `x`, SparseTensor `wavelet` and inverse_wavelet: `[(n_nodes, n_attributes), (n_nodes, n_nodes), (n_nodes, n_nodes)]`.
+          tuple/list with three 2-D tensor: Tensor `x`, SparseTensor `wavelet` and inverse_wavelet: `[(n_nodes, n_attrs), (n_nodes, n_nodes), (n_nodes, n_nodes)]`.
           The former one is the attribute matrix (Tensor) and the others is wavelet matrix (SparseTensor) and inversed wavelet matrix (SparseTensor).
 
         Output shape:

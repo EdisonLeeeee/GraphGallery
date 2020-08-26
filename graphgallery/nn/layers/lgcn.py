@@ -38,7 +38,7 @@ class LGConvolution(Layer):
             bias_constraint: Constraint function applied to the bias vector.
 
         Input shape:
-            2-D tensor: Tensor `x`: `(n_nodes, n_attributes)`. where `x` is the node attribute matrix (Tensor).
+            2-D tensor: Tensor `x`: `(n_nodes, n_attrs)`. where `x` is the node attribute matrix (Tensor).
 
         Output shape:
             2-D tensor with shape: `(n_nodes, filters)`.

@@ -30,14 +30,10 @@ class SemiSupervisedModel(BaseModel):
 
         Parameters:
         ----------
-            adj: Scipy.sparse.csr_matrix or Numpy.ndarray, shape [n_nodes, n_nodes]
-                The input `symmetric` adjacency matrix in 
-                CSR format if `is_adj_sparse=True` (default)
-                or Numpy format if `is_adj_sparse=False`.
-            x: Scipy.sparse.csr_matrix or Numpy.ndarray, shape [n_nodes, n_attrs], optional. 
-                Node attribute matrix in 
-                CSR format if `is_attribute_sparse=True` 
-                or Numpy format if `is_attribute_sparse=False` (default).
+            adj: Scipy.sparse.csr_matrix, shape [n_nodes, n_nodes]
+                The input `symmetric` adjacency matrix in CSR format.
+            x: Numpy.ndarray, shape [n_nodes, n_attrs]. 
+                Node attribute matrix in Numpy format.
                 The ground-truth labels for all nodes in graph.
             device: string. optional 
                 The device where the model is running on. You can specified `CPU` or `GPU` 
@@ -60,14 +56,10 @@ class SemiSupervisedModel(BaseModel):
 
         Parameters:
         ----------
-            adj: Scipy.sparse.csr_matrix or Numpy.ndarray, shape [n_nodes, n_nodes]
-                The input `symmetric` adjacency matrix in 
-                CSR format if `is_adj_sparse=True` (default)
-                or Numpy format if `is_adj_sparse=False`.
-            x: Scipy.sparse.csr_matrix or Numpy.ndarray, shape [n_nodes, n_attrs], optional. 
-                Node attribute matrix in 
-                CSR format if `is_attribute_sparse=True` 
-                or Numpy format if `is_attribute_sparse=False` (default).
+            adj: Scipy.sparse.csr_matrix, shape [n_nodes, n_nodes]
+                The input `symmetric` adjacency matrix in CSR format.
+            x: Numpy.ndarray, shape [n_nodes, n_attrs]. 
+                Node attribute matrix in Numpy format.
 
         Note:
         ----------
@@ -77,7 +69,7 @@ class SemiSupervisedModel(BaseModel):
         """
         # check the input adj and x, and convert them to appropriate forms
         self.adj, self.x = self._check_inputs(adj, x)
-        self.n_nodes, self.n_attributes = x.shape
+        self.n_nodes, self.n_attrs = x.shape
 
     def build(self):
         """Build the model using customized hyperparameters.
@@ -123,10 +115,12 @@ class SemiSupervisedModel(BaseModel):
 
         Parameters:
         ----------
-            idx_train: Numpy array-like, `list`, Integer scalar or `graphgallery.NodeSequence`
-                the index of nodes (or sequence) that will be used during training.    
-            idx_val: Numpy array-like, `list`, Integer scalar or `graphgallery.NodeSequence`, optional
-                the index of nodes (or sequence) that will be used for validation. 
+            idx_train: Numpy array-like, `list`, Integer scalar or 
+                `graphgallery.NodeSequence`.
+                The index of nodes (or sequence) that will be used during training.    
+            idx_val: Numpy array-like, `list`, Integer scalar or 
+                `graphgallery.NodeSequence`, optional
+                The index of nodes (or sequence) that will be used for validation. 
                 (default :obj: `None`, i.e., do not use validation during training)
             epochs: integer
                 The number of epochs of training.(default :obj: `200`)
@@ -271,9 +265,10 @@ class SemiSupervisedModel(BaseModel):
         Parameters:
         ----------
             idx_train: Numpy array-like, `list`, Integer scalar or `graphgallery.NodeSequence`
-                the index of nodes (or sequence) that will be used during training.    
-            idx_val: Numpy array-like, `list`, Integer scalar or `graphgallery.NodeSequence`, optional
-                the index of nodes (or sequence) that will be used for validation. 
+                The index of nodes (or sequence) that will be used during training.    
+            idx_val: Numpy array-like, `list`, Integer scalar or 
+                `graphgallery.NodeSequence`, optional
+                The index of nodes (or sequence) that will be used for validation. 
                 (default :obj: `None`, i.e., do not use validation during training)
             epochs: Postive integer
                 The number of epochs of training.(default :obj: `200`)
@@ -444,10 +439,12 @@ class SemiSupervisedModel(BaseModel):
 
         Parameters:
         ----------
-            idx_train: Numpy array-like, `list`, Integer scalar or `graphgallery.NodeSequence`
-                the index of nodes (or sequence) that will be used during training.    
-            idx_val: Numpy array-like, `list`, Integer scalar or `graphgallery.NodeSequence`, optional
-                the index of nodes (or sequence) that will be used for validation. 
+            idx_train: Numpy array-like, `list`, Integer scalar or 
+                `graphgallery.NodeSequence`.
+                The index of nodes (or sequence) that will be used during training.    
+            idx_val: Numpy array-like, `list`, Integer scalar or 
+                `graphgallery.NodeSequence`, optional
+                The index of nodes (or sequence) that will be used for validation. 
                 (default :obj: `None`, i.e., do not use validation during training)
             epochs: Postive integer
                 The number of epochs of training.(default :obj: `200`)
@@ -481,7 +478,6 @@ class SemiSupervisedModel(BaseModel):
             a record of training loss values and metrics values
             at successive epochs, as well as validation loss values
             and validation metrics values (if applicable).
-
         """
         ############# Record paras ###########
         local_paras = locals()

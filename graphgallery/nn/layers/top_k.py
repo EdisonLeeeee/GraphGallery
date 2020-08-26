@@ -3,13 +3,13 @@ from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Layer
 
 
-class Top_k_attributes(Layer):
+class Top_k_features(Layer):
     """
-        Top_k_attributes layer as in:
+        Top_k_features layer as in:
         [Large-Scale Learnable Graph Convolutional Networks](https://arxiv.org/abs/1808.03965)
         Tensorflow 1.x implementation: https://github.com/divelab/lgcn
 
-        `Top_k_attributes` implements the operation:
+        `Top_k_features` implements the operation:
         Select the top-k attributes for each node and each attribute dimension.
         And finally the selected attributes will concatenated with the input attribute matrix along last dimension.
 
@@ -17,11 +17,11 @@ class Top_k_attributes(Layer):
           k: Positive Integer, Number of top elements to look for.
 
         Input shape:
-          tuple/list with two 2-D tensor: Tensor `x` and SparseTensor `adj`: `[(n_nodes, n_attributes), (n_nodes, n_nodes)]`.
+          tuple/list with two 2-D tensor: Tensor `x` and SparseTensor `adj`: `[(n_nodes, n_attrs), (n_nodes, n_nodes)]`.
           The former one is the attribute matrix (Tensor) and the other is adjacency matrix (SparseTensor).
 
         Output shape:
-          3-D tensor with shape: `(n_nodes, k+1, n_attributes)`.
+          3-D tensor with shape: `(n_nodes, k+1, n_attrs)`.
     """
 
     def __init__(self, k, **kwargs):

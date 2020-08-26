@@ -101,7 +101,7 @@ class SparseGraph:
             raise ValueError("The node labels are not specified.")
 
     @property
-    def n_attributes(self):
+    def n_attrs(self):
         """Get the number of attribute dimensions of the nodes."""
         if self.attr_matrix is not None:
             return self.attr_matrix.shape[1]

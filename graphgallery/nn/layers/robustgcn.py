@@ -39,7 +39,7 @@ class GaussionConvolution_F(Layer):
 
         Inputs:
           tuple/list with three 2-D tensor: Tensor `x` and SparseTensor `adj_0, adj_1`: 
-            `[(n_nodes, n_attributes), (n_nodes, n_nodes), (n_nodes, n_nodes)]`.
+            `[(n_nodes, n_attrs), (n_nodes, n_nodes), (n_nodes, n_nodes)]`.
           The former one is the attribute matrix (Tensor) and the others are adjacency matrix (SparseTensor) with different normalize rate (-0.5, -1.0).
 
         Outputs:
@@ -178,7 +178,7 @@ class GaussionConvolution_D(Layer):
 
         Inputs:
           tuple/list with four 2-D tensor: Tensor `mean`, `var` and SparseTensor `adj_0`, `adj_1`: 
-              `[(n_nodes, n_attributes), (n_nodes, n_attributes), (n_nodes, n_nodes), (n_nodes, n_nodes)]`.
+              `[(n_nodes, n_attrs), (n_nodes, n_attrs), (n_nodes, n_nodes), (n_nodes, n_nodes)]`.
           The former two is the mean and variance vector (Tensor) and the last are adjacency matrices (SparseTensor) with 
               different normalize rates (-0.5, -1.0).
 

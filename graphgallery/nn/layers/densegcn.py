@@ -38,7 +38,7 @@ class DenseGraphConv(Layer):
           bias_constraint: Constraint function applied to the bias vector.
 
         Input shape:
-          tuple/list with two 2-D tensor: Tensor `x` and SparseTensor `adj`: `[(n_nodes, n_attributes), (n_nodes, n_nodes)]`.
+          tuple/list with two 2-D tensor: Tensor `x` and SparseTensor `adj`: `[(n_nodes, n_attrs), (n_nodes, n_nodes)]`.
           The former one is the attribute matrix (Tensor) and the last is adjacency matrix (Tensor).
 
         Output shape:

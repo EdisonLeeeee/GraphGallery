@@ -21,15 +21,11 @@ class MedianSAGE(SemiSupervisedModel):
         """
         Parameters:
         ----------
-            adj: Scipy.sparse.csr_matrix or Numpy.ndarray, shape [n_nodes, n_nodes]
-                The input `symmetric` adjacency matrix in 
-                CSR format if `is_adj_sparse=True` (default)
-                or Numpy format if `is_adj_sparse=False`.
-            x: Scipy.sparse.csr_matrix or Numpy.ndarray, shape [n_nodes, n_attrs], optional. 
-                Node attribute matrix in 
-                CSR format if `is_attribute_sparse=True` 
-                or Numpy format if `is_attribute_sparse=False` (default).
-            labels: Numpy.ndarray, shape [n_nodes], optional
+            adj: Scipy.sparse.csr_matrix, shape [n_nodes, n_nodes]
+                The input `symmetric` adjacency matrix in CSR format.
+            x: Numpy.ndarray, shape [n_nodes, n_attrs]. 
+                Node attribute matrix in Numpy format.
+            labels: Numpy.ndarray, shape [n_nodes]
                 Array, where each entry represents respective node's label(s).
             n_samples: List of positive integer. optional 
                 The number of sampled neighbors for each nodes in each layer. 
@@ -48,12 +44,7 @@ class MedianSAGE(SemiSupervisedModel):
             name: string. optional
                 Specified name for the model. (default: :str: `class.__name__`)
             kwargs: other customed keyword Parameters.
-                `is_adj_sparse`: bool, (default: :obj: True)
-                    specify the input adjacency matrix is Scipy sparse matrix or not.
-                `is_attribute_sparse`: bool, (default: :obj: False)
-                    specify the input attribute matrix is Scipy sparse matrix or not.
-                `is_weighted`: bool, (default: :obj: False)
-                    specify the input adjacency matrix is weighted or not.  
+
 
         """
         super().__init__(adj, x, labels, device=device, seed=seed, name=name, **kwargs)
@@ -72,7 +63,7 @@ class MedianSAGE(SemiSupervisedModel):
         # Dense matrix, shape [n_nodes, max_degree]
         neighbors = construct_neighbors(adj, max_degree=max(self.n_samples))
         # pad with a dummy zero vector
-        x = np.vstack([x, np.zeros(self.n_attributes, dtype=self.floatx)])
+        x = np.vstack([x, np.zeros(self.n_attrs, dtype=self.floatx)])
 
         with tf.device(self.device):
             x = astensors(x)
@@ -103,7 +94,7 @@ class MedianSAGE(SemiSupervisedModel):
             else:
                 raise ValueError(f'Invalid value of `aggrator`, allowed values (`median`, `gcn`), but got `{aggrator}`')
 
-            x = Input(batch_shape=[None, self.n_attributes], dtype=self.floatx, name='attributes')
+            x = Input(batch_shape=[None, self.n_attrs], dtype=self.floatx, name='attributes')
             nodes = Input(batch_shape=[None], dtype=self.intx, name='nodes')
             neighbors = [Input(batch_shape=[None], dtype=self.intx, name=f'neighbors_{hop}')
                          for hop, n_sample in enumerate(self.n_samples)]
