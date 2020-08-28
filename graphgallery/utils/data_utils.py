@@ -62,8 +62,8 @@ def normalize_adj(adj_matrics, rate=-0.5, self_loop=1.0):
 
     Parameters
     ----------
-    adj_matrics: Scipy matrix or a list of them 
-        Single or a list of Scipy sparse matrices.
+    adj_matrics: Scipy matrix or Numpy array or a list of them 
+        Single or a list of Scipy sparse matrices or Numpy arrays.
     rate: Single or a list of float scale, optional.
         the normalize rate for `adj_matrics`.
     self_loop: float scalar, optional.
@@ -84,10 +84,15 @@ def normalize_adj(adj_matrics, rate=-0.5, self_loop=1.0):
 
         degree = adj.sum(1).A1
         degree_power = np.power(degree, r)
-
-        adj = adj.tocoo(copy=False)
-        adj.data = degree_power[adj.row] * adj.data * degree_power[adj.col]
-        adj = adj.tocsr(copy=False)
+        
+        if sp.isspmatrix(adj):
+            adj = adj.tocoo(copy=False)
+            adj.data = degree_power[adj.row] * adj.data * degree_power[adj.col]
+            adj = adj.tocsr(copy=False)
+        else:
+            degree_power_matrix = sp.diags(degree_power)
+            adj = degree_power_matrix @ adj @ degree_power_matrix
+            adj = adj.A        
 
         return adj.astype(config.floatx(), copy=False)
 
