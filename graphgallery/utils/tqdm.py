@@ -6,7 +6,7 @@ def tqdm_clear(*args, **kwargs):
     getattr(tqdm_base, '_instances', {}).clear()
     
 def tqdm(*args, **kwargs):
-    get_ipython().events.register('post_execute', tqdm_clear)    
+#     get_ipython().events.register('post_execute', tqdm_clear)    
     if hasattr(tqdm_base, '_instances'):
         for instance in list(tqdm_base._instances):
             tqdm_base._decr_instances(instance)
