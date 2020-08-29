@@ -72,7 +72,7 @@ In detail, the following methods are currently implemented:
 + **RobustGCN** from *Dingyuan Zhu et al*, [📝Robust Graph Convolutional Networks Against Adversarial Attacks](https://dl.acm.org/doi/10.1145/3292500.3330851), *KDD'19*. 
  [[:octocat:Official Codes]](https://github.com/thumanlab/nrlweb/blob/master/static/assets/download/RGCN.zip), [[🌈 Example]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/test_RobustGCN.ipynb)
 + **SBVAT/OBVAT** from *Zhijie Deng et al*, [📝Batch Virtual Adversarial Training for Graph Convolutional Networks](https://arxiv.org/abs/1902.09192), *ICML'19*. 
- [[:octocat:Official Codes]](https://github.com/thudzj/BVAT)
+ [[:octocat:Official Codes]](https://github.com/thudzj/BVAT), [[🌈 Example]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/test_SBVAT.ipynb), [[🌈 Example]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/test_OBVAT.ipynb)
 
 ## Unsupervised models
 + **Deepwalk** from *Bryan Perozzi et al*, [📝DeepWalk: Online Learning of Social Representations](https://arxiv.org/abs/1403.6652), *KDD'14*. 
