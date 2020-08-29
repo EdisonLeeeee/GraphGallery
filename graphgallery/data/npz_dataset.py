@@ -7,17 +7,18 @@ from graphgallery.data import Dataset
 from graphgallery.data.io import makedirs, files_exist, download_file, SparseGraph, load_dataset
 
 
+supported_datasets = ('citeseer', 'cora', 'cora_ml', 'cora_full', 'amazon_cs', 'amazon_photo',
+                      'coauthor_cs', 'coauthor_phy', 'polblogs', 'pubmed', 'reddit')
 class NPZDataset(Dataset):
 
     github_url = "https://raw.githubusercontent.com/EdisonLeeeee/GraphData/master/datasets/npz/{}.npz"
-    supported_datasets = ('citeseer', 'cora', 'cora_ml', 'cora_full', 'amazon_cs', 'amazon_photo',
-                          'coauthor_cs', 'coauthor_phy', 'polblogs', 'pubmed', 'reddit')
+
 
     def __init__(self, name, root=None, url=None, standardize=False, verbose=True):
         name = name.lower()
 
-        if not name in self.supported_datasets:
-            raise ValueError(f"Currently only support for these datasets {self.supported_datasets}.")
+        if not name in supported_datasets:
+            raise ValueError(f"Currently only support for these datasets {supported_datasets}.")
 
         super().__init__(name, root, verbose)
 
