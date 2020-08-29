@@ -4,9 +4,10 @@ from graphgallery import config
 
 
 class SparseConversion(Layer):
-    def __init__(self, n_nodes=None):
-        super().__init__()
+    def __init__(self, n_nodes=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.n_nodes = n_nodes
+        self.trainable = False
 
     def call(self, inputs):
         indices, values = inputs
@@ -32,8 +33,12 @@ class SparseConversion(Layer):
         return base_config
 
 class Scale(Layer):
-    def call(self, inputs):
-        output = (inputs - tf.reduce_mean(inputs, axis=0, keepdims=True)) / tf.keras.backend.std(inputs, axis=0, keepdims=True)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.trainable = False    
+        
+    def call(self, input):
+        output = (input - tf.reduce_mean(input, axis=0, keepdims=True)) / tf.keras.backend.std(input, axis=0, keepdims=True)
         return output
 
     def get_config(self):
@@ -49,6 +54,7 @@ class Sample(Layer):
         if seed:
             tf.random.set_seed(seed)
         super().__init__(*args, **kwargs)
+        self.trainable = False
 
     def call(self, inputs):
         mean, var = inputs
@@ -68,6 +74,7 @@ class Gather(Layer):
     def __init__(self, axis=0, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.axis = axis
+        self.trainable = False
 
     def call(self, inputs):
         params, indices = inputs
@@ -83,3 +90,26 @@ class Gather(Layer):
         params_shape, indices_shape = input_shapes
         output_shape = params_shape[:axis] + indices_shape + params_shape[axis + 1:]
         return tf.TensorShape(output_shape)
+
+class Laplacian(Layer):
+    def __init__(self, rate=-0.5, self_loop=1.0, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not rate:
+            raise ValueError(f"`rate` must be an integer scalr larger than zero, but got {rate}.")
+        self.rate = rate
+        self.self_loop = self_loop
+        self.trainable = False
+
+    def call(self, adj):
+        adj = adj + self.self_loop * tf.eye(tf.shape(adj)[0], dtype=adj.dtype)
+        d = tf.reduce_sum(adj, axis=1)
+        d_power = tf.pow(d, self.rate)
+        d_power_mat = tf.linalg.diag(d_power)
+        return d_power_mat @ adj @ d_power_mat
+    
+    def get_config(self):
+        base_config = super().get_config()
+        return base_config
+
+    def compute_output_shape(self, input_shapes):
+        return tf.TensorShape(input_shapes)

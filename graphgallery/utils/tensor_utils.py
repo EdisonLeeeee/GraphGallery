@@ -8,11 +8,11 @@ from graphgallery import config
 
 
 def normalize_adj_tensor(adj, rate=-0.5, self_loop=1.0):
-    adj = adj + self_loop*tf.eye(adj.shape[0], dtype=adj.dtype)
-    row_sum = tf.reduce_sum(adj, axis=1)
-    d_inv_sqrt = tf.pow(row_sum, rate)
-    d_mat_inv_sqrt = tf.linalg.diag(d_inv_sqrt)
-    return d_mat_inv_sqrt @ adj @ d_mat_inv_sqrt
+    adj = adj + self_loop * tf.eye(tf.shape(adj)[0], dtype=adj.dtype)
+    d = tf.reduce_sum(adj, axis=1)
+    d_power = tf.pow(d, rate)
+    d_power_mat = tf.linalg.diag(d_power)
+    return d_power_mat @ adj @ d_power_mat
 
 
 def add_self_loop_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0):
