@@ -163,7 +163,7 @@ class SBVAT(SemiSupervisedModel):
                 gradients = tape.gradient(loss, trainable_variables)
                 self.optimizer.apply_gradients(zip(gradients, trainable_variables))
 
-        return loss, self.train_metric.result()
+            return loss, self.train_metric.result()
 
     @tf.function
     def test_step(self, sequence):
@@ -179,7 +179,7 @@ class SBVAT(SemiSupervisedModel):
                 loss = tf.reduce_mean(sparse_categorical_crossentropy(labels, output))
                 self.test_metric.update_state(labels, output)
 
-        return loss, self.test_metric.result()
+            return loss, self.test_metric.result()
 
     def virtual_adversarial_loss(self, x, adj, logit, adv_mask):
         d = tf.random.normal(shape=tf.shape(x), dtype=self.floatx)

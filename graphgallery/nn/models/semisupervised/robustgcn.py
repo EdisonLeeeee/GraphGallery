@@ -92,11 +92,17 @@ class RobustGCN(SemiSupervisedModel):
             index = Input(batch_shape=[None],  dtype=self.intx, name='index')
 
             h = x
-            mean, var = GaussionConvolution_F(hiddens[0], gamma=gamma, kl=kl,
+            mean, var = GaussionConvolution_F(hiddens[0], gamma=gamma,
                                               use_bias=use_bias,
                                               activation=activations[0],
                                               kernel_regularizer=regularizers.l2(l2_norms[0]))([h, *adj])
+            if kl:
+                KL_divergence = 0.5 * tf.reduce_mean(tf.math.square(mean) + var - tf.math.log(1e-8 + var) - 1, axis=1)
+                KL_divergence = tf.reduce_sum(KL_divergence)
 
+                # KL loss
+                kl_loss = kl*KL_divergence
+        
             # additional layers (usually unnecessay)
             for hid, activation, dropout, l2_norm in zip(hiddens[1:], activations[1:], dropouts[1:], l2_norms[1:]):
 
@@ -111,8 +117,11 @@ class RobustGCN(SemiSupervisedModel):
             model = Model(inputs=[x, *adj, index], outputs=h)
             model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
                           optimizer=Adam(lr=lr), metrics=['accuracy'])
-
+            
+            if kl:
+                model.add_loss(kl_loss)
             self.model = model
+            
 
     def train_sequence(self, index):
         index = asintarr(index)

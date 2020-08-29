@@ -9,6 +9,8 @@ from graphgallery.data.io import makedirs, files_exist, download_file, SparseGra
 from graphgallery.data.preprocess import process_planetoid_datasets
 
 
+DATASETS =  {'citeseer', 'cora', 'pubmed'}
+
 class Planetoid(Dataset):
     """The citation network datasets "Cora", "CiteSeer" and "PubMed" from the
     `"Revisiting Semi-Supervised Learning with Graph Embeddings"
@@ -20,7 +22,7 @@ class Planetoid(Dataset):
     """
 
     github_url = "https://raw.githubusercontent.com/EdisonLeeeee/GraphData/master/datasets/planetoid"
-    supported_datasets = {'citeseer', 'cora', 'pubmed'}
+    supported_datasets = DATASETS
 
     def __init__(self, name, root=None, verbose=True):
         name = name.lower()

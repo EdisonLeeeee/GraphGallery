@@ -21,11 +21,10 @@ class GaussionConvolution_F(Layer):
         Parameters:
           units: Positive integer, dimensionality of the output space.
           gamma: Float scalar, determining the attention weights for mean and variance. 
-          kl: Float scalar, the hyper-paremeter of KL-divergence loss.
+          use_bias: bool, whether the layer uses a bias vector.
           activation: Activation function to use.
             If you don't specify anything, no activation is applied
             (ie. "linear" activation: `a(x) = x`).
-          use_bias: bool, whether the layer uses a bias vector.
           kernel_initializer: Initializer for the `kernel` weights matrix.
           bias_initializer: Initializer for the bias vector.
           kernel_regularizer: Regularizer function applied to
@@ -49,7 +48,6 @@ class GaussionConvolution_F(Layer):
 
     def __init__(self, units,
                  gamma=1.,
-                 kl=0.,
                  use_bias=False,
                  activation=None,
                  kernel_initializer='glorot_uniform',
@@ -62,7 +60,6 @@ class GaussionConvolution_F(Layer):
                  **kwargs):
         super().__init__(**kwargs)
         self.units = units
-        self.kl = kl
         self.gamma = gamma
         self.use_bias = use_bias
 
@@ -101,12 +98,6 @@ class GaussionConvolution_F(Layer):
         mean = activations.elu(h)
         var = activations.relu(h)
 
-        KL_divergence = 0.5 * tf.reduce_mean(tf.math.square(mean) + var - tf.math.log(1e-8 + var) - 1, axis=1)
-        KL_divergence = tf.reduce_sum(KL_divergence)
-
-        # KL loss
-        self.add_loss(self.kl*KL_divergence)
-
         attention = tf.exp(-self.gamma*var)
         mean = tf.sparse.sparse_dense_matmul(adj[0], mean * attention)
         var = tf.sparse.sparse_dense_matmul(adj[1], var * attention * attention)
@@ -120,9 +111,8 @@ class GaussionConvolution_F(Layer):
     def get_config(self):
         config = {'units': self.units,
                   'gamma': self.gamma,
-                  'kl': self.kl,
-                  'activation': activations.serialize(self.activation),
                   'use_bias': self.use_bias,
+                  'activation': activations.serialize(self.activation),
                   'kernel_initializer': initializers.serialize(
                       self.kernel_initializer),
                   'bias_initializer': initializers.serialize(
