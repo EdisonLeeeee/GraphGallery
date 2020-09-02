@@ -181,9 +181,11 @@ class SparseGraph:
         return load_dataset(filepath)
 
     def copy(self):
-        return SparseGraph(*self.unpack(), node_names=self.node_names,
+        new_graph = SparseGraph(*self.unpack(), node_names=self.node_names,
                            attr_names=self.attr_names, class_names=self.class_names,
                            metadata=self.metadata)
+#         new_graph.__dict__ = self.__dict__
+        return new_graph
 
     def is_singleton(self):
         """Check if the input adjacency matrix has singletons."""

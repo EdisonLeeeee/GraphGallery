@@ -11,7 +11,7 @@ from graphgallery.nn.layers import GraphConvolution, SparseConversion
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import ClusterMiniBatchSequence
 from graphgallery.utils.graph import partition_graph
-from graphgallery.utils.shape import set_equal_in_length
+from graphgallery.utils.shape import SetEqual
 from graphgallery import Bunch, sample_mask, normalize_x, normalize_adj, astensors, asintarr, sparse_adj_to_edges
 
 

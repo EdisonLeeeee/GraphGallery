@@ -8,7 +8,7 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy
 from graphgallery.nn.layers import GaussionConvolution_F, GaussionConvolution_D, Sample, Gather
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
-from graphgallery.utils.shape import set_equal_in_length, repeat
+from graphgallery.utils.shape import SetEqual, repeat
 from graphgallery import astensors, asintarr, normalize_x, normalize_adj, Bunch
 
 

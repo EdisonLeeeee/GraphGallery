@@ -10,7 +10,7 @@ from graphgallery.nn.layers import MedianAggregator, MedianGCNAggregator
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import SAGEMiniBatchSequence
 from graphgallery.utils.graph import construct_neighbors
-from graphgallery.utils.shape import set_equal_in_length
+from graphgallery.utils.shape import SetEqual
 from graphgallery import astensors, asintarr, normalize_x, Bunch
 
 

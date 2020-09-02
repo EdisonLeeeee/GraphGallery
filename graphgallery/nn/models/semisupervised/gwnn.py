@@ -9,7 +9,7 @@ from graphgallery.nn.layers import WaveletConvolution, Gather
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.wavelet import wavelet_basis
-from graphgallery.utils.shape import set_equal_in_length
+from graphgallery.utils.shape import SetEqual
 from graphgallery import astensors, asintarr, normalize_x, Bunch
 
 

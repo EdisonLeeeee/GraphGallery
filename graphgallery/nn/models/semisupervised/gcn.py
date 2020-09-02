@@ -8,8 +8,8 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy
 from graphgallery.nn.layers import GraphConvolution, Gather
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
-from graphgallery.utils.shape import set_equal_in_length
-from graphgallery import astensors, asintarr, normalize_x, normalize_adj, Bunch
+from graphgallery.utils.shape import SetEqual
+from graphgallery import astensors, asintarr, normalize_x, normalize_adj
 
 
 class GCN(SemiSupervisedModel):
@@ -69,20 +69,10 @@ class GCN(SemiSupervisedModel):
         with tf.device(self.device):
             self.x_norm, self.adj_norm = astensors([x, adj])
 
+    @SetEqual()
     def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5], l2_norms=[5e-4],
               lr=0.01, use_bias=False):
-
-        ############# Record paras ###########
-        local_paras = locals()
-        local_paras.pop('self')
-        paras = Bunch(**local_paras)
-        hiddens, activations, dropouts, l2_norms = set_equal_in_length(hiddens, activations, dropouts, l2_norms)
-        paras.update(Bunch(hiddens=hiddens, activations=activations, dropouts=dropouts, l2_norms=l2_norms))
-        # update all parameters
-        self.paras.update(paras)
-        self.model_paras.update(paras)
-        ######################################
-
+        
         with tf.device(self.device):
 
             x = Input(batch_shape=[None, self.n_attrs], dtype=self.floatx, name='attributes')

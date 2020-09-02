@@ -10,7 +10,7 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy
 from graphgallery.nn.layers import Top_k_features, LGConvolution, DenseGraphConv
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
-from graphgallery.utils.shape import set_equal_in_length, get_length
+from graphgallery.utils.shape import SetEqual, get_length
 from graphgallery.utils.graph import get_indice_graph
 from graphgallery import astensors, asintarr, sample_mask, normalize_x, normalize_adj, Bunch, repeat
 

@@ -1,4 +1,7 @@
 import itertools
+import inspect
+import functools
+
 from numbers import Number
 
 
@@ -14,32 +17,52 @@ def repeat(src, length):
     return src
 
 
-def set_equal_in_length(*inputs, max_length=None):
-    """ Check if the inputs are lists or tuples,
-        and convert them into lists with the same lengths (max lengths
-        of the inputs). The shorter ones will repeted.
-
-        Parameters:
-        ----------
-        inputs: list of scalar, list, tuple.
-        max_length: The maximum length of the input list.
-
-        Returns:
-        ----------
-        outputs: list of lists with the same lengths.        
-
+class SetEqual:
     """
-    lengths = []
-    outputs = []
-    for para in inputs:
-        length = get_length(para)
-        outputs.append(para)
-        lengths.append(length)
+    A decorator class which makes the values of the variables 
+    equal in max-length. variables consist of 'hiddens', 'activations', 
+    'dropouts', 'l2_norms' and other customed ones in `var_names`.
+    
+    """
+    base_var_names = ['hiddens', 'activations', 'dropouts', 'l2_norms']
+    
+    def __init__(self, var_names=[]):
+        """
+        var_names: string, a list or tuple of string.
+            the customed variable name except for 'hiddens', 'activations', 
+            'dropouts', 'l2_norms'. 
+        """
+        self.var_names = list(var_names) + self.base_var_names
+        
+    def __call__(self, func):
+        
+        @functools.wraps(func)
+        def set_equal_in_length(*args, **kwargs):
+            ArgSpec = inspect.getfullargspec(func)
 
-    max_length = max_length or max(lengths)
-    for idx, length in enumerate(lengths):
-        outputs[idx] = repeat(outputs[idx], max_length)
-    return outputs
+            if not ArgSpec.defaults or len(ArgSpec.args) != len(ArgSpec.defaults) + 1:
+                raise Exception(f"The '{func.__name__}' method must be defined with all default parameters.")
+
+            model, *values = args
+            for i in range(len(values), len(ArgSpec.args[1:])):
+                values.append(ArgSpec.defaults[i])
+
+            paras = dict(zip(ArgSpec.args[1:], values))
+            paras.update(kwargs)
+            
+            max_length = 0
+            for var in self.var_names:
+                val = paras.get(var, None)
+                if val is not None:
+                    max_length = max(get_length(val), max_length)
+
+            for var in self.var_names:
+                val = paras.get(var, None)
+                if val is not None:
+                    paras[var] = repeat(val, max_length)
+
+            return func(model, **paras)
+        return set_equal_in_length
 
 
 def get_length(arr):
