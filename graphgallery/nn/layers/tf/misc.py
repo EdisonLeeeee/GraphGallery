@@ -1,6 +1,6 @@
 import tensorflow as tf
 from tensorflow.keras.layers import Layer
-from graphgallery import config
+from graphgallery import floatx
 
 
 class SparseConversion(Layer):
@@ -27,16 +27,16 @@ class SparseConversion(Layer):
     def compute_output_shape(self, input_shapes):
         return tf.TensorShape([self.n_nodes, self.n_nodes])
 
-
     def get_config(self):
         base_config = super().get_config()
         return base_config
 
+
 class Scale(Layer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.trainable = False    
-        
+        self.trainable = False
+
     def call(self, input):
         output = (input - tf.reduce_mean(input, axis=0, keepdims=True)) / tf.keras.backend.std(input, axis=0, keepdims=True)
         return output
@@ -58,7 +58,7 @@ class Sample(Layer):
 
     def call(self, inputs):
         mean, var = inputs
-        sample = tf.random.normal(tf.shape(var), 0, 1, dtype=config.floatx())
+        sample = tf.random.normal(tf.shape(var), 0, 1, dtype=floatx())
         output = mean + tf.math.sqrt(var + 1e-8) * sample
         return output
 
@@ -91,6 +91,7 @@ class Gather(Layer):
         output_shape = params_shape[:axis] + indices_shape + params_shape[axis + 1:]
         return tf.TensorShape(output_shape)
 
+
 class Laplacian(Layer):
     def __init__(self, rate=-0.5, self_loop=1.0, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -106,7 +107,7 @@ class Laplacian(Layer):
         d_power = tf.pow(d, self.rate)
         d_power_mat = tf.linalg.diag(d_power)
         return d_power_mat @ adj @ d_power_mat
-    
+
     def get_config(self):
         base_config = super().get_config()
         return base_config

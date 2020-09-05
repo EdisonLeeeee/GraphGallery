@@ -4,17 +4,19 @@ import os.path as osp
 import numpy as np
 
 from graphgallery.data import Dataset
-from graphgallery.data.io import makedirs, files_exist, download_file, SparseGraph, load_dataset
+from graphgallery.data.io import makedirs, files_exist, download_file
+from graphgallery.data.graph import Graph, load_dataset
 
 
 DATASETS = ('citeseer', 'cora', 'cora_ml', 'cora_full', 'amazon_cs', 'amazon_photo',
-                      'coauthor_cs', 'coauthor_phy', 'polblogs', 'pubmed', 'reddit')
+            'coauthor_cs', 'coauthor_phy', 'polblogs', 'pubmed', 'reddit')
+
 
 class NPZDataset(Dataset):
 
     github_url = "https://raw.githubusercontent.com/EdisonLeeeee/GraphData/master/datasets/npz/{}.npz"
     supported_datasets = DATASETS
-    
+
     def __init__(self, name, root=None, url=None, standardize=False, verbose=True):
         name = name.lower()
 
@@ -51,10 +53,10 @@ class NPZDataset(Dataset):
     def process(self):
 
         print("Processing...")
-        dataset_graph = load_dataset(self.raw_paths[0]).eliminate_self_loops().to_undirected().to_dense_attrs()
+        graph = load_dataset(self.raw_paths[0]).eliminate_self_loops().to_undirected()
         if self.standardize:
-            dataset_graph.standardize()
-        self.graph = dataset_graph
+            graph = graph.standardize()
+        self.graph = graph
         print("Processing completed.")
 
     @property

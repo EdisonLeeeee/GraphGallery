@@ -7,10 +7,10 @@ from tensorflow.keras.optimizers import Nadam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers import Top_k_features, LGConvolution, DenseGraphConv
+from graphgallery.nn.layers import Top_k_features, LGConvolution, DenseConvolution
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
-from graphgallery.utils.shape import SetEqual, get_length
+from graphgallery.utils.shape import EqualVarLength, get_length
 from graphgallery.utils.graph import get_indice_graph
 from graphgallery import astensors, asintarr, sample_mask, normalize_x, normalize_adj, Bunch, repeat
 
@@ -22,18 +22,14 @@ class LGCN(SemiSupervisedModel):
         Tensorflow 1.x implementation: <https://github.com/divelab/lgcn>
     """
 
-    def __init__(self, adj, x, labels, norm_adj=-0.5, norm_x=None,
-                 device='CPU:0', seed=None, name=None, **kwargs):
+    def __init__(self, graph, norm_adj=-0.5, norm_x=None,
+                 device='cpu:0', seed=None, name=None, **kwargs):
         """Creat a Large-Scale Learnable Graph Convolutional Networks (LGCN) model.
 
         Parameters:
         ----------
-            adj: Scipy.sparse.csr_matrix, shape [n_nodes, n_nodes]
-                The input `symmetric` adjacency matrix in CSR format.
-            x: Numpy.ndarray, shape [n_nodes, n_attrs]. 
-                Node attribute matrix in Numpy format.
-            labels: Numpy.ndarray, shape [n_nodes]
-                Array, where each entry represents respective node's label(s).
+            graph: graphgallery.data.Graph
+                A sparse, attributed, labeled graph.
             norm_adj: float scalar. optional
                 The normalize rate for adjacency matrix `adj`. (default: :obj:`-0.5`,
                 i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}})
@@ -52,7 +48,7 @@ class LGCN(SemiSupervisedModel):
             kwargs: other customed keyword Parameters.
 
         """
-        super().__init__(adj, x, labels, device=device, seed=seed, name=name, **kwargs)
+        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
 
         self.norm_adj = norm_adj
         self.norm_x = norm_x
@@ -97,15 +93,15 @@ class LGCN(SemiSupervisedModel):
 
         with tf.device(self.device):
 
-            x = Input(batch_shape=[None, self.n_attrs], dtype=self.floatx, name='attributes')
+            x = Input(batch_shape=[None, self.n_attrs], dtype=self.floatx, name='attr_matrix')
             adj = Input(batch_shape=[None, None], dtype=self.floatx, sparse=False, name='adj_matrix')
             mask = Input(batch_shape=[None],  dtype=tf.bool, name='mask')
 
             h = x
             for idx, hid in enumerate(hiddens):
                 h = Dropout(rate=dropouts[idx])(h)
-                h = DenseGraphConv(hid, use_bias=use_bias, activation=activations[idx],
-                                   kernel_regularizer=regularizers.l2(l2_norms[idx]))([h, adj])
+                h = DenseConvolution(hid, use_bias=use_bias, activation=activations[idx],
+                                     kernel_regularizer=regularizers.l2(l2_norms[idx]))([h, adj])
 
             for idx, n_filter in enumerate(n_filters):
                 top_k_h = Top_k_features(k=k)([h, adj])
@@ -116,8 +112,8 @@ class LGCN(SemiSupervisedModel):
                 h = Concatenate()([h, cur_h])
 
             h = Dropout(rate=dropouts[-1])(h)
-            h = DenseGraphConv(self.n_classes, use_bias=use_bias, activation=activations[-1],
-                               kernel_regularizer=regularizers.l2(l2_norms[-1]))([h, adj])
+            h = DenseConvolution(self.n_classes, use_bias=use_bias, activation=activations[-1],
+                                 kernel_regularizer=regularizers.l2(l2_norms[-1]))([h, adj])
 
             h = tf.boolean_mask(h, mask)
 

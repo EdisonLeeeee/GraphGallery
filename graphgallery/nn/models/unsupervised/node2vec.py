@@ -33,7 +33,7 @@ class Node2vec(UnsupervisedModel):
 
     """
 
-    def __init__(self, adj, labels, graph=None, device='CPU:0', seed=None, name=None, **kwargs):
+    def __init__(self, adj, labels, graph=None, device='cpu:0', seed=None, name=None, **kwargs):
 
         super().__init__(adj, labels=labels, device=device, seed=seed, name=name, **kwargs)
 

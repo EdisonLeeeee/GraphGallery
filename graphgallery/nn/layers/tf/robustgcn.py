@@ -4,8 +4,6 @@ from tensorflow.keras.layers import Layer, Dropout, LeakyReLU
 
 import tensorflow as tf
 
-from graphgallery import config
-
 
 class GaussionConvolution_F(Layer):
     """

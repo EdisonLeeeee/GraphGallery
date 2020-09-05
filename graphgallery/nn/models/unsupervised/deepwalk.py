@@ -31,7 +31,7 @@ class Deepwalk(UnsupervisedModel):
 
     """
 
-    def __init__(self, adj, labels, device='CPU:0', seed=None, name=None, **kwargs):
+    def __init__(self, adj, labels, device='cpu:0', seed=None, name=None, **kwargs):
 
         super().__init__(adj, labels=labels, device=device, seed=seed, name=name, **kwargs)
 

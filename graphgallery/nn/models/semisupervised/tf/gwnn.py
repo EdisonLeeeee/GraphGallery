@@ -9,7 +9,7 @@ from graphgallery.nn.layers import WaveletConvolution, Gather
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.wavelet import wavelet_basis
-from graphgallery.utils.shape import SetEqual
+from graphgallery.utils.shape import EqualVarLength
 from graphgallery import astensors, asintarr, normalize_x, Bunch
 
 
@@ -23,19 +23,15 @@ class GWNN(SemiSupervisedModel):
 
     """
 
-    def __init__(self, adj, x, labels, order=3, wavelet_s=1.2,
+    def __init__(self, graph, order=3, wavelet_s=1.2,
                  threshold=1e-4, wavelet_normalize=True, norm_x=None,
-                 device='CPU:0', seed=None, name=None, **kwargs):
+                 device='cpu:0', seed=None, name=None, **kwargs):
         """Creat a Graph Wavelet Neural Networks (GWNN) model.
 
         Parameters:
         ----------
-            adj: Scipy.sparse.csr_matrix, shape [n_nodes, n_nodes]
-                The input `symmetric` adjacency matrix in CSR format.
-            x: Numpy.ndarray, shape [n_nodes, n_attrs]. 
-                Node attribute matrix in Numpy format.
-            labels: Numpy.ndarray, shape [n_nodes]
-                Array, where each entry represents respective node's label(s).
+            graph: graphgallery.data.Graph
+                A sparse, attributed, labeled graph.
             order: positive integer. optional 
                 The power (order) of approximated wavelet matrix using Chebyshev polynomial 
                 filter. (default :obj: `3`)
@@ -63,7 +59,7 @@ class GWNN(SemiSupervisedModel):
             kwargs: other customed keyword Parameters.
 
         """
-        super().__init__(adj, x, labels, device=device, seed=seed, name=name, **kwargs)
+        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
 
         self.order = order
         self.wavelet_s = wavelet_s
@@ -101,11 +97,11 @@ class GWNN(SemiSupervisedModel):
 
         with tf.device(self.device):
 
-            x = Input(batch_shape=[self.n_nodes, self.n_attrs], dtype=self.floatx, name='attributes')
-            wavelet = Input(batch_shape=[self.n_nodes, self.n_nodes], dtype=self.floatx, sparse=True, name='wavelet')
-            inverse_wavelet = Input(batch_shape=[self.n_nodes, self.n_nodes], dtype=self.floatx, sparse=True,
+            x = Input(batch_shape=[None, self.n_attrs], dtype=self.floatx, name='attr_matrix')
+            wavelet = Input(batch_shape=[None, None], dtype=self.floatx, sparse=True, name='wavelet')
+            inverse_wavelet = Input(batch_shape=[None, None], dtype=self.floatx, sparse=True,
                                     name='inverse_wavelet')
-            index = Input(batch_shape=[None],  dtype=self.intx, name='index')
+            index = Input(batch_shape=[None],  dtype=self.intx, name='node_index')
 
             h = x
             for hid, activation, dropout, l2_norm in zip(hiddens, activations, dropouts, l2_norms):

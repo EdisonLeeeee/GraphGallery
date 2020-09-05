@@ -11,7 +11,7 @@ from graphgallery.nn.layers import GraphConvolution, SparseConversion
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import ClusterMiniBatchSequence
 from graphgallery.utils.graph import partition_graph
-from graphgallery.utils.shape import SetEqual
+from graphgallery.utils.shape import EqualVarLength
 from graphgallery import Bunch, sample_mask, normalize_x, normalize_adj, astensors, asintarr, sparse_adj_to_edges
 
 
@@ -29,18 +29,14 @@ class ClusterGCN(SemiSupervisedModel):
 
     """
 
-    def __init__(self, adj, x, labels, graph=None, n_clusters=None,
-                 norm_adj=-0.5, norm_x=None, device='CPU:0', seed=None, name=None, **kwargs):
+    def __init__(self, graph, nx_graph=None, n_clusters=None,
+                 norm_adj=-0.5, norm_x=None, device='cpu:0', seed=None, name=None, **kwargs):
         """
         Parameters:
         ----------
-            adj: Scipy.sparse.csr_matrix, shape [n_nodes, n_nodes]
-                The input `symmetric` adjacency matrix in CSR format.
-            x: Numpy.ndarray, shape [n_nodes, n_attrs]. 
-                Node attribute matrix in Numpy format.
-            labels: Numpy.ndarray, shape [n_nodes]
-                Array, where each entry represents respective node's label(s).
-            graph: networkx.DiGraph. optional
+            graph: graphgallery.data.Graph
+                A sparse, attributed, labeled graph.
+            nx_graph: networkx.DiGraph. optional
                 The networkx graph that converted by `adj`, if not specified (`None`),
                 the graph will be converted by `adj` automatically, but it will take lots
                 of time. (default :obj: `None`)
@@ -67,7 +63,7 @@ class ClusterGCN(SemiSupervisedModel):
 
         """
 
-        super().__init__(adj, x, labels=labels, device=device, seed=seed, name=name, **kwargs)
+        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
 
         if not n_clusters:
             n_clusters = self.n_classes
@@ -75,19 +71,19 @@ class ClusterGCN(SemiSupervisedModel):
         self.n_clusters = n_clusters
         self.norm_adj = norm_adj
         self.norm_x = norm_x
-        self.preprocess(adj, x, graph)
+        self.preprocess(adj, x, nx_graph)
 
-    def preprocess(self, adj, x, graph=None):
+    def preprocess(self, adj, x, nx_graph=None):
         super().preprocess(adj, x)
         adj, x = self.adj, self.x
 
         if self.norm_x:
             x = normalize_x(x, norm=self.norm_x)
 
-        if graph is None:
-            graph = nx.from_scipy_sparse_matrix(adj, create_using=nx.DiGraph)
+        if nx_graph is None:
+            nx_graph = nx.from_scipy_sparse_matrix(adj, create_using=nx.DiGraph)
 
-        batch_adj, batch_x, self.cluster_member = partition_graph(adj, x, graph,
+        batch_adj, batch_x, self.cluster_member = partition_graph(adj, x, nx_graph,
                                                                   n_clusters=self.n_clusters)
 
         if self.norm_adj:
@@ -117,7 +113,7 @@ class ClusterGCN(SemiSupervisedModel):
 
         with tf.device(self.device):
 
-            x = Input(batch_shape=[None, self.n_attrs], dtype=self.floatx, name='attributes')
+            x = Input(batch_shape=[None, self.n_attrs], dtype=self.floatx, name='attr_matrix')
             edge_index = Input(batch_shape=[None, 2], dtype=tf.int64, name='edge_index')
             edge_weight = Input(batch_shape=[None], dtype=self.floatx, name='edge_weight')
             mask = Input(batch_shape=[None],  dtype=tf.bool, name='mask')

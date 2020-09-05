@@ -10,7 +10,7 @@ from tensorflow.keras.activations import softmax
 from graphgallery.nn.layers import GraphConvolution, Gather
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.nn.models import SemiSupervisedModel
-from graphgallery.utils.shape import SetEqual
+from graphgallery.utils.shape import EqualVarLength
 from graphgallery import astensors, asintarr, normalize_x, normalize_adj, Bunch
 
 
@@ -23,18 +23,14 @@ class GMNN(SemiSupervisedModel):
 
     """
 
-    def __init__(self, adj, x, labels, norm_adj=-0.5, norm_x=None,
-                 device='CPU:0', seed=None, name=None, **kwargs):
+    def __init__(self, graph, norm_adj=-0.5, norm_x=None,
+                 device='cpu:0', seed=None, name=None, **kwargs):
         """Creat a Graph Markov Neural Networks (GMNN) model
 
         Parameters:
         ----------
-            adj: Scipy.sparse.csr_matrix, shape [n_nodes, n_nodes]
-                The input `symmetric` adjacency matrix in CSR format.
-            x: Numpy.ndarray, shape [n_nodes, n_attrs]. 
-                Node attribute matrix in Numpy format.
-            labels: Numpy.ndarray, shape [n_nodes]
-                Array, where each entry represents respective node's label(s).
+            graph: graphgallery.data.Graph
+                A sparse, attributed, labeled graph.
             norm_adj: float scalar. optional 
                 The normalize rate for adjacency matrix `adj`. (default: :obj:`-0.5`, 
                 i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
@@ -53,7 +49,7 @@ class GMNN(SemiSupervisedModel):
             kwargs: other customed keyword Parameters.
 
         """
-        super().__init__(adj, x, labels, device=device, seed=seed, name=name, **kwargs)
+        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
 
         self.norm_adj = norm_adj
         self.norm_x = norm_x
@@ -94,7 +90,7 @@ class GMNN(SemiSupervisedModel):
             x_p = Input(batch_shape=[None, self.n_classes], dtype=self.floatx, name='input_p')
             x_q = Input(batch_shape=[None, self.n_attrs], dtype=self.floatx, name='input_q')
             adj = Input(batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix')
-            index = Input(batch_shape=[None],  dtype=self.intx, name='index')
+            index = Input(batch_shape=[None],  dtype=self.intx, name='node_index')
 
             def build_GCN(x):
                 h = x

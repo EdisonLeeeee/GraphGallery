@@ -5,11 +5,13 @@ import pickle as pkl
 
 
 from graphgallery.data import Dataset
-from graphgallery.data.io import makedirs, files_exist, download_file, SparseGraph
+from graphgallery.data.io import makedirs, files_exist, download_file
 from graphgallery.data.preprocess import process_planetoid_datasets
+from graphgallery.data.graph import Graph
 
 
-DATASETS =  {'citeseer', 'cora', 'pubmed'}
+DATASETS = {'citeseer', 'cora', 'pubmed'}
+
 
 class Planetoid(Dataset):
     """The citation network datasets "Cora", "CiteSeer" and "PubMed" from the
@@ -57,7 +59,7 @@ class Planetoid(Dataset):
 
         print("Processing...")
         adj, attributes, labels, idx_train, idx_val, idx_test = process_planetoid_datasets(self.name, self.raw_paths)
-        self.graph = SparseGraph(adj, attributes, labels).eliminate_self_loops().to_undirected().to_dense_attrs()
+        self.graph = Graph(adj, attributes, labels).eliminate_self_loops()
         self.idx_train = idx_train
         self.idx_val = idx_val
         self.idx_test = idx_test

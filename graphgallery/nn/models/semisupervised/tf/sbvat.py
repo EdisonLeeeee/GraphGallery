@@ -14,7 +14,7 @@ from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import NodeSampleSequence
 from graphgallery.utils.sample import find_4o_nbrs
 from graphgallery.utils.bvat_utils import get_normalized_vector, kl_divergence_with_logit, entropy_y_x
-from graphgallery.utils.shape import SetEqual
+from graphgallery.utils.shape import EqualVarLength
 from graphgallery import astensors, asintarr, normalize_x, normalize_adj, Bunch
 
 
@@ -29,19 +29,15 @@ class SBVAT(SemiSupervisedModel):
 
     """
 
-    def __init__(self, adj, x, labels, n_samples=100,
-                 norm_adj=-0.5, norm_x=None, device='CPU:0', seed=None, name=None, **kwargs):
+    def __init__(self, graph, n_samples=100,
+                 norm_adj=-0.5, norm_x=None, device='cpu:0', seed=None, name=None, **kwargs):
         """Creat an sample-based Batch Virtual Adversarial Training 
         Graph Convolutional Networks (SBVAT) model.
 
         Parameters:
         ----------
-            adj: Scipy.sparse.csr_matrix, shape [n_nodes, n_nodes]
-                The input `symmetric` adjacency matrix in CSR format.
-            x: Numpy.ndarray, shape [n_nodes, n_attrs]. 
-                Node attribute matrix in Numpy format.
-            labels: Numpy.ndarray, shape [n_nodes]
-                Array, where each entry represents respective node's label(s).
+            graph: graphgallery.data.Graph
+                A sparse, attributed, labeled graph.
             n_samples (Positive integer, optional): 
                 The number of sampled subset nodes in the graph where the shortest path 
                 length between them is at least 4. (default :obj: `50`)
@@ -61,7 +57,7 @@ class SBVAT(SemiSupervisedModel):
             name: string. optional
                 Specified name for the model. (default: :str: `class.__name__`)
         """
-        super().__init__(adj, x, labels, device=device, seed=seed, name=name, **kwargs)
+        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
 
         self.norm_adj = norm_adj
         self.norm_x = norm_x
@@ -100,9 +96,9 @@ class SBVAT(SemiSupervisedModel):
 
         with tf.device(self.device):
 
-            x = Input(batch_shape=[self.n_nodes, self.n_attrs], dtype=self.floatx, name='attributes')
+            x = Input(batch_shape=[self.n_nodes, self.n_attrs], dtype=self.floatx, name='attr_matrix')
             adj = Input(batch_shape=[self.n_nodes, self.n_nodes], dtype=self.floatx, sparse=True, name='adj_matrix')
-            index = Input(batch_shape=[None],  dtype=self.intx, name='index')
+            index = Input(batch_shape=[None],  dtype=self.intx, name='node_index')
 
             GCN_layers = []
             dropout_layers = []

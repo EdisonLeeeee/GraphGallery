@@ -10,7 +10,7 @@ from graphgallery.nn.layers import MeanAggregator, GCNAggregator
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import SAGEMiniBatchSequence
 from graphgallery.utils.graph import construct_neighbors
-from graphgallery.utils.shape import SetEqual
+from graphgallery.utils.shape import EqualVarLength
 from graphgallery import astensors, asintarr, normalize_x, Bunch
 
 
@@ -22,17 +22,13 @@ class GraphSAGE(SemiSupervisedModel):
         Pytorch implementation: <https://github.com/williamleif/graphsage-simple/>
     """
 
-    def __init__(self, adj, x, labels, n_samples=[15, 5], norm_x=None,
-                 device='CPU:0', seed=None, name=None, **kwargs):
+    def __init__(self, graph, n_samples=[15, 5], norm_x=None,
+                 device='cpu:0', seed=None, name=None, **kwargs):
         """Creat a SAmple and aggreGatE Graph Convolutional Networks (GraphSAGE) model.
         Parameters:
         ----------
-            adj: Scipy.sparse.csr_matrix, shape [n_nodes, n_nodes]
-                The input `symmetric` adjacency matrix in CSR format.
-            x: Numpy.ndarray, shape [n_nodes, n_attrs]. 
-                Node attribute matrix in Numpy format.
-            labels: Numpy.ndarray, shape [n_nodes]
-                Array, where each entry represents respective node's label(s).
+            graph: graphgallery.data.Graph
+                A sparse, attributed, labeled graph.
             n_samples: List of positive integer. optional
                 The number of sampled neighbors for each nodes in each layer. 
                 (default :obj: `[10, 5]`, i.e., sample `10` first-order neighbors and 
@@ -53,7 +49,7 @@ class GraphSAGE(SemiSupervisedModel):
 
 
         """
-        super().__init__(adj, x, labels, device=device, seed=seed, name=name, **kwargs)
+        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
 
         self.n_samples = n_samples
         self.norm_x = norm_x
@@ -99,7 +95,7 @@ class GraphSAGE(SemiSupervisedModel):
             else:
                 raise ValueError(f'Invalid value of `aggrator`, allowed values (`mean`, `gcn`), but got `{aggrator}`.')
 
-            x = Input(batch_shape=[None, self.n_attrs], dtype=self.floatx, name='attributes')
+            x = Input(batch_shape=[None, self.n_attrs], dtype=self.floatx, name='attr_matrix')
             nodes = Input(batch_shape=[None], dtype=self.intx, name='nodes')
             neighbors = [Input(batch_shape=[None], dtype=self.intx, name=f'neighbors_{hop}')
                          for hop, n_sample in enumerate(self.n_samples)]

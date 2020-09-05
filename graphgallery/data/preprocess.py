@@ -35,15 +35,16 @@ def train_val_test_split_tabular(N,
 
 def largest_connected_components(sparse_graph, n_components=1):
     """Select the largest connected components in the graph.
+
     Parameters
     ----------
-    sparse_graph : SparseGraph
+    sparse_graph : Graph
         Input graph.
     n_components : int, default 1
         Number of largest connected components to keep.
     Returns
     -------
-    sparse_graph : SparseGraph
+    sparse_graph : Graph
         Subgraph of the input graph where only the nodes in largest n_components are kept.
     """
     _, component_indices = sp.csgraph.connected_components(sparse_graph.adj_matrix)
@@ -55,29 +56,25 @@ def largest_connected_components(sparse_graph, n_components=1):
     return create_subgraph(sparse_graph, nodes_to_keep=nodes_to_keep)
 
 
-def create_subgraph(sparse_graph, _sentinel=None, nodes_to_remove=None, nodes_to_keep=None):
+def create_subgraph(sparse_graph, *, nodes_to_remove=None, nodes_to_keep=None):
     """Create a graph with the specified subset of nodes.
     Exactly one of (nodes_to_remove, nodes_to_keep) should be provided, while the other stays None.
     Note that to avoid confusion, it is required to pass node indices as named Parameters to this function.
+
     Parameters
     ----------
-    sparse_graph : SparseGraph
+    sparse_graph : Graph
         Input graph.
-    _sentinel : None
-        Internal, to prevent passing positional Parameters. Do not use.
     nodes_to_remove : array-like of int
         Indices of nodes that have to removed.
     nodes_to_keep : array-like of int
         Indices of nodes that have to be kept.
     Returns
     -------
-    sparse_graph : SparseGraph
+    sparse_graph : Graph
         Graph with specified nodes removed.
     """
     # Check that Parameters are passed correctly
-    if _sentinel is not None:
-        raise ValueError("Only call `create_subgraph` with named Parameters',"
-                         " (nodes_to_remove=...) or (nodes_to_keep=...)")
     if nodes_to_remove is None and nodes_to_keep is None:
         raise ValueError("Either nodes_to_remove or nodes_to_keep must be provided.")
     elif nodes_to_remove is not None and nodes_to_keep is not None:
@@ -89,11 +86,11 @@ def create_subgraph(sparse_graph, _sentinel=None, nodes_to_remove=None, nodes_to
     else:
         raise RuntimeError("This should never happen.")
 
-    sparse_graph.adj_matrix = sparse_graph.adj_matrix[nodes_to_keep][:, nodes_to_keep]
-    if sparse_graph.attr_matrix is not None:
-        sparse_graph.attr_matrix = sparse_graph.attr_matrix[nodes_to_keep]
-    if sparse_graph.labels is not None:
-        sparse_graph.labels = sparse_graph.labels[nodes_to_keep]
+    sparse_graph._adj_matrix = sparse_graph._adj_matrix[nodes_to_keep][:, nodes_to_keep]
+    if sparse_graph._attr_matrix is not None:
+        sparse_graph._attr_matrix = sparse_graph._attr_matrix[nodes_to_keep]
+    if sparse_graph._labels is not None:
+        sparse_graph._labels = sparse_graph._labels[nodes_to_keep]
     if sparse_graph.node_names is not None:
         sparse_graph.node_names = sparse_graph.node_names[nodes_to_keep]
     return sparse_graph
@@ -144,75 +141,58 @@ def remove_underrepresented_classes(g, train_examples_per_class, val_examples_pe
     return create_subgraph(g, nodes_to_keep=keep_indices)
 
 
-def to_sparse_tensor(M, value=False):
-    """Convert a scipy sparse matrix to a tf SparseTensor or SparseTensorValue.
-    Parameters
-    ----------
-    M : scipy.sparse.sparse
-        Matrix in Scipy sparse format.
-    value : bool, default False
-        Convert to tf.SparseTensorValue if True, else to tf.SparseTensor.
-    Returns
-    -------
-    S : tf.SparseTensor or tf.SparseTensorValue
-        Matrix as a sparse tensor.
-    Author: Oleksandr Shchur
-    """
-    M = sp.coo_matrix(M)
-    if value:
-        return tf.SparseTensorValue(np.vstack((M.row, M.col)).T, M.data, M.shape)
+def get_train_val_test_split(stratify,
+                             train_examples_per_class,
+                             val_examples_per_class,
+                             test_examples_per_class=None,
+                             random_state=None):
+
+    random_state = np.random.RandomState(random_state)
+    remaining_indices = list(range(stratify.shape[0]))
+
+    idx_train = sample_per_class(stratify, train_examples_per_class,
+                                 random_state=random_state)
+
+    idx_val = sample_per_class(stratify, val_examples_per_class,
+                               random_state=random_state,
+                               forbidden_indices=idx_train)
+    forbidden_indices = np.concatenate((idx_train, idx_val))
+
+    if test_examples_per_class is not None:
+        idx_test = sample_per_class(stratify, test_examples_per_class,
+                                    random_state=random_state,
+                                    forbidden_indices=forbidden_indices)
     else:
-        return tf.SparseTensor(np.vstack((M.row, M.col)).T, M.data, M.shape)
+        idx_test = np.setdiff1d(remaining_indices, forbidden_indices)
+
+    # assert that there are no duplicates in sets
+    assert len(set(idx_train)) == len(idx_train)
+    assert len(set(idx_val)) == len(idx_val)
+    assert len(set(idx_test)) == len(idx_test)
+    # assert sets are mutually exclusive
+    assert len(set(idx_train) - set(idx_val)) == len(set(idx_train))
+    assert len(set(idx_train) - set(idx_test)) == len(set(idx_train))
+    assert len(set(idx_val) - set(idx_test)) == len(set(idx_val))
+
+    return idx_train, idx_val, idx_test
 
 
-def parse_index_file(filename):
-    """Parse index file."""
-    index = []
-    for line in open(filename):
-        index.append(int(line.strip()))
-    return index
+def sample_per_class(stratify, num_examples_per_class,
+                     forbidden_indices=None, random_state=None):
 
+    n_classes = stratify.max() + 1
+    n_samples = stratify.shape[0]
+    sample_indices_per_class = {index: [] for index in range(n_classes)}
 
-def process_planetoid_datasets(name, paths):
-    objs = []
-    for fname in paths:
-        with open(fname, 'rb') as f:
-            try:
-                obj = pkl.load(f, encoding='latin1')
-            except pkl.PickleError:
-                obj = parse_index_file(fname)
+    # get indices sorted by class
+    for class_index in range(n_classes):
+        for sample_index in range(n_samples):
+            if stratify[sample_index] == class_index:
+                if forbidden_indices is None or sample_index not in forbidden_indices:
+                    sample_indices_per_class[class_index].append(sample_index)
 
-            objs.append(obj)
-
-    x, tx, allx, y, ty, ally, graph, test_idx_reorder = objs
-    test_idx_range = np.sort(test_idx_reorder)
-
-    if name.lower() == 'citeseer':
-        # Fix citeseer dataset (there are some isolated nodes in the graph)
-        # Find isolated nodes, add them as zero-vecs into the right position
-        test_idx_range_full = np.arange(min(test_idx_reorder), max(test_idx_reorder)+1)
-        tx_extended = sp.lil_matrix((len(test_idx_range_full), x.shape[1]))
-        tx_extended[test_idx_range-min(test_idx_range), :] = tx
-        tx = tx_extended
-        ty_extended = np.zeros((len(test_idx_range_full), y.shape[1]))
-        ty_extended[test_idx_range-min(test_idx_range), :] = ty
-        ty = ty_extended
-
-    attributes = sp.vstack((allx, tx)).tolil()
-    attributes[test_idx_reorder, :] = attributes[test_idx_range, :]
-
-    adj = nx.adjacency_matrix(nx.from_dict_of_lists(graph, create_using=nx.DiGraph()))
-
-    labels = np.vstack((ally, ty))
-    labels[test_idx_reorder, :] = labels[test_idx_range, :]
-
-    idx_train = np.arange(len(y))
-    idx_val = np.arange(len(y), len(y)+500)
-    idx_test = test_idx_range
-
-    labels = labels.argmax(1)
-
-    adj = adj.astype('float32')
-    attributes = attributes.astype('float32')
-
-    return adj, attributes, labels, idx_train, idx_val, idx_test
+    # get specified number of indices for each class
+    return np.concatenate(
+        [random_state.choice(sample_indices_per_class[class_index], num_examples_per_class, replace=False)
+         for class_index in range(len(sample_indices_per_class))
+         ])

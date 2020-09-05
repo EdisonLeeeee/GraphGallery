@@ -10,7 +10,7 @@ from graphgallery.nn.layers import GraphConvolution, Gather
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.bvat_utils import kl_divergence_with_logit, entropy_y_x
-from graphgallery.utils.shape import SetEqual
+from graphgallery.utils.shape import EqualVarLength
 from graphgallery import astensors, asintarr, normalize_x, normalize_adj, Bunch
 
 
@@ -24,19 +24,15 @@ class OBVAT(SemiSupervisedModel):
 
     """
 
-    def __init__(self, adj, x, labels, norm_adj=-0.5, norm_x=None,
-                 device='CPU:0', seed=None, name=None, **kwargs):
+    def __init__(self, graph, norm_adj=-0.5, norm_x=None,
+                 device='cpu:0', seed=None, name=None, **kwargs):
         """Creat an optimization-based Batch Virtual Adversarial Training 
         Graph Convolutional Networks (OBVAT) model.
 
         Parameters:
         ----------
-            adj: Scipy.sparse.csr_matrix, shape [n_nodes, n_nodes]
-                The input `symmetric` adjacency matrix in CSR format.
-            x: Numpy.ndarray, shape [n_nodes, n_attrs]. 
-                Node attribute matrix in Numpy format.
-            labels: Numpy.ndarray, shape [n_nodes]
-                Array, where each entry represents respective node's label(s).
+            graph: graphgallery.data.Graph
+                A sparse, attributed, labeled graph.
             norm_adj: float scalar. optional
                 The normalize rate for adjacency matrix `adj`. (default: :obj:`-0.5`,
                 i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}})
@@ -55,7 +51,7 @@ class OBVAT(SemiSupervisedModel):
             kwargs: other customed keyword Parameters.
         """
 
-        super().__init__(adj, x, labels, device=device, seed=seed, name=name, **kwargs)
+        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
 
         self.norm_adj = norm_adj
         self.norm_x = norm_x
@@ -90,9 +86,9 @@ class OBVAT(SemiSupervisedModel):
 
         with tf.device(self.device):
 
-            x = Input(batch_shape=[None, self.n_attrs], dtype=self.floatx, name='attributes')
+            x = Input(batch_shape=[None, self.n_attrs], dtype=self.floatx, name='attr_matrix')
             adj = Input(batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix')
-            index = Input(batch_shape=[None],  dtype=self.intx, name='index')
+            index = Input(batch_shape=[None],  dtype=self.intx, name='node_index')
             GCN_layers = []
             dropout_layers = []
             for hid, activation, dropout, l2_norm in zip(hiddens, activations, dropouts, l2_norms):

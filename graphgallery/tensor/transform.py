@@ -2,9 +2,9 @@ import tensorflow as tf
 import numpy as np
 import scipy.sparse as sp
 
-from numbers import Number
-from tensorflow.keras import backend as K
-from graphgallery import config
+from graphgallery import intx, floatx
+
+# TODO: add torch version?
 
 
 def normalize_adj_tensor(adj, rate=-0.5, self_loop=1.0):
@@ -19,15 +19,15 @@ def add_self_loop_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0):
 
     if n_nodes is None:
         n_nodes = tf.reduce_max(edge_index) + 1
-        
-    if edge_weight is None:
-        edge_weight = tf.ones([edge_index.shape[0]], dtype=config.floatx())        
 
-    range_arr = tf.range(n_nodes, dtype=config.intx())
+    if edge_weight is None:
+        edge_weight = tf.ones([edge_index.shape[0]], dtype=floatx())
+
+    range_arr = tf.range(n_nodes, dtype=intx())
     diagnal_edge_index = tf.stack([range_arr, range_arr], axis=1)
     updated_edge_index = tf.concat([edge_index, diagnal_edge_index], axis=0)
 
-    diagnal_edge_weight = tf.zeros([n_nodes], dtype=config.floatx()) + fill_weight
+    diagnal_edge_weight = tf.zeros([n_nodes], dtype=floatx()) + fill_weight
     updated_edge_weight = tf.concat([edge_weight, diagnal_edge_weight], axis=0)
 
     return updated_edge_index, updated_edge_weight
@@ -36,7 +36,7 @@ def add_self_loop_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0):
 def normalize_edge_tensor(edge_index, edge_weight=None, n_nodes=None, fill_weight=1.0, rate=-0.5):
 
     if edge_weight is None:
-        edge_weight = tf.ones([edge_index.shape[0]], dtype=config.floatx())
+        edge_weight = tf.ones([edge_index.shape[0]], dtype=floatx())
 
     if n_nodes is None:
         n_nodes = tf.reduce_max(edge_index) + 1

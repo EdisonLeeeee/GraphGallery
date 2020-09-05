@@ -1,17 +1,23 @@
 """Inspired by Keras backend config API. https://tensorflow.google.com """
 
 
+from graphgallery.backend.modules import TensorFlowBackend, PyTorchBackend
 from tensorflow.keras import backend as K
 
+_BACKEND = TensorFlowBackend()
+_MODULE_NAME = {"tf": "tf", "tensorflow": "tf",
+                "th": "th", "torch": "th", "pytorch": "th"}
+_MODULE = {"tf": TensorFlowBackend,
+           "th": PyTorchBackend}
 
-epsilon = K.epsilon
-set_epsilon = K.set_epsilon
 
 # The type of integer to use throughout a session.
 _INTX = 'int32'
-
 # The type of float to use throughout a session.
 _FLOATX = 'float32'
+
+epsilon = K.epsilon
+set_epsilon = K.set_epsilon
 
 
 def floatx():
@@ -33,7 +39,7 @@ def set_floatx(dtype):
     """Sets the default float type.
 
     Parameters:
-      value: String; `'float16'`, `'float32'`, or `'float64'`.
+      dtype: String; `'float16'`, `'float32'`, or `'float64'`.
 
     Example:
     >>> graphgallery.floatx()
@@ -71,7 +77,7 @@ def set_intx(dtype):
     """Sets the default integer type.
 
     Parameters:
-      value: String; `'int16'`, `'int32'`, or `'int64'`.
+      dtype: String; `'int16'`, `'int32'`, or `'int64'`.
 
     Example:
     >>> graphgallery.intx()
@@ -88,3 +94,45 @@ def set_intx(dtype):
         raise ValueError('Unknown floatx type: ' + str(dtype))
     global _INTX
     _INTX = str(dtype)
+
+
+def backend():
+    """Returns the default backend module, as a string.
+
+    E.g. `'TensorFlow 2.1.0 Backend'`, 
+      `'PyTorch 1.6.0+cpu Backend'`.
+
+    Returns:
+      String, the current default backend module.
+
+    Example:
+    >>> graphgallery.backend()
+    'TensorFlow 2.1.0 Backend'
+    """
+    return _BACKEND
+
+
+def set_backend(module_name):
+    """Sets the default backend module.
+
+    Parameters:
+      module_name: String; `'tf'`, `'tensorflow'`,
+             `'th'`, `'torch'`, 'pytorch'`.
+
+    Example:
+    >>> graphgallery.backend()
+    'TensorFlow 2.1.0 Backend'
+    >>> graphgallery.set_backend('torch')
+    >>> graphgallery.backend()
+    'PyTorch 1.6.0+cpu Backend'
+
+    Raises:
+      ValueError: In case of invalid value.
+    """
+
+    if module_name not in {'tf', 'tensorflow',
+                           'th', 'torch', 'pytorch'}:
+        raise ValueError('Unknown module name: ' + str(module_name))
+    global _BACKEND
+    name = _MODULE_NAME.get(module_name)
+    _BACKEND = _MODULE.get(name)()

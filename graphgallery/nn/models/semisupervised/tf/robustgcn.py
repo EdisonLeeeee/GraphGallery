@@ -8,7 +8,7 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy
 from graphgallery.nn.layers import GaussionConvolution_F, GaussionConvolution_D, Sample, Gather
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
-from graphgallery.utils.shape import SetEqual, repeat
+from graphgallery.utils.shape import EqualVarLength, repeat
 from graphgallery import astensors, asintarr, normalize_x, normalize_adj, Bunch
 
 
@@ -21,18 +21,14 @@ class RobustGCN(SemiSupervisedModel):
 
     """
 
-    def __init__(self, adj, x, labels, norm_adj=[-0.5, -1], norm_x=None,
-                 device='CPU:0', seed=None, name=None, **kwargs):
+    def __init__(self, graph, norm_adj=[-0.5, -1], norm_x=None,
+                 device='cpu:0', seed=None, name=None, **kwargs):
         """Creat a Robust Graph Convolutional Networks (RobustGCN or RGCN) model.
 
         Parameters:
         ----------
-            adj: Scipy.sparse.csr_matrix, shape [n_nodes, n_nodes]
-                The input `symmetric` adjacency matrix in CSR format.
-            x: Numpy.ndarray, shape [n_nodes, n_attrs]. 
-                Node attribute matrix in Numpy format.
-            labels: Numpy.ndarray, shape [n_nodes]
-                Array, where each entry represents respective node's label(s).
+            graph: graphgallery.data.Graph
+                A sparse, attributed, labeled graph.
             norm_adj: List of float scalar, optional 
                 The normalize rate for adjacency matrix `adj`. 
                 (default: :obj:`[-0.5, -1]`, i.e., two normalized `adj` with rate `-0.5` 
@@ -52,7 +48,7 @@ class RobustGCN(SemiSupervisedModel):
             kwargs: other customed keyword Parameters.
 
         """
-        super().__init__(adj, x, labels, device=device, seed=seed, name=name, **kwargs)
+        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
 
         self.norm_adj = norm_adj
         self.norm_x = norm_x
@@ -86,10 +82,10 @@ class RobustGCN(SemiSupervisedModel):
         ######################################
 
         with tf.device(self.device):
-            x = Input(batch_shape=[None, self.n_attrs], dtype=self.floatx, name='attributes')
+            x = Input(batch_shape=[None, self.n_attrs], dtype=self.floatx, name='attr_matrix')
             adj = [Input(batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix_1'),
                    Input(batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix_2')]
-            index = Input(batch_shape=[None],  dtype=self.intx, name='index')
+            index = Input(batch_shape=[None],  dtype=self.intx, name='node_index')
 
             h = x
             mean, var = GaussionConvolution_F(hiddens[0], gamma=gamma,
@@ -102,7 +98,7 @@ class RobustGCN(SemiSupervisedModel):
 
                 # KL loss
                 kl_loss = kl*KL_divergence
-        
+
             # additional layers (usually unnecessay)
             for hid, activation, dropout, l2_norm in zip(hiddens[1:], activations[1:], dropouts[1:], l2_norms[1:]):
 
@@ -117,11 +113,10 @@ class RobustGCN(SemiSupervisedModel):
             model = Model(inputs=[x, *adj, index], outputs=h)
             model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
                           optimizer=Adam(lr=lr), metrics=['accuracy'])
-            
+
             if kl:
                 model.add_loss(kl_loss)
             self.model = model
-            
 
     def train_sequence(self, index):
         index = asintarr(index)

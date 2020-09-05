@@ -45,7 +45,7 @@ class UnsupervisedModel(BaseModel):
 
     """
 
-    def __init__(self, adj, x=None, labels=None, device='CPU:0', seed=None, name=None, **kwargs):
+    def __init__(self, adj, x=None, labels=None, device='cpu:0', seed=None, name=None, **kwargs):
         super().__init__(adj, x, labels, device, seed, name, **kwargs)
 
         self.embeddings = None

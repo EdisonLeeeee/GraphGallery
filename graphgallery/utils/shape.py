@@ -17,27 +17,32 @@ def repeat(src, length):
     return src
 
 
-class SetEqual:
+_BASE_VARS = ['hiddens', 'activations', 'dropouts', 'l2_norms']
+
+
+class EqualVarLength:
     """
     A decorator class which makes the values of the variables 
     equal in max-length. variables consist of 'hiddens', 'activations', 
     'dropouts', 'l2_norms' and other customed ones in `var_names`.
-    
+
     """
-    base_var_names = ['hiddens', 'activations', 'dropouts', 'l2_norms']
-    
-    def __init__(self, var_names=[]):
+
+    def __init__(self, include=[], exclude=[]):
         """
-        var_names: string, a list or tuple of string.
+        include: string, a list or tuple of string, optional.
             the customed variable name except for 'hiddens', 'activations', 
             'dropouts', 'l2_norms'. 
+        exclude: string, a list or tuple of string, optional.
+            the exclued variable name.
         """
-        self.var_names = list(var_names) + self.base_var_names
-        
+        self.var_names = list(include) + self.base_vars()
+        self.var_names = list(set(self.var_names)-set(exclude))
+
     def __call__(self, func):
-        
+
         @functools.wraps(func)
-        def set_equal_in_length(*args, **kwargs):
+        def decorator(*args, **kwargs):
             ArgSpec = inspect.getfullargspec(func)
 
             if not ArgSpec.defaults or len(ArgSpec.args) != len(ArgSpec.defaults) + 1:
@@ -49,7 +54,7 @@ class SetEqual:
 
             paras = dict(zip(ArgSpec.args[1:], values))
             paras.update(kwargs)
-            
+
             max_length = 0
             for var in self.var_names:
                 val = paras.get(var, None)
@@ -62,7 +67,11 @@ class SetEqual:
                     paras[var] = repeat(val, max_length)
 
             return func(model, **paras)
-        return set_equal_in_length
+        return decorator
+
+    @staticmethod
+    def base_vars():
+        return _BASE_VARS
 
 
 def get_length(arr):

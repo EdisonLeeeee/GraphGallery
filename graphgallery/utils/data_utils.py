@@ -7,7 +7,7 @@ from sklearn.preprocessing import normalize, StandardScaler, RobustScaler
 
 from graphgallery.utils.shape import repeat
 from graphgallery.utils.type_check import is_list_like
-from graphgallery import config
+from graphgallery import intx, floatx
 
 __all__ = ['sample_mask', 'normalize_adj', 'normalize_x', 'Bunch']
 
@@ -80,11 +80,11 @@ def normalize_adj(adj_matrics, rate=-0.5, self_loop=1.0):
         adj = adj + self_loop*sp.eye(adj.shape[0])
 
         if r is None:
-            return adj.astype(config.floatx(), copy=False)
+            return adj.astype(floatx(), copy=False)
 
         degree = adj.sum(1).A1
         degree_power = np.power(degree, r)
-        
+
         if sp.isspmatrix(adj):
             adj = adj.tocoo(copy=False)
             adj.data = degree_power[adj.row] * adj.data * degree_power[adj.col]
@@ -92,9 +92,9 @@ def normalize_adj(adj_matrics, rate=-0.5, self_loop=1.0):
         else:
             degree_power_matrix = sp.diags(degree_power)
             adj = degree_power_matrix @ adj @ degree_power_matrix
-            adj = adj.A        
+            adj = adj.A
 
-        return adj.astype(config.floatx(), copy=False)
+        return adj.astype(floatx(), copy=False)
 
     if is_list_like(adj_matrics) and not isinstance(adj_matrics[0], Number):
         size = len(adj_matrics)

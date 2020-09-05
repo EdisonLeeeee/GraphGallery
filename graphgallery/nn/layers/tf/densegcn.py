@@ -4,14 +4,14 @@ from tensorflow.keras.layers import Layer, Dropout, LeakyReLU
 import tensorflow as tf
 
 
-class DenseGraphConv(Layer):
+class DenseConvolution(Layer):
     """
         Basic graph convolution layer as in: 
         `Semi-Supervised Classification with Graph Convolutional Networks` (https://arxiv.org/abs/1609.02907)
         Tensorflow 1.x implementation: https://github.com/tkipf/gcn
         Pytorch implementation: https://github.com/tkipf/pygcn
 
-        `DenseGraphConv` implements the `Dense` operation:
+        `DenseConvolution` implements the `Dense` operation:
         `output = activation(adj @ x @ kernel + bias)`
         where `x` is the attribute matrix, `adj` is the adjacency matrix with dense form,
         `activation` is the element-wise activation function

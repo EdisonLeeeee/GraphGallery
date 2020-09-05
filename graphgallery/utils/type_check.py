@@ -1,7 +1,10 @@
 
-import tensorflow as tf
 import numpy as np
+import tensorflow as tf
 import collections.abc as collections_abc
+import tensorflow.keras.backend as K
+
+from graphgallery import backend
 
 
 def is_list_like(x):
@@ -16,23 +19,26 @@ def is_list_like(x):
     return isinstance(x, collections_abc.Sequence)
 
 
-def is_sparse(x):
-    """Check whether `x` is sparse Tensor.
+def is_tf_sparse_tensor(x):
+    """Check whether `x` is a sparse Tensor.
 
-    Check whether an object is a `tf.sparse.SparseTensor` or
-    `tf.compat.v1.SparseTensorValue`.
+    Check whether an object is a `tf.sparse.SparseTensor`.
 
     NOTE: This method is different with `scipy.sparse.is_sparse`
-    which is checking  whether `x` is Scipy sparse matrix.
+    which checks whether `x` is Scipy sparse matrix.
 
     Parameters:
         x: A python object to check.
 
     Returns:
-        `True` iff `x` is a `tf.sparse.SparseTensor` or
-        `tf.compat.v1.SparseTensorValue`.
+        `True` iff `x` is a `tf.sparse.SparseTensor`.
     """
-    return isinstance(x, (tf.sparse.SparseTensor, tf.sparse.SparseTensorValue))
+    return K.is_sparse(x)
+
+
+def is_torch_sparse_tensor(x):
+    ...
+    # TODO torch
 
 
 def is_tensor_or_variable(x):
@@ -44,7 +50,14 @@ def is_tensor_or_variable(x):
     Returns:
         `True` iff `x` is a `tf.Tensor` or `tf.Variable` or `tf.RaggedTensor`.
     """
-    return tf.is_tensor(x) or isinstance(x, tf.Variable) or isinstance(x, tf.RaggedTensor)
+    if backend().kind == "T":
+        return any((tf.is_tensor(x),
+                    isinstance(x, tf.Variable),
+                    isinstance(x, tf.RaggedTensor),
+                    is_tf_sparse_tensor(x)))
+    else:
+        ...
+        # TODO torch
 
 
 def is_interger_scalar(x):

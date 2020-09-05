@@ -20,18 +20,14 @@ class SGC(SemiSupervisedModel):
 
     """
 
-    def __init__(self, adj, x, labels, order=2,
+    def __init__(self, graph, order=2,
                  norm_adj=-0.5, norm_x=None,
-                 device='CPU:0', seed=None, name=None, **kwargs):
+                 device='cpu:0', seed=None, name=None, **kwargs):
         """Creat a Simplifying Graph Convolutional Networks (SGC).
         Parameters:
         ----------
-            adj: Scipy.sparse.csr_matrix, shape [n_nodes, n_nodes]
-                The input `symmetric` adjacency matrix in CSR format.
-            x: Numpy.ndarray, shape [n_nodes, n_attrs]. 
-                Node attribute matrix in Numpy format.
-            labels: Numpy.ndarray, shape [n_nodes]
-                Array, where each entry represents respective node's label(s).
+            graph: graphgallery.data.Graph
+                A sparse, attributed, labeled graph.
             order: positive integer. optional 
                 The power (order) of adjacency matrix. (default :obj: `2`, i.e., math:: A^{2})
             norm_adj: float scalar. optional 
@@ -52,7 +48,7 @@ class SGC(SemiSupervisedModel):
             kwargs: other customed keyword Parameters.
 
         """
-        super().__init__(adj, x, labels, device=device, seed=seed, name=name, **kwargs)
+        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
 
         self.order = order
         self.norm_adj = norm_adj
@@ -96,7 +92,7 @@ class SGC(SemiSupervisedModel):
 
         with tf.device(self.device):
 
-            x = Input(batch_shape=[None, self.n_attrs], dtype=self.floatx, name='attributes')
+            x = Input(batch_shape=[None, self.n_attrs], dtype=self.floatx, name='attr_matrix')
 
             output = Dense(self.n_classes, activation=None, use_bias=use_bias, kernel_regularizer=regularizers.l2(l2_norms[0]))(x)
 

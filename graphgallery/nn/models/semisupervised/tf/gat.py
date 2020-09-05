@@ -1,47 +1,42 @@
+import scipy.sparse as sp
 import tensorflow as tf
 from tensorflow.keras import Model, Input
-from tensorflow.keras.layers import Dropout, Dense
+from tensorflow.keras.layers import Dropout, Softmax
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers import PropConvolution, Gather
+from graphgallery.nn.layers import GraphAttention, Gather
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
-from graphgallery.utils.shape import SetEqual
+from graphgallery.utils.shape import EqualVarLength
 from graphgallery import astensors, asintarr, normalize_x, normalize_adj, Bunch
 
 
-class DAGNN(SemiSupervisedModel):
+class GAT(SemiSupervisedModel):
     """
-        Implementation of Deep Adaptive Graph Neural Network (DAGNN). 
-        `Towards Deeper Graph Neural Networks <https://arxiv.org/abs/2007.09296>`
-        Pytorch implementation: <https://github.com/mengliu1998/DeeperGNN>
+        Implementation of Graph Attention Networks (GAT).
+        `Graph Attention Networks <https://arxiv.org/abs/1710.10903>`
+        Tensorflow 1.x implementation: <https://github.com/PetarV-/GAT>
+        Pytorch implementation: <https://github.com/Diego999/pyGAT>
+        Keras implementation: <https://github.com/danielegrattarola/keras-gat>
+
     """
 
-    def __init__(self, adj, x, labels, norm_adj=-0.5, norm_x=None, K=10,
-                 device='CPU:0', seed=None, name=None, **kwargs):
-        """Creat a DAGNN model.
-
+    def __init__(self, graph, norm_adj=None, norm_x=None,
+                 device='cpu:0', seed=None, name=None, **kwargs):
+        """Creat a Graph Attention Networks (GAT) model.
         Parameters:
         ----------
-            adj: Scipy.sparse.csr_matrix, shape [n_nodes, n_nodes]
-                The input `symmetric` adjacency matrix in CSR format.
-            x: Numpy.ndarray, shape [n_nodes, n_attrs]. 
-                Node attribute matrix in Numpy format.
-            labels: Numpy.ndarray, shape [n_nodes]
-                Array, where each entry represents respective node's label(s).
-            norm_adj: float scalar. optional 
-                The normalize rate for adjacency matrix `adj`. (default: :obj:`-0.5`, 
-                i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
+            graph: graphgallery.data.Graph
+                A sparse, attributed, labeled graph.
+            norm_adj: float scalar. optional
+                The normalize rate for adjacency matrix `adj`. (default: :obj: `None`)
             norm_x: string. optional
                 How to normalize the node attribute matrix. See `graphgallery.normalize_x`
                 (default :obj: `None`)
-            K: integer. optional
-                propagation steps of adjacency matrix.
-                (default :obj: 10)
-            device: string. optional 
-                The device where the model is running on. You can specified `CPU` or `GPU` 
+            device: string. optional
+                The device where the model is running on. You can specified `CPU` or `GPU`
                 for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
             seed: interger scalar. optional 
                 Used in combination with `tf.random.set_seed` & `np.random.seed` 
@@ -52,11 +47,10 @@ class DAGNN(SemiSupervisedModel):
             kwargs: other customed keyword Parameters.
 
         """
-        super().__init__(adj, x, labels, device=device, seed=seed, name=name, **kwargs)
+        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
 
         self.norm_adj = norm_adj
         self.norm_x = norm_x
-        self.K = K
         self.preprocess(adj, x)
 
     def preprocess(self, adj, x):
@@ -65,6 +59,8 @@ class DAGNN(SemiSupervisedModel):
 
         if self.norm_adj:
             adj = normalize_adj(adj, self.norm_adj)
+        else:
+            adj = adj + sp.eye(adj.shape[0])
 
         if self.norm_x:
             x = normalize_x(x, norm=self.norm_x)
@@ -72,15 +68,18 @@ class DAGNN(SemiSupervisedModel):
         with tf.device(self.device):
             self.x_norm, self.adj_norm = astensors([x, adj])
 
-    def build(self, hiddens=[64], activations=['relu'], dropouts=[0.5], l2_norms=[5e-3],
-              lr=0.01, use_bias=False):
+    def build(self, hiddens=[8], n_heads=[8], activations=['elu'], dropouts=[0.6], l2_norms=[5e-4],
+              lr=0.01, use_bias=True):
 
         ############# Record paras ###########
         local_paras = locals()
         local_paras.pop('self')
         paras = Bunch(**local_paras)
-        hiddens, activations, dropouts, l2_norms = set_equal_in_length(hiddens, activations, dropouts, l2_norms)
-        paras.update(Bunch(hiddens=hiddens, activations=activations, dropouts=dropouts, l2_norms=l2_norms))
+        (hiddens, n_heads,
+         activations, dropouts,
+         l2_norms) = set_equal_in_length(hiddens, n_heads, activations, dropouts, l2_norms)
+        paras.update(Bunch(hiddens=hiddens, n_heads=n_heads, activations=activations,
+                           dropouts=dropouts, l2_norms=l2_norms))
         # update all parameters
         self.paras.update(paras)
         self.model_paras.update(paras)
@@ -88,19 +87,23 @@ class DAGNN(SemiSupervisedModel):
 
         with tf.device(self.device):
 
-            x = Input(batch_shape=[None, self.n_attrs], dtype=self.floatx, name='attributes')
+            x = Input(batch_shape=[None, self.n_attrs], dtype=self.floatx, name='attr_matrix')
             adj = Input(batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix')
-            index = Input(batch_shape=[None], dtype=self.intx, name='index')
+            index = Input(batch_shape=[None],  dtype=self.intx, name='node_index')
 
             h = x
-            for hid, activation, dropout, l2_norm in zip(hiddens, activations, dropouts, l2_norms):
-                h = Dense(hid, use_bias=use_bias, activation=activation, kernel_regularizer=regularizers.l2(l2_norm))(h)
-                h = Dropout(dropout)(h)
+            for hid, n_head, activation, dropout, l2_norm in zip(hiddens, n_heads, activations, dropouts, l2_norms):
+                h = GraphAttention(hid, attn_heads=n_head,
+                                   attn_heads_reduction='concat',
+                                   use_bias=use_bias,
+                                   activation=activation,
+                                   kernel_regularizer=regularizers.l2(l2_norm),
+                                   attn_kernel_regularizer=regularizers.l2(l2_norm),
+                                   )([h, adj])
+                h = Dropout(rate=dropout)(h)
 
-            h = Dense(self.n_classes, use_bias=use_bias, activation=activation, kernel_regularizer=regularizers.l2(l2_norm))(h)
-            h = Dropout(dropout)(h)
-
-            h = PropConvolution(self.K, use_bias=use_bias, activation='sigmoid', kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
+            h = GraphAttention(self.n_classes, use_bias=use_bias,
+                               attn_heads=1, attn_heads_reduction='average')([h, adj])
             h = Gather()([h, index])
 
             model = Model(inputs=[x, adj, index], outputs=h)
