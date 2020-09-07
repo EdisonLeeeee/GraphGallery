@@ -2,11 +2,11 @@
 import numpy as np
 import tensorflow as tf
 
-from graphgallery import astensors, sample_mask
-from graphgallery.sequence.node_sequence import NodeSequence
+from graphgallery import astensors
+from graphgallery.sequence.base_sequence import Sequence
 
 
-class NodeSampleSequence(NodeSequence):
+class NodeSampleSequence(Sequence):
 
     def __init__(
         self,

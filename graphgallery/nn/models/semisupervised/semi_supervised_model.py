@@ -1,6 +1,7 @@
 import os
 import logging
 import warnings
+import os.path as osp
 import numpy as np
 import tensorflow as tf
 import scipy.sparse as sp
@@ -11,9 +12,10 @@ from tensorflow.python.keras import callbacks as callbacks_module
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from tensorflow.keras.callbacks import History as tf_History
 
-from graphgallery.nn.models import BaseModel
+from graphgallery.nn.models import base_model
 from graphgallery.utils.history import History
 from graphgallery.utils.tqdm import tqdm
+from graphgallery.data.io import makedirs_from_path
 from graphgallery import asintarr
 
 # Ignora warnings:
@@ -24,7 +26,28 @@ warnings.filterwarnings(
     'ignore', '.*Converting sparse IndexedSlices to a dense Tensor of unknown shape.*')
 
 
-class SemiSupervisedModel(BaseModel):
+class SemiSupervisedModel(base_model):
+    def process(self, graph=None):
+        """pre-process for the input graph, including manipulations
+        on adjacency matrix and attribute matrix, and finally convert
+        them into tensor (optional).
+
+        Note:
+        ----------
+            This method will call the method 'process_step'
+            and it must be implemented for processing the graph.
+
+        Parameters:
+        ----------
+            graph: Graph or MultiGraph.
+        """
+        if graph is not None:
+            self.graph = graph
+        return self.process_step()
+
+    def process_step(self):
+        raise NotImplementedError
+
     def build(self):
         """Build the model using customized hyperparameters.
 
@@ -56,6 +79,22 @@ class SemiSupervisedModel(BaseModel):
         """
         raise NotImplementedError
 
+    def build_from_model(self, model):
+        """Build the model using customized model.
+
+        Note:
+        ----------
+            This method must be called before training/testing/predicting.
+            Use `model.build()`. The following `Parameters` are only commonly used
+            Parameters, and other model-specific Parameters are not introduced as follows.
+
+        Parameters:
+        ----------
+            model: a tensorflow model or a pytorch model.
+
+        """
+        self.model = model
+
     def train_v1(self, idx_train, idx_val=None,
                  epochs=200, early_stopping=None,
                  verbose=False, save_best=True, weight_path=None, as_model=False,
@@ -69,10 +108,10 @@ class SemiSupervisedModel(BaseModel):
         Parameters:
         ----------
             idx_train: Numpy array-like, `list`, Integer scalar or
-                `graphgallery.NodeSequence`.
+                `graphgallery.Sequence`.
                 The index of nodes (or sequence) that will be used during training.
             idx_val: Numpy array-like, `list`, Integer scalar or
-                `graphgallery.NodeSequence`, optional
+                `graphgallery.Sequence`, optional
                 The index of nodes (or sequence) that will be used for validation.
                 (default :obj: `None`, i.e., do not use validation during training)
             epochs: integer
@@ -107,7 +146,8 @@ class SemiSupervisedModel(BaseModel):
 
         # Check if model has been built
         if self.model is None:
-            raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')
+            raise RuntimeError(
+                'You must compile your model before training/testing/predicting. Use `model.build()`.')
 
         if isinstance(idx_train, Sequence):
             train_data = idx_train
@@ -139,9 +179,9 @@ class SemiSupervisedModel(BaseModel):
             history.register_early_stop_metric('loss')
 
         if verbose:
-            pbar = tqdm(range(1, epochs+1))
+            pbar = tqdm(range(1, epochs + 1))
         else:
-            pbar = range(1, epochs+1)
+            pbar = range(1, epochs + 1)
 
         for epoch in pbar:
 
@@ -180,7 +220,7 @@ class SemiSupervisedModel(BaseModel):
 
         if save_best:
             self.load(weight_path, as_model=as_model)
-            os.remove(weight_path)
+            remove_tf_weights(weight_path)
 
         return history
 
@@ -197,10 +237,10 @@ class SemiSupervisedModel(BaseModel):
 
         Parameters:
         ----------
-            idx_train: Numpy array-like, `list`, Integer scalar or `graphgallery.NodeSequence`
+            idx_train: Numpy array-like, `list`, Integer scalar or `graphgallery.Sequence`
                 The index of nodes (or sequence) that will be used during training.
             idx_val: Numpy array-like, `list`, Integer scalar or
-                `graphgallery.NodeSequence`, optional
+                `graphgallery.Sequence`, optional
                 The index of nodes (or sequence) that will be used for validation.
                 (default :obj: `None`, i.e., do not use validation during training)
             epochs: Postive integer
@@ -241,7 +281,8 @@ class SemiSupervisedModel(BaseModel):
         model = self.model
         # Check if model has been built
         if model is None:
-            raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')
+            raise RuntimeError(
+                'You must compile your model before training/testing/predicting. Use `model.build()`.')
         model.stop_training = False
 
         if isinstance(idx_train, Sequence):
@@ -278,11 +319,9 @@ class SemiSupervisedModel(BaseModel):
 
         if save_best:
             if not weight_path:
-                if not os.path.exists(self.weight_dir):
-                    os.makedirs(self.weight_dir)
-                    logging.log(logging.WARNING, f"Make Directory in {self.weight_dir}")
-
                 weight_path = self.weight_path
+
+            makedirs_from_path(weight_path)
 
             if not weight_path.endswith('.h5'):
                 weight_path += '.h5'
@@ -305,9 +344,9 @@ class SemiSupervisedModel(BaseModel):
         callbacks.on_train_begin()
 
         if verbose:
-            pbar = tqdm(range(1, epochs+1))
+            pbar = tqdm(range(1, epochs + 1))
         else:
-            pbar = range(1, epochs+1)
+            pbar = range(1, epochs + 1)
 
         for epoch in pbar:
             callbacks.on_epoch_begin(epoch)
@@ -322,7 +361,8 @@ class SemiSupervisedModel(BaseModel):
             if validation:
 
                 val_loss, val_accuracy = self.test_step(val_data)
-                training_logs.update({'val_loss': val_loss, 'val_acc': val_accuracy})
+                training_logs.update(
+                    {'val_loss': val_loss, 'val_acc': val_accuracy})
 
             callbacks.on_epoch_end(epoch, training_logs)
 
@@ -340,8 +380,7 @@ class SemiSupervisedModel(BaseModel):
 
         if save_best:
             self.load(weight_path, as_model=as_model)
-            if os.path.exists(weight_path):
-                os.remove(weight_path)
+            remove_tf_weights(weight_path)
 
         return his
 
@@ -359,10 +398,10 @@ class SemiSupervisedModel(BaseModel):
         Parameters:
         ----------
             idx_train: Numpy array-like, `list`, Integer scalar or
-                `graphgallery.NodeSequence`.
+                `graphgallery.Sequence`.
                 The index of nodes (or sequence) that will be used during training.
             idx_val: Numpy array-like, `list`, Integer scalar or
-                `graphgallery.NodeSequence`, optional
+                `graphgallery.Sequence`, optional
                 The index of nodes (or sequence) that will be used for validation.
                 (default :obj: `None`, i.e., do not use validation during training)
             epochs: Postive integer
@@ -400,11 +439,13 @@ class SemiSupervisedModel(BaseModel):
         """
 
         if not tf.__version__ >= '2.2.0':
-            raise RuntimeError(f'This method is only work for tensorflow version >= 2.2.0.')
+            raise RuntimeError(
+                f'This method is only work for tensorflow version >= 2.2.0.')
 
         # Check if model has been built
         if self.model is None:
-            raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')
+            raise RuntimeError(
+                'You must compile your model before training/testing/predicting. Use `model.build()`.')
 
         if isinstance(idx_train, Sequence):
             train_data = idx_train
@@ -441,10 +482,9 @@ class SemiSupervisedModel(BaseModel):
 
         if save_best:
             if not weight_path:
-                if not os.path.exists(self.weight_dir):
-                    os.makedirs(self.weight_dir)
-                    logging.log(logging.WARNING, f"Make Directory in {self.weight_dir}")
                 weight_path = self.weight_path
+
+            makedirs_from_path(weight_path)
 
             if not weight_path.endswith('.h5'):
                 weight_path += '.h5'
@@ -479,7 +519,8 @@ class SemiSupervisedModel(BaseModel):
             if validation:
 
                 val_loss, val_accuracy = self.test_step(val_data)
-                training_logs.update({'val_loss': val_loss, 'val_acc': val_accuracy})
+                training_logs.update(
+                    {'val_loss': val_loss, 'val_acc': val_accuracy})
 
             callbacks.on_epoch_end(epoch, training_logs)
 
@@ -490,8 +531,7 @@ class SemiSupervisedModel(BaseModel):
 
         if save_best:
             self.load(weight_path, as_model=as_model)
-            if os.path.exists(weight_path):
-                os.remove(weight_path)
+            remove_tf_weights(weight_path)
 
         return model.history
 
@@ -506,7 +546,7 @@ class SemiSupervisedModel(BaseModel):
 
         Parameters:
         ----------
-            index: Numpy array-like, `list`, Integer scalar or `graphgallery.NodeSequence`
+            index: Numpy array-like, `list`, Integer scalar or `graphgallery.Sequence`
                 The index of nodes (or sequence) that will be tested.
 
 
@@ -520,7 +560,8 @@ class SemiSupervisedModel(BaseModel):
 
         # TODO record test logs like self.train()
         if not self.model:
-            raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')
+            raise RuntimeError(
+                'You must compile your model before training/testing/predicting. Use `model.build()`.')
 
         if isinstance(index, Sequence):
             test_data = index
@@ -537,7 +578,7 @@ class SemiSupervisedModel(BaseModel):
         """
             Forward propagation for the input `sequence`. This method will be called
             in `train`. If you want to specify your customized data during traing/testing/predicting,
-            you can implement a subclass of `graphgallery.NodeSequence`, wich is iterable
+            you can implement a subclass of `graphgallery.Sequence`, wich is iterable
             and yields `inputs` and `labels` in each iteration.
 
 
@@ -548,7 +589,7 @@ class SemiSupervisedModel(BaseModel):
 
         Parameters:
         ----------
-            sequence: `graphgallery.NodeSequence`
+            sequence: `graphgallery.Sequence`
                 The input `sequence`.
 
         Return:
@@ -566,7 +607,7 @@ class SemiSupervisedModel(BaseModel):
         """
             Forward propagation for the input `sequence`. This method will be called
             in `test`. If you want to specify your customized data during traing/testing/predicting,
-            you can implement a subclass of `graphgallery.NodeSequence`, wich is iterable
+            you can implement a subclass of `graphgallery.Sequence`, wich is iterable
             and yields `inputs` and `labels` in each iteration.
 
         Note:
@@ -576,7 +617,7 @@ class SemiSupervisedModel(BaseModel):
 
         Parameters:
         ----------
-            sequence: `graphgallery.NodeSequence`
+            sequence: `graphgallery.Sequence`
                 The input `sequence`.
 
         Return:
@@ -590,7 +631,7 @@ class SemiSupervisedModel(BaseModel):
         # TODO: torch step
         return test_step_tf(self.model, sequence, self.device)
 
-    def predict(self, sequence):
+    def predict(self, index):
         """
             Predict the output probability for the input `sequence`.
 
@@ -602,7 +643,7 @@ class SemiSupervisedModel(BaseModel):
 
         Parameters:
         ----------
-            sequence: `graphgallery.NodeSequence`
+            sequence: `graphgallery.Sequence`
                 The input `sequence`.
 
         Return:
@@ -613,8 +654,13 @@ class SemiSupervisedModel(BaseModel):
         """
 
         if not self.model:
-            raise RuntimeError('You must compile your model before training/testing/predicting. Use `model.build()`.')
+            raise RuntimeError(
+                'You must compile your model before training/testing/predicting. Use `model.build()`.')
 
+        sequence = self.predict_sequence(index)
+        return self.predict_step(sequence)
+
+    def predict_step(self, sequence):
         # TODO: torch step
         return predict_step_tf(self.model, sequence, self.device)
 
@@ -630,7 +676,7 @@ class SemiSupervisedModel(BaseModel):
 
         Return:
         ----------
-            The sequence of `graphgallery.NodeSequence` for the nodes.
+            The sequence of `graphgallery.Sequence` for the nodes.
 
         """
 
@@ -651,7 +697,7 @@ class SemiSupervisedModel(BaseModel):
 
         Return:
         ----------
-            The sequence of `graphgallery.NodeSequence` for the nodes.
+            The sequence of `graphgallery.Sequence` for the nodes.
         """
         return self.train_sequence(index)
 
@@ -670,15 +716,14 @@ class SemiSupervisedModel(BaseModel):
 
         Return:
         ----------
-            The sequence of `graphgallery.NodeSequence` for the nodes.
+            The sequence of `graphgallery.Sequence` for the nodes.
         """
         return self.train_sequence(index)
 
     def _test_predict(self, index):
-        index = asintarr(index)
         logit = self.predict(index)
         predict_class = logit.argmax(1)
-        labels = self.labels[index]
+        labels = self.graph.labels[index]
         return (predict_class == labels).mean()
 
     def reset_weights(self):
@@ -706,7 +751,7 @@ class SemiSupervisedModel(BaseModel):
             raise RuntimeError("The model has not attribute `optimizer`!")
         model.optimizer.learning_rate.assign(value)
 
-    @property
+    @ property
     def close(self):
         """Close the session of model and set `built` to False."""
         K.clear_session()
@@ -724,7 +769,8 @@ def train_step_tf(model, sequence, device):
 
     with tf.device(device):
         for inputs, labels in sequence:
-            loss, accuracy = model.train_on_batch(x=inputs, y=labels, reset_metrics=False)
+            loss, accuracy = model.train_on_batch(
+                x=inputs, y=labels, reset_metrics=False)
 
     return loss, accuracy
 
@@ -734,7 +780,8 @@ def test_step_tf(model, sequence, device):
 
     with tf.device(device):
         for inputs, labels in sequence:
-            loss, accuracy = model.test_on_batch(x=inputs, y=labels, reset_metrics=False)
+            loss, accuracy = model.test_on_batch(
+                x=inputs, y=labels, reset_metrics=False)
 
     return loss, accuracy
 
@@ -753,3 +800,12 @@ def predict_step_tf(model, sequence, device):
     else:
         logits = logits[0]
     return logits
+
+def remove_tf_weights(file_path):
+    if not file_path.endswith('.h5'):
+        file_path_with_h5 = file_path + '.h5'
+    else:
+        file_path_with_h5 = file_path
+        
+    if osp.exists(file_path):
+        os.remove(file_path)    

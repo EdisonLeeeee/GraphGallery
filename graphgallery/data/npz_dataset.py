@@ -8,14 +8,14 @@ from graphgallery.data.io import makedirs, files_exist, download_file
 from graphgallery.data.graph import Graph, load_dataset
 
 
-DATASETS = ('citeseer', 'cora', 'cora_ml', 'cora_full', 'amazon_cs', 'amazon_photo',
-            'coauthor_cs', 'coauthor_phy', 'polblogs', 'pubmed', 'reddit')
+_DATASETS = ('citeseer', 'cora', 'cora_ml', 'cora_full', 'amazon_cs', 'amazon_photo',
+             'coauthor_cs', 'coauthor_phy', 'polblogs', 'pubmed', 'reddit')
 
 
 class NPZDataset(Dataset):
 
     github_url = "https://raw.githubusercontent.com/EdisonLeeeee/GraphData/master/datasets/npz/{}.npz"
-    supported_datasets = DATASETS
+    supported_datasets = _DATASETS
 
     def __init__(self, name, root=None, url=None, standardize=False, verbose=True):
         name = name.lower()

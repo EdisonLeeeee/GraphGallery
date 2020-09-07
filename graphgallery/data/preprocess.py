@@ -19,15 +19,18 @@ def train_val_test_split_tabular(N,
     idx = np.arange(N)
     idx_train_and_val, idx_test = train_test_split(idx,
                                                    random_state=random_state,
-                                                   train_size=(train_size + val_size),
+                                                   train_size=(
+                                                       train_size + val_size),
                                                    test_size=test_size,
                                                    stratify=stratify)
     if stratify is not None:
         stratify = stratify[idx_train_and_val]
         idx_train, idx_val = train_test_split(idx_train_and_val,
                                               random_state=random_state,
-                                              train_size=(train_size / (train_size + val_size)),
-                                              test_size=(val_size / (train_size + val_size)),
+                                              train_size=(
+                                                  train_size / (train_size + val_size)),
+                                              test_size=(
+                                                  val_size / (train_size + val_size)),
                                               stratify=stratify)
 
     return idx_train, idx_val, idx_test
@@ -47,9 +50,11 @@ def largest_connected_components(sparse_graph, n_components=1):
     sparse_graph : Graph
         Subgraph of the input graph where only the nodes in largest n_components are kept.
     """
-    _, component_indices = sp.csgraph.connected_components(sparse_graph.adj_matrix)
+    _, component_indices = sp.csgraph.connected_components(
+        sparse_graph.adj_matrix)
     component_sizes = np.bincount(component_indices)
-    components_to_keep = np.argsort(component_sizes)[::-1][:n_components]  # reverse order to sort descending
+    # reverse order to sort descending
+    components_to_keep = np.argsort(component_sizes)[::-1][:n_components]
     nodes_to_keep = [
         idx for (idx, component) in enumerate(component_indices) if component in components_to_keep
     ]
@@ -76,21 +81,25 @@ def create_subgraph(sparse_graph, *, nodes_to_remove=None, nodes_to_keep=None):
     """
     # Check that Parameters are passed correctly
     if nodes_to_remove is None and nodes_to_keep is None:
-        raise ValueError("Either nodes_to_remove or nodes_to_keep must be provided.")
+        raise ValueError(
+            "Either nodes_to_remove or nodes_to_keep must be provided.")
     elif nodes_to_remove is not None and nodes_to_keep is not None:
-        raise ValueError("Only one of nodes_to_remove or nodes_to_keep must be provided.")
+        raise ValueError(
+            "Only one of nodes_to_remove or nodes_to_keep must be provided.")
     elif nodes_to_remove is not None:
-        nodes_to_keep = [i for i in range(sparse_graph.num_nodes()) if i not in nodes_to_remove]
+        nodes_to_keep = [i for i in range(
+            sparse_graph.num_nodes()) if i not in nodes_to_remove]
     elif nodes_to_keep is not None:
         nodes_to_keep = sorted(nodes_to_keep)
     else:
         raise RuntimeError("This should never happen.")
 
-    sparse_graph._adj_matrix = sparse_graph._adj_matrix[nodes_to_keep][:, nodes_to_keep]
-    if sparse_graph._attr_matrix is not None:
-        sparse_graph._attr_matrix = sparse_graph._attr_matrix[nodes_to_keep]
-    if sparse_graph._labels is not None:
-        sparse_graph._labels = sparse_graph._labels[nodes_to_keep]
+    sparse_graph = sparse_graph.copy()
+    sparse_graph.adj_matrix = sparse_graph.adj_matrix[nodes_to_keep][:, nodes_to_keep]
+    if sparse_graph.attr_matrix is not None:
+        sparse_graph.attr_matrix = sparse_graph.attr_matrix[nodes_to_keep]
+    if sparse_graph.labels is not None:
+        sparse_graph.labels = sparse_graph.labels[nodes_to_keep]
     if sparse_graph.node_names is not None:
         sparse_graph.node_names = sparse_graph.node_names[nodes_to_keep]
     return sparse_graph
@@ -135,8 +144,10 @@ def remove_underrepresented_classes(g, train_examples_per_class, val_examples_pe
     """
     min_examples_per_class = train_examples_per_class + val_examples_per_class
     examples_counter = Counter(g.labels)
-    keep_classes = set(class_ for class_, count in examples_counter.items() if count > min_examples_per_class)
-    keep_indices = [i for i in range(len(g.labels)) if g.labels[i] in keep_classes]
+    keep_classes = set(class_ for class_, count in examples_counter.items(
+    ) if count > min_examples_per_class)
+    keep_indices = [i for i in range(
+        len(g.labels)) if g.labels[i] in keep_classes]
 
     return create_subgraph(g, nodes_to_keep=keep_indices)
 
@@ -196,3 +207,58 @@ def sample_per_class(stratify, num_examples_per_class,
         [random_state.choice(sample_indices_per_class[class_index], num_examples_per_class, replace=False)
          for class_index in range(len(sample_indices_per_class))
          ])
+
+
+def parse_index_file(filename):
+    """Parse index file."""
+    index = []
+    for line in open(filename):
+        index.append(int(line.strip()))
+    return index
+
+
+def process_planetoid_datasets(name, paths):
+    objs = []
+    for fname in paths:
+        with open(fname, 'rb') as f:
+            try:
+                obj = pkl.load(f, encoding='latin1')
+            except pkl.PickleError:
+                obj = parse_index_file(fname)
+
+            objs.append(obj)
+
+    x, tx, allx, y, ty, ally, graph, test_idx_reorder = objs
+    test_idx_range = np.sort(test_idx_reorder)
+
+    if name.lower() == 'citeseer':
+        # Fix citeseer dataset (there are some isolated nodes in the graph)
+        # Find isolated nodes, add them as zero-vecs into the right position
+        test_idx_range_full = np.arange(
+            min(test_idx_reorder), max(test_idx_reorder) + 1)
+        tx_extended = sp.lil_matrix((len(test_idx_range_full), x.shape[1]))
+        tx_extended[test_idx_range - min(test_idx_range), :] = tx
+        tx = tx_extended
+        ty_extended = np.zeros((len(test_idx_range_full), y.shape[1]))
+        ty_extended[test_idx_range - min(test_idx_range), :] = ty
+        ty = ty_extended
+
+    attributes = sp.vstack((allx, tx)).tolil()
+    attributes[test_idx_reorder, :] = attributes[test_idx_range, :]
+
+    adj = nx.adjacency_matrix(nx.from_dict_of_lists(
+        graph, create_using=nx.DiGraph()))
+
+    labels = np.vstack((ally, ty))
+    labels[test_idx_reorder, :] = labels[test_idx_range, :]
+
+    idx_train = np.arange(len(y))
+    idx_val = np.arange(len(y), len(y) + 500)
+    idx_test = test_idx_range
+
+    labels = labels.argmax(1)
+
+    adj = adj.astype('float32')
+    attributes = attributes.astype('float32')
+
+    return adj, attributes, labels, idx_train, idx_val, idx_test

@@ -1,21 +1,23 @@
 import os
 import random
 import logging
+import torch
 
 import numpy as np
 import tensorflow as tf
 import os.path as osp
 import scipy.sparse as sp
 
-from graphgallery import intx, floatx, backend
-from graphgallery.data.io import makedirs
+from graphgallery import intx, floatx, backend, set_backend
+from graphgallery.data import Graph
+from graphgallery.data.io import makedirs_from_path
 from graphgallery.utils.raise_error import raise_if_kwargs
 
 
-class BaseModel:
+class base_model:
     """Base model for semi-supervised learning and unsupervised learning."""
 
-    def __init__(self, graph, device="cpu:0", seed=None, name=None, **kwargs):
+    def __init__(self, *graph, device="cpu:0", seed=None, name=None, **kwargs):
         """Creat an Base model for semi-supervised learning and unsupervised learning.
 
         Parameters:
@@ -32,11 +34,24 @@ class BaseModel:
             kwargs: other customed keyword Parameters.
 
         """
+        if len(graph) == 1:
+            graph, = graph
+            if isinstance(graph, Graph):
+                ...
+            elif sp.isspmatrix(graph):
+                graph = Graph(graph)
+            else:
+                # TODO: multi graph
+                ...
+        else:
+            graph = Graph(*graph)
 
+        id = np.random.RandomState(None).randint(100)
+        
         if seed is not None:
             np.random.seed(seed)
-            random.seed(seed)
             # TODO: torch set seed
+            random.seed(seed)
             tf.random.set_seed(seed)
 
         if name is None:
@@ -44,11 +59,11 @@ class BaseModel:
 
         raise_if_kwargs(kwargs)
 
-        self.graph = graph  # TODO: whether to use copy?
-
+        self.graph = graph.copy()  # TODO: check the input graph
         self.seed = seed
         self.name = name
         self.device = parse_device(device)
+#         self.device = device
         self.idx_train = None
         self.idx_val = None
         self.idx_test = None
@@ -58,29 +73,29 @@ class BaseModel:
         self._custom_objects = None  # used for save/load model
 
         # log path
+        # add random integer to avoid duplication
         self.weight_path = osp.join(osp.expanduser(osp.normpath("/tmp/weight")),
-                                    f"{name}_weights")
+                                    f"{name}_{id}_weights")
 
         # data types, default: `float32` and `int32`
         self.floatx = floatx()
         self.intx = intx()
 
     def save(self, path=None, as_model=False):
-        if not osp.exists(self.weight_dir):
-            makedirs(self.weight_dir)
-            logging.log(logging.WARNING, f"Make Directory in {self.weight_dir}")
+        makedirs_from_path(path)
 
         if as_model:
-            save_tf_model(model, path)
+            save_tf_model(self.model, path)
         else:
-            save_tf_weights(model, path)
+            save_tf_weights(self.model, path)
 
     def load(self, path=None, as_model=False):
         if not path:
             path = self.weight_path
 
         if as_model:
-            self.model = load_tf_model(path, custom_objects=self.custom_objects)
+            self.model = load_tf_model(
+                path, custom_objects=self.custom_objects)
         else:
             load_tf_weights(self.model, path)
 
@@ -91,7 +106,8 @@ class BaseModel:
         except KeyError:
             if hasattr(self.model, attr):
                 return getattr(self.model, attr)
-            raise AttributeError(f"'{self.name}' and '{self.name}.model' objects have no attribute '{attr}'")
+            raise AttributeError(
+                f"'{self.name}' and '{self.name}.model' objects have no attribute '{attr}'")
 
     @property
     def model(self):
@@ -125,10 +141,6 @@ def load_tf_model(file_path, custom_objects=None):
 
 
 def save_tf_model(model, file_path):
-    file_dir = '/'.join(file_path.split('/')[:-1])
-    if not osp.exists(file_dir):
-        makedirs(file_dir)
-        logging.log(logging.WARNING, f"Make Directory in {file_path}.")
 
     if not file_path.endswith('.h5'):
         file_path = file_path + '.h5'
@@ -137,10 +149,6 @@ def save_tf_model(model, file_path):
 
 
 def save_tf_weights(model, file_path):
-    file_dir = '/'.join(file_path.split('/')[:-1])
-    if not osp.exists(file_dir):
-        makedirs(file_dir)
-        logging.log(logging.WARNING, f"Make Directory in {file_path}.")
 
     if not file_path.endswith('.h5'):
         file_path_with_h5 = file_path + '.h5'
@@ -162,17 +170,21 @@ def load_tf_weights(model, file_path):
 
 
 def parse_device(device: str) -> str:
-    device_lower = device.lower()
-    if not any((device_lower.startswith("cpu"),
-                device_lower.startswith("cuda"),
-                device_lower.startswith("gpu"))):
-        raise RuntimeError(f" Expected one of cpu (CPU), cuda (CUDA), gpu (GPU) device type at start of device string: {device}")
+    _device = osp.split(device.lower())[1]
+    if not any((_device.startswith("cpu"),
+                _device.startswith("cuda"),
+                _device.startswith("gpu"))):
+        raise RuntimeError(
+            f" Expected one of cpu (CPU), cuda (CUDA), gpu (GPU) device type at start of device string: {device}")
 
-    if device_lower.startswith("cuda"):
-        if backend().kind == "T":
-            return "GPU" + device[4:]
-    elif device_lower.startswith("gpu"):
-        if backend().kind == "P":
-            return "cuda" + device[4:]
+    kind = backend().kind
+    if _device.startswith("cuda"):
+        if kind == "T":
+            _device = "GPU" + _device[4:]
+    elif _device.startswith("gpu"):
+        if kind == "P":
+            _device = "cuda" + _device[3:]
 
-    return device
+    if kind == "P":
+        return torch.device(_device)
+    return _device

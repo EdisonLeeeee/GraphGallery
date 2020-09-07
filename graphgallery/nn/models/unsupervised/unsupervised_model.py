@@ -15,11 +15,11 @@ from sklearn.preprocessing import normalize
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 
-from graphgallery.nn.models import BaseModel
+from graphgallery.nn.models import base_model
 from graphgallery import asintarr, Bunch
 
 
-class UnsupervisedModel(BaseModel):
+class UnsupervisedModel(base_model):
     """
         Base model for unsupervised learning.
 

@@ -10,7 +10,7 @@ from graphgallery.data.preprocess import process_planetoid_datasets
 from graphgallery.data.graph import Graph
 
 
-DATASETS = {'citeseer', 'cora', 'pubmed'}
+_DATASETS = {'citeseer', 'cora', 'pubmed'}
 
 
 class Planetoid(Dataset):
@@ -24,7 +24,7 @@ class Planetoid(Dataset):
     """
 
     github_url = "https://raw.githubusercontent.com/EdisonLeeeee/GraphData/master/datasets/planetoid"
-    supported_datasets = DATASETS
+    supported_datasets = _DATASETS
 
     def __init__(self, name, root=None, verbose=True):
         name = name.lower()

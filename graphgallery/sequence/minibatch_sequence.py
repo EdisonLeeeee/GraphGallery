@@ -3,13 +3,13 @@ import numpy as np
 import tensorflow as tf
 import scipy.sparse as sp
 
-from graphgallery.sequence.node_sequence import NodeSequence
+from graphgallery import astensors
+from graphgallery.sequence.base_sequence import Sequence
 from graphgallery.utils.misc import column_prop
 from graphgallery.utils.graph import sample_neighbors
-from graphgallery import astensors
 
 
-class ClusterMiniBatchSequence(NodeSequence):
+class ClusterMiniBatchSequence(Sequence):
 
     def __init__(
         self,
@@ -44,7 +44,7 @@ class ClusterMiniBatchSequence(NodeSequence):
         random.shuffle(self.indices)
 
 
-class SAGEMiniBatchSequence(NodeSequence):
+class SAGEMiniBatchSequence(Sequence):
 
     def __init__(
         self,
@@ -58,7 +58,7 @@ class SAGEMiniBatchSequence(NodeSequence):
         self.x, self.nodes = inputs
         self.labels = labels
         self.neighbors = neighbors
-        self.n_batches = int(np.ceil(len(self.nodes)/batch_size))
+        self.n_batches = int(np.ceil(len(self.nodes) / batch_size))
         self.shuffle_batches = shuffle_batches
         self.batch_size = batch_size
         self.indices = np.arange(len(self.nodes))
@@ -71,13 +71,15 @@ class SAGEMiniBatchSequence(NodeSequence):
 
     def __getitem__(self, index):
         if self.shuffle_batches:
-            idx = self.indices[index*self.batch_size:(index+1)*self.batch_size]
+            idx = self.indices[index *
+                               self.batch_size:(index + 1) * self.batch_size]
         else:
-            idx = slice(index*self.batch_size, (index+1)*self.batch_size)
+            idx = slice(index * self.batch_size, (index + 1) * self.batch_size)
 
         nodes_input = [self.nodes[idx]]
         for n_sample in self.n_samples:
-            neighbors = sample_neighbors(self.neighbors, nodes_input[-1], n_sample).ravel()
+            neighbors = sample_neighbors(
+                self.neighbors, nodes_input[-1], n_sample).ravel()
             nodes_input.append(neighbors)
 
         labels = self.labels[idx] if self.labels is not None else None
@@ -95,7 +97,7 @@ class SAGEMiniBatchSequence(NodeSequence):
         random.shuffle(self.indices)
 
 
-class FastGCNBatchSequence(NodeSequence):
+class FastGCNBatchSequence(Sequence):
 
     def __init__(
         self,
@@ -107,7 +109,8 @@ class FastGCNBatchSequence(NodeSequence):
     ):
         self.x, self.adj = inputs
         self.labels = labels
-        self.n_batches = int(np.ceil(self.adj.shape[0]/batch_size)) if batch_size else 1
+        self.n_batches = int(
+            np.ceil(self.adj.shape[0] / batch_size)) if batch_size else 1
         self.shuffle_batches = shuffle_batches
         self.batch_size = batch_size
         self.indices = np.arange(self.adj.shape[0])
@@ -131,7 +134,8 @@ class FastGCNBatchSequence(NodeSequence):
             if rank > distr.size:
                 q = distr
             else:
-                q = np.random.choice(distr, rank, replace=False, p=p[distr]/p[distr].sum())
+                q = np.random.choice(
+                    distr, rank, replace=False, p=p[distr] / p[distr].sum())
             adj = adj[:, q].dot(sp.diags(1.0 / (p[q] * rank)))
 
             if tf.is_tensor(x):
@@ -146,9 +150,10 @@ class FastGCNBatchSequence(NodeSequence):
 
     def mini_batch(self, index):
         if self.shuffle_batches:
-            idx = self.indices[index*self.batch_size:(index+1)*self.batch_size]
+            idx = self.indices[index *
+                               self.batch_size:(index + 1) * self.batch_size]
         else:
-            idx = slice(index*self.batch_size, (index+1)*self.batch_size)
+            idx = slice(index * self.batch_size, (index + 1) * self.batch_size)
 
         labels = self.labels[idx]
         adj = self.adj[idx]

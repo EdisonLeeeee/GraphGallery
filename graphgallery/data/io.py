@@ -1,4 +1,5 @@
 import os
+import logging
 import errno
 import os.path as osp
 from tensorflow.keras.utils import get_file
@@ -27,3 +28,12 @@ def makedirs(path):
     except OSError as e:
         if e.errno != errno.EEXIST and osp.isdir(path):
             raise e
+            
+            
+def makedirs_from_path(path, verbose=True):
+    file_dir = osp.split(osp.realpath(path))[0]
+    if not osp.exists(file_dir):
+        makedirs(file_dir)
+        if verbose:
+            logging.log(logging.WARNING,
+                        f"Make Directory in {path}.")

@@ -24,7 +24,7 @@ class EqualVarLength:
     """
     A decorator class which makes the values of the variables 
     equal in max-length. variables consist of 'hiddens', 'activations', 
-    'dropouts', 'l2_norms' and other customed ones in `var_names`.
+    'dropouts', 'l2_norms' and other customed ones in `include`.
 
     """
 
@@ -37,7 +37,7 @@ class EqualVarLength:
             the exclued variable name.
         """
         self.var_names = list(include) + self.base_vars()
-        self.var_names = list(set(self.var_names)-set(exclude))
+        self.var_names = list(set(self.var_names)-set(list(exclude)))
 
     def __call__(self, func):
 

@@ -1,8 +1,8 @@
 from graphgallery import astensor, astensors
-from graphgallery.sequence.node_sequence import NodeSequence
+from graphgallery.sequence.base_sequence import Sequence
 
 
-class FullBatchNodeSequence(NodeSequence):
+class FullBatchNodeSequence(Sequence):
 
     def __init__(self, inputs, labels=None):
         self.inputs = astensors(inputs)

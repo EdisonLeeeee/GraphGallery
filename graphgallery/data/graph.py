@@ -8,14 +8,15 @@ from functools import lru_cache
 from copy import copy as copy_fn
 
 from graphgallery.data.preprocess import largest_connected_components
-from graphgallery.data.basegraph import BaseGraph
+from graphgallery.data.base_graph import base_graph
 
 
 def _check_and_convert(adj_matrix, attr_matrix, labels, copy=True):
     # Make sure that the dimensions of matrices / arrays all agree
     if adj_matrix is not None:
         if sp.isspmatrix(adj_matrix):
-            adj_matrix = adj_matrix.tocsr(copy=False).astype(np.float32, copy=copy)
+            adj_matrix = adj_matrix.tocsr(
+                copy=False).astype(np.float32, copy=copy)
         else:
             raise ValueError("Adjacency matrix must be in sparse format (got {0} instead)"
                              .format(type(adj_matrix)))
@@ -25,14 +26,17 @@ def _check_and_convert(adj_matrix, attr_matrix, labels, copy=True):
 
     if attr_matrix is not None:
         if sp.isspmatrix(attr_matrix):
-            attr_matrix = attr_matrix.tocsr(copy=False).astype(np.float32, copy=copy)
+            attr_matrix = attr_matrix.tocsr(
+                copy=False).astype(np.float32, copy=copy)
         elif isinstance(attr_matrix, np.ndarray):
             attr_matrix = attr_matrix.astype(np.float32, copy=copy)
         else:
-            raise ValueError("Attribute matrix must be a sp.spmatrix or a np.ndarray (got {0} instead)".format(type(attr_matrix)))
+            raise ValueError(
+                "Attribute matrix must be a sp.spmatrix or a np.ndarray (got {0} instead)".format(type(attr_matrix)))
 
         if attr_matrix.shape[0] != adj_matrix.shape[0]:
-            raise ValueError("Dimensions of the adjacency and attribute matrices don't agree!")
+            raise ValueError(
+                "Dimensions of the adjacency and attribute matrices don't agree!")
 
     if labels is not None:
         labels = np.array(labels, dtype=np.int32, copy=copy)
@@ -44,14 +48,14 @@ def _check_and_convert(adj_matrix, attr_matrix, labels, copy=True):
     return adj_matrix, attr_matrix, labels
 
 
-class Graph(BaseGraph):
+class Graph(base_graph):
     """Attributed labeled graph stored in sparse matrix form."""
 
     # By default, the attr_matrix is dense format, i.e., Numpy array
     _sparse_attr = False
 
     def __init__(self, adj_matrix=None, attr_matrix=None, labels=None,
-                 node_names=None, attr_names=None, class_names=None, metadata=None, copy=True):
+                 node_names=None, attr_names=None, class_names=None, metadata=None, copy=False):
         """Create an (un)dirtected (attributed and labeled) graph.
 
         Parameters
@@ -73,19 +77,22 @@ class Graph(BaseGraph):
         copy: bool, optional
             whether to use copy for the inputs.
         """
-        adj_matrix, attr_matrix, labels = _check_and_convert(adj_matrix, attr_matrix, labels, copy=copy)
+        adj_matrix, attr_matrix, labels = _check_and_convert(
+            adj_matrix, attr_matrix, labels, copy=copy)
 
         if node_names is not None:
             if len(node_names) != adj_matrix.shape[0]:
-                raise ValueError("Dimensions of the adjacency matrix and the node names don't agree!")
+                raise ValueError(
+                    "Dimensions of the adjacency matrix and the node names don't agree!")
 
         if attr_names is not None:
             if len(attr_names) != attr_matrix.shape[1]:
-                raise ValueError("Dimensions of the attribute matrix and the attribute names don't agree!")
+                raise ValueError(
+                    "Dimensions of the attribute matrix and the attribute names don't agree!")
 
-        self._adj_matrix = adj_matrix
-        self._attr_matrix = attr_matrix
-        self._labels = labels
+        self.adj_matrix = adj_matrix
+        self.attr_matrix = attr_matrix
+        self.labels = labels
 
         if copy:
             self.node_names = copy_fn(node_names)
@@ -98,32 +105,40 @@ class Graph(BaseGraph):
             self.class_names = class_names
             self.metadata = metadata
 
-    def set_inputs(self, adj_matrix, attr_matrix=None, labels=None, copy=True):
+    def set_inputs(self, adj_matrix, attr_matrix=None, labels=None,
+                   node_names=None, attr_names=None, class_names=None, metadata=None, copy=False):
         adj_matrix, attr_matrix, labels = _check_and_convert(adj_matrix, attr_matrix,
                                                              labels, copy=copy)
 
         if adj_matrix is not None:
-            self._adj_matrix = adj_matrix
+            self.adj_matrix = adj_matrix
 
         if attr_matrix is not None:
-            self._attr_matrix = attr_matrix
-            # clear LRU cache
-            self.get_attr_matrix.cache_clear()
+            self.attr_matrix = attr_matrix
 
         if labels is not None:
-            self._labels = labels
+            self.labels = labels
 
-    def from_inputs(self, adj_matrix=None, attr_matrix=None, labels=None, copy=True):
-        if adj_matrix is None:
-            adj_matrix = self._adj_matrix
-        if attr_matrix is None:
-            attr_matrix = self._attr_matrix
-        if labels is None:
-            labels = self._labels
-
-        return Graph(adj_matrix=adj_matrix,
-                     attr_matrix=attr_matrix,
-                     labels=labels, copy=copy)
+        if node_names is not None:
+            if copy:
+                self.node_names = copy_fn(node_names)
+            else:
+                self.node_names = node_names
+        if attr_names is not None:
+            if copy:
+                self.attr_names = copy_fn(attr_names)
+            else:
+                self.attr_names = attr_names
+        if class_names is not None:
+            if copy:
+                self.class_names = copy_fn(class_names)
+            else:
+                self.class_names = class_names
+        if metadata is not None:
+            if copy:
+                self.metadata = copy_fn(metadata)
+            else:
+                self.metadata = metadata
 
     @property
     def sparse_attr(self):
@@ -132,10 +147,13 @@ class Graph(BaseGraph):
     @sparse_attr.setter
     def sparse_attr(self, value):
         self._sparse_attr = value
+        # clear LRU cache
         self.get_attr_matrix.cache_clear()
 
     @lru_cache(maxsize=1)
     def get_attr_matrix(self):
+        if self._attr_matrix is None:
+            return None
         is_sparse = sp.isspmatrix(self._attr_matrix)
         if not self.sparse_attr and is_sparse:
             return self._attr_matrix.A
@@ -147,28 +165,35 @@ class Graph(BaseGraph):
     def adj_matrix(self):
         return self._adj_matrix
 
+    @adj_matrix.setter
+    def adj_matrix(self, x):
+        self._adj_matrix = x
+
     @property
     def attr_matrix(self):
         return self.get_attr_matrix()
+
+    @attr_matrix.setter
+    def attr_matrix(self, x):
+        # clear LRU cache
+        self.get_attr_matrix.cache_clear()
+        self._attr_matrix = x
 
     @property
     def labels(self):
         return self._labels
 
-    @property
-    def adj(self):
-        """alias of adj_matrix"""
-        return self.adj_matrix
+    @labels.setter
+    def labels(self, x):
+        self._labels = x
 
     @property
-    def x(self):
-        """alias of attr_matrix"""
-        return self.attr_matrix
-
-    @property
-    def y(self):
-        """alias of labels"""
-        return self.labels
+    def degrees(self):
+        if not self.is_directed():
+            return self.adj_matrix.sum(1)
+        else:
+            # in-degree and out-degree
+            return self.adj_matrix.sum(0), self.adj_matrix.sum(1)
 
     @property
     def n_nodes(self):
@@ -194,7 +219,7 @@ class Graph(BaseGraph):
     def n_classes(self):
         """Get the number of classes labels of the nodes."""
         if self.labels is not None:
-            return self.labels.max()+1
+            return self.labels.max() + 1
         else:
             return None
 
@@ -219,35 +244,38 @@ class Graph(BaseGraph):
     def to_undirected(self):
         """Convert to an undirected graph (make adjacency matrix symmetric)."""
         if self.is_weighted():
-            raise ValueError("Convert to unweighted graph first.")
+            raise ValueError("Convert to unweighted graph first. Using 'graph.to_unweighted()'.")
         else:
-            A = self._adj_matrix
+            G = self.copy()
+            A = G.adj_matrix
             A = A.maximum(A.T)
-            self._adj_matrix = A
-        return self
+            G.adj_matrix = A
+        return G
 
     def to_unweighted(self):
         """Convert to an unweighted graph (set all edge weights to 1)."""
-        self._adj_matrix.data = np.ones_like(self._adj_matrix.data)
-        return self
+        G = self.copy()
+        A = G.adj_matrix
+        G.adj_matrix = sp.csr_matrix((np.ones_like(A.data), A.indices, A.indptr), shape=A.shape)
+        return G
 
     def eliminate_self_loops(self):
         """Remove self-loops from the adjacency matrix."""
-        A = self._adj_matrix
-        A -= sp.diags(A.diagonal())
+        G = self.copy()
+        A = G.adj_matrix
+        A = A - sp.diags(A.diagonal())
         A.eliminate_zeros()
-        self._adj_matrix = A
-        return self
+        G.adj_matrix = A
+        return G
 
     def add_self_loops(self, value=1.0):
         """Set the diagonal."""
-        self.eliminate_self_loops()
-        A = self._adj_matrix
-        A += sp.diags(A.diagonal()+value)
-        if value == 0:
-            A.eliminate_zeros()
-        self._adj_matrix = A
-        return self
+        G = self.eliminate_self_loops()
+        A = G.adj_matrix
+        A = A + sp.diags(A.diagonal() + value)
+        A.eliminate_zeros()
+        G.adj_matrix = A
+        return G
 
     def standardize(self):
         """Select the LCC of the unweighted/undirected/no-self-loop graph.
@@ -256,10 +284,6 @@ class Graph(BaseGraph):
         G = self.to_unweighted().to_undirected().eliminate_self_loops()
         G = largest_connected_components(G, 1)
         return G
-
-    def unpack(self):
-        """Return the (A, X, Y) triplet."""
-        return self.adj_matrix, self.attr_matrix, self.labels
 
     def nxgraph(self, directed=True):
         """Get the network graph from adj_matrix."""
@@ -277,13 +301,6 @@ class Graph(BaseGraph):
     def from_npz(filepath):
         return load_dataset(filepath)
 
-    def copy(self, deepcopy=False):
-        new_graph = Graph(*self.unpack(), node_names=self.node_names,
-                          attr_names=self.attr_names, class_names=self.class_names,
-                          metadata=self.metadata, copy=deepcopy)
-#         new_graph.__dict__ = self.__dict__
-        return new_graph
-
     def is_singleton(self):
         """Check if the input adjacency matrix has singletons."""
         A = self.adj_matrix
@@ -297,25 +314,24 @@ class Graph(BaseGraph):
 
     def is_binary(self):
         '''Check if the attribute matrix has binary attributes.'''
-        return np.any(np.unique(self.attr_matrix[self.attr_matrix != 0].A1) != 1)
+        if self.sparse_attr:
+            return np.all(self.attr_matrix.data == 1)
+        else:
+            return np.all(np.unique(self.attr_matrix) == (0, 1))
 
     def is_weighted(self):
         """Check if the graph is weighted (edge weights other than 1)."""
-        return np.any(np.unique(self.adj_matrix[self.adj_matrix != 0].A1) != 1)
+        return np.any(self.adj_matrix.data != 1)
 
     def is_directed(self):
         """Check if the graph is directed (adjacency matrix is not symmetric)."""
         return (self.adj_matrix != self.adj_matrix.T).sum() != 0
 
-    def is_labeled(self):
-        return self.labels is not None
-
-    def is_attributed(self):
-        return self.attr_matrix is not None
-
     def __repr__(self):
-        A_shape = self.adj_matrix.shape if self.adj_matrix is not None else (None,)
-        X_shape = self.adj_matrix.shape if self.adj_matrix is not None else (None,)
+        A_shape = self.adj_matrix.shape if self.adj_matrix is not None else (
+            None, None)
+        X_shape = self.adj_matrix.shape if self.adj_matrix is not None else (
+            None, None)
         Y_shape = self.labels.shape if self.labels is not None else (None,)
         return f"{self.__class__.__name__}(adj_matrix{A_shape}, attr_matrix{X_shape}, labels{Y_shape})"
 

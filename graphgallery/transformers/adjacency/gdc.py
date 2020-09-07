@@ -3,7 +3,7 @@ import scipy.sparse as sp
 from sklearn.preprocessing import normalize
 from scipy.linalg import expm
 
-from graphgallery.utils.data_utils import normalize_adj
+from graphgallery.transformers import normalize_adj
 
 
 def clip_matrix(matrix, threshold: float) -> sp.csr_matrix:

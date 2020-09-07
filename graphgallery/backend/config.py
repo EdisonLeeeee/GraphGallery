@@ -1,14 +1,18 @@
 """Inspired by Keras backend config API. https://tensorflow.google.com """
 
-
+import importlib
+import graphgallery
 from graphgallery.backend.modules import TensorFlowBackend, PyTorchBackend
 from tensorflow.keras import backend as K
 
 _BACKEND = TensorFlowBackend()
-_MODULE_NAME = {"tf": "tf", "tensorflow": "tf",
-                "th": "th", "torch": "th", "pytorch": "th"}
-_MODULE = {"tf": TensorFlowBackend,
-           "th": PyTorchBackend}
+_MODULE_NAME = {"tf": "T", "tensorflow": "T", "T": "T",
+                "th": "P", "torch": "P", "pytorch": "P", "P": "P"}
+
+_ALLOWED_NAME = set(list(_MODULE_NAME.keys()))
+
+_MODULE = {"T": TensorFlowBackend,
+           "P": PyTorchBackend}
 
 
 # The type of integer to use throughout a session.
@@ -56,6 +60,7 @@ def set_floatx(dtype):
         raise ValueError('Unknown floatx type: ' + str(dtype))
     global _FLOATX
     _FLOATX = str(dtype)
+    return _FLOATX
 
 
 def intx():
@@ -94,12 +99,13 @@ def set_intx(dtype):
         raise ValueError('Unknown floatx type: ' + str(dtype))
     global _INTX
     _INTX = str(dtype)
+    return _INTX
 
 
 def backend():
     """Returns the default backend module, as a string.
 
-    E.g. `'TensorFlow 2.1.0 Backend'`, 
+    E.g. `'TensorFlow 2.1.0 Backend'`,
       `'PyTorch 1.6.0+cpu Backend'`.
 
     Returns:
@@ -129,10 +135,16 @@ def set_backend(module_name):
     Raises:
       ValueError: In case of invalid value.
     """
-
-    if module_name not in {'tf', 'tensorflow',
-                           'th', 'torch', 'pytorch'}:
-        raise ValueError('Unknown module name: ' + str(module_name))
+    if module_name not in _ALLOWED_NAME:
+        raise ValueError(
+            f"Unknown module name: '{str(module_name)}', expected one of {_ALLOWED_NAME}.")
     global _BACKEND
     name = _MODULE_NAME.get(module_name)
-    _BACKEND = _MODULE.get(name)()
+    if name != _BACKEND.kind:
+        # TODO: improve
+        _BACKEND = _MODULE.get(name)()
+        importlib.reload(graphgallery)
+        importlib.reload(graphgallery.nn)
+        importlib.reload(graphgallery.nn.models)
+
+    return _BACKEND

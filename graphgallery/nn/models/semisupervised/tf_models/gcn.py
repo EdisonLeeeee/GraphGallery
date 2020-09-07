@@ -9,7 +9,8 @@ from graphgallery.nn.layers import GraphConvolution, Gather
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.shape import EqualVarLength
-from graphgallery import astensor, astensors, asintarr, normalize_x, normalize_adj
+from graphgallery.transformers import get
+from graphgallery import astensors, asintarr
 
 
 class GCN(SemiSupervisedModel):
@@ -21,7 +22,7 @@ class GCN(SemiSupervisedModel):
 
     """
 
-    def __init__(self, graph, norm_adj=-0.5, norm_x=None,
+    def __init__(self, *graph, adj_transformer="normalize_adj", attr_transformer=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
         """Creat a Graph Convolutional Networks (GCN) model.
 
@@ -46,24 +47,20 @@ class GCN(SemiSupervisedModel):
                 Specified name for the model. (default: :str: `class.__name__`)
             kwargs: other customed keyword Parameters.
         """
-        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
+        super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
-        self.norm_adj = norm_adj
-        self.norm_x = norm_x
-        self.preprocess()
+        self.adj_transformer = get(adj_transformer)
+        self.attr_transformer = get(attr_transformer)
+        self.process()
 
-    def preprocess(self, adj, x):
-        super().preprocess(adj, x)
-        adj, x = self.adj, self.x
-
-        if self.norm_adj:
-            adj = normalize_adj(adj, self.norm_adj)
-
-        if self.norm_x:
-            x = normalize_x(x, norm=self.norm_x)
-
+    def process_step(self):
+        graph = self.graph
+        adj_matrix = self.adj_transformer(graph.adj_matrix)
+        attr_matrix = self.attr_transformer(graph.attr_matrix)
+        
         with tf.device(self.device):
-            self.x_norm, self.adj_norm = astensors([x, adj])
+            self.feature_inputs, self.structure_inputs = astensors(
+                attr_matrix, adj_matrix)
 
     @EqualVarLength()
     def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5],
@@ -83,7 +80,8 @@ class GCN(SemiSupervisedModel):
 
                 h = Dropout(rate=dropout)(h)
 
-            h = GraphConvolution(self.graph.n_classes, use_bias=use_bias)([h, adj])
+            h = GraphConvolution(self.graph.n_classes,
+                                 use_bias=use_bias)([h, adj])
             h = Gather()([h, index])
 
             model = Model(inputs=[x, adj, index], outputs=h)
@@ -94,7 +92,8 @@ class GCN(SemiSupervisedModel):
 
     def train_sequence(self, index):
         index = asintarr(index)
-        labels = self.labels[index]
+        labels = self.graph.labels[index]
         with tf.device(self.device):
-            sequence = FullBatchNodeSequence([self.x_norm, self.adj_norm, index], labels)
+            sequence = FullBatchNodeSequence(
+                [self.feature_inputs, self.structure_inputs, index], labels)
         return sequence

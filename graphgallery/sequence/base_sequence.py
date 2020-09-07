@@ -2,11 +2,11 @@ import numpy as np
 import tensorflow as tf
 
 
-from tensorflow.keras.utils import Sequence
+from tensorflow.keras.utils import Sequence as tf_Sequence
 from tensorflow.keras.layers import Layer
 
 
-class NodeSequence(Sequence):
+class Sequence(tf_Sequence):
 
     def __init__(self, *args, **kwargs,):
         pass
