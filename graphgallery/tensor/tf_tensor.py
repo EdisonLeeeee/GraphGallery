@@ -19,17 +19,17 @@ from graphgallery.utils.type_check import (is_list_like,
 #     return tf.sparse.SparseTensor(indices, data, shape)
 
 
-def sparse_adj_to_sparse_tensor(x):
+def sparse_adj_to_sparse_tensor(x: sp.csr_matrix):
     """Converts a Scipy sparse matrix to a tensorflow SparseTensor.
 
     Parameters
     ----------
-    x: scipy.sparse.sparse
-        Matrix in Scipy sparse format.
+        x: scipy.sparse.sparse
+            Matrix in Scipy sparse format.
     Returns
     -------
-    S: tf.sparse.SparseTensor
-        Matrix as a sparse tensor.
+        S: tf.sparse.SparseTensor
+            Matrix as a sparse tensor.
     """
     x = x.tocoo(copy=False)
     return tf.SparseTensor(np.vstack((x.row, x.col)).T, x.data, x.shape)
@@ -83,12 +83,12 @@ def astensor(x, dtype=None):
 
     Parameters:
     ----------
-    x: tf.Tensor, tf.Variable, Scipy sparse matrix, 
-        Numpy array-like, etc.
+        x: tf.Tensor, tf.Variable, Scipy sparse matrix, 
+            Numpy array-like, etc.
 
-    dtype: The type of Tensor `x`, if not specified,
-        it will automatically using appropriate data type.
-        See `graphgallery.infer_type`.
+        dtype: The type of Tensor `x`, if not specified,
+            it will automatically using appropriate data type.
+            See `graphgallery.infer_type`.
 
     Returns:
     ----------      
@@ -122,8 +122,8 @@ def astensors(*xs):
 
     Parameters:
     ----------
-    xs: tf.Tensor, tf.Variable, Scipy sparse matrix, 
-        Numpy array-like, or a list of them, etc.
+        xs: tf.Tensor, tf.Variable, Scipy sparse matrix, 
+            Numpy array-like, or a list of them, etc.
 
     Returns:
     ----------      

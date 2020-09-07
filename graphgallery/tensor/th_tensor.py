@@ -9,14 +9,6 @@ from graphgallery.utils.type_check import (is_list_like,
                                            is_scalar_like)
 
 
-# def sparse_adj_to_sparse_tensor(x):
-#     """Converts a Scipy sparse matrix to a tensorflow SparseTensor."""
-#     sparse_coo = x.tocoo()
-#     row, col = sparse_coo.row, sparse_coo.col
-#     data, shape = sparse_coo.data, sparse_coo.shape
-#     indices = np.concatenate(
-#         (np.expand_dims(row, axis=1), np.expand_dims(col, axis=1)), axis=1)
-#     return tf.sparse.SparseTensor(indices, data, shape)
 
 
 def sparse_adj_to_sparse_tensor(x):

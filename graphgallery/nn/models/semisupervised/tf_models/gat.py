@@ -10,7 +10,8 @@ from graphgallery.nn.layers import GraphAttention, Gather
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.shape import EqualVarLength
-from graphgallery import astensors, asintarr, normalize_x, normalize_adj, Bunch
+from graphgallery import transformers as T
+from graphgallery import astensors, asintarr
 
 
 class GAT(SemiSupervisedModel):
@@ -23,17 +24,22 @@ class GAT(SemiSupervisedModel):
 
     """
 
-    def __init__(self, graph, norm_adj=None, norm_x=None,
+    def __init__(self, *graph, adj_transformer="add_selfloops", attr_transformer=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
         """Creat a Graph Attention Networks (GAT) model.
+        
+        You can call `model = GAT(graph)` or `model = GAT(adj_matrix, attr_matrix, labels)`
+        
         Parameters:
         ----------
-            graph: graphgallery.data.Graph
+            graph: graphgallery.data.Graph, or `adj_matrix, attr_matrix and labels` triplets.
                 A sparse, attributed, labeled graph.
-            norm_adj: float scalar. optional
-                The normalize rate for adjacency matrix `adj`. (default: :obj: `None`)
-            norm_x: string. optional
-                How to normalize the node attribute matrix. See `graphgallery.normalize_x`
+            adj_transformer: string, transformer, or None. optional
+                How to normalize the adjacency matrix. (default: :obj:`'normalize_adj'`
+                with normalize rate `-0.5`.
+                i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
+            attr_transformer: string, transformer, or None. optional
+                How to normalize the node attribute matrix. See `graphgallery.transformers`
                 (default :obj: `None`)
             device: string. optional
                 The device where the model is running on. You can specified `CPU` or `GPU`
@@ -47,47 +53,28 @@ class GAT(SemiSupervisedModel):
             kwargs: other customed keyword Parameters.
 
         """
-        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
+        super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
-        self.norm_adj = norm_adj
-        self.norm_x = norm_x
-        self.preprocess(adj, x)
+        self.adj_transformer = T.get(adj_transformer)
+        self.attr_transformer = T.get(attr_transformer)
+        self.process()
 
-    def preprocess(self, adj, x):
-        super().preprocess(adj, x)
-        adj, x = self.adj, self.x
-
-        if self.norm_adj:
-            adj = normalize_adj(adj, self.norm_adj)
-        else:
-            adj = adj + sp.eye(adj.shape[0])
-
-        if self.norm_x:
-            x = normalize_x(x, norm=self.norm_x)
-
+    def process_step(self):
+        graph = self.graph
+        adj_matrix = self.adj_transformer(graph.adj_matrix)
+        attr_matrix = self.attr_transformer(graph.attr_matrix)
+        
         with tf.device(self.device):
-            self.x_norm, self.adj_norm = astensors([x, adj])
-
+            self.feature_inputs, self.structure_inputs = astensors(
+                attr_matrix, adj_matrix)
+            
+    @EqualVarLength(include=["n_heads"])
     def build(self, hiddens=[8], n_heads=[8], activations=['elu'], dropouts=[0.6], l2_norms=[5e-4],
               lr=0.01, use_bias=True):
 
-        ############# Record paras ###########
-        local_paras = locals()
-        local_paras.pop('self')
-        paras = Bunch(**local_paras)
-        (hiddens, n_heads,
-         activations, dropouts,
-         l2_norms) = set_equal_in_length(hiddens, n_heads, activations, dropouts, l2_norms)
-        paras.update(Bunch(hiddens=hiddens, n_heads=n_heads, activations=activations,
-                           dropouts=dropouts, l2_norms=l2_norms))
-        # update all parameters
-        self.paras.update(paras)
-        self.model_paras.update(paras)
-        ######################################
-
         with tf.device(self.device):
 
-            x = Input(batch_shape=[None, self.n_attrs], dtype=self.floatx, name='attr_matrix')
+            x = Input(batch_shape=[None, self.graph.n_attrs], dtype=self.floatx, name='attr_matrix')
             adj = Input(batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix')
             index = Input(batch_shape=[None],  dtype=self.intx, name='node_index')
 
@@ -102,7 +89,7 @@ class GAT(SemiSupervisedModel):
                                    )([h, adj])
                 h = Dropout(rate=dropout)(h)
 
-            h = GraphAttention(self.n_classes, use_bias=use_bias,
+            h = GraphAttention(self.graph.n_classes, use_bias=use_bias,
                                attn_heads=1, attn_heads_reduction='average')([h, adj])
             h = Gather()([h, index])
 
@@ -114,18 +101,9 @@ class GAT(SemiSupervisedModel):
 
     def train_sequence(self, index):
         index = asintarr(index)
-        labels = self.labels[index]
+        labels = self.graph.labels[index]
         with tf.device(self.device):
-            sequence = FullBatchNodeSequence([self.x_norm, self.adj_norm, index], labels)
+            sequence = FullBatchNodeSequence(
+                [self.feature_inputs, self.structure_inputs, index], labels)
         return sequence
 
-    def predict(self, index):
-        super().predict(index)
-        index = asintarr(index)
-        with tf.device(self.device):
-            index = astensors(index)
-            logit = self.model.predict_on_batch([self.x_norm, self.adj_norm, index])
-
-        if tf.is_tensor(logit):
-            logit = logit.numpy()
-        return logit

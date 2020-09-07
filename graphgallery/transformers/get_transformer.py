@@ -1,10 +1,12 @@
 from typing import Union
 from graphgallery.transformers import Transformer, NullTransformer
 from graphgallery.transformers import NormalizeAdj
+from graphgallery.transformers import AddSelfLoops
 from graphgallery.transformers import NormalizeAttr
 
 _TRANSFORMER = {"normalize_adj": NormalizeAdj,
-                "normalize_attr": NormalizeAttr}
+                "normalize_attr": NormalizeAttr,
+                "add_selfloops": AddSelfLoops}
 _ALLOWED = set(list(_TRANSFORMER.keys()))
 
 

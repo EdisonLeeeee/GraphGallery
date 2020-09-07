@@ -14,6 +14,14 @@ from graphgallery.data.io import makedirs_from_path
 from graphgallery.utils.raise_error import raise_if_kwargs
 
 
+def _check_cur_module(module, kind):
+    cur_module = module.split('.')[-2]
+    if any((cur_module=="tf_models" and kind == "P",
+            cur_module=="torch_models" and kind == "T")):
+        raise RuntimeError(f"You are currently using models in '{cur_module}' but with backend '{backend()}'."
+                             "Please use `set_backend()` to change the current backend.")
+           
+
 class base_model:
     """Base model for semi-supervised learning and unsupervised learning."""
 
@@ -46,7 +54,9 @@ class base_model:
         else:
             graph = Graph(*graph)
 
-        id = np.random.RandomState(None).randint(100)
+        self.kind = backend().kind
+        _check_cur_module(self.__module__, self.kind)
+        _id = np.random.RandomState(None).randint(100)
         
         if seed is not None:
             np.random.seed(seed)
@@ -62,8 +72,7 @@ class base_model:
         self.graph = graph.copy()  # TODO: check the input graph
         self.seed = seed
         self.name = name
-        self.device = parse_device(device)
-#         self.device = device
+        self.device = parse_device(device, self.kind)
         self.idx_train = None
         self.idx_val = None
         self.idx_test = None
@@ -75,7 +84,7 @@ class base_model:
         # log path
         # add random integer to avoid duplication
         self.weight_path = osp.join(osp.expanduser(osp.normpath("/tmp/weight")),
-                                    f"{name}_{id}_weights")
+                                    f"{name}_{_id}_weights")
 
         # data types, default: `float32` and `int32`
         self.floatx = floatx()
@@ -104,8 +113,8 @@ class base_model:
         try:
             return self.__dict__[attr]
         except KeyError:
-            if hasattr(self.model, attr):
-                return getattr(self.model, attr)
+            if hasattr(self, "_model") and hasattr(self._model, attr):
+                return getattr(self._model, attr)
             raise AttributeError(
                 f"'{self.name}' and '{self.name}.model' objects have no attribute '{attr}'")
 
@@ -169,7 +178,7 @@ def load_tf_weights(model, file_path):
         model.load_weights(file_path_with_h5[:-3])
 
 
-def parse_device(device: str) -> str:
+def parse_device(device: str, kind: str) -> str:
     _device = osp.split(device.lower())[1]
     if not any((_device.startswith("cpu"),
                 _device.startswith("cuda"),
@@ -177,7 +186,6 @@ def parse_device(device: str) -> str:
         raise RuntimeError(
             f" Expected one of cpu (CPU), cuda (CUDA), gpu (GPU) device type at start of device string: {device}")
 
-    kind = backend().kind
     if _device.startswith("cuda"):
         if kind == "T":
             _device = "GPU" + _device[4:]

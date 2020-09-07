@@ -146,5 +146,7 @@ def set_backend(module_name):
         importlib.reload(graphgallery)
         importlib.reload(graphgallery.nn)
         importlib.reload(graphgallery.nn.models)
+        importlib.reload(graphgallery.tensor)
+        
 
     return _BACKEND
