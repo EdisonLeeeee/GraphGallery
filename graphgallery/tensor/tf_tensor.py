@@ -133,26 +133,27 @@ def astensors(*xs):
         3. `Bool` if `x` in `xs` is bool.
     """
     if len(xs) > 1:
-        return tuple(astensor(x) for x in xs)
+        return tuple(astensors(x) for x in xs)
     else:
         xs, = xs
         if is_list_like(xs) and not is_scalar_like(xs[0]):
             # Check `not is_scalar_like(xs[0])` to avoid the situation like
-            # the list `[1,2,3]` convert to tensor(1), tensor(2), tensor(3)
-            return astensors(*xs)
+            # the list `[1,2,3]` will be converted to tensor(1), tensor(2), tensor(3)
+            # but it will not works for `List([1, other_instance])`.
+            return tuple(astensors(x) for x in xs)
         else:
             return astensor(xs)
 
 
-def normalize_adj_tensor(adj, rate=-0.5, self_loop=1.0):
-    adj = adj + self_loop * tf.eye(tf.shape(adj)[0], dtype=adj.dtype)
+def normalize_adj_tensor(adj, rate=-0.5, selfloop=1.0):
+    adj = adj + selfloop * tf.eye(tf.shape(adj)[0], dtype=adj.dtype)
     d = tf.reduce_sum(adj, axis=1)
     d_power = tf.pow(d, rate)
     d_power_mat = tf.linalg.diag(d_power)
     return d_power_mat @ adj @ d_power_mat
 
 
-def add_self_loop_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0):
+def add_selfloop_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0):
 
     if n_nodes is None:
         n_nodes = tf.reduce_max(edge_index) + 1
@@ -178,7 +179,7 @@ def normalize_edge_tensor(edge_index, edge_weight=None, n_nodes=None, fill_weigh
     if n_nodes is None:
         n_nodes = tf.reduce_max(edge_index) + 1
 
-    edge_index, edge_weight = add_self_loop_edge(
+    edge_index, edge_weight = add_selfloop_edge(
         edge_index, edge_weight, n_nodes=n_nodes, fill_weight=fill_weight)
 
     row, col = tf.unstack(edge_index, axis=1)

@@ -9,6 +9,7 @@ from graphgallery.utils.type_check import (is_list_like,
                                            is_scalar_like)
 
 
+from graphgallery import gallery_export
 
 
 def sparse_adj_to_sparse_tensor(x):
@@ -70,6 +71,7 @@ def infer_type(x):
         raise RuntimeError(f'Invalid input of `{type(x)}`')
 
 
+@gallery_export("graphgallery.asthtensor")
 def astensor(x, dtype=None):
     """Convert input matrices to Tensor or SparseTensor.
 
@@ -120,11 +122,11 @@ def astensors(*xs):
             return astensor(xs)
 
 
-def normalize_adj_tensor(adj, rate=-0.5, self_loop=1.0):
+def normalize_adj_tensor(adj, rate=-0.5, selfloop=1.0):
     ...
 
 
-def add_self_loop_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0):
+def add_selfloop_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0):
 
     ...
 

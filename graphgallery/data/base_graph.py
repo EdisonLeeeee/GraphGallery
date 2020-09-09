@@ -2,7 +2,7 @@ from abc import ABC
 from copy import copy as _copy, deepcopy as _deepcopy
 
 
-class base_graph(ABC):
+class Basegraph(ABC):
 
     def __init__(self):
         ...

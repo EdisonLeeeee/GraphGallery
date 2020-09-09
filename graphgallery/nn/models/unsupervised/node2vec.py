@@ -5,7 +5,6 @@ from gensim.models import Word2Vec
 
 from graphgallery.nn.models import UnsupervisedModel
 from graphgallery.utils.walker import RandomWalker, alias_sample
-from graphgallery import Bunch
 
 
 class Node2vec(UnsupervisedModel):
@@ -15,50 +14,55 @@ class Node2vec(UnsupervisedModel):
         Implementation: <https://github.com/aditya-grover/node2vec>
         Cpp implementation: <https://github.com/snap-stanford/snap/tree/master/examples/node2vec>
 
-        Parameters:
-        ----------
-            adj: Scipy.sparse.csr_matrix, shape [n_nodes, n_nodes]
-                The input `symmetric` adjacency matrix in CSR format.
-            labels: Numpy.ndarray, shape [n_nodes]
-                Array, where each entry represents respective node's label(s).
-            device: string. optional 
-                The device where the model is running on. You can specified `CPU` or `GPU` 
-                for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
-            seed: interger scalar. optional 
-                Used in combination with `tf.random.set_seed` & `np.random.seed` 
-                & `random.seed` to create a reproducible sequence of tensors across 
-                multiple calls. (default :obj: `None`, i.e., using random seed)
-            name: string. optional
-                Specified name for the model. (default: :str: `class.__name__`)
-
     """
 
-    def __init__(self, adj, labels, graph=None, device='cpu:0', seed=None, name=None, **kwargs):
+    def __init__(self, *graph, device='cpu:0', seed=None, name=None, **kwargs):
+        """Creat an unsupervised Node2Vec model.
+        
+        This can be instantiated in several ways:
 
-        super().__init__(adj, labels=labels, device=device, seed=seed, name=name, **kwargs)
+            model = Node2vec(graph)
+                with a `graphgallery.data.Graph` instance representing
+                A sparse, attributed, labeled graph.
 
-        if not graph:
-            graph = nx.from_scipy_sparse_matrix(adj, create_using=nx.DiGraph)
+            model = Node2vec(adj_matrix, attr_matrix, labels)
+                where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
+                 `attr_matrix` is a 2D Numpy array-like matrix denoting the node 
+                 attributes, `labels` is a 1D Numpy array denoting the node labels.
+                 
+            model = Node2vec(adj_matrix, None, labels)
+                where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
+                `labels` is a 1D Numpy array denoting the node labels.           
+                Note that the `attr_matirx` is not necessary.
+                
+        Parameters:
+        ----------
+        graph: An instance of `graphgallery.data.Graph` or a tuple (list) of inputs.
+            A sparse, labeled graph.
+        device: string. optional 
+            The device where the model is running on. You can specified `CPU` or `GPU` 
+            for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
+        seed: interger scalar. optional 
+            Used in combination with `tf.random.set_seed` & `np.random.seed` 
+            & `random.seed` to create a reproducible sequence of tensors across 
+            multiple calls. (default :obj: `None`, i.e., using random seed)
+        name: string. optional
+            Specified name for the model. (default: :str: `class.__name__`)        
+            
+        """
+        super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
         self.walker = None
-        self.graph = graph
+        self.nxgraph = self.graph.nxgraph()
 
     def build(self, walk_length=80, walks_per_node=10,
               embedding_dim=64, window_size=5, workers=16,
               iter=1, num_neg_samples=1, p=0.5, q=0.5):
 
-        ############# Record paras ###########
-        local_paras = locals()
-        local_paras.pop('self')
-        paras = Bunch(**local_paras)
-        # update all parameters
-        self.paras.update(paras)
-        self.model_paras.update(paras)
-
-        self.walker = RandomWalker(self.graph, p=p, q=q)
+        self.walker = RandomWalker(self.nxgraph, p=p, q=q)
         self.walker.preprocess_transition_probs()
 
-        walks = self.node2vec_random_walk(self.graph,
+        walks = self.node2vec_random_walk(self.nxgraph,
                                           self.walker.alias_nodes,
                                           self.walker.alias_edges,
                                           walk_length=walk_length,

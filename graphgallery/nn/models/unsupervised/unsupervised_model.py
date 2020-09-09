@@ -15,43 +15,40 @@ from sklearn.preprocessing import normalize
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 
-from graphgallery.nn.models import base_model
-from graphgallery import asintarr, Bunch
+from graphgallery.nn.models import BaseModel
+from graphgallery import asintarr
 
 
-class UnsupervisedModel(base_model):
+class UnsupervisedModel(BaseModel):
     """
         Base model for unsupervised learning.
 
-        Parameters:
-        ----------
-            adj: Scipy.sparse.csr_matrix, shape [n_nodes, n_nodes]
-                The input `symmetric` adjacency matrix in CSR format.
-            x: shape (N, F), Scipy sparse matrix if `is_attribute_sparse=True`, 
-                Numpy array-like (or matrix) if `is_attribute_sparse=False`,
-                or `None` for not given.
-                The input node attribute matrix, where `F` is the dimension of attributes.
-            labels: Numpy.ndarray, shape [n_nodes]
-                Array, where each entry represents respective node's label(s).
-            device: string. optional 
-                The device where the model is running on. You can specified `CPU` or `GPU` 
-                for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
-            seed: interger scalar. optional 
-                Used in combination with `tf.random.set_seed` & `np.random.seed` 
-                & `random.seed` to create a reproducible sequence of tensors across 
-                multiple calls. (default :obj: `None`, i.e., using random seed)
-            name: string. optional
-                Specified name for the model. (default: :str: `class.__name__`)
 
     """
 
-    def __init__(self, adj, x=None, labels=None, device='cpu:0', seed=None, name=None, **kwargs):
-        super().__init__(adj, x, labels, device, seed, name, **kwargs)
+    def __init__(self, *graph, device='cpu:0', seed=None, name=None, **kwargs):
+        """Creat an unsupervised model.
+
+        Parameters:
+        ----------
+        graph: An instance of `graphgallery.data.Graph` or a tuple (list) of inputs.
+            A sparse, attributed, labeled graph.
+        device: string. optional 
+            The device where the model is running on. You can specified `CPU` or `GPU` 
+            for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
+        seed: interger scalar. optional 
+            Used in combination with `tf.random.set_seed` & `np.random.seed` 
+            & `random.seed` to create a reproducible sequence of tensors across 
+            multiple calls. (default :obj: `None`, i.e., using random seed)
+        name: string. optional
+            Specified name for the model. (default: :str: `class.__name__`)        
+            
+        """
+        super().__init__( *graph, device=device, seed=seed, name=name, **kwargs)
 
         self.embeddings = None
-        self.classifier = LogisticRegression(solver='lbfgs', max_iter=1000, multi_class='auto', random_state=seed)
-        self.train_paras.update(Bunch(classifier=self.classifier))
-        self.paras.update(Bunch(classifier=self.classifier))
+        self.classifier = LogisticRegression(
+            solver='lbfgs', max_iter=1000, multi_class='auto', random_state=seed)
 
     def build(self):
         raise NotImplementedError
@@ -64,7 +61,7 @@ class UnsupervisedModel(base_model):
             self.get_embeddings()
 
         index = asintarr(index)
-        self.classifier.fit(self.embeddings[index], self.labels[index])
+        self.classifier.fit(self.embeddings[index], self.graph.labels[index])
 
     def predict(self, index):
         index = asintarr(index)
@@ -73,7 +70,7 @@ class UnsupervisedModel(base_model):
 
     def test(self, index):
         index = asintarr(index)
-        y_true = self.labels[index]
+        y_true = self.graph.labels[index]
         y_pred = self.classifier.predict(self.embeddings[index])
         accuracy = accuracy_score(y_true, y_pred)
         return accuracy

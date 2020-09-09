@@ -8,9 +8,9 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy
 from graphgallery.nn.layers import WaveletConvolution, Gather
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
-from graphgallery.utils.wavelet import wavelet_basis
 from graphgallery.utils.shape import EqualVarLength
-from graphgallery import astensors, asintarr, normalize_x, Bunch
+from graphgallery import transformers as T
+from graphgallery import astensors, asintarr
 
 
 class GWNN(SemiSupervisedModel):
@@ -23,85 +23,75 @@ class GWNN(SemiSupervisedModel):
 
     """
 
-    def __init__(self, graph, order=3, wavelet_s=1.2,
-                 threshold=1e-4, wavelet_normalize=True, norm_x=None,
+    def __init__(self, *graph, adj_transformer="wavelet_basis", attr_transformer=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
         """Creat a Graph Wavelet Neural Networks (GWNN) model.
 
+
+        This can be instantiated in several ways:
+
+            model = GWNN(graph)
+                with a `graphgallery.data.Graph` instance representing
+                A sparse, attributed, labeled graph.
+
+            model = GWNN(adj_matrix, attr_matrix, labels)
+                where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
+                 `attr_matrix` is a 2D Numpy array-like matrix denoting the node 
+                 attributes, `labels` is a 1D Numpy array denoting the node labels.
+
+
         Parameters:
         ----------
-            graph: graphgallery.data.Graph
-                A sparse, attributed, labeled graph.
-            order: positive integer. optional 
-                The power (order) of approximated wavelet matrix using Chebyshev polynomial 
-                filter. (default :obj: `3`)
-            wavelet_s: float scalar. optional 
-                The wavelet constant corresponding to a heat kernel. 
-                (default: :obj:`1.2`) 
-            threshold: float scalar. optional 
-                Used to sparsify the wavelet matrix. (default: :obj:`1e-4`, i.e., 
-                values less than `1e-4` will be set to zero to preserve the sparsity 
-                of wavelet matrix)       
-            wavelet_normalize: bool. optional 
-                Whether to use row-normalize for wavelet matrix. (default :bool: `True`)
-            norm_x: string. optional 
-                How to normalize the node attribute matrix. See `graphgallery.normalize_x`
-                (default :obj: `None`)
-            device: string. optional 
-                The device where the model is running on. You can specified `CPU` or `GPU` 
-                for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
-            seed: interger scalar. optional 
-                Used in combination with `tf.random.set_seed` & `np.random.seed` 
-                & `random.seed` to create a reproducible sequence of tensors across 
-                multiple calls. (default :obj: `None`, i.e., using random seed)
-            name: string. optional
-                Specified name for the model. (default: :str: `class.__name__`)
-            kwargs: other customed keyword Parameters.
+        graph: An instance of `graphgallery.data.Graph` or a tuple (list) of inputs.
+            A sparse, attributed, labeled graph.
+        adj_transformer: string, `transformer`, or None. optional
+            How to transform the adjacency matrix. See `graphgallery.transformers`
+            (default: :obj:`'wavelet_basis'`.) 
+        attr_transformer: string, transformer, or None. optional
+            How to transform the node attribute matrix. See `graphgallery.transformers`
+            (default :obj: `None`)    
+        device: string. optional 
+            The device where the model is running on. You can specified `CPU` or `GPU` 
+            for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
+        seed: interger scalar. optional 
+            Used in combination with `tf.random.set_seed` & `np.random.seed` 
+            & `random.seed` to create a reproducible sequence of tensors across 
+            multiple calls. (default :obj: `None`, i.e., using random seed)
+        name: string. optional
+            Specified name for the model. (default: :str: `class.__name__`)
+        kwargs: other customed keyword Parameters.
 
         """
-        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
+        super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
-        self.order = order
-        self.wavelet_s = wavelet_s
-        self.threshold = threshold
-        self.wavelet_normalize = wavelet_normalize
-        self.norm_x = norm_x
-        self.preprocess(adj, x)
+        self.adj_transformer = T.get(adj_transformer)
+        self.attr_transformer = T.get(attr_transformer)
+        self.process()
 
-    def preprocess(self, adj, x):
-        super().preprocess(adj, x)
-        adj, x = self.adj, self.x
+    def process_step(self):
+        graph = self.graph
+        adj_matrix = self.adj_transformer(graph.adj_matrix)
+        attr_matrix = self.attr_transformer(graph.attr_matrix)
 
-        if self.norm_x:
-            x = normalize_x(x, norm=self.norm_x)
-
-        wavelet, inverse_wavelet = wavelet_basis(adj, wavelet_s=self.wavelet_s,
-                                                 order=self.order, threshold=self.threshold,
-                                                 wavelet_normalize=self.wavelet_normalize)
         with tf.device(self.device):
-            self.x_norm, self.adj_norm = astensors([x, [wavelet, inverse_wavelet]])
+            self.feature_inputs, self.structure_inputs = astensors(
+                attr_matrix, adj_matrix)
 
+    @EqualVarLength()
     def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5], l2_norms=[5e-4], lr=0.01,
               use_bias=False):
 
-        ############# Record paras ###########
-        local_paras = locals()
-        local_paras.pop('self')
-        paras = Bunch(**local_paras)
-        hiddens, activations, dropouts, l2_norms = set_equal_in_length(hiddens, activations, dropouts, l2_norms)
-        paras.update(Bunch(hiddens=hiddens, activations=activations, dropouts=dropouts, l2_norms=l2_norms))
-        # update all parameters
-        self.paras.update(paras)
-        self.model_paras.update(paras)
-        ######################################
-
         with tf.device(self.device):
 
-            x = Input(batch_shape=[None, self.n_attrs], dtype=self.floatx, name='attr_matrix')
-            wavelet = Input(batch_shape=[None, None], dtype=self.floatx, sparse=True, name='wavelet')
-            inverse_wavelet = Input(batch_shape=[None, None], dtype=self.floatx, sparse=True,
-                                    name='inverse_wavelet')
-            index = Input(batch_shape=[None],  dtype=self.intx, name='node_index')
+            n_nodes = self.graph.n_nodes
+            x = Input(batch_shape=[None, self.graph.n_attrs],
+                      dtype=self.floatx, name='attr_matrix')
+            wavelet = Input(batch_shape=[n_nodes, n_nodes],
+                            dtype=self.floatx, sparse=True, name='wavelet_matrix')
+            inverse_wavelet = Input(batch_shape=[n_nodes, n_nodes], dtype=self.floatx, sparse=True,
+                                    name='inverse_wavelet_matrix')
+            index = Input(batch_shape=[None],
+                          dtype=self.intx, name='node_index')
 
             h = x
             for hid, activation, dropout, l2_norm in zip(hiddens, activations, dropouts, l2_norms):
@@ -109,10 +99,12 @@ class GWNN(SemiSupervisedModel):
                                        kernel_regularizer=regularizers.l2(l2_norm))([h, wavelet, inverse_wavelet])
                 h = Dropout(rate=dropout)(h)
 
-            h = WaveletConvolution(self.n_classes, use_bias=use_bias)([h, wavelet, inverse_wavelet])
+            h = WaveletConvolution(self.graph.n_classes, use_bias=use_bias)(
+                [h, wavelet, inverse_wavelet])
             h = Gather()([h, index])
 
-            model = Model(inputs=[x, wavelet, inverse_wavelet, index], outputs=h)
+            model = Model(
+                inputs=[x, wavelet, inverse_wavelet, index], outputs=h)
             model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
                           optimizer=Adam(lr=lr), metrics=['accuracy'])
 
@@ -120,19 +112,8 @@ class GWNN(SemiSupervisedModel):
 
     def train_sequence(self, index):
         index = asintarr(index)
-        labels = self.labels[index]
-
+        labels = self.graph.labels[index]
         with tf.device(self.device):
-            sequence = FullBatchNodeSequence([self.x_norm, *self.adj_norm, index], labels)
+            sequence = FullBatchNodeSequence(
+                [self.feature_inputs, *self.structure_inputs, index], labels)
         return sequence
-
-    def predict(self, index):
-        super().predict(index)
-        index = asintarr(index)
-        with tf.device(self.device):
-            index = astensors(index)
-            logit = self.model.predict_on_batch([self.x_norm, *self.adj_norm, index])
-
-        if tf.is_tensor(logit):
-            logit = logit.numpy()
-        return logit

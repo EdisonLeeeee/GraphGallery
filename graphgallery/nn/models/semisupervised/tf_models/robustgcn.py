@@ -8,8 +8,10 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy
 from graphgallery.nn.layers import GaussionConvolution_F, GaussionConvolution_D, Sample, Gather
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
-from graphgallery.utils.shape import EqualVarLength, repeat
-from graphgallery import astensors, asintarr, normalize_x, normalize_adj, Bunch
+from graphgallery.utils.shape import EqualVarLength
+from graphgallery import transformers as T
+from graphgallery.transformers import NormalizeAdj
+from graphgallery import astensors, asintarr
 
 
 class RobustGCN(SemiSupervisedModel):
@@ -21,21 +23,31 @@ class RobustGCN(SemiSupervisedModel):
 
     """
 
-    def __init__(self, graph, norm_adj=[-0.5, -1], norm_x=None,
-                 device='cpu:0', seed=None, name=None, **kwargs):
+    def __init__(self, *graph, adj_transformer=T.NormalizeAdj(rate=[-0.5, -1.0]),
+                 attr_transformer=None, device='cpu:0', seed=None, name=None, **kwargs):
         """Creat a Robust Graph Convolutional Networks (RobustGCN or RGCN) model.
+
+        This can be instantiated in several ways:
+
+            model = RobustGCN(graph)
+                with a `graphgallery.data.Graph` instance representing
+                A sparse, attributed, labeled graph.
+
+            model = RobustGCN(adj_matrix, attr_matrix, labels)
+                where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
+                 `attr_matrix` is a 2D Numpy array-like matrix denoting the node 
+                 attributes, `labels` is a 1D Numpy array denoting the node labels.
 
         Parameters:
         ----------
-            graph: graphgallery.data.Graph
+            graph: An instance of `graphgallery.data.Graph` or a tuple (list) of inputs.
                 A sparse, attributed, labeled graph.
-            norm_adj: List of float scalar, optional 
-                The normalize rate for adjacency matrix `adj`. 
-                (default: :obj:`[-0.5, -1]`, i.e., two normalized `adj` with rate `-0.5` 
-                and `-1.0`, respectively) 
-            norm_x: string. optional 
-                How to normalize the node attribute matrix. See `graphgallery.normalize_x`
-                (default :obj: `None`)
+            adj_transformer: string, `transformer`, or None. optional
+                How to transform the adjacency matrix. See `graphgallery.transformers`
+                (default: :obj:`'normalize_adj'` with normalize rate `-0.5` and `-1`.) 
+            attr_transformer: string, transformer, or None. optional
+                How to transform the node attribute matrix. See `graphgallery.transformers`
+                (default :obj: `None`)               
             device: string. optional 
                 The device where the model is running on. You can specified `CPU` or `GPU` 
                 for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
@@ -48,44 +60,32 @@ class RobustGCN(SemiSupervisedModel):
             kwargs: other customed keyword Parameters.
 
         """
-        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
+        super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
-        self.norm_adj = norm_adj
-        self.norm_x = norm_x
-        self.preprocess(adj, x)
+        self.adj_transformer = T.get(adj_transformer)
+        self.attr_transformer = T.get(attr_transformer)
+        self.process()
 
-    def preprocess(self, adj, x):
-        super().preprocess(adj, x)
-        adj, x = self.adj, self.x
-
-        if self.norm_adj:
-            adj = normalize_adj([adj, adj], self.norm_adj)    # [adj_1, adj_2]
-
-        if self.norm_x:
-            x = normalize_x(x, norm=self.norm_x)
+    def process_step(self):
+        graph = self.graph
+        adj_matrix = self.adj_transformer(graph.adj_matrix, graph.adj_matrix)
+        attr_matrix = self.attr_transformer(graph.attr_matrix)
 
         with tf.device(self.device):
-            self.x_norm, self.adj_norm = astensors([x, adj])
+            self.feature_inputs, self.structure_inputs = astensors(
+                attr_matrix, adj_matrix)
 
-    def build(self, hiddens=[64], activations=['relu'], use_bias=False, dropouts=[0.5], l2_norms=[5e-4],
-              lr=0.01, kl=5e-4, gamma=1.):
-
-        ############# Record paras ###########
-        local_paras = locals()
-        local_paras.pop('self')
-        paras = Bunch(**local_paras)
-        hiddens, activations, dropouts, l2_norms = set_equal_in_length(hiddens, activations, dropouts, l2_norms)
-        paras.update(Bunch(hiddens=hiddens, activations=activations, dropouts=dropouts, l2_norms=l2_norms))
-        # update all parameters
-        self.paras.update(paras)
-        self.model_paras.update(paras)
-        ######################################
+    @EqualVarLength()
+    def build(self, hiddens=[64], activations=['relu'], use_bias=False, dropouts=[0.5],
+              l2_norms=[5e-4], lr=0.01, kl=5e-4, gamma=1.):
 
         with tf.device(self.device):
-            x = Input(batch_shape=[None, self.n_attrs], dtype=self.floatx, name='attr_matrix')
+            x = Input(batch_shape=[None, self.graph.n_attrs],
+                      dtype=self.floatx, name='attr_matrix')
             adj = [Input(batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix_1'),
                    Input(batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix_2')]
-            index = Input(batch_shape=[None],  dtype=self.intx, name='node_index')
+            index = Input(batch_shape=[None],
+                          dtype=self.intx, name='node_index')
 
             h = x
             mean, var = GaussionConvolution_F(hiddens[0], gamma=gamma,
@@ -93,20 +93,24 @@ class RobustGCN(SemiSupervisedModel):
                                               activation=activations[0],
                                               kernel_regularizer=regularizers.l2(l2_norms[0]))([h, *adj])
             if kl:
-                KL_divergence = 0.5 * tf.reduce_mean(tf.math.square(mean) + var - tf.math.log(1e-8 + var) - 1, axis=1)
+                KL_divergence = 0.5 * \
+                    tf.reduce_mean(tf.math.square(mean) + var -
+                                   tf.math.log(1e-8 + var) - 1, axis=1)
                 KL_divergence = tf.reduce_sum(KL_divergence)
 
                 # KL loss
-                kl_loss = kl*KL_divergence
+                kl_loss = kl * KL_divergence
 
             # additional layers (usually unnecessay)
             for hid, activation, dropout, l2_norm in zip(hiddens[1:], activations[1:], dropouts[1:], l2_norms[1:]):
 
-                mean, var = GaussionConvolution_D(hid, gamma=gamma, use_bias=use_bias, activation=activation)([mean, var, *adj])
+                mean, var = GaussionConvolution_D(
+                    hid, gamma=gamma, use_bias=use_bias, activation=activation)([mean, var, *adj])
                 mean = Dropout(rate=dropout)(mean)
                 var = Dropout(rate=dropout)(var)
 
-            mean, var = GaussionConvolution_D(self.n_classes, gamma=gamma, use_bias=use_bias)([mean, var, *adj])
+            mean, var = GaussionConvolution_D(
+                self.graph.n_classes, gamma=gamma, use_bias=use_bias)([mean, var, *adj])
             h = Sample(seed=self.seed)([mean, var])
             h = Gather()([h, index])
 
@@ -122,17 +126,14 @@ class RobustGCN(SemiSupervisedModel):
         index = asintarr(index)
         labels = self.labels[index]
         with tf.device(self.device):
-            sequence = FullBatchNodeSequence([self.x_norm, *self.adj_norm, index], labels)
+            sequence = FullBatchNodeSequence(
+                [self.x_norm, *self.adj_norm, index], labels)
         return sequence
 
-    def predict(self, index):
-        super().predict(index)
+    def train_sequence(self, index):
         index = asintarr(index)
-
+        labels = self.graph.labels[index]
         with tf.device(self.device):
-            index = astensors(index)
-            logit = self.model.predict_on_batch([self.x_norm, *self.adj_norm, index])
-
-        if tf.is_tensor(logit):
-            logit = logit.numpy()
-        return logit
+            sequence = FullBatchNodeSequence(
+                [self.feature_inputs, *self.structure_inputs, index], labels)
+        return sequence

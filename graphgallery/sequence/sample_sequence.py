@@ -2,39 +2,38 @@
 import numpy as np
 import tensorflow as tf
 
-from graphgallery import astensors
+from graphgallery import astensor, astensors
 from graphgallery.sequence.base_sequence import Sequence
 
 
-class NodeSampleSequence(Sequence):
+class SBVATSampleSequence(Sequence):
 
     def __init__(
         self,
-        inputs,
-        labels,
+        x,
+        y,
         neighbors,
-        n_samples=100,
+        n_samples=50,
         resample=True
     ):
 
-        self.inputs = inputs
-        self.labels = labels
-        self.n_batches = 1
+        self.x = x
+        self.y = y
         self.neighbors = neighbors
-        self.n_nodes = inputs[0].shape[0]
+        self.n_nodes = x[0].shape[0]
         self.n_samples = n_samples
         self.adv_mask = self.smple_nodes()
         self.resample = resample
 
     def __len__(self):
-        return self.n_batches
+        return 1
 
     def __getitem__(self, index):
+        return astensors(*self.x, self.adv_mask), astensor(self.y)
 
-        item = [*self.inputs, self.adv_mask], self.labels
+    def on_epoch_end(self):
         if self.resample:
             self.adv_mask = self.smple_nodes()
-        return astensors(item)
 
     def smple_nodes(self):
         N = self.n_nodes

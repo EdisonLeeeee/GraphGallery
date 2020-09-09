@@ -4,7 +4,7 @@ from tensorflow.keras.layers import Layer
 import tensorflow as tf
 
 
-class GraphConvattribute(Layer):
+class GraphConvAttribute(Layer):
     """GCN + attribute"""
 
     def __init__(self, units,
@@ -24,7 +24,7 @@ class GraphConvattribute(Layer):
         self.units = units
         self.use_bias = use_bias
         self.concat = concat
-        self.output_dim = units*2 if concat else units
+        self.output_dim = units * 2 if concat else units
 
         self.activation = activations.get(activation)
         self.kernel_initializer = initializers.get(kernel_initializer)

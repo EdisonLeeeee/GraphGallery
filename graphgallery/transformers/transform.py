@@ -49,8 +49,8 @@ def asintarr(x, dtype: str = None):
     if dtype is None:
         dtype = intx()
 
-    if is_tensor_or_variable(x) and x.dtype != dtype:
-        if backend().kind == "T":
+    if is_tensor_or_variable(x):
+        if x.dtype != dtype and backend().kind == "T":
             x = tf.cast(x, dtype=dtype)
         else:
             ...
@@ -65,3 +65,9 @@ def asintarr(x, dtype: str = None):
         raise ValueError(
             f"Invalid input which should be either array-like or integer scalar, but got {type(x)}.")
     return x
+
+
+def indices2mask(indices, shape):
+    mask = np.zeros(shape, np.bool)
+    mask[indices] = True
+    return mask

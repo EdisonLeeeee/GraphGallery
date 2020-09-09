@@ -4,6 +4,8 @@ import scipy.sparse as sp
 
 from graphgallery.tensor import tf_tensor, th_tensor
 from graphgallery import backend
+from graphgallery import gallery_export
+
 
 def sparse_adj_to_sparse_tensor(x):
     """Converts a Scipy sparse matrix to a TensorFlow/PyTorch SparseTensor.
@@ -23,6 +25,7 @@ def sparse_adj_to_sparse_tensor(x):
         return th_tensor.sparse_adj_to_sparse_tensor(x)
 
 
+@gallery_export('graphgallery.astftensor')
 def astensor(x, dtype=None):
     """Convert input matrices to Tensor or SparseTensor.
 
@@ -69,20 +72,18 @@ def astensors(*xs):
         return th_tensor.astensors(*xs)
 
 
-def normalize_adj_tensor(adj, rate=-0.5, self_loop=1.0):
+def normalize_adj_tensor(adj, rate=-0.5, selfloop=1.0):
     if backend().kind == "T":
-        return tf_tensor.normalize_adj_tensor(adj, rate=rate, self_loop=self_loop)
+        return tf_tensor.normalize_adj_tensor(adj, rate=rate, selfloop=selfloop)
     else:
-        return th_tensor.normalize_adj_tensor(adj, rate=rate, self_loop=self_loop)
+        return th_tensor.normalize_adj_tensor(adj, rate=rate, selfloop=selfloop)
 
 
-
-def add_self_loop_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0):
+def add_selfloop_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0):
     if backend().kind == "T":
         return tf_tensor.normalize_adj_tensor(edge_index, edge_weight, n_nodes=n_nodes, fill_weight=fill_weight)
     else:
         return th_tensor.normalize_adj_tensor(edge_index, edge_weight, n_nodes=n_nodes, fill_weight=fill_weight)
-
 
 
 def normalize_edge_tensor(edge_index, edge_weight=None, n_nodes=None, fill_weight=1.0, rate=-0.5):
@@ -98,4 +99,3 @@ def sparse_tensor_to_sparse_adj(x):
         return tf_tensor.sparse_tensor_to_sparse_adj(x)
     else:
         return th_tensor.sparse_tensor_to_sparse_adj(x)
-

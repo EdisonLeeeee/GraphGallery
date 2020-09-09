@@ -8,7 +8,7 @@
 </p>
 
 ---
-[![Python 3.6](https://img.shields.io/badge/Python->=3.6-3776AB)](https://www.python.org/downloads/release/python-360/)
+[![Python 3.7](https://img.shields.io/badge/Python->=3.7-3776AB)](https://www.python.org/downloads/release/python-370/)
 [![TensorFlow >=2.1](https://img.shields.io/badge/TensorFlow->=2.1-FF6F00?logo=tensorflow)](https://github.com/tensorflow/tensorflow/releases/tag/v2.1.0)
 [![PyPI Version][pypi-image]][pypi-url]
 ![](https://img.shields.io/github/stars/EdisonLeeeee/GraphGallery)
@@ -85,27 +85,34 @@ In detail, the following methods are currently implemented:
 ```python
 from graphgallery.data import Planetoid
 # set `verbose=False` to avoid these printed tables
+from graphgallery.data import Planetoid
 data = Planetoid('cora', verbose=False)
-adj, x, labels = data.graph.unpack()
+graph = data.graph
 idx_train, idx_val, idx_test = data.split()
-# adj:  adjacency matrix: 2D Scipy sparse matrix
-# x:  feature matrix: 2D Numpy array
-# labels:  class labels: 1D Numpy array
 # idx_train:  training indices: 1D Numpy array
 # idx_val:  validation indices: 1D Numpy array
 # idx_test:  testing indices: 1D Numpy array
+>>> graph
+Graph(adj_matrix(2708, 2708), attr_matrix(2708, 2708), labels(2708,))
 ```
+
 currently the supported datasets are:
 ```python
 >>> data.supported_datasets
 ('citeseer', 'cora', 'pubmed')
 ```
 
+
+
+# for testing the predict method
+print(f'Predict accuracy {model._test_predict(idx_test):.2%}')
+
+
 ## Example of GCN model
 ```python
 from graphgallery.nn.models import GCN
-# adj is scipy sparse matrix, x is numpy array matrix
-model = GCN(adj, x, labels, device='GPU', norm_x='l1', seed=123)
+
+model = GCN(graph, attr_transformer="normalize_attr", device="CPU", seed=123)
 # build your GCN model with default hyper-parameters
 model.build()
 # train your model. here idx_train and idx_val are numpy arrays
@@ -141,19 +148,13 @@ you can use the following statement to build your model
 # train without validation
 # his = model.train(idx_train, verbose=1, epochs=100)
 ```
-here `his` is tensorflow `Histoory` like instance (or itself).
+here `his` is tensorflow `Histoory` (like) instance.
 
 + Test you model
 ```python
 loss, accuracy = model.test(idx_test)
 print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 ```
-+ Display hyper-parameters
-
-You can simply use `model.show()` to show all your `Hyper-parameters`.
-Otherwise you can also use `model.show('model')` or `model.show('train')` to show your model parameters and training parameters.
-
-NOTE: you should install texttable first.
 
 ## Visualization
 NOTE: you must install [SciencePlots](https://github.com/garrettj403/SciencePlots) package for a better preview.

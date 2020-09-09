@@ -8,9 +8,9 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy
 from graphgallery.nn.layers import ChebyConvolution, Gather
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.nn.models import SemiSupervisedModel
-from graphgallery.utils.misc import chebyshev_polynomials
 from graphgallery.utils.shape import EqualVarLength
-from graphgallery import astensors, asintarr, normalize_x, Bunch
+from graphgallery import transformers as T
+from graphgallery import astensors, asintarr
 
 
 class ChebyNet(SemiSupervisedModel):
@@ -22,84 +22,83 @@ class ChebyNet(SemiSupervisedModel):
 
     """
 
-    def __init__(self, graph, order=2, norm_adj=-0.5,
-                 norm_x=None, device='cpu:0', seed=None, name=None, **kwargs):
+    def __init__(self, *graph, adj_transformer="cheby_basis", attr_transformer=None,
+                 device='cpu:0', seed=None, name=None, **kwargs):
         """Creat a ChebyNet model.
+
+        This can be instantiated in several ways:
+
+            model = ChebyNet(graph)
+                with a `graphgallery.data.Graph` instance representing
+                A sparse, attributed, labeled graph.
+
+            model = ChebyNet(adj_matrix, attr_matrix, labels)
+                where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
+                 `attr_matrix` is a 2D Numpy array-like matrix denoting the node 
+                 attributes, `labels` is a 1D Numpy array denoting the node labels.
 
         Parameters:
         ----------
-            graph: graphgallery.data.Graph
-                A sparse, attributed, labeled graph.
-            order (Positive integer, optional):
-                The order of Chebyshev polynomial filter. (default :obj: `2`)
-            norm_adj: float scalar. optional
-                The normalize rate for adjacency matrix `adj`. (default: :obj:`-0.5`,
-                i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}})
-            norm_x: string. optional
-                How to normalize the node attribute matrix. See `graphgallery.normalize_x`
-                (default :obj: `None`)
-            device: string. optional
-                The device where the model is running on. You can specified `CPU` or `GPU`
-                for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
-            seed: interger scalar. optional 
-                Used in combination with `tf.random.set_seed` & `np.random.seed` 
-                & `random.seed` to create a reproducible sequence of tensors across 
-                multiple calls. (default :obj: `None`, i.e., using random seed)
-            name: string. optional
-                Specified name for the model. (default: :str: `class.__name__`)
-            kwargs: other customed keyword Parameters.
+        graph: An instance of `graphgallery.data.Graph` or a tuple (list) of inputs.
+            A sparse, attributed, labeled graph.
+        adj_transformer: string, `transformer`, or None. optional
+            How to transform the adjacency matrix. See `graphgallery.transformers`
+            (default: :obj:`'cheby_basis'`) 
+        attr_transformer: string, transformer, or None. optional
+            How to transform the node attribute matrix. See `graphgallery.transformers`
+            (default :obj: `None`)
+        device: string. optional
+            The device where the model is running on. You can specified `CPU` or `GPU`
+            for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
+        seed: interger scalar. optional 
+            Used in combination with `tf.random.set_seed` & `np.random.seed` 
+            & `random.seed` to create a reproducible sequence of tensors across 
+            multiple calls. (default :obj: `None`, i.e., using random seed)
+        name: string. optional
+            Specified name for the model. (default: :str: `class.__name__`)
+        kwargs: other customed keyword Parameters.
 
         """
-        super().__init__(adj, x, labels,
-                         device=device, seed=seed, name=name, **kwargs)
+        super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
-        self.order = order
-        self.norm_adj = norm_adj
-        self.norm_x = norm_x
-        self.preprocess(adj, x)
+        self.adj_transformer = T.get(adj_transformer)
+        self.attr_transformer = T.get(attr_transformer)
+        self.process()
 
-    def preprocess(self, adj, x):
-        super().preprocess(adj, x)
-        adj, x = self.adj, self.x
-
-        if self.norm_adj:
-            adj = chebyshev_polynomials(adj, rate=self.norm_adj, order=self.order)
-
-        if self.norm_x:
-            x = normalize_x(x, norm=self.norm_x)
+    def process_step(self):
+        graph = self.graph
+        adj_matrix = self.adj_transformer(graph.adj_matrix)
+        attr_matrix = self.attr_transformer(graph.attr_matrix)
 
         with tf.device(self.device):
-            self.x_norm, self.adj_norm = astensors([x, adj])
+            self.feature_inputs, self.structure_inputs = astensors(
+                attr_matrix, adj_matrix)
 
+    @EqualVarLength()
     def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5], l2_norms=[5e-4], lr=0.01,
               use_bias=False):
 
-        ############# Record paras ###########
-        local_paras = locals()
-        local_paras.pop('self')
-        paras = Bunch(**local_paras)
-        hiddens, activations, dropouts, l2_norms = set_equal_in_length(hiddens, activations, dropouts, l2_norms)
-        paras.update(Bunch(hiddens=hiddens, activations=activations, dropouts=dropouts, l2_norms=l2_norms))
-        # update all parameters
-        self.paras.update(paras)
-        self.model_paras.update(paras)
-        ######################################
-
         with tf.device(self.device):
 
-            x = Input(batch_shape=[None, self.n_attrs], dtype=self.floatx, name='attr_matrix')
-            adj = [Input(batch_shape=[None, None],
-                         dtype=self.floatx, sparse=True, name=f'adj_matrix_{i}') for i in range(self.order+1)]
+            order = len(self.structure_inputs) - 1
 
-            index = Input(batch_shape=[None],  dtype=self.intx, name='node_index')
+            x = Input(batch_shape=[None, self.graph.n_attrs],
+                      dtype=self.floatx, name='attr_matrix')
+            adj = [Input(batch_shape=[None, None],
+                         dtype=self.floatx, sparse=True, name=f'adj_matrix_{i}') for i in range(order + 1)]
+
+            index = Input(batch_shape=[None],
+                          dtype=self.intx, name='node_index')
 
             h = x
             for hid, activation, dropout, l2_norm in zip(hiddens, activations, dropouts, l2_norms):
-                h = ChebyConvolution(hid, order=self.order, use_bias=use_bias, activation=activation,
+                h = ChebyConvolution(hid, order=order, use_bias=use_bias,
+                                     activation=activation,
                                      kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
                 h = Dropout(rate=dropout)(h)
 
-            h = ChebyConvolution(self.n_classes, order=self.order, use_bias=use_bias)([h, adj])
+            h = ChebyConvolution(self.graph.n_classes,
+                                 order=order, use_bias=use_bias)([h, adj])
             h = Gather()([h, index])
 
             model = Model(inputs=[x, *adj, index], outputs=h)
@@ -109,17 +108,8 @@ class ChebyNet(SemiSupervisedModel):
 
     def train_sequence(self, index):
         index = asintarr(index)
-        labels = self.labels[index]
+        labels = self.graph.labels[index]
         with tf.device(self.device):
-            sequence = FullBatchNodeSequence([self.x_norm, *self.adj_norm, index], labels)
+            sequence = FullBatchNodeSequence(
+                [self.feature_inputs, *self.structure_inputs, index], labels)
         return sequence
-
-    def predict(self, index):
-        super().predict(index)
-        index = asintarr(index)
-        with tf.device(self.device):
-            logit = self.model.predict_on_batch([self.x_norm, *self.adj_norm, index])
-
-        if tf.is_tensor(logit):
-            logit = logit.numpy()
-        return logit

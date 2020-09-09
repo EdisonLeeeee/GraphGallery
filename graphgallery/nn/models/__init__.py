@@ -1,6 +1,6 @@
 # Base model
 
-from graphgallery.nn.models.base_model import base_model
+from graphgallery.nn.models.base_model import BaseModel
 from graphgallery import backend
 
 _BACKEND = backend()
@@ -29,7 +29,7 @@ if _BACKEND .kind == "T":
     from graphgallery.nn.models.semisupervised.experimental.edgeconv import EdgeGCN
     from graphgallery.nn.models.semisupervised.experimental.s_obvat import SimplifiedOBVAT
     from graphgallery.nn.models.semisupervised.experimental.gcn_mix import GCN_MIX
-    from graphgallery.nn.models.semisupervised.experimental.gcnf import GCNF
+    from graphgallery.nn.models.semisupervised.experimental.gcna import GCNA
 else:
     GCN = None
 

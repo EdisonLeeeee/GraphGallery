@@ -16,7 +16,8 @@ from graphgallery import astensors, asintarr
 class GCN(SemiSupervisedModel):
     """
         Implementation of Graph Convolutional Networks (GCN). 
-        `Semi-Supervised Classification with Graph Convolutional Networks <https://arxiv.org/abs/1609.02907>`
+        `Semi-Supervised Classification with Graph Convolutional Networks 
+        <https://arxiv.org/abs/1609.02907>`
         Tensorflow 1.x implementation: <https://github.com/tkipf/gcn>
         Pytorch implementation: <https://github.com/tkipf/pygcn>
 
@@ -25,30 +26,41 @@ class GCN(SemiSupervisedModel):
     def __init__(self, *graph, adj_transformer="normalize_adj", attr_transformer=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
         """Creat a Graph Convolutional Networks (GCN) model.
-        
-        You can call `model = GCN(graph)` or `model = GCN(adj_matrix, attr_matrix, labels)`
+
+
+        This can be instantiated in several ways:
+
+            model = GCN(graph)
+                with a `graphgallery.data.Graph` instance representing
+                A sparse, attributed, labeled graph.
+
+            model = GCN(adj_matrix, attr_matrix, labels)
+                where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
+                 `attr_matrix` is a 2D Numpy array-like matrix denoting the node 
+                 attributes, `labels` is a 1D Numpy array denoting the node labels.
+
 
         Parameters:
         ----------
-            graph: graphgallery.data.Graph
-                A sparse, attributed, labeled graph.
-            adj_transformer: string, transformer, or None. optional
-                How to normalize the adjacency matrix. (default: :obj:`'normalize_adj'`
-                with normalize rate `-0.5`.
-                i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
-            attr_transformer: string, transformer, or None. optional
-                How to normalize the node attribute matrix. See `graphgallery.transformers`
-                (default :obj: `None`)
-            device: string. optional 
-                The device where the model is running on. You can specified `CPU` or `GPU` 
-                for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
-            seed: interger scalar. optional 
-                Used in combination with `tf.random.set_seed` & `np.random.seed` 
-                & `random.seed` to create a reproducible sequence of tensors across 
-                multiple calls. (default :obj: `None`, i.e., using random seed)
-            name: string. optional
-                Specified name for the model. (default: :str: `class.__name__`)
-            kwargs: other customed keyword Parameters.
+        graph: An instance of `graphgallery.data.Graph` or a tuple (list) of inputs.
+            A sparse, attributed, labeled graph.
+        adj_transformer: string, `transformer`, or None. optional
+            How to transform the adjacency matrix. See `graphgallery.transformers`
+            (default: :obj:`'normalize_adj'` with normalize rate `-0.5`.
+            i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
+        attr_transformer: string, transformer, or None. optional
+            How to transform the node attribute matrix. See `graphgallery.transformers`
+            (default :obj: `None`)
+        device: string. optional 
+            The device where the model is running on. You can specified `CPU` or `GPU` 
+            for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
+        seed: interger scalar. optional 
+            Used in combination with `tf.random.set_seed` & `np.random.seed` 
+            & `random.seed` to create a reproducible sequence of tensors across 
+            multiple calls. (default :obj: `None`, i.e., using random seed)
+        name: string. optional
+            Specified name for the model. (default: :str: `class.__name__`)
+        kwargs: other customed keyword Parameters.
         """
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
@@ -60,7 +72,7 @@ class GCN(SemiSupervisedModel):
         graph = self.graph
         adj_matrix = self.adj_transformer(graph.adj_matrix)
         attr_matrix = self.attr_transformer(graph.attr_matrix)
-        
+
         with tf.device(self.device):
             self.feature_inputs, self.structure_inputs = astensors(
                 attr_matrix, adj_matrix)
@@ -71,9 +83,12 @@ class GCN(SemiSupervisedModel):
 
         with tf.device(self.device):
 
-            x = Input(batch_shape=[None, self.graph.n_attrs], dtype=self.floatx, name='attr_matrix')
-            adj = Input(batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix')
-            index = Input(batch_shape=[None], dtype=self.intx, name='node_index')
+            x = Input(batch_shape=[None, self.graph.n_attrs],
+                      dtype=self.floatx, name='attr_matrix')
+            adj = Input(
+                batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix')
+            index = Input(batch_shape=[None],
+                          dtype=self.intx, name='node_index')
 
             h = x
             for hid, activation, dropout, l2_norm in zip(hiddens, activations, dropouts, l2_norms):
@@ -83,7 +98,8 @@ class GCN(SemiSupervisedModel):
 
                 h = Dropout(rate=dropout)(h)
 
-            h = GraphConvolution(self.graph.n_classes, use_bias=use_bias)([h, adj])
+            h = GraphConvolution(self.graph.n_classes,
+                                 use_bias=use_bias)([h, adj])
             h = Gather()([h, index])
 
             model = Model(inputs=[x, adj, index], outputs=h)

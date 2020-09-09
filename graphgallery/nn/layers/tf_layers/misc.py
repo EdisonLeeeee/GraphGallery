@@ -38,7 +38,8 @@ class Scale(Layer):
         self.trainable = False
 
     def call(self, input):
-        output = (input - tf.reduce_mean(input, axis=0, keepdims=True)) / tf.keras.backend.std(input, axis=0, keepdims=True)
+        output = (input - tf.reduce_mean(input, axis=0, keepdims=True)
+                  ) / tf.keras.backend.std(input, axis=0, keepdims=True)
         return output
 
     def get_config(self):
@@ -88,21 +89,23 @@ class Gather(Layer):
     def compute_output_shape(self, input_shapes):
         axis = self.axis
         params_shape, indices_shape = input_shapes
-        output_shape = params_shape[:axis] + indices_shape + params_shape[axis + 1:]
+        output_shape = params_shape[:axis] + \
+            indices_shape + params_shape[axis + 1:]
         return tf.TensorShape(output_shape)
 
 
 class Laplacian(Layer):
-    def __init__(self, rate=-0.5, self_loop=1.0, *args, **kwargs):
+    def __init__(self, rate=-0.5, selfloop=1.0, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if not rate:
-            raise ValueError(f"`rate` must be an integer scalr larger than zero, but got {rate}.")
+            raise ValueError(
+                f"`rate` must be an integer scalr larger than zero, but got {rate}.")
         self.rate = rate
-        self.self_loop = self_loop
+        self.selfloop = selfloop
         self.trainable = False
 
     def call(self, adj):
-        adj = adj + self.self_loop * tf.eye(tf.shape(adj)[0], dtype=adj.dtype)
+        adj = adj + self.selfloop * tf.eye(tf.shape(adj)[0], dtype=adj.dtype)
         d = tf.reduce_sum(adj, axis=1)
         d_power = tf.pow(d, self.rate)
         d_power_mat = tf.linalg.diag(d_power)

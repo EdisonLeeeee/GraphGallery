@@ -6,114 +6,69 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 
 from graphgallery.nn.layers import GraphConvolution
-from graphgallery.nn.models import SemiSupervisedModel
+from graphgallery.nn.models import FastGCN
 from graphgallery.sequence import FullBatchNodeSequence
-from graphgallery.utils.shape import EqualVarLength
-from graphgallery import astensors, asintarr, normalize_x, normalize_adj, Bunch
+from graphgallery import asintarr
 
 
-class GCN_MIX(SemiSupervisedModel):
+class GCN_MIX(FastGCN):
     """
-        Implementation of Mixed Graph Convolutional Networks (GCN_MIX) occured in FastGCN. 
-        Tensorflow 1.x implementation: <https://github.com/matenure/FastGCN>
+        Implementation of Mixed Graph Convolutional Networks (GCN_MIX) 
+            occured in FastGCN. 
+        GCN_MIX Tensorflow 1.x implementation: <https://github.com/matenure/FastGCN>
 
     """
 
-    def __init__(self, graph, norm_adj=-0.5, norm_x=None,
+    def __init__(self, *graph, adj_transformer="normalize_adj", attr_transformer=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
         """Creat Mixed Graph Convolutional Networks (GCN_MIX) occured in FastGCN.
 
         Calculating `A @ X` in advance to save time.
 
+
+        This can be instantiated in several ways:
+
+            model = GCN(graph)
+                with a `graphgallery.data.Graph` instance representing
+                A sparse, attributed, labeled graph.
+
+            model = GCN(adj_matrix, attr_matrix, labels)
+                where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
+                 `attr_matrix` is a 2D Numpy array-like matrix denoting the node 
+                 attributes, `labels` is a 1D Numpy array denoting the node labels.
+
+
         Parameters:
         ----------
-            graph: graphgallery.data.Graph
-                A sparse, attributed, labeled graph.
-            norm_adj: float scalar. optional 
-                The normalize rate for adjacency matrix `adj`. (default: :obj:`-0.5`, 
-                i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
-            norm_x: string. optional 
-                How to normalize the node attribute matrix. See `graphgallery.normalize_x`
-                (default :obj: `None`)
-            device: string. optional 
-                The device where the model is running on. You can specified `CPU` or `GPU` 
-                for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
-            seed: interger scalar. optional 
-                Used in combination with `tf.random.set_seed` & `np.random.seed` 
-                & `random.seed` to create a reproducible sequence of tensors across 
-                multiple calls. (default :obj: `None`, i.e., using random seed)
-            name: string. optional
-                Specified name for the model. (default: :str: `class.__name__`)
-            kwargs: other customed keyword Parameters.
-
+        graph: An instance of `graphgallery.data.Graph` or a tuple (list) of inputs.
+            A sparse, attributed, labeled graph.
+        adj_transformer: string, `transformer`, or None. optional
+            How to transform the adjacency matrix. See `graphgallery.transformers`
+            (default: :obj:`'normalize_adj'` with normalize rate `-0.5`.
+            i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
+        attr_transformer: string, transformer, or None. optional
+            How to transform the node attribute matrix. See `graphgallery.transformers`
+            (default :obj: `None`)
+        device: string. optional 
+            The device where the model is running on. You can specified `CPU` or `GPU` 
+            for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
+        seed: interger scalar. optional 
+            Used in combination with `tf.random.set_seed` & `np.random.seed` 
+            & `random.seed` to create a reproducible sequence of tensors across 
+            multiple calls. (default :obj: `None`, i.e., using random seed)
+        name: string. optional
+            Specified name for the model. (default: :str: `class.__name__`)
+        kwargs: other customed keyword Parameters.
         """
-        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
-
-        self.norm_adj = norm_adj
-        self.norm_x = norm_x
-        self.preprocess(adj, x)
-
-    def preprocess(self, adj, x):
-        super().preprocess(adj, x)
-        adj, x = self.adj, self.x
-
-        if self.norm_adj:
-            adj = normalize_adj(adj, self.norm_adj)
-
-        if self.norm_x:
-            x = normalize_x(x, norm=self.norm_x)
-
-        x = adj @ x
-
-        with tf.device(self.device):
-            self.x_norm, self.adj_norm = astensors(x), adj
-
-    def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5], l2_norms=[5e-4],
-              lr=0.01, use_bias=False):
-
-        ############# Record paras ###########
-        local_paras = locals()
-        local_paras.pop('self')
-        paras = Bunch(**local_paras)
-        hiddens, activations, dropouts, l2_norms = set_equal_in_length(hiddens, activations, dropouts, l2_norms)
-        paras.update(Bunch(hiddens=hiddens, activations=activations, dropouts=dropouts, l2_norms=l2_norms))
-        # update all parameters
-        self.paras.update(paras)
-        self.model_paras.update(paras)
-        ######################################
-
-        with tf.device(self.device):
-
-            x = Input(batch_shape=[None, self.n_attrs], dtype=self.floatx, name='attr_matrix')
-            adj = Input(batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix')
-
-            h = x
-            for hid, activation, dropout, l2_norm in zip(hiddens, activations, dropouts, l2_norms):
-                h = Dense(hid, use_bias=use_bias, activation=activation,
-                          kernel_regularizer=regularizers.l2(l2_norm))(h)
-                h = Dropout(rate=dropout)(h)
-
-            output = GraphConvolution(self.n_classes, use_bias=use_bias, activation='softmax')([h, adj])
-
-            model = Model(inputs=[x, adj], outputs=output)
-            model.compile(loss='sparse_categorical_crossentropy', optimizer=Adam(lr=lr), metrics=['accuracy'])
-
-            self.model = model
+        super().__init__(*graph,
+                         adj_transformer=adj_transformer, attr_transformer=attr_transformer,
+                         device=device, seed=seed, name=name, **kwargs)
 
     def train_sequence(self, index):
         index = asintarr(index)
-        labels = self.labels[index]
-        adj = self.adj_norm[index]
-        with tf.device(self.device):
-            sequence = FullBatchNodeSequence([self.x_norm, adj], labels)
-        return sequence
+        labels = self.graph.labels[index]
 
-    def predict(self, index):
-        super().predict(index)
-        index = asintarr(index)
-        adj = self.adj_norm[index]
         with tf.device(self.device):
-            logit = self.model.predict_on_batch(astensors([self.x_norm, adj]))
-        if tf.is_tensor(logit):
-            logit = logit.numpy()
-        return logit
+            sequence = FullBatchNodeSequence(
+                [self.feature_inputs, self.structure_inputs[index]], labels)
+        return sequence

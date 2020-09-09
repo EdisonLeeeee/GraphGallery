@@ -12,10 +12,11 @@ from tensorflow.python.keras import callbacks as callbacks_module
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from tensorflow.keras.callbacks import History as tf_History
 
-from graphgallery.nn.models import base_model
+from graphgallery.nn.models import BaseModel
 from graphgallery.utils.history import History
 from graphgallery.utils.tqdm import tqdm
 from graphgallery.data.io import makedirs_from_path
+from graphgallery.data import Basegraph
 from graphgallery import asintarr
 
 # Ignora warnings:
@@ -26,7 +27,7 @@ warnings.filterwarnings(
     'ignore', '.*Converting sparse IndexedSlices to a dense Tensor of unknown shape.*')
 
 
-class SemiSupervisedModel(base_model):
+class SemiSupervisedModel(BaseModel):
     def process(self, graph=None):
         """pre-process for the input graph, including manipulations
         on adjacency matrix and attribute matrix, and finally convert
@@ -34,14 +35,19 @@ class SemiSupervisedModel(base_model):
 
         Note:
         ----------
-            This method will call the method 'process_step'
+        This method will call the method 'process_step'
             and it must be implemented for processing the graph.
 
         Parameters:
         ----------
-            graph: Graph or MultiGraph.
+        graph: An instance of `graphgallery.data.Graph` or a tuple (list) of inputs.
+            A sparse, attributed, labeled graph.
         """
+
         if graph is not None:
+            if not isinstance(graph, Basegraph):
+                raise ValueError(
+                    "The input must be a instance of `Graph` of `MultiGraph`.")
             self.graph = graph
         return self.process_step()
 
@@ -84,15 +90,16 @@ class SemiSupervisedModel(base_model):
 
         Note:
         ----------
-            This method must be called before training/testing/predicting.
-            Use `model.build()`. The following `Parameters` are only commonly used
-            Parameters, and other model-specific Parameters are not introduced as follows.
+        This method must be called before training/testing/predicting.
+            Use `model.build_from_model(model)` where the input `model` is
+            a TensorFlow model or PyTorch Model.
 
         Parameters:
         ----------
-            model: a tensorflow model or a pytorch model.
+        model: a TensorFlow model or PyTorch Model
 
         """
+        # TODO: check for the input model
         self.model = model
 
     def train_v1(self, idx_train, idx_val=None,
@@ -107,41 +114,41 @@ class SemiSupervisedModel(base_model):
 
         Parameters:
         ----------
-            idx_train: Numpy array-like, `list`, Integer scalar or
-                `graphgallery.Sequence`.
-                The index of nodes (or sequence) that will be used during training.
-            idx_val: Numpy array-like, `list`, Integer scalar or
-                `graphgallery.Sequence`, optional
-                The index of nodes (or sequence) that will be used for validation.
-                (default :obj: `None`, i.e., do not use validation during training)
-            epochs: integer
-                The number of epochs of training.(default :obj: `200`)
-            early_stopping: integer or None
-                The number of early stopping patience during training. (default :obj: `None`,
-                i.e., do not use early stopping during training)
-            verbose: bool
-                Whether to show the training details. (default :obj: `None`)
-            save_best: bool
-                Whether to save the best weights (accuracy of loss depend on `monitor`)
-                of training or validation (depend on `validation` is `False` or `True`).
-                (default :bool: `True`)
-            weight_path: String or None
-                The path of saved weights/model. (default :obj: `None`, i.e.,
-                `./log/{self.name}_weights`)
-            as_model: bool
-                Whether to save the whole model or weights only, if `True`, the `self.custom_objects`
-                must be speficied if you are using customized `layer` or `loss` and so on.
-            monitor: String
-                One of (val_loss, val_acc, loss, acc), it determines which metric will be
-                used for `save_best`. (default :obj: `val_acc`)
-            early_stop_metric: String
-                One of (val_loss, val_acc, loss, acc), it determines which metric will be
-                used for early stopping. (default :obj: `val_loss`)
+        idx_train: Numpy array-like, `list`, Integer scalar or
+            `graphgallery.Sequence`.
+            The index of nodes (or sequence) that will be used during training.
+        idx_val: Numpy array-like, `list`, Integer scalar or
+            `graphgallery.Sequence`, optional
+            The index of nodes (or sequence) that will be used for validation.
+            (default :obj: `None`, i.e., do not use validation during training)
+        epochs: integer
+            The number of epochs of training.(default :obj: `200`)
+        early_stopping: integer or None
+            The number of early stopping patience during training. (default :obj: `None`,
+            i.e., do not use early stopping during training)
+        verbose: bool
+            Whether to show the training details. (default :obj: `None`)
+        save_best: bool
+            Whether to save the best weights (accuracy of loss depend on `monitor`)
+            of training or validation (depend on `validation` is `False` or `True`).
+            (default :bool: `True`)
+        weight_path: String or None
+            The path of saved weights/model. (default :obj: `None`, i.e.,
+            `./log/{self.name}_weights`)
+        as_model: bool
+            Whether to save the whole model or weights only, if `True`, the `self.custom_objects`
+            must be speficied if you are using customized `layer` or `loss` and so on.
+        monitor: String
+            One of (val_loss, val_acc, loss, acc), it determines which metric will be
+            used for `save_best`. (default :obj: `val_acc`)
+        early_stop_metric: String
+            One of (val_loss, val_acc, loss, acc), it determines which metric will be
+            used for early stopping. (default :obj: `val_loss`)
 
         Return:
         ----------
-            history: graphgallery.utils.History
-                tensorflow like `history` instance.
+        history: graphgallery.utils.History
+            tensorflow like `history` instance.
         """
 
         # Check if model has been built
@@ -194,7 +201,7 @@ class SemiSupervisedModel(base_model):
             if validation:
 
                 val_loss, val_accuracy = self.test_step(val_data)
-
+                val_data.on_epoch_end()
                 history.add_results(val_loss, 'val_loss')
                 history.add_results(val_accuracy, 'val_acc')
 
@@ -233,45 +240,45 @@ class SemiSupervisedModel(base_model):
 
         Note:
         ----------
-            You must compile your model before training/testing/predicting. Use `model.build()`.
+        You must compile your model before training/testing/predicting. Use `model.build()`.
 
         Parameters:
         ----------
-            idx_train: Numpy array-like, `list`, Integer scalar or `graphgallery.Sequence`
-                The index of nodes (or sequence) that will be used during training.
-            idx_val: Numpy array-like, `list`, Integer scalar or
-                `graphgallery.Sequence`, optional
-                The index of nodes (or sequence) that will be used for validation.
-                (default :obj: `None`, i.e., do not use validation during training)
-            epochs: Postive integer
-                The number of epochs of training.(default :obj: `200`)
-            early_stopping: Postive integer or None
-                The number of early stopping patience during training. (default :obj: `None`,
-                i.e., do not use early stopping during training)
-            verbose: bool
-                Whether to show the training details. (default :obj: `None`)
-            save_best: bool
-                Whether to save the best weights (accuracy of loss depend on `monitor`)
-                of training or validation (depend on `validation` is `False` or `True`).
-                (default :bool: `True`)
-            weight_path: String or None
-                The path of saved weights/model. (default :obj: `None`, i.e.,
-                `./log/{self.name}_weights`)
-            as_model: bool
-                Whether to save the whole model or weights only, if `True`, the `self.custom_objects`
-                must be speficied if you are using customized `layer` or `loss` and so on.
-            monitor: String
-                One of (val_loss, val_acc, loss, acc), it determines which metric will be
-                used for `save_best`. (default :obj: `val_acc`)
-            early_stop_metric: String
-                One of (val_loss, val_acc, loss, acc), it determines which metric will be
-                used for early stopping. (default :obj: `val_loss`)
-            callbacks: tensorflow.keras.callbacks. (default :obj: `None`)
-            kwargs: other keyword Parameters.
+        idx_train: Numpy array-like, `list`, Integer scalar or `graphgallery.Sequence`
+            The index of nodes (or sequence) that will be used during training.
+        idx_val: Numpy array-like, `list`, Integer scalar or
+            `graphgallery.Sequence`, optional
+            The index of nodes (or sequence) that will be used for validation.
+            (default :obj: `None`, i.e., do not use validation during training)
+        epochs: Postive integer
+            The number of epochs of training.(default :obj: `200`)
+        early_stopping: Postive integer or None
+            The number of early stopping patience during training. (default :obj: `None`,
+            i.e., do not use early stopping during training)
+        verbose: bool
+            Whether to show the training details. (default :obj: `None`)
+        save_best: bool
+            Whether to save the best weights (accuracy of loss depend on `monitor`)
+            of training or validation (depend on `validation` is `False` or `True`).
+            (default :bool: `True`)
+        weight_path: String or None
+            The path of saved weights/model. (default :obj: `None`, i.e.,
+            `./log/{self.name}_weights`)
+        as_model: bool
+            Whether to save the whole model or weights only, if `True`, the `self.custom_objects`
+            must be speficied if you are using customized `layer` or `loss` and so on.
+        monitor: String
+            One of (val_loss, val_acc, loss, acc), it determines which metric will be
+            used for `save_best`. (default :obj: `val_acc`)
+        early_stop_metric: String
+            One of (val_loss, val_acc, loss, acc), it determines which metric will be
+            used for early stopping. (default :obj: `val_loss`)
+        callbacks: tensorflow.keras.callbacks. (default :obj: `None`)
+        kwargs: other keyword Parameters.
 
         Return:
         ----------
-            A `tf.keras.callbacks.History` object. Its `History.history` attribute is
+        A `tf.keras.callbacks.History` object. Its `History.history` attribute is
             a record of training loss values and metrics values
             at successive epochs, as well as validation loss values
             and validation metrics values (if applicable).
@@ -363,7 +370,7 @@ class SemiSupervisedModel(base_model):
                 val_loss, val_accuracy = self.test_step(val_data)
                 training_logs.update(
                     {'val_loss': val_loss, 'val_acc': val_accuracy})
-
+                val_data.on_epoch_end()
             callbacks.on_epoch_end(epoch, training_logs)
 
             if verbose:
@@ -393,46 +400,46 @@ class SemiSupervisedModel(base_model):
 
         Note:
         ----------
-            You must compile your model before training/testing/predicting. Use `model.build()`.
+        You must compile your model before training/testing/predicting. Use `model.build()`.
 
         Parameters:
         ----------
-            idx_train: Numpy array-like, `list`, Integer scalar or
-                `graphgallery.Sequence`.
-                The index of nodes (or sequence) that will be used during training.
-            idx_val: Numpy array-like, `list`, Integer scalar or
-                `graphgallery.Sequence`, optional
-                The index of nodes (or sequence) that will be used for validation.
-                (default :obj: `None`, i.e., do not use validation during training)
-            epochs: Postive integer
-                The number of epochs of training.(default :obj: `200`)
-            early_stopping: Postive integer or None
-                The number of early stopping patience during training. (default :obj: `None`,
-                i.e., do not use early stopping during training)
-            verbose: bool
-                Whether to show the training details. (default :obj: `None`)
-            save_best: bool
-                Whether to save the best weights (accuracy of loss depend on `monitor`)
-                of training or validation (depend on `validation` is `False` or `True`).
-                (default :bool: `True`)
-            weight_path: String or None
-                The path of saved weights/model. (default :obj: `None`, i.e.,
-                `./log/{self.name}_weights`)
-            as_model: bool
-                Whether to save the whole model or weights only, if `True`, the `self.custom_objects`
-                must be speficied if you are using customized `layer` or `loss` and so on.
-            monitor: String
-                One of (val_loss, val_acc, loss, acc), it determines which metric will be
-                used for `save_best`. (default :obj: `val_acc`)
-            early_stop_metric: String
-                One of (val_loss, val_acc, loss, acc), it determines which metric will be
-                used for early stopping. (default :obj: `val_loss`)
-            callbacks: tensorflow.keras.callbacks. (default :obj: `None`)
-            kwargs: other keyword Parameters.
+        idx_train: Numpy array-like, `list`, Integer scalar or
+            `graphgallery.Sequence`.
+            The index of nodes (or sequence) that will be used during training.
+        idx_val: Numpy array-like, `list`, Integer scalar or
+            `graphgallery.Sequence`, optional
+            The index of nodes (or sequence) that will be used for validation.
+            (default :obj: `None`, i.e., do not use validation during training)
+        epochs: Postive integer
+            The number of epochs of training.(default :obj: `200`)
+        early_stopping: Postive integer or None
+            The number of early stopping patience during training. (default :obj: `None`,
+            i.e., do not use early stopping during training)
+        verbose: bool
+            Whether to show the training details. (default :obj: `None`)
+        save_best: bool
+            Whether to save the best weights (accuracy of loss depend on `monitor`)
+            of training or validation (depend on `validation` is `False` or `True`).
+            (default :bool: `True`)
+        weight_path: String or None
+            The path of saved weights/model. (default :obj: `None`, i.e.,
+            `./log/{self.name}_weights`)
+        as_model: bool
+            Whether to save the whole model or weights only, if `True`, the `self.custom_objects`
+            must be speficied if you are using customized `layer` or `loss` and so on.
+        monitor: String
+            One of (val_loss, val_acc, loss, acc), it determines which metric will be
+            used for `save_best`. (default :obj: `val_acc`)
+        early_stop_metric: String
+            One of (val_loss, val_acc, loss, acc), it determines which metric will be
+            used for early stopping. (default :obj: `val_loss`)
+        callbacks: tensorflow.keras.callbacks. (default :obj: `None`)
+        kwargs: other keyword Parameters.
 
         Return:
         ----------
-            A `tf.keras.callbacks.History` object. Its `History.history` attribute is
+        A `tf.keras.callbacks.History` object. Its `History.history` attribute is
             a record of training loss values and metrics values
             at successive epochs, as well as validation loss values
             and validation metrics values (if applicable).
@@ -521,6 +528,7 @@ class SemiSupervisedModel(base_model):
                 val_loss, val_accuracy = self.test_step(val_data)
                 training_logs.update(
                     {'val_loss': val_loss, 'val_acc': val_accuracy})
+                val_data.on_epoch_end()
 
             callbacks.on_epoch_end(epoch, training_logs)
 
@@ -541,21 +549,21 @@ class SemiSupervisedModel(base_model):
 
         Note:
         ----------
-            You must compile your model before training/testing/predicting.
-            Use `model.build()`.
+        You must compile your model before training/testing/predicting.
+        Use `model.build()`.
 
         Parameters:
         ----------
-            index: Numpy array-like, `list`, Integer scalar or `graphgallery.Sequence`
-                The index of nodes (or sequence) that will be tested.
+        index: Numpy array-like, `list`, Integer scalar or `graphgallery.Sequence`
+            The index of nodes (or sequence) that will be tested.
 
 
         Return:
         ----------
-            loss: Float scalar
-                Output loss of forward propagation.
-            accuracy: Float scalar
-                Output accuracy of prediction.
+        loss: Float scalar
+            Output loss of forward propagation.
+        accuracy: Float scalar
+            Output accuracy of prediction.
         """
 
         # TODO record test logs like self.train()
@@ -576,28 +584,28 @@ class SemiSupervisedModel(base_model):
 
     def train_step(self, sequence):
         """
-            Forward propagation for the input `sequence`. This method will be called
-            in `train`. If you want to specify your customized data during traing/testing/predicting,
-            you can implement a subclass of `graphgallery.Sequence`, wich is iterable
-            and yields `inputs` and `labels` in each iteration.
+        Forward propagation for the input `sequence`. This method will be called
+        in `train`. If you want to specify your customized data during traing/testing/predicting,
+        you can implement a subclass of `graphgallery.Sequence`, wich is iterable
+        and yields `inputs` and `labels` in each iteration.
 
 
         Note:
         ----------
-            You must compile your model before training/testing/predicting.
+        You must compile your model before training/testing/predicting.
             Use `model.build()`.
 
         Parameters:
         ----------
-            sequence: `graphgallery.Sequence`
-                The input `sequence`.
+        sequence: `graphgallery.Sequence`
+            The input `sequence`.
 
         Return:
         ----------
-            loss: Float scalar
-                Output loss of forward propagation.
-            accuracy: Float scalar
-                Output accuracy of prediction.
+        loss: Float scalar
+            Output loss of forward propagation.
+        accuracy: Float scalar
+            Output accuracy of prediction.
 
         """
         # TODO: torch step
@@ -605,27 +613,27 @@ class SemiSupervisedModel(base_model):
 
     def test_step(self, sequence):
         """
-            Forward propagation for the input `sequence`. This method will be called
-            in `test`. If you want to specify your customized data during traing/testing/predicting,
-            you can implement a subclass of `graphgallery.Sequence`, wich is iterable
-            and yields `inputs` and `labels` in each iteration.
+        Forward propagation for the input `sequence`. This method will be called
+        in `test`. If you want to specify your customized data during traing/testing/predicting,
+        you can implement a subclass of `graphgallery.Sequence`, wich is iterable
+        and yields `inputs` and `labels` in each iteration.
 
         Note:
         ----------
-            You must compile your model before training/testing/predicting.
+        You must compile your model before training/testing/predicting.
             Use `model.build()`.
 
         Parameters:
         ----------
-            sequence: `graphgallery.Sequence`
-                The input `sequence`.
+        sequence: `graphgallery.Sequence`
+            The input `sequence`.
 
         Return:
         ----------
-            loss: Float scalar
-                Output loss of forward propagation.
-            accuracy: Float scalar
-                Output accuracy of prediction.
+        loss: Float scalar
+            Output loss of forward propagation.
+        accuracy: Float scalar
+            Output accuracy of prediction.
 
         """
         # TODO: torch step
@@ -633,22 +641,22 @@ class SemiSupervisedModel(base_model):
 
     def predict(self, index):
         """
-            Predict the output probability for the input `sequence`.
+        Predict the output probability for the input `sequence`.
 
 
         Note:
         ----------
-            You must compile your model before training/testing/predicting.
+        You must compile your model before training/testing/predicting.
             Use `model.build()`.
 
         Parameters:
         ----------
-            sequence: `graphgallery.Sequence`
-                The input `sequence`.
+        sequence: `graphgallery.Sequence`
+            The input `sequence`.
 
         Return:
         ----------
-            The predicted probability of each class for each node,
+        The predicted probability of each class for each node,
             shape (n_nodes, n_classes).
 
         """
@@ -666,17 +674,17 @@ class SemiSupervisedModel(base_model):
 
     def train_sequence(self, index):
         """
-            Construct the training sequence for the `index` of nodes.
+        Construct the training sequence for the `index` of nodes.
 
 
         Parameters:
         ----------
-            index: Numpy array-like, `list` or integer scalar
-                The index of nodes used in training.
+        index: Numpy array-like, `list` or integer scalar
+            The index of nodes used in training.
 
         Return:
         ----------
-            The sequence of `graphgallery.Sequence` for the nodes.
+        sequence: The sequence of `graphgallery.Sequence` for the nodes.
 
         """
 
@@ -684,30 +692,30 @@ class SemiSupervisedModel(base_model):
 
     def test_sequence(self, index):
         """
-            Construct the testing sequence for the `index` of nodes.
+        Construct the testing sequence for the `index` of nodes.
 
         Note:
         ----------
-            If not implemented, this method will call `train_sequence` automatically.
+        If not implemented, this method will call `train_sequence` automatically.
 
         Parameters:
         ----------
-            index: Numpy array-like, `list` or integer scalar
-                The index of nodes used in testing.
+        index: Numpy array-like, `list` or integer scalar
+            The index of nodes used in testing.
 
         Return:
         ----------
-            The sequence of `graphgallery.Sequence` for the nodes.
+        sequence: The sequence of `graphgallery.Sequence` for the nodes.
         """
         return self.train_sequence(index)
 
     def predict_sequence(self, index):
         """
-            Construct the prediction sequence for the `index` of nodes.
+        Construct the prediction sequence for the `index` of nodes.
 
         Note:
         ----------
-            If not implemented, this method will call `train_sequence` automatically.
+            If not implemented, this method will call `test_sequence` automatically.
 
         Parameters:
         ----------
@@ -718,7 +726,7 @@ class SemiSupervisedModel(base_model):
         ----------
             The sequence of `graphgallery.Sequence` for the nodes.
         """
-        return self.train_sequence(index)
+        return self.test_sequence(index)
 
     def _test_predict(self, index):
         logit = self.predict(index)
@@ -801,11 +809,22 @@ def predict_step_tf(model, sequence, device):
         logits = logits[0]
     return logits
 
-def remove_tf_weights(file_path):
-    if not file_path.endswith('.h5'):
-        file_path_with_h5 = file_path + '.h5'
-    else:
-        file_path_with_h5 = file_path
-        
-    if osp.exists(file_path):
-        os.remove(file_path)    
+
+_POSTFIX = (".h5", ".data-00000-of-00001", ".index")
+
+
+def remove_tf_weights(file_path_without_h5):
+    if file_path_without_h5.endswith('.h5'):
+        file_path_without_h5 = file_path_without_h5[:-3]
+
+    # for tensorflow weights that saved without h5 formate
+    for postfix in _POSTFIX:
+        path = file_path_without_h5 + postfix
+        if osp.exists(path):
+            os.remove(path)
+
+    file_dir = osp.split(osp.realpath(file_path_without_h5))[0]
+
+    path = osp.join(file_dir, "checkpoint")
+    if osp.exists(path):
+        os.remove(path)

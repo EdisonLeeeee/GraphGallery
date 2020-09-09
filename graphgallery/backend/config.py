@@ -103,8 +103,12 @@ def set_intx(dtype):
 
 
 def backend():
-    """Returns the default backend module, as a string.
+    """Publicly accessible method
+    for determining the current backend.
 
+    # Returns
+        String, the name of the backend GraphGallery is currently using.
+        
     E.g. `'TensorFlow 2.1.0 Backend'`,
       `'PyTorch 1.6.0+cpu Backend'`.
 

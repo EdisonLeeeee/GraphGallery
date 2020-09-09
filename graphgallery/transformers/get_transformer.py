@@ -3,10 +3,22 @@ from graphgallery.transformers import Transformer, NullTransformer
 from graphgallery.transformers import NormalizeAdj
 from graphgallery.transformers import AddSelfLoops
 from graphgallery.transformers import NormalizeAttr
+from graphgallery.transformers import WaveletBasis
+from graphgallery.transformers import ChebyBasis
+from graphgallery.transformers import NeighborSampler
+from graphgallery.transformers import GraphPartition
+from graphgallery.transformers import GDC
+
 
 _TRANSFORMER = {"normalize_adj": NormalizeAdj,
                 "normalize_attr": NormalizeAttr,
-                "add_selfloops": AddSelfLoops}
+                "add_selfloops": AddSelfLoops,
+                "wavelet_basis": WaveletBasis,
+                "cheby_basis": ChebyBasis,
+                "neighbor_sampler": NeighborSampler,
+                "graph_partition": GraphPartition,
+                "gdc": GDC}
+
 _ALLOWED = set(list(_TRANSFORMER.keys()))
 
 

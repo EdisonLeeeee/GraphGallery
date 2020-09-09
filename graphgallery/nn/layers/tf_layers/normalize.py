@@ -22,28 +22,37 @@ class NormalizeLayer(Layer):
             edge_weight = tf.ones([edge_index.shape[0]], dtype=floatx())
 
         fill_weight = 2.0 if improved else 1.0
-        edge_index, edge_weight = self.add_self_loop_edge(edge_index, n_nodes, edge_weight=edge_weight, fill_weight=fill_weight)
+        edge_index, edge_weight = self.add_selfloop_edge(
+            edge_index, n_nodes, edge_weight=edge_weight, fill_weight=fill_weight)
 
         row = tf.gather(edge_index, 0, axis=1)
         col = tf.gather(edge_index, 1, axis=1)
-        deg = tf.math.unsorted_segment_sum(edge_weight, row, num_segments=n_nodes)
+        deg = tf.math.unsorted_segment_sum(
+            edge_weight, row, num_segments=n_nodes)
         deg_inv_sqrt = tf.pow(deg, self.norm_adj)
-        deg_inv_sqrt = tf.where(tf.math.is_inf(deg_inv_sqrt), tf.zeros_like(deg_inv_sqrt), deg_inv_sqrt)
-        deg_inv_sqrt = tf.where(tf.math.is_nan(deg_inv_sqrt), tf.zeros_like(deg_inv_sqrt), deg_inv_sqrt)
+        deg_inv_sqrt = tf.where(tf.math.is_inf(
+            deg_inv_sqrt), tf.zeros_like(deg_inv_sqrt), deg_inv_sqrt)
+        deg_inv_sqrt = tf.where(tf.math.is_nan(
+            deg_inv_sqrt), tf.zeros_like(deg_inv_sqrt), deg_inv_sqrt)
 
-        noremd_edge_weight = tf.gather(deg_inv_sqrt, row) * edge_weight * tf.gather(deg_inv_sqrt, col)
+        noremd_edge_weight = tf.gather(
+            deg_inv_sqrt, row) * edge_weight * tf.gather(deg_inv_sqrt, col)
 
         return edge_index, noremd_edge_weight
 
     @staticmethod
-    def add_self_loop_edge(edge_index, n_nodes, edge_weight=None, fill_weight=1.0):
-        diagnal_edge_index = tf.reshape(tf.repeat(tf.range(n_nodes, dtype=intx()), 2), [n_nodes, 2])
+    def add_selfloop_edge(edge_index, n_nodes, edge_weight=None, fill_weight=1.0):
+        diagnal_edge_index = tf.reshape(
+            tf.repeat(tf.range(n_nodes, dtype=intx()), 2), [n_nodes, 2])
 
-        updated_edge_index = tf.concat([edge_index, diagnal_edge_index], axis=0)
+        updated_edge_index = tf.concat(
+            [edge_index, diagnal_edge_index], axis=0)
 
         if edge_weight:
-            diagnal_edge_weight = tf.cast(tf.fill([n_nodes], fill_weight), dtype=floatx())
-            updated_edge_weight = tf.concat([edge_weight, diagnal_edge_weight], axis=0)
+            diagnal_edge_weight = tf.cast(
+                tf.fill([n_nodes], fill_weight), dtype=floatx())
+            updated_edge_weight = tf.concat(
+                [edge_weight, diagnal_edge_weight], axis=0)
 
         else:
             updated_edge_weight = None

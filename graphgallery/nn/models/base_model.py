@@ -8,21 +8,24 @@ import tensorflow as tf
 import os.path as osp
 import scipy.sparse as sp
 
-from graphgallery import intx, floatx, backend, set_backend
-from graphgallery.data import Graph
+from abc import ABC
+
+from graphgallery import intx, floatx, backend, set_backend, is_list_like
 from graphgallery.data.io import makedirs_from_path
 from graphgallery.utils.raise_error import raise_if_kwargs
+from graphgallery.data import Basegraph, Graph
 
 
 def _check_cur_module(module, kind):
-    cur_module = module.split('.')[-2]
-    if any((cur_module=="tf_models" and kind == "P",
-            cur_module=="torch_models" and kind == "T")):
+    modules = module.split('.')[-4:]
+    if any(("tf_models" in modules and kind == "P",
+            "torch_models" in modules and kind == "T")):
+        cur_module = "Tensorflow models" if kind == "P" else "PyTorch models"
         raise RuntimeError(f"You are currently using models in '{cur_module}' but with backend '{backend()}'."
-                             "Please use `set_backend()` to change the current backend.")
-           
+                           "Please use `set_backend()` to change the current backend.")
 
-class base_model:
+
+class BaseModel(ABC):
     """Base model for semi-supervised learning and unsupervised learning."""
 
     def __init__(self, *graph, device="cpu:0", seed=None, name=None, **kwargs):
@@ -42,22 +45,33 @@ class base_model:
             kwargs: other customed keyword Parameters.
 
         """
+        # TODO: Maybe I could write it a little more elegantly here?
         if len(graph) == 1:
             graph, = graph
-            if isinstance(graph, Graph):
+            if isinstance(graph, Basegraph):
                 ...
             elif sp.isspmatrix(graph):
                 graph = Graph(graph)
-            else:
+            elif is_list_like(graph):
                 # TODO: multi graph
                 ...
+            else:
+                raise ValueError(f"Unrecognized inputs {graph}.")
         else:
-            graph = Graph(*graph)
+            if sp.isspmatrix(graph[0]):
+                graph = Graph(*graph)
+            elif is_list_like(graph[0]):
+                # TODO: multi graph
+                ...
+            else:
+                raise ValueError(f"Unrecognized inputs {graph}.")
+
+        raise_if_kwargs(kwargs)
 
         self.kind = backend().kind
         _check_cur_module(self.__module__, self.kind)
         _id = np.random.RandomState(None).randint(100)
-        
+
         if seed is not None:
             np.random.seed(seed)
             # TODO: torch set seed
@@ -67,9 +81,7 @@ class base_model:
         if name is None:
             name = self.__class__.__name__
 
-        raise_if_kwargs(kwargs)
-
-        self.graph = graph.copy()  # TODO: check the input graph
+        self.graph = graph.copy()
         self.seed = seed
         self.name = name
         self.device = parse_device(device, self.kind)
@@ -90,7 +102,7 @@ class base_model:
         self.floatx = floatx()
         self.intx = intx()
 
-    def save(self, path=None, as_model=False):
+    def save(self, path, as_model=False):
         makedirs_from_path(path)
 
         if as_model:
@@ -163,7 +175,7 @@ def save_tf_weights(model, file_path):
         file_path_with_h5 = file_path + '.h5'
     try:
         model.save_weights(file_path_with_h5)
-    except KeyError as e:
+    except ValueError as e:
         model.save_weights(file_path_with_h5[:-3])
 
 

@@ -21,7 +21,8 @@ class NPZDataset(Dataset):
         name = name.lower()
 
         if not name in self.supported_datasets:
-            raise ValueError(f"Currently only support for these datasets {self.supported_datasets}.")
+            raise ValueError(
+                f"Currently only support for these datasets {self.supported_datasets}.")
 
         super().__init__(name, root, verbose)
 
@@ -53,7 +54,8 @@ class NPZDataset(Dataset):
     def process(self):
 
         print("Processing...")
-        graph = load_dataset(self.raw_paths[0]).eliminate_self_loops().to_undirected()
+        graph = load_dataset(
+            self.raw_paths[0]).eliminate_selfloops().to_undirected()
         if self.standardize:
             graph = graph.standardize()
         self.graph = graph

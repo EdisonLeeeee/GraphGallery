@@ -101,20 +101,20 @@ class WaveletConvolution(Layer):
                                       regularizer=self.filter_regularizer,
                                       constraint=self.filter_constraint)
 
-        self.indices = np.stack([np.arange(n_nodes)]*2, axis=1)
+        self.indices = np.stack([np.arange(n_nodes)] * 2, axis=1)
 
         super().build(input_shapes)
 
     def call(self, inputs):
 
-        filter_ = tf.sparse.SparseTensor(indices=self.indices,
+        x, wavelet, inverse_wavelet = inputs
+        _filter = tf.sparse.SparseTensor(indices=self.indices,
                                          values=self.filter,
                                          dense_shape=self.indices[-1] + 1)
 
-        x, wavelet, inverse_wavelet = inputs
         h = x @ self.kernel
         h = tf.sparse.sparse_dense_matmul(inverse_wavelet, h)
-        h = tf.sparse.sparse_dense_matmul(filter_, h)
+        h = tf.sparse.sparse_dense_matmul(_filter, h)
         output = tf.sparse.sparse_dense_matmul(wavelet, h)
 
         if self.use_bias:

@@ -28,7 +28,7 @@ class EqualVarLength:
 
     """
 
-    def __init__(self, include=[], exclude=[]):
+    def __init__(self, *, include=[], exclude=[]):
         """
         include: string, a list or tuple of string, optional.
             the customed variable name except for 'hiddens', 'activations', 
@@ -37,16 +37,17 @@ class EqualVarLength:
             the exclued variable name.
         """
         self.var_names = list(include) + self.base_vars()
-        self.var_names = list(set(self.var_names)-set(list(exclude)))
+        self.var_names = list(set(self.var_names) - set(list(exclude)))
 
     def __call__(self, func):
 
         @functools.wraps(func)
-        def decorator(*args, **kwargs):
+        def wrapper(*args, **kwargs):
             ArgSpec = inspect.getfullargspec(func)
 
             if not ArgSpec.defaults or len(ArgSpec.args) != len(ArgSpec.defaults) + 1:
-                raise Exception(f"The '{func.__name__}' method must be defined with all default parameters.")
+                raise Exception(
+                    f"The '{func.__name__}' method must be defined with all default parameters.")
 
             model, *values = args
             for i in range(len(values), len(ArgSpec.args[1:])):
@@ -67,7 +68,7 @@ class EqualVarLength:
                     paras[var] = repeat(val, max_length)
 
             return func(model, **paras)
-        return decorator
+        return wrapper
 
     @staticmethod
     def base_vars():

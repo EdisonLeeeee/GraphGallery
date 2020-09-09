@@ -8,7 +8,7 @@ from functools import lru_cache
 from copy import copy as copy_fn
 
 from graphgallery.data.preprocess import largest_connected_components
-from graphgallery.data.base_graph import base_graph
+from graphgallery.data.base_graph import Basegraph
 
 
 def _check_and_convert(adj_matrix, attr_matrix, labels, copy=True):
@@ -48,7 +48,7 @@ def _check_and_convert(adj_matrix, attr_matrix, labels, copy=True):
     return adj_matrix, attr_matrix, labels
 
 
-class Graph(base_graph):
+class Graph(Basegraph):
     """Attributed labeled graph stored in sparse matrix form."""
 
     # By default, the attr_matrix is dense format, i.e., Numpy array
@@ -231,6 +231,13 @@ class Graph(base_graph):
         else:
             return None
 
+    @property
+    def labels_onehot(self):
+        """Get the one-hot like labels of nodes."""
+        labels = self._labels
+        if labels is not None:
+            return np.eye(self.n_classes)[labels].astype(labels.dtype)
+
     def neighbors(self, idx):
         """Get the indices of neighbors of a given node.
 
@@ -244,7 +251,8 @@ class Graph(base_graph):
     def to_undirected(self):
         """Convert to an undirected graph (make adjacency matrix symmetric)."""
         if self.is_weighted():
-            raise ValueError("Convert to unweighted graph first. Using 'graph.to_unweighted()'.")
+            raise ValueError(
+                "Convert to unweighted graph first. Using 'graph.to_unweighted()'.")
         else:
             G = self.copy()
             A = G.adj_matrix
@@ -256,10 +264,11 @@ class Graph(base_graph):
         """Convert to an unweighted graph (set all edge weights to 1)."""
         G = self.copy()
         A = G.adj_matrix
-        G.adj_matrix = sp.csr_matrix((np.ones_like(A.data), A.indices, A.indptr), shape=A.shape)
+        G.adj_matrix = sp.csr_matrix(
+            (np.ones_like(A.data), A.indices, A.indptr), shape=A.shape)
         return G
 
-    def eliminate_self_loops(self):
+    def eliminate_selfloops(self):
         """Remove self-loops from the adjacency matrix."""
         G = self.copy()
         A = G.adj_matrix
@@ -268,9 +277,9 @@ class Graph(base_graph):
         G.adj_matrix = A
         return G
 
-    def add_self_loops(self, value=1.0):
+    def add_selfloops(self, value=1.0):
         """Set the diagonal."""
-        G = self.eliminate_self_loops()
+        G = self.eliminate_selfloops()
         A = G.adj_matrix
         A = A + sp.diags(A.diagonal() + value)
         A.eliminate_zeros()
@@ -281,7 +290,7 @@ class Graph(base_graph):
         """Select the LCC of the unweighted/undirected/no-self-loop graph.
         All changes are done inplace.
         """
-        G = self.to_unweighted().to_undirected().eliminate_self_loops()
+        G = self.to_unweighted().to_undirected().eliminate_selfloops()
         G = largest_connected_components(G, 1)
         return G
 
@@ -308,7 +317,7 @@ class Graph(base_graph):
         in_deg = A.sum(0).A1
         return np.where(np.logical_and(in_deg == 0, out_deg == 0))[0].size != 0
 
-    def is_self_loops(self):
+    def is_selfloops(self):
         '''Check if the input Scipy sparse adjacency matrix has self loops.'''
         return self.adj_matrix.diagonal().sum() != 0
 

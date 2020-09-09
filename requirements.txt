@@ -9,3 +9,4 @@ llvmlite==0.30
 scikit_learn==0.22
 tqdm>=4.40.2
 texttable>=1.6.2
+torch==1.6.0

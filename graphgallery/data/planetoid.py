@@ -30,7 +30,8 @@ class Planetoid(Dataset):
         name = name.lower()
 
         if not name in self.supported_datasets:
-            raise ValueError(f"Currently only support for these datasets {self.supported_datasets}.")
+            raise ValueError(
+                f"Currently only support for these datasets {self.supported_datasets}.")
 
         super().__init__(name, root, verbose)
 
@@ -58,8 +59,9 @@ class Planetoid(Dataset):
     def process(self):
 
         print("Processing...")
-        adj, attributes, labels, idx_train, idx_val, idx_test = process_planetoid_datasets(self.name, self.raw_paths)
-        self.graph = Graph(adj, attributes, labels).eliminate_self_loops()
+        adj, attributes, labels, idx_train, idx_val, idx_test = process_planetoid_datasets(
+            self.name, self.raw_paths)
+        self.graph = Graph(adj, attributes, labels).eliminate_selfloops()
         self.idx_train = idx_train
         self.idx_val = idx_val
         self.idx_test = idx_test

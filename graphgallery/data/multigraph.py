@@ -8,7 +8,7 @@ from functools import lru_cache
 from copy import copy as copy_fn
 
 from graphgallery.data.preprocess import largest_connected_components
-from graphgallery.data.base_graph import base_graph
+from graphgallery.data.base_graph import Basegraph
 
 
 def _check_and_convert(adj_matrix, attr_matrix, labels, copy=True):
@@ -48,6 +48,6 @@ def _check_and_convert(adj_matrix, attr_matrix, labels, copy=True):
     return adj_matrix, attr_matrix, labels
 
 
-class MuitiGraph(base_graph):
+class MuitiGraph(Basegraph):
     """Attributed labeled multigraph stored in sparse matrix form."""
     ...

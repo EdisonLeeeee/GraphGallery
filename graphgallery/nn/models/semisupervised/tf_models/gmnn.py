@@ -11,7 +11,8 @@ from graphgallery.nn.layers import GraphConvolution, Gather
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.utils.shape import EqualVarLength
-from graphgallery import astensors, asintarr, normalize_x, normalize_adj, Bunch
+from graphgallery import transformers as T
+from graphgallery import astensors, asintarr
 
 
 class GMNN(SemiSupervisedModel):
@@ -23,74 +24,76 @@ class GMNN(SemiSupervisedModel):
 
     """
 
-    def __init__(self, graph, norm_adj=-0.5, norm_x=None,
+    def __init__(self, *graph, adj_transformer="normalize_adj", attr_transformer=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
         """Creat a Graph Markov Neural Networks (GMNN) model
 
+       This can be instantiated in several ways:
+
+            model = GMNN(graph)
+                with a `graphgallery.data.Graph` instance representing
+                A sparse, attributed, labeled graph.
+
+            model = GMNN(adj_matrix, attr_matrix, labels)
+                where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
+                 `attr_matrix` is a 2D Numpy array-like matrix denoting the node 
+                 attributes, `labels` is a 1D Numpy array denoting the node labels.
+
+
         Parameters:
         ----------
-            graph: graphgallery.data.Graph
-                A sparse, attributed, labeled graph.
-            norm_adj: float scalar. optional 
-                The normalize rate for adjacency matrix `adj`. (default: :obj:`-0.5`, 
-                i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
-            norm_x: string. optional 
-                How to normalize the node attribute matrix. See `graphgallery.normalize_x`
-                (default :obj: `None`)
-            device: string. optional 
-                The device where the model is running on. You can specified `CPU` or `GPU` 
-                for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
-            seed: interger scalar. optional 
-                Used in combination with `tf.random.set_seed` & `np.random.seed` 
-                & `random.seed` to create a reproducible sequence of tensors across 
-                multiple calls. (default :obj: `None`, i.e., using random seed)
-            name: string. optional
-                Specified name for the model. (default: :str: `class.__name__`)
-            kwargs: other customed keyword Parameters.
+        graph: An instance of `graphgallery.data.Graph` or a tuple (list) of inputs.
+            A sparse, attributed, labeled graph.
+        adj_transformer: string, `transformer`, or None. optional
+            How to transform the adjacency matrix. See `graphgallery.transformers`
+            (default: :obj:`'normalize_adj'` with normalize rate `-0.5`.
+            i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
+        attr_transformer: string, transformer, or None. optional
+            How to transform the node attribute matrix. See `graphgallery.transformers`
+            (default :obj: `None`)
+        device: string. optional 
+            The device where the model is running on. You can specified `CPU` or `GPU` 
+            for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
+        seed: interger scalar. optional 
+            Used in combination with `tf.random.set_seed` & `np.random.seed` 
+            & `random.seed` to create a reproducible sequence of tensors across 
+            multiple calls. (default :obj: `None`, i.e., using random seed)
+        name: string. optional
+            Specified name for the model. (default: :str: `class.__name__`)
+        kwargs: other customed keyword Parameters.
 
         """
-        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
+        super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
-        self.norm_adj = norm_adj
-        self.norm_x = norm_x
-        self.preprocess(adj, x)
-        self.labels_onehot = np.eye(self.n_classes)[labels]
+        self.adj_transformer = T.get(adj_transformer)
+        self.attr_transformer = T.get(attr_transformer)
+        self.labels_onehot = self.graph.labels_onehot
+        self.custom_objects = {
+            'GraphConvolution': GraphConvolution, 'Gather': Gather}
+        self.process()
 
-        self.custom_objects = {'GraphConvolution': GraphConvolution, 'Gather': Gather}
-
-    def preprocess(self, adj, x):
-        super().preprocess(adj, x)
-        adj, x = self.adj, self.x
-
-        if self.norm_adj:
-            adj = normalize_adj(adj, self.norm_adj)
-
-        if self.norm_x:
-            x = normalize_x(x, norm=self.norm_x)
+    def process_step(self):
+        graph = self.graph
+        adj_matrix = self.adj_transformer(graph.adj_matrix)
+        attr_matrix = self.attr_transformer(graph.attr_matrix)
 
         with tf.device(self.device):
-            self.x_norm, self.adj_norm = astensors([x, adj])
+            self.feature_inputs, self.structure_inputs = astensors(
+                attr_matrix, adj_matrix)
 
+    @EqualVarLength()
     def build(self, hiddens=[16], activations=['relu'], dropouts=[0.6], l2_norms=[5e-4],
               lr=0.05, use_bias=False):
 
-        ############# Record paras ###########
-        local_paras = locals()
-        local_paras.pop('self')
-        paras = Bunch(**local_paras)
-        hiddens, activations, dropouts, l2_norms = set_equal_in_length(hiddens, activations, dropouts, l2_norms)
-        paras.update(Bunch(hiddens=hiddens, activations=activations, dropouts=dropouts, l2_norms=l2_norms))
-        # update all parameters
-        self.paras.update(paras)
-        self.model_paras.update(paras)
-        ######################################
-
         with tf.device(self.device):
-            tf.random.set_seed(self.seed)
-            x_p = Input(batch_shape=[None, self.n_classes], dtype=self.floatx, name='input_p')
-            x_q = Input(batch_shape=[None, self.n_attrs], dtype=self.floatx, name='input_q')
-            adj = Input(batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix')
-            index = Input(batch_shape=[None],  dtype=self.intx, name='node_index')
+            x_p = Input(batch_shape=[None, self.graph.n_classes],
+                        dtype=self.floatx, name='input_p')
+            x_q = Input(batch_shape=[None, self.graph.n_attrs],
+                        dtype=self.floatx, name='input_q')
+            adj = Input(batch_shape=[None, None],
+                        dtype=self.floatx, sparse=True, name='adj_matrix')
+            index = Input(batch_shape=[None],
+                          dtype=self.intx, name='node_index')
 
             def build_GCN(x):
                 h = x
@@ -100,7 +103,8 @@ class GMNN(SemiSupervisedModel):
                                          kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
                     h = Dropout(rate=dropout)(h)
 
-                h = GraphConvolution(self.n_classes, use_bias=use_bias)([h, adj])
+                h = GraphConvolution(self.graph.n_classes,
+                                     use_bias=use_bias)([h, adj])
                 h = Gather()([h, index])
 
                 model = Model(inputs=[x, adj, index], outputs=h)
@@ -110,12 +114,10 @@ class GMNN(SemiSupervisedModel):
 
             # model_p
             model_p = build_GCN(x_p)
-
             # model_q
             model_q = build_GCN(x_q)
 
             self.model_p, self.model_q = model_p, model_q
-
             self.model = self.model_q
 
     def train(self, idx_train, idx_val=None, pre_train_epochs=100,
@@ -124,7 +126,7 @@ class GMNN(SemiSupervisedModel):
               monitor='val_acc', early_stop_metric='val_loss'):
 
         histories = []
-        index_all = tf.range(self.n_nodes, dtype=self.intx)
+        index_all = tf.range(self.graph.n_nodes, dtype=self.intx)
 
         # pre train model_q
         self.model = self.model_q
@@ -135,13 +137,16 @@ class GMNN(SemiSupervisedModel):
         histories.append(history)
 
         label_predict = self.predict(index_all).argmax(1)
-        label_predict[idx_train] = self.labels[idx_train]
-        label_predict = tf.one_hot(label_predict, depth=self.n_classes)
+        label_predict[idx_train] = self.graph.labels[idx_train]
+        label_predict = tf.one_hot(label_predict, depth=self.graph.n_classes)
         # train model_p fitst
         with tf.device(self.device):
-            train_sequence = FullBatchNodeSequence([label_predict, self.adj_norm, index_all], label_predict)
+            train_sequence = FullBatchNodeSequence([label_predict,
+                                                    self.structure_inputs, index_all], label_predict)
             if idx_val is not None:
-                val_sequence = FullBatchNodeSequence([label_predict, self.adj_norm, idx_val], self.labels_onehot[idx_val])
+                val_sequence = FullBatchNodeSequence([label_predict,
+                                                      self.structure_inputs, idx_val],
+                                                     self.labels_onehot[idx_val])
             else:
                 val_sequence = None
 
@@ -153,7 +158,9 @@ class GMNN(SemiSupervisedModel):
         histories.append(history)
 
         # then train model_q again
-        label_predict = self.model.predict_on_batch(astensors([label_predict, self.adj_norm, index_all]))
+        label_predict = self.model.predict_on_batch(
+            astensors(label_predict, self.structure_inputs, index_all))
+
         label_predict = softmax(label_predict)
         if tf.is_tensor(label_predict):
             label_predict = label_predict.numpy()
@@ -162,7 +169,9 @@ class GMNN(SemiSupervisedModel):
 
         self.model = self.model_q
         with tf.device(self.device):
-            train_sequence = FullBatchNodeSequence([self.x_norm, self.adj_norm, index_all], label_predict)
+            train_sequence = FullBatchNodeSequence([self.feature_inputs,
+                                                    self.structure_inputs, index_all],
+                                                   label_predict)
         history = super().train(train_sequence, idx_val, epochs=epochs,
                                 early_stopping=early_stopping,
                                 verbose=verbose, save_best=save_best,
@@ -171,27 +180,13 @@ class GMNN(SemiSupervisedModel):
 
         histories.append(history)
 
-        ############# Record paras ###########
-        self.train_paras.update(Bunch(pre_train_epochs=pre_train_epochs))
-        self.paras.update(Bunch(pre_train_epochs=pre_train_epochs))
-        ######################################
-
         return histories
 
     def train_sequence(self, index):
         index = asintarr(index)
+        # if the graph is changed?
         labels = self.labels_onehot[index]
         with tf.device(self.device):
-            sequence = FullBatchNodeSequence([self.x_norm, self.adj_norm, index], labels)
+            sequence = FullBatchNodeSequence(
+                [self.feature_inputs, self.structure_inputs, index], labels)
         return sequence
-
-    def predict(self, index):
-        super().predict(index)
-        index = asintarr(index)
-        with tf.device(self.device):
-            index = astensors(index)
-            logit = self.model.predict_on_batch([self.x_norm, self.adj_norm, index])
-
-        if tf.is_tensor(logit):
-            logit = logit.numpy()
-        return logit
