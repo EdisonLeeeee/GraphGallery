@@ -4,9 +4,11 @@ from graphgallery.sequence.base_sequence import Sequence
 
 class FullBatchNodeSequence(Sequence):
 
-    def __init__(self, x, y=None):
-        self.x = astensors(x)
-        self.y = astensor(y)
+    def __init__(self, x, y=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        self.x = astensors(x, device=self.device)
+        self.y = astensor(y, device=self.device)
 
     def __len__(self):
         return 1
@@ -15,7 +17,7 @@ class FullBatchNodeSequence(Sequence):
         return self.x, self.y
 
     def on_epoch_end(self):
-        pass
+        ...
 
-    def shuffle(self):
-        pass
+    def _shuffle_batches(self):
+        ...

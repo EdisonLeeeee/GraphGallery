@@ -26,7 +26,7 @@ def sparse_adj_to_sparse_tensor(x):
 
 
 @gallery_export('graphgallery.astftensor')
-def astensor(x, dtype=None):
+def astensor(x, dtype=None, device=None):
     """Convert input matrices to Tensor or SparseTensor.
 
     Parameters:
@@ -38,6 +38,11 @@ def astensor(x, dtype=None):
         it will automatically using appropriate data type.
         See `graphgallery.infer_type`.
 
+    device (:class:`torch.device`, optional): the desired device of returned tensor.
+        Default: if ``None``, uses the current device for the default tensor type
+        (see :func:`torch.set_default_tensor_type`). :attr:`device` will be the CPU
+        for CPU tensor types and the current CUDA device for CUDA tensor types.
+        
     Returns:
     ----------      
         Tensor or SparseTensor with dtype:       
@@ -46,19 +51,30 @@ def astensor(x, dtype=None):
         3. `Bool` if `x` is bool.
     """
     if backend().kind == "T":
-        return tf_tensor.astensor(x)
+        if device is not None:
+            raise RuntimeError(f"The argument `device` only work for `PyTorch backend`, but currently is {backend()}.")        
+        return tf_tensor.astensor(x, dtype=dtype)
     else:
-        return th_tensor.astensor(x)
+        return th_tensor.astensor(x, dtype=dtype, device=device)
 
 
-def astensors(*xs):
+def astensors(*xs, device=None):
     """Convert input matrices to Tensor(s) or SparseTensor(s).
 
     Parameters:
     ----------
     xs: tf.Tensor, tf.Variable, Scipy sparse matrix, 
         Numpy array-like, or a list of them, etc.
-
+        
+    device (:class:`torch.device`, optional): the desired device of returned tensor.
+        Default: if ``None``, uses the current device for the default tensor type
+        (see :func:`torch.set_default_tensor_type`). :attr:`device` will be the CPU
+        for CPU tensor types and the current CUDA device for CUDA tensor types.
+     
+    NOTE:
+    ----------    
+    The argument `device` only work for `PyTorch backend`.
+    
     Returns:
     ----------      
         Tensor(s) or SparseTensor(s) with dtype:       
@@ -67,9 +83,11 @@ def astensors(*xs):
         3. `Bool` if `x` in `xs` is bool.
     """
     if backend().kind == "T":
+        if device is not None:
+            raise RuntimeError(f"The argument `device` only work for `PyTorch backend`, but currently is {backend()}.")
         return tf_tensor.astensors(*xs)
     else:
-        return th_tensor.astensors(*xs)
+        return th_tensor.astensors(*xs, device=device)
 
 
 def normalize_adj_tensor(adj, rate=-0.5, selfloop=1.0):

@@ -22,4 +22,5 @@ if _BACKEND .kind == "T":
     from graphgallery.nn.layers.tf_layers.misc import SparseConversion, Scale, Sample, Gather, Laplacian
 
 else:
-    ...
+    from graphgallery.nn.layers.torch_layers.gcn import GraphConvolution
+

@@ -19,20 +19,30 @@ from graphgallery.utils.type_check import (is_list_like,
 #     return tf.sparse.SparseTensor(indices, data, shape)
 
 
-def sparse_adj_to_sparse_tensor(x: sp.csr_matrix):
+def sparse_adj_to_sparse_tensor(x: sp.csr_matrix, dtype=None):
     """Converts a Scipy sparse matrix to a tensorflow SparseTensor.
 
     Parameters
     ----------
-        x: scipy.sparse.sparse
-            Matrix in Scipy sparse format.
+    x: scipy.sparse.sparse
+        Matrix in Scipy sparse format.
+        
+    dtype: The type of sparse matrix `x`, if not specified,
+        it will automatically using appropriate data type.
+        See `graphgallery.infer_type`.            
     Returns
     -------
-        S: tf.sparse.SparseTensor
-            Matrix as a sparse tensor.
+    S: tf.sparse.SparseTensor
+        Matrix as a sparse tensor.
     """
+    
+    if isinstance(dtype, tf.dtypes.DType):
+        dtype = dtype.name
+    elif dtype is None:
+        dtype = infer_type(x)
+        
     x = x.tocoo(copy=False)
-    return tf.SparseTensor(np.vstack((x.row, x.col)).T, x.data, x.shape)
+    return tf.SparseTensor(np.vstack((x.row, x.col)).T, x.data.astype(dtype, copy=False), x.shape)
 
 
 def infer_type(x):
@@ -45,10 +55,10 @@ def infer_type(x):
 
     Returns:
     ----------
-        The converted type of `x`:
+    dtype: string, the converted type of `x`:
         1. `graphgallery.floatx()` if `x` is floating
-        2. `graphgallery.intx() ` if `x` is integer
-        3. `Bool` if `x` is bool.
+        2. `graphgallery.intx()` if `x` is integer
+        3. `'bool'` if `x` is bool.
 
     """
 
@@ -83,19 +93,19 @@ def astensor(x, dtype=None):
 
     Parameters:
     ----------
-        x: tf.Tensor, tf.Variable, Scipy sparse matrix, 
-            Numpy array-like, etc.
+    x: tf.Tensor, tf.Variable, Scipy sparse matrix, 
+        Numpy array-like, etc.
 
-        dtype: The type of Tensor `x`, if not specified,
-            it will automatically using appropriate data type.
-            See `graphgallery.infer_type`.
+    dtype: The type of Tensor `x`, if not specified,
+        it will automatically using appropriate data type.
+        See `graphgallery.infer_type`.
 
     Returns:
     ----------      
-        Tensor or SparseTensor with dtype:       
+    Tensor or SparseTensor with dtype:       
         1. `graphgallery.floatx()` if `x` is floating
         2. `graphgallery.intx() ` if `x` is integer
-        3. `Bool` if `x` is bool.
+        3. `'bool'` if `x` is bool.
     """
 
     if x is None:
@@ -103,13 +113,21 @@ def astensor(x, dtype=None):
 
     if dtype is None:
         dtype = infer_type(x)
-
+    elif isinstance(dtype, str):
+        ...
+        # TODO
+    elif isinstance(dtype, tf.dtypes.DType):
+        dtype = dtype.name
+    else:
+        raise TypeError(f"argument 'dtype' must be tensorflow.dtypes.DType or str, not {type(dtype).__name__}.")
+        
+        
     if is_tensor_or_variable(x):
         if x.dtype != dtype:
             x = tf.cast(x, dtype=dtype)
         return x
     elif sp.isspmatrix(x):
-        return sparse_adj_to_sparse_tensor(x.astype(dtype, copy=False))
+        return sparse_adj_to_sparse_tensor(x, dtype=dtype)
     elif isinstance(x, (np.ndarray, np.matrix)) or is_list_like(x) or is_scalar_like(x):
         return tf.convert_to_tensor(x, dtype=dtype)
     else:
@@ -122,15 +140,15 @@ def astensors(*xs):
 
     Parameters:
     ----------
-        xs: tf.Tensor, tf.Variable, Scipy sparse matrix, 
-            Numpy array-like, or a list of them, etc.
+    xs: tf.Tensor, tf.Variable, Scipy sparse matrix, 
+        Numpy array-like, or a list of them, etc.
 
     Returns:
     ----------      
-        Tensor(s) or SparseTensor(s) with dtype:       
+    Tensor(s) or SparseTensor(s) with dtype:       
         1. `graphgallery.floatx()` if `x` in `xs` is floating
         2. `graphgallery.intx() ` if `x` in `xs` is integer
-        3. `Bool` if `x` in `xs` is bool.
+        3. `'bool'` if `x` in 'xs' is bool.
     """
     if len(xs) > 1:
         return tuple(astensors(x) for x in xs)

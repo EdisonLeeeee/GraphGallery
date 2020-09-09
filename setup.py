@@ -40,13 +40,16 @@ setup(
     python_requires='>=3.7',
     license="MIT LICENSE",
     install_requires=install_requires,
-    packages=find_packages(exclude=("examples", "imgs")),
+    packages=find_packages(exclude=("examples", "imgs", "scripts")),
     classifiers=[
         "Programming Language :: Python :: 3",
-        "Programming Language:: Python:: 3.7",
-        "Operating System :: POSIX:: Linux",
+        "Programming Language :: Python:: 3.7",
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: MIT License",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
+        "Operating System:: Microsoft:: Windows",
+        "Operating System:: POSIX",
+        "Operating System:: Unix",
+        "Operating System:: MacOS"
     ],
 )

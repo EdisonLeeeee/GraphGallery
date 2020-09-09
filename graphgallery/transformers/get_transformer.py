@@ -8,6 +8,7 @@ from graphgallery.transformers import ChebyBasis
 from graphgallery.transformers import NeighborSampler
 from graphgallery.transformers import GraphPartition
 from graphgallery.transformers import GDC
+from graphgallery.transformers import SVD
 
 
 _TRANSFORMER = {"normalize_adj": NormalizeAdj,
@@ -17,7 +18,8 @@ _TRANSFORMER = {"normalize_adj": NormalizeAdj,
                 "cheby_basis": ChebyBasis,
                 "neighbor_sampler": NeighborSampler,
                 "graph_partition": GraphPartition,
-                "gdc": GDC}
+                "gdc": GDC,
+                "svd": SVD}
 
 _ALLOWED = set(list(_TRANSFORMER.keys()))
 

@@ -15,7 +15,9 @@ class ClusterMiniBatchSequence(Sequence):
         y,
         shuffle=False,
         batch_size=1,
+        *args, **kwargs
     ):
+        super().__init__(*args, **kwargs)
         assert batch_size == 1
         self.x, self.y = astensors(x, y)
         self.n_batches = len(self.x)
@@ -49,8 +51,10 @@ class SAGEMiniBatchSequence(Sequence):
         y=None,
         n_samples=[5, 5],
         shuffle=False,
-        batch_size=512
+        batch_size=512,
+        *args, **kwargs
     ):
+        super().__init__(*args, **kwargs)
         self.attr_matrix, self.adj_matrix, self.batch_nodes = x
         self.y = y
         self.n_batches = int(np.ceil(len(self.batch_nodes) / batch_size))
@@ -105,8 +109,10 @@ class FastGCNBatchSequence(Sequence):
         y=None,
         shuffle=False,
         batch_size=None,
-        rank=None
+        rank=None,
+        *args, **kwargs
     ):
+        super().__init__(*args, **kwargs)
         attr_matrix, adj_matrix = x
         self.y = y
         self.n_batches = int(

@@ -14,9 +14,10 @@ class SBVATSampleSequence(Sequence):
         y,
         neighbors,
         n_samples=50,
-        resample=True
+        resample=True,
+        *args, **kwargs
     ):
-
+        super().__init__(*args, **kwargs)
         self.x = x
         self.y = y
         self.neighbors = neighbors

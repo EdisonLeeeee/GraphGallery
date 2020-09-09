@@ -1,12 +1,12 @@
 import os
 import logging
 import warnings
+import torch
 import os.path as osp
 import numpy as np
 import tensorflow as tf
 import scipy.sparse as sp
 
-from tensorflow.keras import backend as K
 from tensorflow.keras.utils import Sequence
 from tensorflow.python.keras import callbacks as callbacks_module
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
@@ -227,7 +227,10 @@ class SemiSupervisedModel(BaseModel):
 
         if save_best:
             self.load(weight_path, as_model=as_model)
-            remove_tf_weights(weight_path)
+            if self.kind == "T":
+                remove_tf_weights(weight_path)
+            else:
+                remove_torch_weights(weight_path)
 
         return history
 
@@ -608,8 +611,10 @@ class SemiSupervisedModel(BaseModel):
             Output accuracy of prediction.
 
         """
-        # TODO: torch step
-        return train_step_tf(self.model, sequence, self.device)
+        if self.kind == "T":
+            return train_step_tf(self.model, sequence, self.device)
+        else:
+            return train_step_torch(self.model, sequence)
 
     def test_step(self, sequence):
         """
@@ -636,8 +641,11 @@ class SemiSupervisedModel(BaseModel):
             Output accuracy of prediction.
 
         """
-        # TODO: torch step
-        return test_step_tf(self.model, sequence, self.device)
+        if self.kind == "T":
+            return test_step_tf(self.model, sequence, self.device)
+        else:
+            return test_step_torch(self.model, sequence)
+            
 
     def predict(self, index):
         """
@@ -669,8 +677,10 @@ class SemiSupervisedModel(BaseModel):
         return self.predict_step(sequence)
 
     def predict_step(self, sequence):
-        # TODO: torch step
-        return predict_step_tf(self.model, sequence, self.device)
+        if self.kind == "T":
+            return predict_step_tf(self.model, sequence, self.device)
+        else:
+            return predict_step_torch(self.model, sequence)
 
     def train_sequence(self, index):
         """
@@ -759,14 +769,7 @@ class SemiSupervisedModel(BaseModel):
             raise RuntimeError("The model has not attribute `optimizer`!")
         model.optimizer.learning_rate.assign(value)
 
-    @ property
-    def close(self):
-        """Close the session of model and set `built` to False."""
-        K.clear_session()
-        self.model = None
 
-    def __call__(self, inputs):
-        return self.model(inputs)
 
     def __repr__(self):
         return 'Semi-Supervised model: ' + self.name + ' in ' + self.device
@@ -782,6 +785,27 @@ def train_step_tf(model, sequence, device):
 
     return loss, accuracy
 
+def train_step_torch(model, sequence):
+    model.train()
+    optimizer = model.optimizer
+    loss_fn = model.loss_fn
+    
+    accuracy = 0
+    loss = 0
+    n_inputs = 0
+    
+    for inputs, labels in sequence:
+        optimizer.zero_grad()
+        output = model(inputs)
+        _loss = loss_fn(output, labels)
+        _loss.backward()
+        optimizer.step()    
+        with torch.no_grad():
+            loss += _loss.data*labels.size(0) if loss_fn.reduction == 'mean' else _loss.data
+            accuracy += (output.argmax(1)==labels).float().sum()
+            n_inputs += labels.size(0)
+            
+    return (loss/n_inputs).detach().item(), (accuracy/n_inputs).detach().item()
 
 def test_step_tf(model, sequence, device):
     model.reset_metrics()
@@ -792,6 +816,24 @@ def test_step_tf(model, sequence, device):
                 x=inputs, y=labels, reset_metrics=False)
 
     return loss, accuracy
+
+@torch.no_grad()
+def test_step_torch(model, sequence):
+    model.eval()
+    loss_fn = model.loss_fn
+    accuracy = 0
+    loss = 0
+    n_inputs = 0
+    
+    for inputs, labels in sequence:
+        # TODO: multi batches
+        output = model(inputs)
+        _loss = loss_fn(output, labels)
+        loss += _loss.data*labels.size(0) if loss_fn.reduction == 'mean' else _loss.data
+        n_inputs += labels.size(0)
+        accuracy += (output.argmax(1)==labels).float().sum()
+        
+    return (loss/n_inputs).detach().item(), (accuracy/n_inputs).detach().item()
 
 
 def predict_step_tf(model, sequence, device):
@@ -809,6 +851,21 @@ def predict_step_tf(model, sequence, device):
         logits = logits[0]
     return logits
 
+@torch.no_grad()
+def predict_step_torch(model, sequence):
+    model.eval()
+    logits = []
+
+    for inputs, _ in sequence:
+        logit = model(inputs)
+        logits.append(logit)
+        
+    if len(sequence) > 1:
+        logits = torch.cat(logits)
+    else:
+        logits, = logits
+        
+    return logits.detach().cpu().numpy()
 
 _POSTFIX = (".h5", ".data-00000-of-00001", ".index")
 
@@ -828,3 +885,11 @@ def remove_tf_weights(file_path_without_h5):
     path = osp.join(file_dir, "checkpoint")
     if osp.exists(path):
         os.remove(path)
+        
+def remove_torch_weights(file_path):
+    if not file_path.endswith('.pt'):
+        file_path_with_pt = file_path + '.pt'
+
+    if osp.exists(file_path_with_pt):
+        os.remove(file_path_with_pt)
+

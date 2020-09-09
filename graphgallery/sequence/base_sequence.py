@@ -4,12 +4,14 @@ import tensorflow as tf
 
 from tensorflow.keras.utils import Sequence as tf_Sequence
 from tensorflow.keras.layers import Layer
+from torch.nn import Module
 
 
 class Sequence(tf_Sequence):
 
-    def __init__(self, *args, **kwargs,):
-        pass
+    def __init__(self, *args, **kwargs):
+        self.device = kwargs.pop('device', None)
+        super().__init__(*args, **kwargs)
 
     def __len__(self):
         raise NotImplementedError
@@ -18,7 +20,8 @@ class Sequence(tf_Sequence):
         raise NotImplementedError
 
     def on_epoch_end(self):
-        pass
+        ...
 
-    def shuffle(self):
-        pass
+    def _shuffle_batches(self):
+        ...
+        

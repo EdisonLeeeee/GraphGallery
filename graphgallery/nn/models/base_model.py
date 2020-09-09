@@ -8,6 +8,8 @@ import tensorflow as tf
 import os.path as osp
 import scipy.sparse as sp
 
+from tensorflow.keras import backend as K
+
 from abc import ABC
 
 from graphgallery import intx, floatx, backend, set_backend, is_list_like
@@ -66,17 +68,26 @@ class BaseModel(ABC):
             else:
                 raise ValueError(f"Unrecognized inputs {graph}.")
 
-        raise_if_kwargs(kwargs)
-
+        check = kwargs.pop('check', True)
         self.kind = backend().kind
-        _check_cur_module(self.__module__, self.kind)
+        if check:
+            _check_cur_module(self.__module__, self.kind)
+
         _id = np.random.RandomState(None).randint(100)
+
+        raise_if_kwargs(kwargs)
 
         if seed is not None:
             np.random.seed(seed)
             # TODO: torch set seed
             random.seed(seed)
-            tf.random.set_seed(seed)
+
+            if self.kind == "P":
+                torch.manual_seed(seed)
+                torch.cuda.manual_seed(seed)
+#                 torch.cuda.manual_seed_all(seed)
+            else:
+                tf.random.set_seed(seed)
 
         if name is None:
             name = self.__class__.__name__
@@ -106,19 +117,31 @@ class BaseModel(ABC):
         makedirs_from_path(path)
 
         if as_model:
-            save_tf_model(self.model, path)
+            if self.kind == "T":
+                save_tf_model(self.model, path)
+            else:
+                save_torch_model(self.model, path)
         else:
-            save_tf_weights(self.model, path)
+            if self.kind == "T":
+                save_tf_weights(self.model, path)
+            else:
+                save_torch_weights(self.model, path)
 
     def load(self, path=None, as_model=False):
         if not path:
             path = self.weight_path
 
         if as_model:
-            self.model = load_tf_model(
-                path, custom_objects=self.custom_objects)
+            if self.kind == "T":
+                self.model = load_tf_model(
+                    path, custom_objects=self.custom_objects)
+            else:
+                self.model = load_torch_model(path)
         else:
-            load_tf_weights(self.model, path)
+            if self.kind == "T":
+                load_tf_weights(self.model, path)
+            else:
+                load_torch_weights(self.model, path)
 
     def __getattr__(self, attr):
         ##### TODO: This may cause ERROR ######
@@ -151,46 +174,101 @@ class BaseModel(ABC):
         assert isinstance(value, dict)
         self._custom_objects = value
 
+    @property
+    def close(self):
+        """Close the session of model and set `built` to False."""
+        K.clear_session()
+        self.model = None
+
+    def __call__(self, *args, **kwargs):
+        return self._model(*args, **kwargs)
+
     def __repr__(self):
         return f"Graphgallery.nn.{self.name} in {self.device}"
 
 
 def load_tf_model(file_path, custom_objects=None):
-    if not file_path.endswith('.h5'):
-        file_path = file_path + '.h5'
-    return tf.keras.models.load_model(file_path, custom_objects=custom_objects)
+    
+    file_path_with_h5 = file_path
+    if not file_path_with_h5.endswith('.h5'):
+        file_path_with_h5 = file_path_with_h5 + '.h5'
+        
+    return tf.keras.models.load_model(file_path_with_h5,
+                                      custom_objects=custom_objects)
+
+
+def load_torch_model(file_path):
+    
+    file_path_with_pt = file_path
+    if not file_path_with_pt.endswith('.pt'):
+        file_path_with_pt = file_path_with_pt + '.pt'
+
+    return torch.load(file_path_with_pt)
 
 
 def save_tf_model(model, file_path):
 
-    if not file_path.endswith('.h5'):
-        file_path = file_path + '.h5'
+    file_path_with_h5 = file_path
+    if not file_path_with_h5.endswith('.h5'):
+        file_path_with_h5 = file_path_with_h5 + '.h5'
 
-    model.save(file_path, save_format="h5")
+    model.save(file_path_with_h5, save_format="h5")
+
+
+def save_torch_model(model, file_path):
+
+    file_path_with_pt = file_path
+    if not file_path_with_pt.endswith('.pt'):
+        file_path_with_pt = file_path_with_pt + '.pt'
+
+    torch.save(model, file_path_with_pt)
 
 
 def save_tf_weights(model, file_path):
 
-    if not file_path.endswith('.h5'):
-        file_path_with_h5 = file_path + '.h5'
+    file_path_with_h5 = file_path
+    if not file_path_with_h5.endswith('.h5'):
+        file_path_with_h5 = file_path_with_h5 + '.h5'
     try:
         model.save_weights(file_path_with_h5)
     except ValueError as e:
         model.save_weights(file_path_with_h5[:-3])
 
 
+def save_torch_weights(model, file_path):
+    
+    file_path_with_pt = file_path
+    if not file_path_with_pt.endswith('.pt'):
+        file_path_with_pt = file_path_with_pt + '.pt'
+
+    torch.save(model.state_dict(), file_path_with_pt)
+
+
 def load_tf_weights(model, file_path):
-    if not file_path.endswith('.h5'):
-        file_path_with_h5 = file_path + '.h5'
-    else:
-        file_path_with_h5 = file_path
+    
+    file_path_with_h5 = file_path
+    if not file_path_with_h5.endswith('.h5'):
+        file_path_with_h5 = file_path_with_h5 + '.h5'
     try:
         model.load_weights(file_path_with_h5)
     except KeyError as e:
         model.load_weights(file_path_with_h5[:-3])
 
 
+def load_torch_weights(model, file_path):
+    
+    file_path_with_pt = file_path
+    if not file_path_with_pt.endswith('.pt'):
+        file_path_with_pt = file_path_with_pt + '.pt'
+
+    checkpoint = torch.load(file_path_with_pt)
+    model.load_state_dict(checkpoint)
+
+
 def parse_device(device: str, kind: str) -> str:
+    # TODO:
+    # 1. device can be torch.device
+    # 2. check if gpu is available
     _device = osp.split(device.lower())[1]
     if not any((_device.startswith("cpu"),
                 _device.startswith("cuda"),

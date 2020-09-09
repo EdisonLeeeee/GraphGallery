@@ -6,10 +6,10 @@ from graphgallery.backend.modules import TensorFlowBackend, PyTorchBackend
 from tensorflow.keras import backend as K
 
 _BACKEND = TensorFlowBackend()
-_MODULE_NAME = {"tf": "T", "tensorflow": "T", "T": "T",
+_MODULE_KIND = {"tf": "T", "tensorflow": "T", "T": "T",
                 "th": "P", "torch": "P", "pytorch": "P", "P": "P"}
 
-_ALLOWED_NAME = set(list(_MODULE_NAME.keys()))
+_ALLOWED_NAME = set(list(_MODULE_KIND.keys()))
 
 _MODULE = {"T": TensorFlowBackend,
            "P": PyTorchBackend}
@@ -74,6 +74,11 @@ def intx():
     Example:
     >>> graphgallery.intx()
     'int32'
+
+    Note:
+    -------
+    The default integer type of PyTorch will set to be
+        'int64', i.e., 'Long'
     """
     return _INTX
 
@@ -98,6 +103,11 @@ def set_intx(dtype):
     if dtype not in {'int16', 'int32', 'int64'}:
         raise ValueError('Unknown floatx type: ' + str(dtype))
     global _INTX
+
+    if _BACKEND.kind == "P" and dtype != 'int64':
+        raise RuntimeError(
+            f"For {_BACKEND}, tensors used as integer must be long (int64), not {dtype}.")
+
     _INTX = str(dtype)
     return _INTX
 
@@ -108,7 +118,7 @@ def backend():
 
     # Returns
         String, the name of the backend GraphGallery is currently using.
-        
+
     E.g. `'TensorFlow 2.1.0 Backend'`,
       `'PyTorch 1.6.0+cpu Backend'`.
 
@@ -143,14 +153,16 @@ def set_backend(module_name):
         raise ValueError(
             f"Unknown module name: '{str(module_name)}', expected one of {_ALLOWED_NAME}.")
     global _BACKEND
-    name = _MODULE_NAME.get(module_name)
-    if name != _BACKEND.kind:
+    kind = _MODULE_KIND.get(module_name)
+    if kind != _BACKEND.kind:
         # TODO: improve
-        _BACKEND = _MODULE.get(name)()
+        _BACKEND = _MODULE.get(kind)()
         importlib.reload(graphgallery)
-        importlib.reload(graphgallery.nn)
+        importlib.reload(graphgallery.nn.layers)
         importlib.reload(graphgallery.nn.models)
-        importlib.reload(graphgallery.tensor)
-        
+
+        if kind == "P":
+            # PyTorch uses Long integer as default.
+            set_intx('int64')
 
     return _BACKEND

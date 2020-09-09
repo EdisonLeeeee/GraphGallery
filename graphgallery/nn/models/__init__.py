@@ -24,14 +24,15 @@ if _BACKEND .kind == "T":
     from graphgallery.nn.models.semisupervised.tf_models.sbvat import SBVAT
     from graphgallery.nn.models.semisupervised.tf_models.gmnn import GMNN
     from graphgallery.nn.models.semisupervised.tf_models.dagnn import DAGNN
-    # experimental
+    
+    # experimental model
     from graphgallery.nn.models.semisupervised.experimental.mediansage import MedianSAGE
     from graphgallery.nn.models.semisupervised.experimental.edgeconv import EdgeGCN
     from graphgallery.nn.models.semisupervised.experimental.s_obvat import SimplifiedOBVAT
     from graphgallery.nn.models.semisupervised.experimental.gcn_mix import GCN_MIX
     from graphgallery.nn.models.semisupervised.experimental.gcna import GCNA
 else:
-    GCN = None
+    from graphgallery.nn.models.semisupervised.torch_models.gcn import GCN
 
 # unsupervised model
 from graphgallery.nn.models.unsupervised.unsupervised_model import UnsupervisedModel

@@ -1,4 +1,4 @@
-
+import torch
 import numpy as np
 import tensorflow as tf
 import collections.abc as collections_abc
@@ -36,11 +36,6 @@ def is_tf_sparse_tensor(x):
     return K.is_sparse(x)
 
 
-def is_torch_sparse_tensor(x):
-    ...
-    # TODO torch
-
-
 def is_tensor_or_variable(x):
     """Check whether `x` is tf.Tensor or tf.Variable or tf.RaggedTensor.
 
@@ -56,8 +51,8 @@ def is_tensor_or_variable(x):
                     isinstance(x, tf.RaggedTensor),
                     is_tf_sparse_tensor(x)))
     else:
-        ...
-        # TODO torch
+        # TODO: is it really work for all torch tensors??
+        return torch.is_tensor(x)
 
 
 def is_interger_scalar(x):

@@ -36,6 +36,7 @@ class GraphPartition(Transformer):
         return f"{self.__class__.__name__}(n_clusters={self.n_clusters}, metis_partition={self.metis_partition})"
 
 
+# TODO: accept a Graph and output a MultiGraph
 def graph_partition(adj_matrix, attr_matrix, n_clusters: int, metis_partition: bool = True):
     # partition graph
     if metis_partition:
