@@ -4,27 +4,28 @@
 [pypi-url]: https://pypi.org/project/graphgallery/
 
 <p align="center">
-  <img width = "500" height = "300" src="https://github.com/EdisonLeeeee/GraphGallery/blob/master/imgs/graphgallery.svg" alt="logo"/>
+  <img width = "600" height = "300" src="https://github.com/EdisonLeeeee/GraphGallery/blob/master/imgs/graphgallery.svg" alt="logo"/>
 </p>
 
 ---
-[![Python 3.7](https://img.shields.io/badge/Python->=3.7-3776AB)](https://www.python.org/downloads/release/python-370/)
+[![Python 3.7](https://img.shields.io/badge/Python->=3.7-3776AB?logo=python)](https://www.python.org/downloads/release/python-370/)
 [![TensorFlow >=2.1](https://img.shields.io/badge/TensorFlow->=2.1-FF6F00?logo=tensorflow)](https://github.com/tensorflow/tensorflow/releases/tag/v2.1.0)
+[![PyTorch](https://img.shields.io/badge/PyTorch->=1.5-FF6F00?logo=pytorch)](https://github.com/pytorch/pytorch)
 [![PyPI Version][pypi-image]][pypi-url]
 ![](https://img.shields.io/github/stars/EdisonLeeeee/GraphGallery)
 ![](https://img.shields.io/github/forks/EdisonLeeeee/GraphGallery)
 ![](https://img.shields.io/github/issues/EdisonLeeeee/GraphGallery)
 [![GitHub license](https://img.shields.io/github/license/EdisonLeeeee/GraphGallery)](https://github.com/EdisonLeeeee/GraphGallery/blob/master/LICENSE)
 
-GraphGallery is a gallery of state-of-the-arts graph neural networks for [TensorFlow](https://github.com/tensorflow/tensorflow) 2.x and [PyTorch](https://github.com/pytorch/pytorch).
+GraphGallery is a gallery of state-of-the-arts graph neural networks for [TensorFlow 2.x](https://github.com/tensorflow/tensorflow) and [PyTorch](https://github.com/pytorch/pytorch). NOTE: Version 0.3.0 is still in testing.
 
 
+<!-- 
 This repo aims to achieve 4 goals:
 + Similar or higher performance
 + Faster training and testing
 + Simple and convenient to use, high scalability
-+ Easy to read source codes
----
++ Easy to read source codes -->
 
 # Installation
 + Build from source
@@ -37,7 +38,6 @@ python setup.py install
 ```bash
 pip install -U graphgallery
 ```
-
 # Implementations
 In detail, the following methods are currently implemented:
 
@@ -78,14 +78,13 @@ In detail, the following methods are currently implemented:
 + **Deepwalk** from *Bryan Perozzi et al*, [📝DeepWalk: Online Learning of Social Representations](https://arxiv.org/abs/1403.6652), *KDD'14*. 
  [[🌋 TensorFlow]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_Deepwalk.ipynb)
 + **Node2vec** from *Aditya Grover et al*, [📝node2vec: Scalable Feature Learning for Networks](https://arxiv.org/abs/1607.00653), *KDD'16*. 
- de2vec), [[🌋 TensorFlow]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_Node2vec.ipynb)
+[[🌋 TensorFlow]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_Node2vec.ipynb)
 
 # Quick Start
 ## Datasets
 ```python
 from graphgallery.data import Planetoid
 # set `verbose=False` to avoid these printed tables
-from graphgallery.data import Planetoid
 data = Planetoid('cora', verbose=False)
 graph = data.graph
 idx_train, idx_val, idx_test = data.split()
@@ -101,10 +100,6 @@ currently the supported datasets are:
 >>> data.supported_datasets
 ('citeseer', 'cora', 'pubmed')
 ```
-
-# for testing the predict method
-print(f'Predict accuracy {model._test_predict(idx_test):.2%}')
-
 
 ## Example of GCN model
 ```python
@@ -184,6 +179,36 @@ with plt.style.context(['science', 'no-latex']):
     plt.show()    
 ```
 ![visualization](https://github.com/EdisonLeeeee/GraphGallery/blob/master/imgs/visualization_loss.png)
+
+## Using TensorFlow/PyTorch Backend
+```python
+>>> import graphgallery
+>>> graphgallery.backend()
+TensorFlow 2.1.0 Backend
+
+>>> graphgallery.set_backend("pytorch")
+PyTorch 1.6.0+cu101 Backend
+```
+GCN using PyTorch backend
+```python
+
+# The following codes are the same with TensorFlow Backend
+>>> from graphgallery.nn.models import GCN
+>>> model = GCN(graph, attr_transformer="normalize_attr", device="GPU", seed=123);
+>>> model.build()
+>>> his = model.train(idx_train, idx_val, verbose=1, epochs=100)
+loss 0.57, acc 96.43%, val_loss 1.04, val_acc 78.20%: 100%|██████████| 100/100 [00:00<00:00, 210.90it/s]
+>>> loss, accuracy = model.test(idx_test)
+>>> print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
+Test loss 1.0271, Test accuracy 81.10%
+
+```
+
+# How to add your custom datasets
+TODO
+
+# How to define your custom models
+TODO
 
 # More Examples
 Please refer to the [examples](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples) directory.
