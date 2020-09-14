@@ -431,21 +431,21 @@ def save_sparse_graph_to_npz(filepath, sparse_graph):
         'adj_indptr': sparse_graph.adj_matrix.indptr,
         'adj_shape': sparse_graph.adj_matrix.shape
     }
-    if sp.isspmatrix(sparse_graph.attr_matrix):
-        data_dict['attr_data'] = sparse_graph.attr_matrix.data
-        data_dict['attr_indices'] = sparse_graph.attr_matrix.indices
-        data_dict['attr_indptr'] = sparse_graph.attr_matrix.indptr
-        data_dict['attr_shape'] = sparse_graph.attr_matrix.shape
-    elif isinstance(sparse_graph.attr_matrix, np.ndarray):
-        data_dict['attr_matrix'] = sparse_graph.attr_matrix
+    if sp.isspmatrix(sparse_graph._attr_matrix):
+        data_dict['attr_data'] = sparse_graph._attr_matrix.data
+        data_dict['attr_indices'] = sparse_graph._attr_matrix.indices
+        data_dict['attr_indptr'] = sparse_graph._attr_matrix.indptr
+        data_dict['attr_shape'] = sparse_graph._attr_matrix.shape
+    elif isinstance(sparse_graph._attr_matrix, np.ndarray):
+        data_dict['attr_matrix'] = sparse_graph._attr_matrix
 
-    if sp.isspmatrix(sparse_graph.labels):
-        data_dict['labels_data'] = sparse_graph.labels.data
-        data_dict['labels_indices'] = sparse_graph.labels.indices
-        data_dict['labels_indptr'] = sparse_graph.labels.indptr
-        data_dict['labels_shape'] = sparse_graph.labels.shape
-    elif isinstance(sparse_graph.labels, np.ndarray):
-        data_dict['labels'] = sparse_graph.labels
+    if sp.isspmatrix(sparse_graph._labels):
+        data_dict['labels_data'] = sparse_graph._labels.data
+        data_dict['labels_indices'] = sparse_graph._labels.indices
+        data_dict['labels_indptr'] = sparse_graph._labels.indptr
+        data_dict['labels_shape'] = sparse_graph._labels.shape
+    elif isinstance(sparse_graph._labels, np.ndarray):
+        data_dict['labels'] = sparse_graph._labels
 
     if sparse_graph.node_names is not None:
         data_dict['node_names'] = sparse_graph.node_names

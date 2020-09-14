@@ -13,6 +13,7 @@ from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from tensorflow.keras.callbacks import History as tf_History
 
 from graphgallery.nn.models import BaseModel
+from graphgallery.nn.functions import softmax
 from graphgallery.utils.history import History
 from graphgallery.utils.tqdm import tqdm
 from graphgallery.data.io import makedirs_from_path
@@ -647,9 +648,9 @@ class SemiSupervisedModel(BaseModel):
             return test_step_torch(self.model, sequence)
             
 
-    def predict(self, index):
+    def predict(self, index=None, return_prob=True):
         """
-        Predict the output probability for the input `sequence`.
+        Predict the output probability for the input node index.
 
 
         Note:
@@ -659,8 +660,12 @@ class SemiSupervisedModel(BaseModel):
 
         Parameters:
         ----------
-        sequence: `graphgallery.Sequence`
-            The input `sequence`.
+        index: Numpy 1D array, optional.
+            The indices of nodes to predict.
+            if None, predict the all nodes.
+            
+        return_prob: bool.
+            whether to return the probability of prediction.
 
         Return:
         ----------
@@ -673,8 +678,13 @@ class SemiSupervisedModel(BaseModel):
             raise RuntimeError(
                 'You must compile your model before training/testing/predicting. Use `model.build()`.')
 
+        if index is None:
+            index = np.arange(self.graph.n_nodes)
         sequence = self.predict_sequence(index)
-        return self.predict_step(sequence)
+        logit = self.predict_step(sequence)
+        if return_prob:
+            logit = softmax(logit)
+        return logit
 
     def predict_step(self, sequence):
         if self.kind == "T":
