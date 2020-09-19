@@ -51,8 +51,11 @@ class Basegraph(ABC):
         return self.n_graphs
 
     def unpack(self):
-        """Return the (A, X, Y) triplet."""
         return self.A, self.X, self.Y
+    
+    def raw(self):
+        """Return the raw (A, X, Y) triplet."""
+        return self._adj_matrix, self._attr_matrix, self._labels
 
     def is_labeled(self):
         return self.labels is not None

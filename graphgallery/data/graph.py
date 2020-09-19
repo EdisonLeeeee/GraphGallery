@@ -407,10 +407,10 @@ def load_npz_to_graph(file_name):
         else:
             labels = None
 
-        node_names = loader.get('node_names')
-        attr_names = loader.get('attr_names')
-        class_names = loader.get('class_names')
-        metadata = loader.get('metadata')
+        node_names = loader.get('node_names', None)
+        attr_names = loader.get('attr_names', None)
+        class_names = loader.get('class_names', None)
+        metadata = loader.get('metadata', None)
 
     return Graph(adj_matrix, attr_matrix, labels, node_names, attr_names, class_names, metadata)
 
@@ -425,27 +425,29 @@ def save_sparse_graph_to_npz(filepath, sparse_graph):
     sparse_graph : graphgalllery.data.Graph
         Graph in sparse matrix format.
     """
+    adj_matrix, attr_matrix, labels = sparse_graph.raw()
+    
     data_dict = {
-        'adj_data': sparse_graph.adj_matrix.data,
-        'adj_indices': sparse_graph.adj_matrix.indices,
-        'adj_indptr': sparse_graph.adj_matrix.indptr,
-        'adj_shape': sparse_graph.adj_matrix.shape
+        'adj_data': adj_matrix.data,
+        'adj_indices': adj_matrix.indices,
+        'adj_indptr': adj_matrix.indptr,
+        'adj_shape': adj_matrix.shape
     }
-    if sp.isspmatrix(sparse_graph._attr_matrix):
-        data_dict['attr_data'] = sparse_graph._attr_matrix.data
-        data_dict['attr_indices'] = sparse_graph._attr_matrix.indices
-        data_dict['attr_indptr'] = sparse_graph._attr_matrix.indptr
-        data_dict['attr_shape'] = sparse_graph._attr_matrix.shape
-    elif isinstance(sparse_graph._attr_matrix, np.ndarray):
-        data_dict['attr_matrix'] = sparse_graph._attr_matrix
+    if sp.isspmatrix(attr_matrix):
+        data_dict['attr_data'] = attr_matrix.data
+        data_dict['attr_indices'] = attr_matrix.indices
+        data_dict['attr_indptr'] = attr_matrix.indptr
+        data_dict['attr_shape'] = attr_matrix.shape
+    elif isinstance(attr_matrix, np.ndarray):
+        data_dict['attr_matrix'] = attr_matrix
 
-    if sp.isspmatrix(sparse_graph._labels):
-        data_dict['labels_data'] = sparse_graph._labels.data
-        data_dict['labels_indices'] = sparse_graph._labels.indices
-        data_dict['labels_indptr'] = sparse_graph._labels.indptr
-        data_dict['labels_shape'] = sparse_graph._labels.shape
-    elif isinstance(sparse_graph._labels, np.ndarray):
-        data_dict['labels'] = sparse_graph._labels
+    if sp.isspmatrix(labels):
+        data_dict['labels_data'] = labels.data
+        data_dict['labels_indices'] = labels.indices
+        data_dict['labels_indptr'] = labels.indptr
+        data_dict['labels_shape'] = labels.shape
+    elif isinstance(labels, np.ndarray):
+        data_dict['labels'] = labels
 
     if sparse_graph.node_names is not None:
         data_dict['node_names'] = sparse_graph.node_names
