@@ -71,12 +71,12 @@ class Dataset(ABC):
         return idx_train, idx_val, idx_test
 
     @staticmethod
-    def print_files(file_paths):
+    def print_files(filepaths):
         if not texttable:
-            print(file_paths)
+            print(filepaths)
         else:
             t = texttable.Texttable()
-            items = [(path.split('/')[-1], path) for path in file_paths]
+            items = [(path.split('/')[-1], path) for path in filepaths]
 
             t.add_rows([['File Name', 'File Path'], *items])
             print(t.draw())

@@ -29,7 +29,7 @@ warnings.filterwarnings(
 
 
 class SemiSupervisedModel(BaseModel):
-    def process(self, graph=None):
+    def process(self, graph=None, ** kwargs):
         """pre-process for the input graph, including manipulations
         on adjacency matrix and attribute matrix, and finally convert
         them into tensor (optional).
@@ -43,6 +43,8 @@ class SemiSupervisedModel(BaseModel):
         ----------
         graph: An instance of `graphgallery.data.Graph` or a tuple (list) of inputs.
             A sparse, attributed, labeled graph.
+        kwargs: other customed keyword Parameters.
+
         """
 
         if graph is not None:
@@ -294,7 +296,7 @@ class SemiSupervisedModel(BaseModel):
         if model is None:
             raise RuntimeError(
                 'You must compile your model before training/testing/predicting. Use `model.build()`.')
-            
+
         model.stop_training = False
 
         if isinstance(idx_train, Sequence):
@@ -647,7 +649,6 @@ class SemiSupervisedModel(BaseModel):
             return test_step_tf(self.model, sequence, self.device)
         else:
             return test_step_torch(self.model, sequence)
-            
 
     def predict(self, index=None, return_prob=True):
         """
@@ -664,7 +665,7 @@ class SemiSupervisedModel(BaseModel):
         index: Numpy 1D array, optional.
             The indices of nodes to predict.
             if None, predict the all nodes.
-            
+
         return_prob: bool.
             whether to return the probability of prediction.
 
@@ -781,7 +782,6 @@ class SemiSupervisedModel(BaseModel):
         model.optimizer.learning_rate.assign(value)
 
 
-
 def train_step_tf(model, sequence, device):
     model.reset_metrics()
 
@@ -792,27 +792,29 @@ def train_step_tf(model, sequence, device):
 
     return loss, accuracy
 
+
 def train_step_torch(model, sequence):
     model.train()
     optimizer = model.optimizer
     loss_fn = model.loss_fn
-    
+
     accuracy = 0
     loss = 0
     n_inputs = 0
-    
+
     for inputs, labels in sequence:
         optimizer.zero_grad()
         output = model(inputs)
         _loss = loss_fn(output, labels)
         _loss.backward()
-        optimizer.step()    
+        optimizer.step()
         with torch.no_grad():
-            loss += _loss.data*labels.size(0) if loss_fn.reduction == 'mean' else _loss.data
-            accuracy += (output.argmax(1)==labels).float().sum()
+            loss += _loss.data * labels.size(0) if loss_fn.reduction == 'mean' else _loss.data
+            accuracy += (output.argmax(1) == labels).float().sum()
             n_inputs += labels.size(0)
-            
-    return (loss/n_inputs).detach().item(), (accuracy/n_inputs).detach().item()
+
+    return (loss / n_inputs).detach().item(), (accuracy / n_inputs).detach().item()
+
 
 def test_step_tf(model, sequence, device):
     model.reset_metrics()
@@ -824,6 +826,7 @@ def test_step_tf(model, sequence, device):
 
     return loss, accuracy
 
+
 @torch.no_grad()
 def test_step_torch(model, sequence):
     model.eval()
@@ -831,16 +834,16 @@ def test_step_torch(model, sequence):
     accuracy = 0
     loss = 0
     n_inputs = 0
-    
+
     for inputs, labels in sequence:
         # TODO: multi batches
         output = model(inputs)
         _loss = loss_fn(output, labels)
-        loss += _loss.data*labels.size(0) if loss_fn.reduction == 'mean' else _loss.data
+        loss += _loss.data * labels.size(0) if loss_fn.reduction == 'mean' else _loss.data
         n_inputs += labels.size(0)
-        accuracy += (output.argmax(1)==labels).float().sum()
-        
-    return (loss/n_inputs).detach().item(), (accuracy/n_inputs).detach().item()
+        accuracy += (output.argmax(1) == labels).float().sum()
+
+    return (loss / n_inputs).detach().item(), (accuracy / n_inputs).detach().item()
 
 
 def predict_step_tf(model, sequence, device):
@@ -858,6 +861,7 @@ def predict_step_tf(model, sequence, device):
         logits = logits[0]
     return logits
 
+
 @torch.no_grad()
 def predict_step_torch(model, sequence):
     model.eval()
@@ -866,37 +870,38 @@ def predict_step_torch(model, sequence):
     for inputs, _ in sequence:
         logit = model(inputs)
         logits.append(logit)
-        
+
     if len(sequence) > 1:
         logits = torch.cat(logits)
     else:
         logits, = logits
-        
+
     return logits.detach().cpu().numpy()
+
 
 _POSTFIX = (".h5", ".data-00000-of-00001", ".index")
 
 
-def remove_tf_weights(file_path_without_h5):
-    if file_path_without_h5.endswith('.h5'):
-        file_path_without_h5 = file_path_without_h5[:-3]
+def remove_tf_weights(filepath_without_h5):
+    if filepath_without_h5.endswith('.h5'):
+        filepath_without_h5 = filepath_without_h5[:-3]
 
     # for tensorflow weights that saved without h5 formate
     for postfix in _POSTFIX:
-        path = file_path_without_h5 + postfix
+        path = filepath_without_h5 + postfix
         if osp.exists(path):
             os.remove(path)
 
-    file_dir = osp.split(osp.realpath(file_path_without_h5))[0]
+    file_dir = osp.split(osp.realpath(filepath_without_h5))[0]
 
     path = osp.join(file_dir, "checkpoint")
     if osp.exists(path):
         os.remove(path)
-        
-def remove_torch_weights(file_path):
-    if not file_path.endswith('.pt'):
-        file_path_with_pt = file_path + '.pt'
 
-    if osp.exists(file_path_with_pt):
-        os.remove(file_path_with_pt)
 
+def remove_torch_weights(filepath):
+    if not filepath.endswith('.pt'):
+        filepath_with_pt = filepath + '.pt'
+
+    if osp.exists(filepath_with_pt):
+        os.remove(filepath_with_pt)
