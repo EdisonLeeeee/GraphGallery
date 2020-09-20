@@ -781,10 +781,6 @@ class SemiSupervisedModel(BaseModel):
 
 
 
-    def __repr__(self):
-        return 'Semi-Supervised model: ' + self.name + ' in ' + self.device
-
-
 def train_step_tf(model, sequence, device):
     model.reset_metrics()
 

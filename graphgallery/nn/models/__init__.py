@@ -1,6 +1,8 @@
 # Base model
 
 from graphgallery.nn.models.base_model import BaseModel
+from graphgallery.nn.models.torch_keras_model import TorchKerasModel
+
 from graphgallery import backend
 
 _BACKEND = backend()

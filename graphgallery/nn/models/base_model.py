@@ -14,8 +14,9 @@ from abc import ABC
 
 from graphgallery import intx, floatx, backend, set_backend, is_list_like
 from graphgallery.data.io import makedirs_from_path
-from graphgallery.utils.raise_error import raise_if_kwargs
 from graphgallery.data import Basegraph, Graph
+from graphgallery.utils.raise_error import raise_if_kwargs
+from graphgallery.utils import save
 
 
 def _check_cur_module(module, kind):
@@ -69,7 +70,9 @@ class BaseModel(ABC):
                 raise ValueError(f"Unrecognized inputs {graph}.")
 
         check = kwargs.pop('check', True)
-        self.kind = backend().kind
+        self.backend = backend()
+        self.kind = self.backend.kind
+        
         if check:
             _check_cur_module(self.__module__, self.kind)
 
@@ -113,19 +116,23 @@ class BaseModel(ABC):
         self.floatx = floatx()
         self.intx = intx()
 
-    def save(self, path, as_model=False):
+    def save(self, path=None, as_model=False, overwrite=True, save_format=None, **kwargs):
+        
+        if not path:
+            path = self.weight_path
+            
         makedirs_from_path(path)
 
         if as_model:
             if self.kind == "T":
-                save_tf_model(self.model, path)
+                save.save_tf_model(self.model, path, overwrite=overwrite, save_format=save_format, **kwargs)
             else:
-                save_torch_model(self.model, path)
+                save.save_torch_model(self.model, path, overwrite=overwrite, save_format=save_format, **kwargs)
         else:
             if self.kind == "T":
-                save_tf_weights(self.model, path)
+                save.save_tf_weights(self.model, path, overwrite=overwrite, save_format=save_format)
             else:
-                save_torch_weights(self.model, path)
+                save.save_torch_weights(self.model, path, overwrite=overwrite, save_format=save_format)
 
     def load(self, path=None, as_model=False):
         if not path:
@@ -133,15 +140,15 @@ class BaseModel(ABC):
 
         if as_model:
             if self.kind == "T":
-                self.model = load_tf_model(
+                self.model = save.load_tf_model(
                     path, custom_objects=self.custom_objects)
             else:
-                self.model = load_torch_model(path)
+                self.model = save.load_torch_model(path)
         else:
             if self.kind == "T":
-                load_tf_weights(self.model, path)
+                save.load_tf_weights(self.model, path)
             else:
-                load_torch_weights(self.model, path)
+                save.load_torch_weights(self.model, path)
 
     def __getattr__(self, attr):
         ##### TODO: This may cause ERROR ######
@@ -184,85 +191,8 @@ class BaseModel(ABC):
         return self._model(*args, **kwargs)
 
     def __repr__(self):
-        return f"Graphgallery.nn.{self.name} in {self.device}"
+        return f"GraphGallery.nn.{self.name}(device={self.device}, backend={self.backend})"
 
-
-def load_tf_model(file_path, custom_objects=None):
-    
-    file_path_with_h5 = file_path
-    if not file_path_with_h5.endswith('.h5'):
-        file_path_with_h5 = file_path_with_h5 + '.h5'
-        
-    return tf.keras.models.load_model(file_path_with_h5,
-                                      custom_objects=custom_objects)
-
-
-def load_torch_model(file_path):
-    
-    file_path_with_pt = file_path
-    if not file_path_with_pt.endswith('.pt'):
-        file_path_with_pt = file_path_with_pt + '.pt'
-
-    return torch.load(file_path_with_pt)
-
-
-def save_tf_model(model, file_path):
-
-    file_path_with_h5 = file_path
-    if not file_path_with_h5.endswith('.h5'):
-        file_path_with_h5 = file_path_with_h5 + '.h5'
-
-    model.save(file_path_with_h5, save_format="h5")
-
-
-def save_torch_model(model, file_path):
-
-    file_path_with_pt = file_path
-    if not file_path_with_pt.endswith('.pt'):
-        file_path_with_pt = file_path_with_pt + '.pt'
-
-    torch.save(model, file_path_with_pt)
-
-
-def save_tf_weights(model, file_path):
-
-    file_path_with_h5 = file_path
-    if not file_path_with_h5.endswith('.h5'):
-        file_path_with_h5 = file_path_with_h5 + '.h5'
-    try:
-        model.save_weights(file_path_with_h5)
-    except ValueError as e:
-        model.save_weights(file_path_with_h5[:-3])
-
-
-def save_torch_weights(model, file_path):
-    
-    file_path_with_pt = file_path
-    if not file_path_with_pt.endswith('.pt'):
-        file_path_with_pt = file_path_with_pt + '.pt'
-
-    torch.save(model.state_dict(), file_path_with_pt)
-
-
-def load_tf_weights(model, file_path):
-    
-    file_path_with_h5 = file_path
-    if not file_path_with_h5.endswith('.h5'):
-        file_path_with_h5 = file_path_with_h5 + '.h5'
-    try:
-        model.load_weights(file_path_with_h5)
-    except KeyError as e:
-        model.load_weights(file_path_with_h5[:-3])
-
-
-def load_torch_weights(model, file_path):
-    
-    file_path_with_pt = file_path
-    if not file_path_with_pt.endswith('.pt'):
-        file_path_with_pt = file_path_with_pt + '.pt'
-
-    checkpoint = torch.load(file_path_with_pt)
-    model.load_state_dict(checkpoint)
 
 
 def parse_device(device: str, kind: str) -> str:

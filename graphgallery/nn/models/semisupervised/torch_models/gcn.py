@@ -5,6 +5,7 @@ from torch.nn import Module
 from torch import optim
 
 from graphgallery.nn.models import SemiSupervisedModel
+from graphgallery.nn.models import TorchKerasModel
 from graphgallery.nn.layers import GraphConvolution
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.shape import EqualVarLength
@@ -12,7 +13,7 @@ from graphgallery import transformers as T
 from graphgallery import astensors, asintarr
 
 
-class _Model(Module):
+class _Model(TorchKerasModel):
     
     def __init__(self, input_channels, hiddens, output_channels, use_bias=False):
         super().__init__()
