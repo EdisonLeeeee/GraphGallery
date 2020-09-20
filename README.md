@@ -1,23 +1,34 @@
 # GraphGallery
 
-[pypi-image]: https://badge.fury.io/py/graphgallery.svg
-[pypi-url]: https://pypi.org/project/graphgallery/
-
 <p align="center">
   <img width = "600" height = "300" src="https://github.com/EdisonLeeeee/GraphGallery/blob/master/imgs/graphgallery.svg" alt="logo"/>
+  <br/>
 </p>
 
----
-[![Python 3.7](https://img.shields.io/badge/Python->=3.7-3776AB?logo=python)](https://www.python.org/downloads/release/python-370/)
-[![TensorFlow >=2.1](https://img.shields.io/badge/TensorFlow->=2.1-FF6F00?logo=tensorflow)](https://github.com/tensorflow/tensorflow/releases/tag/v2.1.0)
-[![PyTorch](https://img.shields.io/badge/PyTorch->=1.5-FF6F00?logo=pytorch)](https://github.com/pytorch/pytorch)
-[![PyPI Version][pypi-image]][pypi-url]
-![](https://img.shields.io/github/stars/EdisonLeeeee/GraphGallery)
-![](https://img.shields.io/github/forks/EdisonLeeeee/GraphGallery)
-![](https://img.shields.io/github/issues/EdisonLeeeee/GraphGallery)
-[![GitHub license](https://img.shields.io/github/license/EdisonLeeeee/GraphGallery)](https://github.com/EdisonLeeeee/GraphGallery/blob/master/LICENSE)
+<p align="center"><strong>A <em>gallery</em> of state-of-the-art Graph Neural Networks for TensorFlow and PyTorch</strong>.</p>
 
-GraphGallery is a gallery of state-of-the-arts graph neural networks for [TensorFlow 2.x](https://github.com/tensorflow/tensorflow) and [PyTorch](https://github.com/pytorch/pytorch). NOTE: Version 0.3.0 is still in testing.
+<p align=center>
+  <a href="https://www.python.org/downloads/release/python-370/">
+    <img src="https://img.shields.io/badge/Python->=3.7-3776AB?logo=python" alt="Python">
+  </a>    
+  <a href="https://github.com/tensorflow/tensorflow/releases/tag/v2.1.0">
+    <img src="https://img.shields.io/badge/TensorFlow->=2.1-FF6F00?logo=tensorflow" alt="tensorflow">
+  </a>      
+  <a href="https://github.com/pytorch/pytorch">
+    <img src="https://img.shields.io/badge/PyTorch->=1.5-FF6F00?logo=pytorch" alt="pytorch">
+  </a>   
+  <a href="https://pypi.org/project/graphgallery/">
+    <img src="https://badge.fury.io/py/graphgallery.svg" alt="pypi">
+  </a>       
+  <img alt="stars" src="https://img.shields.io/github/stars/EdisonLeeeee/GraphGallery">
+  <img alt="forks" src="https://img.shields.io/github/forks/EdisonLeeeee/GraphGallery">
+  <img alt="issues" src="https://img.shields.io/github/issues/EdisonLeeeee/GraphGallery">    
+  <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/LICENSE">
+    <img src="https://img.shields.io/github/license/EdisonLeeeee/GraphGallery" alt="pypi">
+  </a>       
+</p>
+
+<!-- GraphGallery is a gallery of state-of-the-arts graph neural networks for [TensorFlow 2.x](https://github.com/tensorflow/tensorflow) and [PyTorch](https://github.com/pytorch/pytorch). NOTE: Version 0.3.0 is still in testing. -->
 
 
 <!-- 
