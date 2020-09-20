@@ -3,7 +3,7 @@ import numpy as np
 import tensorflow as tf
 import scipy.sparse as sp
 
-from graphgallery import floatx, intx
+from graphgallery import floatx, intx, backend
 from graphgallery import is_list_like, is_interger_scalar, is_tensor_or_variable
 
 
@@ -45,7 +45,7 @@ def asintarr(x, dtype: str = None):
 
     Returns:
     ----------
-        Integer Numpy array with dtype `graphgallery.intx()`
+        Integer Numpy array with dtype or `graphgallery.intx()`
 
     """
     if dtype is None:
