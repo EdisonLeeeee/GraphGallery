@@ -157,12 +157,15 @@ def set_backend(module_name):
     if kind != _BACKEND.kind:
         # TODO: improve
         _BACKEND = _MODULE.get(kind)()
-        importlib.reload(graphgallery)
+        # importlib.reload(graphgallery)
         importlib.reload(graphgallery.nn.layers)
         importlib.reload(graphgallery.nn.models)
 
         if kind == "P":
             # PyTorch uses Long integer as default.
             set_intx('int64')
+        else:
+            # Using int32 is more efficient
+            set_intx('int32')
 
     return _BACKEND
