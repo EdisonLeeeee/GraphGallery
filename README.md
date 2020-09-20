@@ -1,11 +1,9 @@
-# GraphGallery
-
 <p align="center">
   <img width = "600" height = "300" src="https://github.com/EdisonLeeeee/GraphGallery/blob/master/imgs/graphgallery.svg" alt="logo"/>
   <br/>
 </p>
 
-<p align="center"><strong>A <em>gallery</em> of state-of-the-art Graph Neural Networks for TensorFlow and PyTorch</strong>.</p>
+<p align="center"><strong>A <em>gallery</em> of state-of-the-art Graph Neural Networks, TensorFlow and PyTorch are both available</strong>.</p>
 
 <p align=center>
   <a href="https://www.python.org/downloads/release/python-370/">
@@ -39,13 +37,13 @@ This repo aims to achieve 4 goals:
 + Easy to read source codes -->
 
 # Installation
-+ Build from source
++ Build from source (latest version)
 ```bash
 git clone https://github.com/EdisonLeeeee/GraphGallery.git
 cd GraphGallery
 python setup.py install
 ```
-+ Or use Pip
++ Or using pip (stable version)
 ```bash
 pip install -U graphgallery
 ```
