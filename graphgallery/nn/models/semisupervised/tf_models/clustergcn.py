@@ -7,7 +7,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers import GraphConvolution
+from graphgallery.nn.layers import GraphConvolution, Mask
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import ClusterMiniBatchSequence
 from graphgallery.utils.shape import EqualVarLength
@@ -105,7 +105,7 @@ class ClusterGCN(SemiSupervisedModel):
                       dtype=self.floatx, name='attr_matrix')
             adj = Input(batch_shape=[None, None], dtype=self.floatx,
                         sparse=True, name='adj_matrix')
-            mask = Input(batch_shape=[None], dtype=tf.bool, name='mask')
+            mask = Input(batch_shape=[None], dtype=tf.bool, name='node_mask')
 
             h = x
             for hid, activation, dropout, l2_norm in zip(hiddens, activations, dropouts, l2_norms):
@@ -116,7 +116,7 @@ class ClusterGCN(SemiSupervisedModel):
             h = Dropout(rate=dropout)(h)
             h = GraphConvolution(self.graph.n_classes,
                                  use_bias=use_bias)([h, adj])
-            h = tf.boolean_mask(h, mask)
+            h =  Mask()([h, mask])
 
             model = Model(inputs=[x, adj, mask], outputs=h)
             model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),

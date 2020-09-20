@@ -294,6 +294,7 @@ class SemiSupervisedModel(BaseModel):
         if model is None:
             raise RuntimeError(
                 'You must compile your model before training/testing/predicting. Use `model.build()`.')
+            
         model.stop_training = False
 
         if isinstance(idx_train, Sequence):

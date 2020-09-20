@@ -90,7 +90,7 @@ class SBVAT(SemiSupervisedModel):
             self.feature_inputs, self.structure_inputs = astensors(
                 attr_matrix, adj_matrix)
 
-    @ EqualVarLength()
+    @EqualVarLength()
     def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5],
               lr=0.01, l2_norms=[5e-4], use_bias=False, p1=1., p2=1.,
               n_power_iterations=1, epsilon=0.03, xi=1e-6):

@@ -169,7 +169,7 @@ class BaseModel(ABC):
         # Back up
         if isinstance(m, tf.keras.Model) and m.weights:
             self.backup = tf.identity_n(m.weights)
-        # assert m is None or isinstance(m, tf.keras.Model)
+        # assert m is None or isinstance(m, tf.keras.Model) or torch.nn.Module
         self._model = m
 
     @property

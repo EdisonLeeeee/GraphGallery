@@ -94,6 +94,29 @@ class Gather(Layer):
         return tf.TensorShape(output_shape)
 
 
+class Mask(Layer):
+    def __init__(self, axis=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.axis = axis
+        self.trainable = False
+
+    def call(self, inputs):
+        tensor, mask = inputs
+        output = tf.boolean_mask(tensor, mask, axis=self.axis)
+        return output
+
+    def get_config(self):
+        base_config = super().get_config()
+        return base_config
+
+    def compute_output_shape(self, input_shapes):
+        # TODO: is it right?
+        axis = self.axis
+        params_shape, indices_shape = input_shapes
+        output_shape = params_shape[:axis] + \
+            indices_shape + params_shape[axis + 1:]
+        return tf.TensorShape(output_shape)
+    
 class Laplacian(Layer):
     def __init__(self, rate=-0.5, selfloop=1.0, *args, **kwargs):
         super().__init__(*args, **kwargs)

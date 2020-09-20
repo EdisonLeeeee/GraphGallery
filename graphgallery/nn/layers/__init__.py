@@ -19,7 +19,7 @@ if _BACKEND .kind == "T":
     from graphgallery.nn.layers.tf_layers.mediansage import MedianAggregator, MedianGCNAggregator
     from graphgallery.nn.layers.tf_layers.gcna import GraphConvAttribute
     from graphgallery.nn.layers.tf_layers.dagnn import PropConvolution
-    from graphgallery.nn.layers.tf_layers.misc import SparseConversion, Scale, Sample, Gather, Laplacian
+    from graphgallery.nn.layers.tf_layers.misc import SparseConversion, Scale, Sample, Gather, Laplacian, Mask
 
 else:
     from graphgallery.nn.layers.torch_layers.gcn import GraphConvolution

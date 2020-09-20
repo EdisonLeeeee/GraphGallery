@@ -7,7 +7,7 @@ from tensorflow.keras.optimizers import Nadam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers import Top_k_features, LGConvolution, DenseConvolution
+from graphgallery.nn.layers import Top_k_features, LGConvolution, DenseConvolution, Mask
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.shape import EqualVarLength
@@ -112,7 +112,7 @@ class LGCN(SemiSupervisedModel):
                                  activation=activations[-1],
                                  kernel_regularizer=regularizers.l2(l2_norms[-1]))([h, adj])
 
-            h = tf.boolean_mask(h, mask)
+            h = Mask()([h, mask])
 
             model = Model(inputs=[x, adj, mask], outputs=h)
             model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
