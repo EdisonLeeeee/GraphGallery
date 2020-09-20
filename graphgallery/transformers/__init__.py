@@ -1,5 +1,7 @@
 from graphgallery.transformers import adj_transformer
 from graphgallery.transformers import attr_transformer
+from graphgallery.transformers import graph_transformer
+
 # adj_transformer
 from graphgallery.transformers.base_transformer import Transformer, NullTransformer
 from graphgallery.transformers.graph_partition import GraphPartition, graph_partition

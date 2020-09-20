@@ -1,4 +1,6 @@
+import torch
 import numpy as np
+import tensorflow as tf
 import scipy.sparse as sp
 
 from graphgallery import floatx, intx
@@ -50,11 +52,12 @@ def asintarr(x, dtype: str = None):
         dtype = intx()
 
     if is_tensor_or_variable(x):
-        if x.dtype != dtype and backend().kind == "T":
-            x = tf.cast(x, dtype=dtype)
-        else:
-            ...
-            # TODO
+        if x.dtype != dtype:
+            kind = backend().kind
+            if kind == "T":
+                x = tf.cast(x, dtype=dtype)
+            else:
+                x = x.to(getattr(torch, dtype))
         return x
 
     if is_interger_scalar(x):
