@@ -16,7 +16,7 @@ from graphgallery.nn.models import ClusterGCN
 model = ClusterGCN(graph, n_clusters=10, attr_transformer="normalize_attr",
                    device="CPU", seed=123)
 model.build()
-his = model.train_v1(idx_train, idx_val, verbose=1, epochs=50)
+his = model.train(idx_train, idx_val, verbose=1, epochs=50)
 loss, accuracy = model.test(idx_test)
 print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 

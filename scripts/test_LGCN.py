@@ -15,7 +15,7 @@ from graphgallery.nn.models import LGCN
 
 model = LGCN(graph, attr_transformer="normalize_attr", device="GPU", seed=123)
 model.build()
-his = model.train_v1(idx_train, idx_val, verbose=1, epochs=100)
+his = model.train(idx_train, idx_val, verbose=1, epochs=100)
 loss, accuracy = model.test(idx_test)
 print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 
