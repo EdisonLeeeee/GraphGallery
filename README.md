@@ -3,7 +3,7 @@
   <br/>
 </p>
 
-<p align="center"><strong>A <em>gallery</em> of state-of-the-art Graph Neural Networks, TensorFlow and PyTorch are both available</strong>.</p>
+<p align="center"><strong>A <em>gallery</em> of state-of-the-art Graph Neural Networks (GNNs) for TensorFlow and PyTorch</strong>.</p>
 
 <p align=center>
   <a href="https://www.python.org/downloads/release/python-370/">
