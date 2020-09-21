@@ -34,7 +34,7 @@ def _check_and_convert(adj_matrix, attr_matrix, labels, copy=True):
             raise ValueError(
                 "Attribute matrix must be a sp.spmatrix or a np.ndarray (got {0} instead)".format(type(attr_matrix)))
 
-        if attr_matrix.shape[0] != adj_matrix.shape[0]:
+        if adj_matrix is not None and attr_matrix.shape[0] != adj_matrix.shape[0]:
             raise ValueError(
                 "Dimensions of the adjacency and attribute matrices don't agree!")
 
@@ -42,8 +42,6 @@ def _check_and_convert(adj_matrix, attr_matrix, labels, copy=True):
         labels = np.array(labels, dtype=np.int32, copy=copy)
         if labels.ndim != 1:
             labels = labels.argmax(1)
-        # if labels.shape[0] != adj_matrix.shape[0]:
-            # raise ValueError("Dimensions of the adjacency matrix and the label vector don't agree!")
 
     return adj_matrix, attr_matrix, labels
 

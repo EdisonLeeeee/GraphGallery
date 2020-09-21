@@ -9,7 +9,7 @@ from graphgallery.data.graph import Graph, load_dataset
 
 
 _DATASETS = ('citeseer', 'cora', 'cora_ml', 'cora_full', 'amazon_cs', 'amazon_photo',
-             'coauthor_cs', 'coauthor_phy', 'polblogs', 'pubmed', 'reddit', 'flickr', 'flickr_sdm', 'blogcatalog')
+             'coauthor_cs', 'coauthor_phy', 'polblogs', 'pubmed', 'flickr', 'flickr_sdm', 'blogcatalog')
 
 
 class NPZDataset(Dataset):
@@ -18,11 +18,9 @@ class NPZDataset(Dataset):
     supported_datasets = _DATASETS
 
     def __init__(self, name, root=None, url=None, standardize=False, verbose=True):
-        name = name.lower()
 
-        if not name in self.supported_datasets:
-            raise ValueError(
-                f"Currently only support for these datasets {self.supported_datasets}.")
+        if not name.lower() in self.supported_datasets:
+            print(f"Dataset not Found. Using custom dataset: {name}.\n")
 
         super().__init__(name, root, verbose)
 
