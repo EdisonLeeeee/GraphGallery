@@ -4,6 +4,8 @@ import numpy as np
 from sklearn.preprocessing import normalize
 
 from graphgallery.transformers import Transformer
+from graphgallery.utils.decorators import MultiInputs
+
 # Version: Compute the exact signature
 # def laplacian(W, normalized=True):
 #     """Return the Laplacian of the weight matrix."""
@@ -127,6 +129,7 @@ def compute_cheb_coeff_basis(scale, order):
     return coeffs
 
 
+@MultiInputs()
 def wavelet_basis(adj_matrix, order=3, wavelet_s=1.0, threshold=1e-4, wavelet_normalize=False):
     lap = laplacian(adj_matrix)
     N = adj_matrix.shape[0]

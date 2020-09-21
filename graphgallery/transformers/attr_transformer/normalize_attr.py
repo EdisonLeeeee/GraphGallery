@@ -2,6 +2,7 @@ import numpy as np
 import scipy.sparse as sp
 from sklearn.preprocessing import normalize, StandardScaler, RobustScaler
 from graphgallery.transformers import Transformer
+from graphgallery.utils.decorators import MultiInputs
 
 
 class NormalizeAttr(Transformer):
@@ -41,12 +42,13 @@ class NormalizeAttr(Transformer):
         ----------
             graphgallery.transformers.normalize_attr
         """
-        return normalize_attr(attr_matrix, self.norm)
+        return normalize_attr(attr_matrix, norm=self.norm)
 
     def __repr__(self):
         return f"{self.__class__.__name__}(norm={self.norm})"
 
 
+@MultiInputs()
 def normalize_attr(x, norm='l1'):
     """Normalize the attribute matrix with given type.
 

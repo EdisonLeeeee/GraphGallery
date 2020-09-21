@@ -3,6 +3,7 @@ import numpy as np
 
 from graphgallery.transformers import Transformer
 from graphgallery.transformers import normalize_adj
+from graphgallery.utils.decorators import MultiInputs
 
 
 class ChebyBasis(Transformer):
@@ -16,7 +17,7 @@ class ChebyBasis(Transformer):
     def __repr__(self):
         return f"{self.__class__.__name__}(order={self.order}, rate={self.rate})"
 
-
+@MultiInputs()
 def cheby_basis(adj_matrix, order=2, rate=-0.5):
     """Calculate Chebyshev polynomials up to order k. Return a list of sparse matrices (tuple representation)."""
 

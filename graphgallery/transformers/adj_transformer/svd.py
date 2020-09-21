@@ -3,6 +3,7 @@ import scipy.sparse as sp
 from graphgallery.transformers import Transformer
 from graphgallery.utils.type_check import is_list_like
 from graphgallery.utils.shape import repeat
+from graphgallery.utils.decorators import MultiInputs
 
 
 class SVD(Transformer):
@@ -22,6 +23,7 @@ class SVD(Transformer):
         return f"{self.__class__.__name__}(k={self.k}, threshold={self.threshold}, binaryzation={self.binaryzation})"
 
 
+@MultiInputs()
 def svd(adj_matrix, k=50, threshold=0.01, binaryzation=False):
     
     adj_matrix = adj_matrix.asfptype()

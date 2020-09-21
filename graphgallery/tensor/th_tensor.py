@@ -11,7 +11,7 @@ from graphgallery.utils.type_check import (is_list_like,
 
 
 # from graphgallery import gallery_export
-
+from graphgallery.utils.decorators import MultiInputs
 
 _DTYPE_TO_CLASS = {'float16': "HalfTensor", 
                    'float32': "FloatTensor",
@@ -105,8 +105,6 @@ def infer_type(x):
         raise RuntimeError(f'Invalid input of `{type(x)}`')
 
 
-        
-
     
 # @gallery_export("graphgallery.asthtensor")
 def astensor(x, dtype=None, device=None):
@@ -161,14 +159,18 @@ def astensor(x, dtype=None, device=None):
         tensor = tensor.to(device)
     return tensor
 
-def astensors(*xs, device=None):
-    """Convert input matrices to Tensor(s) or SparseTensor(s).
+astensors = MultiInputs(type_check=False)(astensor)
+astensors.__doc__ = """Convert input matrices to Tensor(s) or SparseTensor(s).
 
     Parameters:
     ----------
     xs: tf.Tensor, tf.Variable, Scipy sparse matrix, 
         Numpy array-like, or a list of them, etc.
 
+    dtype: The type of Tensor for all tensors in `xs`, if not specified,
+        it will automatically using appropriate data type.
+        See `graphgallery.infer_type`.
+        
     device (:class:`torch.device`, optional): the desired device of returned tensor.
         Default: if ``None``, uses the current device for the default tensor type
         (see :func:`torch.set_default_tensor_type`). :attr:`device` will be the CPU
@@ -181,16 +183,6 @@ def astensors(*xs, device=None):
         2. `graphgallery.intx() ` if `x` in `xs` is integer
         3. `'bool'` if `x` in 'xs' is bool.
     """
-    if len(xs) > 1:
-        return tuple(astensor(x, device=device) for x in xs)
-    else:
-        xs, = xs
-        if is_list_like(xs) and not is_scalar_like(xs[0]):
-            # Check `not is_scalar_like(xs[0])` to avoid the situation like
-            # the list `[1,2,3]` convert to tensor(1), tensor(2), tensor(3)
-            return astensors(*xs, device=device)
-        else:
-            return astensor(xs, device=device)
 
 
 def normalize_adj_tensor(adj, rate=-0.5, selfloop=1.0):

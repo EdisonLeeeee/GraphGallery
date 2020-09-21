@@ -5,6 +5,7 @@ from scipy.linalg import expm
 
 from graphgallery.transformers import normalize_adj
 from graphgallery.transformers import Transformer
+from graphgallery.utils.decorators import MultiInputs
 
 
 
@@ -24,6 +25,8 @@ class GDC(Transformer):
     def __repr__(self):
         return f"{self.__class__.__name__}(alpha={self.alpha}, t={self.t}, eps={self.eps}, k={self.k}, which={self.which})"
     
+    
+@MultiInputs()
 def gdc(adj_matrix: sp.csr_matrix, alpha: float=0.3, t: float=None, eps: float=None, k: int=128, which: str='PPR') -> sp.csr_matrix:
 
     if not (eps or k):

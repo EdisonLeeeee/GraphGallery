@@ -10,7 +10,7 @@ from graphgallery.nn.layers import GraphConvolution, Gather
 from graphgallery.nn.models import OBVAT
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.bvat_utils import kl_divergence_with_logit, entropy_y_x, get_normalized_vector
-from graphgallery.utils.shape import EqualVarLength
+from graphgallery.utils.decorators import EqualVarLength
 
 
 class SimplifiedOBVAT(OBVAT):

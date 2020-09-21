@@ -14,7 +14,7 @@ from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import SBVATSampleSequence
 from graphgallery.utils.sample import find_4o_nbrs
 from graphgallery.utils.bvat_utils import get_normalized_vector, kl_divergence_with_logit, entropy_y_x
-from graphgallery.utils.shape import EqualVarLength
+from graphgallery.utils.decorators import EqualVarLength
 from graphgallery import transformers as T
 from graphgallery import astensors, asintarr
 

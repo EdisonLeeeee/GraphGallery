@@ -7,7 +7,7 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 from graphgallery.nn.layers import GraphConvAttribute, Gather
 from graphgallery.nn.models import GCN
-from graphgallery.utils.shape import EqualVarLength
+from graphgallery.utils.decorators import EqualVarLength
 
 
 class GCNA(GCN):

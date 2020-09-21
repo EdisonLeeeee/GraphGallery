@@ -9,7 +9,7 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy
 from graphgallery.nn.layers import MeanAggregator, GCNAggregator
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import SAGEMiniBatchSequence
-from graphgallery.utils.shape import EqualVarLength
+from graphgallery.utils.decorators import EqualVarLength
 from graphgallery import transformers as T
 from graphgallery import astensors, asintarr
 

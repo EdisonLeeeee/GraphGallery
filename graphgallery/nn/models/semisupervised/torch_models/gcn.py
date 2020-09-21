@@ -8,32 +8,35 @@ from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.nn.models import TorchKerasModel
 from graphgallery.nn.layers import GraphConvolution
 from graphgallery.sequence import FullBatchNodeSequence
-from graphgallery.utils.shape import EqualVarLength
+from graphgallery.utils.decorators import EqualVarLength
 from graphgallery import transformers as T
 from graphgallery import astensors, asintarr
 
 
 class _Model(TorchKerasModel):
-    
+
     def __init__(self, input_channels, hiddens, output_channels, use_bias=False):
         super().__init__()
         self.gc1 = GraphConvolution(input_channels, hiddens, use_bias=use_bias)
-        self.gc2 = GraphConvolution(hiddens, output_channels, use_bias=use_bias)
-        
-        self.optimizer = optim.Adam(self.parameters(), lr=0.01, weight_decay=5e-4)
+        self.gc2 = GraphConvolution(
+            hiddens, output_channels, use_bias=use_bias)
+
+        self.optimizer = optim.Adam(
+            self.parameters(), lr=0.01, weight_decay=5e-4)
         self.loss_fn = torch.nn.CrossEntropyLoss()
-        
+
     def forward(self, inputs):
-        x, adj, idx = inputs        
+        x, adj, idx = inputs
         x = F.relu(self.gc1([x, adj]))
         x = F.dropout(x, 0.5, training=self.training)
         x = self.gc2([x, adj])
         return x[idx]
-    
+
     def reset_parameters(self):
         self.gc1.reset_parameters()
-        self.gc2.reset_parameters()    
-        
+        self.gc2.reset_parameters()
+
+
 class GCN(SemiSupervisedModel):
     """
         Implementation of Graph Convolutional Networks (GCN). 
@@ -83,7 +86,7 @@ class GCN(SemiSupervisedModel):
             Specified name for the model. (default: :str: `class.__name__`)
         kwargs: other customed keyword Parameters.
         """
-        
+
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
         self.adj_transformer = T.get(adj_transformer)
@@ -101,8 +104,9 @@ class GCN(SemiSupervisedModel):
     @EqualVarLength()
     def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5],
               l2_norms=[5e-4], lr=0.01, use_bias=False):
-        
-        self.model = _Model(self.graph.n_attrs, 16, self.graph.n_classes, use_bias=use_bias).to(self.device)
+
+        self.model = _Model(
+            self.graph.n_attrs, 16, self.graph.n_classes, use_bias=use_bias).to(self.device)
 
     def train_sequence(self, index):
         index = asintarr(index)

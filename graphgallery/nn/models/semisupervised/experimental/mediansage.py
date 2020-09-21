@@ -8,7 +8,7 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 from graphgallery.nn.layers import MedianAggregator, MedianGCNAggregator
 from graphgallery.nn.models import GraphSAGE
-from graphgallery.utils.shape import EqualVarLength
+from graphgallery.utils.decorators import EqualVarLength
 
 
 class MedianSAGE(GraphSAGE):

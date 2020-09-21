@@ -3,7 +3,7 @@ import scipy.sparse as sp
 from graphgallery.transformers import Transformer
 from graphgallery.utils.type_check import is_list_like
 from graphgallery.utils.shape import repeat
-
+from graphgallery.utils.decorators import MultiInputs
 
 class NormalizeAdj(Transformer):
     """Normalize adjacency matrix."""
@@ -19,7 +19,7 @@ class NormalizeAdj(Transformer):
         Parameters
         ----------
             rate: Single or a list of float scale, optional.
-                the normalize rate for `adj_matrics`.
+                the normalize rate for `adj_matrix`.
             selfloop: float scalar, optional.
                 weight of self loops for the adjacency matrix.
         """
@@ -27,11 +27,11 @@ class NormalizeAdj(Transformer):
         self.rate = rate
         self.selfloop = selfloop
 
-    def __call__(self, *adj_matrics):
+    def __call__(self, *adj_matrix):
         """
         Parameters
         ----------
-            adj_matrics: Scipy matrix or Numpy array or a list of them 
+            adj_matrix: Scipy matrix or Numpy array or a list of them 
                 Single or a list of Scipy sparse matrices or Numpy arrays.
 
         Returns
@@ -42,27 +42,28 @@ class NormalizeAdj(Transformer):
         ----------
             graphgallery.transformers.normalize_adj
         """
-        return normalize_adj(*adj_matrics, rate=self.rate,
+        return normalize_adj(*adj_matrix, rate=self.rate,
                              selfloop=self.selfloop)
 
     def __repr__(self):
         return f"{self.__class__.__name__}(normalize rate={self.rate}, self-loop weight={self.selfloop})"
 
 
-def normalize_adj(*adj_matrics, rate=-0.5, selfloop=1.0):
+@MultiInputs()
+def normalize_adj(adj_matrix, rate=-0.5, selfloop=1.0):
     """Normalize adjacency matrix.
 
     >>> normalize_adj(adj, rate=-0.5) # return a normalized adjacency matrix
 
     # return a list of normalized adjacency matrices
-    >>> normalize_adj(adj, adj, rate=[-0.5, 1.0]) 
+    >>> normalize_adj(adj, rate=[-0.5, 1.0]) 
 
     Parameters
     ----------
-        adj_matrics: Scipy matrix or Numpy array or a list of them 
+        adj_matrix: Scipy matrix or Numpy array or a list of them 
             Single or a list of Scipy sparse matrices or Numpy arrays.
         rate: Single or a list of float scale, optional.
-            the normalize rate for `adj_matrics`.
+            the normalize rate for `adj_matrix`.
         selfloop: float scalar, optional.
             weight of self loops for the adjacency matrix.
 
@@ -75,7 +76,7 @@ def normalize_adj(*adj_matrics, rate=-0.5, selfloop=1.0):
         graphgallery.transformers.NormalizeAdj          
 
     """
-    def normalize(adj, r):
+    def _normalize_adj(adj, r):
 
         # here a new copy of adj is created
         adj = adj + selfloop * sp.eye(adj.shape[0])
@@ -97,10 +98,8 @@ def normalize_adj(*adj_matrics, rate=-0.5, selfloop=1.0):
 
         return adj
 
-    # TODO: check the input adj and rate
-    size = len(adj_matrics)
-    if size == 1:
-        return normalize(adj_matrics[0], rate)
+    if is_list_like(rate):
+        return tuple(_normalize_adj(adj_matrix, r) for r in rate)
     else:
-        rates = repeat(rate, size)
-        return tuple(normalize(adj, r) for adj, r in zip(adj_matrics, rates))
+        return _normalize_adj(adj_matrix, rate)
+        

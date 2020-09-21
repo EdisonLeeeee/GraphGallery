@@ -10,7 +10,7 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy
 from graphgallery.nn.layers import GraphConvolution, Mask
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import ClusterMiniBatchSequence
-from graphgallery.utils.shape import EqualVarLength
+from graphgallery.utils.decorators import EqualVarLength
 from graphgallery import transformers as T
 from graphgallery import astensors, asintarr
 
@@ -76,7 +76,7 @@ class ClusterGCN(SemiSupervisedModel):
 
         if not n_clusters:
             n_clusters = self.graph.n_classes
-            
+
         self.n_clusters = n_clusters
         self.adj_transformer = T.get(adj_transformer)
         self.attr_transformer = T.get(attr_transformer)
@@ -116,7 +116,7 @@ class ClusterGCN(SemiSupervisedModel):
             h = Dropout(rate=dropout)(h)
             h = GraphConvolution(self.graph.n_classes,
                                  use_bias=use_bias)([h, adj])
-            h =  Mask()([h, mask])
+            h = Mask()([h, mask])
 
             model = Model(inputs=[x, adj, mask], outputs=h)
             model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),

@@ -8,7 +8,7 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy
 from graphgallery.nn.layers import GraphConvolution
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FastGCNBatchSequence
-from graphgallery.utils.shape import EqualVarLength
+from graphgallery.utils.decorators import EqualVarLength
 from graphgallery import transformers as T
 from graphgallery import astensor, asintarr
 
