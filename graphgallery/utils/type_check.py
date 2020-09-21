@@ -16,7 +16,7 @@ def is_list_like(x):
     Returns:
         `True` iff `x` is a list like sequence.
     """
-    return isinstance(x, collections_abc.Sequence)
+    return isinstance(x, (list, tuple))
 
 
 def is_tf_sparse_tensor(x):
