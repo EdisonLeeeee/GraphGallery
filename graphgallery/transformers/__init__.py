@@ -17,5 +17,5 @@ from graphgallery.transformers.adj_transformer.svd import SVD, svd
 from graphgallery.transformers.attr_transformer.normalize_attr import NormalizeAttr, normalize_attr
 
 # other transformer
-from graphgallery.transformers.get_transformer import get
+from graphgallery.transformers.get_transformer import get, Pipeline
 from graphgallery.transformers.transform import indices2mask, sparse_adj_to_edges, edges_to_sparse_adj, asintarr
