@@ -18,8 +18,15 @@ from graphgallery.transformers.adj_transformer.adj2edges import sparse_adj_to_sp
 from graphgallery.transformers.attr_transformer.normalize_attr import NormalizeAttr, normalize_attr
 
 # edge_transformer
-from graphgallery.transformers.edge_transformer.edges2adj import sparse_edges_to_sparse_adj, SparseEdgesToSparseAdj
+from graphgallery.transformers.edge_transformer.edges2adj import (sparse_edges_to_sparse_adj,
+                                                                  SparseEdgesToSparseAdj)
 
+# tensor transformer
+from graphgallery.transformers.tensor_transformer.astensor import (astensor, astensors,
+                                                                   sparse_tensor_to_sparse_adj,
+                                                                   sparse_edges_to_sparse_tensor,
+                                                                   normalize_adj_tensor,
+                                                                   normalize_edge_tensor)
 
 # other transformer
 from graphgallery.transformers.get_transformer import get, Pipeline

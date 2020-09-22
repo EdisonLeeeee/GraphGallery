@@ -1,6 +1,3 @@
-from sklearn.preprocessing import normalize
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score
 import os
 import random
 import datetime
@@ -16,13 +13,11 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 
 from graphgallery.nn.models import BaseModel
-from graphgallery import asintarr
+from graphgallery.transformers import asintarr
 
 
 class UnsupervisedModel(BaseModel):
-    """
-        Base model for unsupervised learning.
-
+    """Base model for unsupervised learning.
 
     """
 
@@ -42,13 +37,15 @@ class UnsupervisedModel(BaseModel):
             multiple calls. (default :obj: `None`, i.e., using random seed)
         name: string. optional
             Specified name for the model. (default: :str: `class.__name__`)        
-            
+
         """
-        super().__init__( *graph, device=device, seed=seed, name=name, **kwargs)
+        super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
         self.embeddings = None
-        self.classifier = LogisticRegression(
-            solver='lbfgs', max_iter=1000, multi_class='auto', random_state=seed)
+        self.classifier = LogisticRegression(solver='lbfgs',
+                                             max_iter=1000,
+                                             multi_class='auto',
+                                             random_state=seed)
 
     def build(self):
         raise NotImplementedError
@@ -78,6 +75,3 @@ class UnsupervisedModel(BaseModel):
     @staticmethod
     def normalize_embedding(embeddings):
         return normalize(embeddings)
-
-    def __repr__(self):
-        return 'UnSupervised model: ' + self.name + ' in ' + self.device

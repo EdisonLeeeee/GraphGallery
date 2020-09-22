@@ -12,7 +12,6 @@ from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import ClusterMiniBatchSequence
 from graphgallery.utils.decorators import EqualVarLength
 from graphgallery import transformers as T
-from graphgallery import astensors, asintarr
 
 
 class ClusterGCN(SemiSupervisedModel):
@@ -93,7 +92,7 @@ class ClusterGCN(SemiSupervisedModel):
         batch_adj = self.adj_transformer(*batch_adj)
 
         with tf.device(self.device):
-            (self.batch_adj, self.batch_x) = astensors(batch_adj, batch_x)
+            (self.batch_adj, self.batch_x) = T.astensors(batch_adj, batch_x)
 
     @EqualVarLength()
     def build(self, hiddens=[32], activations=['relu'], dropouts=[0.5],
@@ -126,7 +125,7 @@ class ClusterGCN(SemiSupervisedModel):
             self.model = model
 
     def train_sequence(self, index):
-        index = asintarr(index)
+        index = T.asintarr(index)
         mask = T.indices2mask(index, self.graph.n_nodes)
         labels = self.graph.labels
 
@@ -150,7 +149,7 @@ class ClusterGCN(SemiSupervisedModel):
         return sequence
 
     def predict(self, index):
-        index = asintarr(index)
+        index = T.asintarr(index)
         mask = T.indices2mask(index, self.graph.n_nodes)
 
         orders_dict = {idx: order for order, idx in enumerate(index)}
@@ -171,7 +170,7 @@ class ClusterGCN(SemiSupervisedModel):
 
         logit = np.zeros((index.size, self.graph.n_classes), dtype=self.floatx)
         with tf.device(self.device):
-            batch_data = astensors(batch_data)
+            batch_data = T.astensors(batch_data)
             for order, inputs in zip(orders, batch_data):
                 output = self.model.predict_on_batch(inputs)
                 logit[order] = output

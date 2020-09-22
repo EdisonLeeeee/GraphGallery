@@ -10,7 +10,6 @@ from graphgallery.nn.layers import GraphConvolution
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.decorators import EqualVarLength
 from graphgallery import transformers as T
-from graphgallery import astensors, asintarr
 
 
 class _Model(TorchKerasModel):
@@ -98,7 +97,7 @@ class GCN(SemiSupervisedModel):
         adj_matrix = self.adj_transformer(graph.adj_matrix)
         attr_matrix = self.attr_transformer(graph.attr_matrix)
 
-        self.feature_inputs, self.structure_inputs = astensors(
+        self.feature_inputs, self.structure_inputs = T.astensors(
             attr_matrix, adj_matrix)
 
     @EqualVarLength()
@@ -109,7 +108,7 @@ class GCN(SemiSupervisedModel):
             self.graph.n_attrs, 16, self.graph.n_classes, use_bias=use_bias).to(self.device)
 
     def train_sequence(self, index):
-        index = asintarr(index)
+        index = T.asintarr(index)
         labels = self.graph.labels[index]
         sequence = FullBatchNodeSequence(
             [self.feature_inputs, self.structure_inputs, index], labels, device=self.device)

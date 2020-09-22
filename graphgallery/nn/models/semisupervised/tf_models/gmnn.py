@@ -12,7 +12,6 @@ from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.utils.decorators import EqualVarLength
 from graphgallery import transformers as T
-from graphgallery import astensors, asintarr
 
 
 class GMNN(SemiSupervisedModel):
@@ -78,7 +77,7 @@ class GMNN(SemiSupervisedModel):
         attr_matrix = self.attr_transformer(graph.attr_matrix)
 
         with tf.device(self.device):
-            self.feature_inputs, self.structure_inputs = astensors(
+            self.feature_inputs, self.structure_inputs = T.astensors(
                 attr_matrix, adj_matrix)
 
     @EqualVarLength()
@@ -159,7 +158,7 @@ class GMNN(SemiSupervisedModel):
 
         # then train model_q again
         label_predict = self.model.predict_on_batch(
-            astensors(label_predict, self.structure_inputs, index_all))
+            T.astensors(label_predict, self.structure_inputs, index_all))
 
         label_predict = softmax(label_predict)
         if tf.is_tensor(label_predict):
@@ -183,7 +182,7 @@ class GMNN(SemiSupervisedModel):
         return histories
 
     def train_sequence(self, index):
-        index = asintarr(index)
+        index = T.asintarr(index)
         # if the graph is changed?
         labels = self.labels_onehot[index]
         with tf.device(self.device):

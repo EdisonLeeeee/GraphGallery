@@ -12,7 +12,6 @@ from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.decorators import EqualVarLength
 from graphgallery import transformers as T
-from graphgallery import astensors, asintarr
 
 
 class LGCN(SemiSupervisedModel):
@@ -122,7 +121,7 @@ class LGCN(SemiSupervisedModel):
             self.model = model
 
     def train_sequence(self, index, batch_size=np.inf):
-        index = asintarr(index)
+        index = T.asintarr(index)
         mask = T.indices2mask(index, self.graph.n_nodes)
         index = get_indice_graph(self.structure_inputs, index, batch_size)
         while index.size < self.k:

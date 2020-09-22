@@ -424,7 +424,7 @@ def save_sparse_graph_to_npz(filepath, sparse_graph):
         Graph in sparse matrix format.
     """
     adj_matrix, attr_matrix, labels = sparse_graph.raw()
-    
+
     data_dict = {
         'adj_data': adj_matrix.data,
         'adj_indices': adj_matrix.indices,

@@ -4,8 +4,9 @@ import tensorflow as tf
 import scipy.sparse as sp
 
 from graphgallery import floatx, intx, backend
-from graphgallery import is_list_like, is_interger_scalar, is_tensor_or_variable
-
+from graphgallery import (is_list_like,
+                          is_interger_scalar,
+                          is_tensor_or_variable)
 
 
 def asintarr(x, dtype: str = None):

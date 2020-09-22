@@ -8,7 +8,7 @@ from tensorflow.keras import regularizers
 from graphgallery.nn.layers import GraphConvolution
 from graphgallery.nn.models import FastGCN
 from graphgallery.sequence import FullBatchNodeSequence
-from graphgallery import asintarr
+from graphgallery.transformers import asintarr
 
 
 class GCN_MIX(FastGCN):

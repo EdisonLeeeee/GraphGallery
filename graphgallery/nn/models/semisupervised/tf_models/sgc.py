@@ -10,7 +10,6 @@ from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.decorators import EqualVarLength
 from graphgallery import transformers as T
-from graphgallery import astensors, asintarr
 
 
 class SGC(SemiSupervisedModel):
@@ -76,7 +75,7 @@ class SGC(SemiSupervisedModel):
         attr_matrix = self.attr_transformer(graph.attr_matrix)
 
         with tf.device(self.device):
-            self.feature_inputs, self.structure_inputs = astensors(
+            self.feature_inputs, self.structure_inputs = T.astensors(
                 attr_matrix, adj_matrix)
 
         # To avoid this tensorflow error in large dataset:
@@ -87,7 +86,7 @@ class SGC(SemiSupervisedModel):
             device = self.device
 
         with tf.device(device):
-            feature_inputs, structure_inputs = astensors(
+            feature_inputs, structure_inputs = T.astensors(
                 attr_matrix, adj_matrix)
             feature_inputs = SGConvolution(order=self.order)(
                 [feature_inputs, structure_inputs])
@@ -113,7 +112,7 @@ class SGC(SemiSupervisedModel):
             self.model = model
 
     def train_sequence(self, index):
-        index = asintarr(index)
+        index = T.asintarr(index)
         labels = self.graph.labels[index]
         with tf.device(self.device):
             feature_inputs = tf.gather(self.feature_inputs, index)

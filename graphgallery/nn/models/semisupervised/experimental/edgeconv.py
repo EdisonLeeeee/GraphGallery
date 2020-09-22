@@ -11,7 +11,6 @@ from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.decorators import EqualVarLength
 from graphgallery import transformers as T
-from graphgallery import astensors, asintarr
 
 
 class EdgeGCN(SemiSupervisedModel):
@@ -83,7 +82,7 @@ class EdgeGCN(SemiSupervisedModel):
         edge_index, edge_weight = T.sparse_adj_to_sparse_edges(adj_matrix)
 
         with tf.device(self.device):
-            self.feature_inputs, self.structure_inputs = astensors(
+            self.feature_inputs, self.structure_inputs = T.astensors(
                 attr_matrix, (edge_index, edge_weight))
 
     @EqualVarLength()
@@ -119,7 +118,7 @@ class EdgeGCN(SemiSupervisedModel):
             self.model = model
 
     def train_sequence(self, index):
-        index = asintarr(index)
+        index = T.asintarr(index)
         labels = self.graph.labels[index]
         with tf.device(self.device):
             sequence = FullBatchNodeSequence(

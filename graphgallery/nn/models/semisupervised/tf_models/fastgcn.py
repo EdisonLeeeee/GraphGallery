@@ -10,7 +10,6 @@ from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FastGCNBatchSequence
 from graphgallery.utils.decorators import EqualVarLength
 from graphgallery import transformers as T
-from graphgallery import astensor, asintarr
 
 
 class FastGCN(SemiSupervisedModel):
@@ -82,7 +81,7 @@ class FastGCN(SemiSupervisedModel):
         attr_matrix = adj_matrix @ attr_matrix
 
         with tf.device(self.device):
-            self.feature_inputs, self.structure_inputs = astensor(
+            self.feature_inputs, self.structure_inputs = T.astensor(
                 attr_matrix), adj_matrix
 
     @EqualVarLength()
@@ -111,7 +110,7 @@ class FastGCN(SemiSupervisedModel):
             self.model = model
 
     def train_sequence(self, index):
-        index = asintarr(index)
+        index = T.asintarr(index)
         labels = self.graph.labels[index]
         adj_matrix = self.graph.adj_matrix[index][:, index]
         adj_matrix = self.adj_transformer(adj_matrix)
@@ -124,7 +123,7 @@ class FastGCN(SemiSupervisedModel):
         return sequence
 
     def test_sequence(self, index):
-        index = asintarr(index)
+        index = T.asintarr(index)
         labels = self.graph.labels[index]
         structure_inputs = self.structure_inputs[index]
 

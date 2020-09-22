@@ -2,7 +2,7 @@
 import numpy as np
 import tensorflow as tf
 
-from graphgallery import astensor, astensors
+from graphgallery import transformers as T
 from graphgallery.sequence.base_sequence import Sequence
 
 
@@ -30,7 +30,7 @@ class SBVATSampleSequence(Sequence):
         return 1
 
     def __getitem__(self, index):
-        return astensors(*self.x, self.adv_mask), astensor(self.y)
+        return T.astensors(*self.x, self.adv_mask), T.astensor(self.y)
 
     def on_epoch_end(self):
         if self.resample:

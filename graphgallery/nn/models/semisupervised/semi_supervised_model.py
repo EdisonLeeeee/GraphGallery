@@ -18,7 +18,7 @@ from graphgallery.utils.history import History
 from graphgallery.utils.tqdm import tqdm
 from graphgallery.data.io import makedirs_from_path
 from graphgallery.data import Basegraph
-from graphgallery import asintarr
+from graphgallery.transformers import asintarr
 
 # Ignora warnings:
 #     UserWarning: Converting sparse IndexedSlices to a dense Tensor of unknown shape. This may consume a large amount of memory.

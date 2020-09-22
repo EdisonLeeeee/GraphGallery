@@ -10,7 +10,6 @@ from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.decorators import EqualVarLength
 from graphgallery import transformers as T
-from graphgallery import astensors, asintarr
 
 
 class DAGNN(SemiSupervisedModel):
@@ -75,7 +74,7 @@ class DAGNN(SemiSupervisedModel):
         attr_matrix = self.attr_transformer(graph.attr_matrix)
 
         with tf.device(self.device):
-            self.feature_inputs, self.structure_inputs = astensors(
+            self.feature_inputs, self.structure_inputs = T.astensors(
                 attr_matrix, adj_matrix)
 
     @EqualVarLength()
@@ -112,7 +111,7 @@ class DAGNN(SemiSupervisedModel):
             self.model = model
 
     def train_sequence(self, index):
-        index = asintarr(index)
+        index = T.asintarr(index)
         labels = self.graph.labels[index]
         with tf.device(self.device):
             sequence = FullBatchNodeSequence(

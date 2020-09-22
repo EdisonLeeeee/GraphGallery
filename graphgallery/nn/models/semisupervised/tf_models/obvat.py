@@ -12,7 +12,6 @@ from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.bvat_utils import kl_divergence_with_logit, entropy_y_x
 from graphgallery.utils.decorators import EqualVarLength
 from graphgallery import transformers as T
-from graphgallery import astensors, asintarr
 
 
 class OBVAT(SemiSupervisedModel):
@@ -75,7 +74,7 @@ class OBVAT(SemiSupervisedModel):
         attr_matrix = self.attr_transformer(graph.attr_matrix)
 
         with tf.device(self.device):
-            self.feature_inputs, self.structure_inputs = astensors(
+            self.feature_inputs, self.structure_inputs = T.astensors(
                 attr_matrix, adj_matrix)
 
     @EqualVarLength()
@@ -157,7 +156,7 @@ class OBVAT(SemiSupervisedModel):
         return super().train_step(sequence)
 
     def train_sequence(self, index):
-        index = asintarr(index)
+        index = T.asintarr(index)
         labels = self.graph.labels[index]
         with tf.device(self.device):
             sequence = FullBatchNodeSequence(

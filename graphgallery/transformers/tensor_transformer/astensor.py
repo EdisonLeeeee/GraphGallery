@@ -2,9 +2,14 @@ import numpy as np
 import tensorflow as tf
 import scipy.sparse as sp
 
-from graphgallery.tensor import tf_tensor, th_tensor
 from graphgallery import backend
-from graphgallery import gallery_export
+from graphgallery.transformers.tensor_transformer import tf_tensor, th_tensor
+
+__all__ = ["sparse_adj_to_sparse_tensor",
+           "sparse_tensor_to_sparse_adj",
+           "sparse_edges_to_sparse_tensor",
+           "astensor", "astensors",
+           "normalize_adj_tensor", "add_selfloop_edge", "normalize_edge_tensor"]
 
 
 def sparse_adj_to_sparse_tensor(x):
@@ -25,7 +30,22 @@ def sparse_adj_to_sparse_tensor(x):
         return th_tensor.sparse_adj_to_sparse_tensor(x)
 
 
-@gallery_export('graphgallery.astftensor')
+def sparse_tensor_to_sparse_adj(x):
+    """Converts a SparseTensor to a Scipy sparse matrix (CSR matrix)."""
+    if backend().kind == "T":
+        return tf_tensor.sparse_tensor_to_sparse_adj(x)
+    else:
+        return th_tensor.sparse_tensor_to_sparse_adj(x)
+
+
+def sparse_edges_to_sparse_tensor(edge_index: np.ndarray, edge_weight: np.ndarray = None, shape: tuple = None):
+
+    if backend().kind == "T":
+        return tf_tensor.sparse_edges_to_sparse_tensor(edge_index, edge_weight, shape)
+    else:
+        return th_tensor.sparse_edges_to_sparse_tensor(edge_index, edge_weight, shape)
+
+
 def astensor(x, dtype=None, device=None):
     """Convert input matrices to Tensor or SparseTensor.
 
@@ -42,7 +62,7 @@ def astensor(x, dtype=None, device=None):
         Default: if ``None``, uses the current device for the default tensor type
         (see :func:`torch.set_default_tensor_type`). :attr:`device` will be the CPU
         for CPU tensor types and the current CUDA device for CUDA tensor types.
-        
+
     Returns:
     ----------      
         Tensor or SparseTensor with dtype:       
@@ -52,7 +72,7 @@ def astensor(x, dtype=None, device=None):
     """
     if backend().kind == "T":
         if device is not None:
-            raise RuntimeError(f"The argument `device` only work for `PyTorch backend`, but currently is {backend()}.")        
+            raise RuntimeError(f"The argument `device` only work for `PyTorch backend`, but currently is {backend()}.")
         return tf_tensor.astensor(x, dtype=dtype)
     else:
         return th_tensor.astensor(x, dtype=dtype, device=device)
@@ -65,16 +85,16 @@ def astensors(*xs, device=None):
     ----------
     xs: tf.Tensor, tf.Variable, Scipy sparse matrix, 
         Numpy array-like, or a list of them, etc.
-        
+
     device (:class:`torch.device`, optional): the desired device of returned tensor.
         Default: if ``None``, uses the current device for the default tensor type
         (see :func:`torch.set_default_tensor_type`). :attr:`device` will be the CPU
         for CPU tensor types and the current CUDA device for CUDA tensor types.
-     
+
     NOTE:
     ----------    
     The argument `device` only work for `PyTorch backend`.
-    
+
     Returns:
     ----------      
         Tensor(s) or SparseTensor(s) with dtype:       
@@ -109,19 +129,3 @@ def normalize_edge_tensor(edge_index, edge_weight=None, n_nodes=None, fill_weigh
         return tf_tensor.normalize_adj_tensor(edge_index, edge_weight=edge_weight, n_nodes=n_nodes, fill_weight=fill_weight, rate=rate)
     else:
         return th_tensor.normalize_adj_tensor(edge_index, edge_weight=edge_weight, n_nodes=n_nodes, fill_weight=fill_weight, rate=rate)
-
-
-def sparse_tensor_to_sparse_adj(x):
-    """Converts a SparseTensor to a Scipy sparse matrix (CSR matrix)."""
-    if backend().kind == "T":
-        return tf_tensor.sparse_tensor_to_sparse_adj(x)
-    else:
-        return th_tensor.sparse_tensor_to_sparse_adj(x)
-    
-    
-def sparse_edges_to_sparse_tensor(edge_index: np.ndarray, edge_weight: np.ndarray=None, shape: tuple=None):
-    
-    if backend().kind == "T":
-        return tf_tensor.sparse_edges_to_sparse_tensor(edge_index, edge_weight, shape)
-    else:
-        return th_tensor.sparse_edges_to_sparse_tensor(edge_index, edge_weight, shape)

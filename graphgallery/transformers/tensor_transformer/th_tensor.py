@@ -10,17 +10,17 @@ from graphgallery.utils.type_check import (is_list_like,
                                            is_scalar_like)
 
 
-# from graphgallery import gallery_export
 from graphgallery.utils.decorators import MultiInputs
 
-_DTYPE_TO_CLASS = {'float16': "HalfTensor", 
+_DTYPE_TO_CLASS = {'float16': "HalfTensor",
                    'float32': "FloatTensor",
                    'float64': "DoubleTensor",
                    'int8': "CharTensor",
-                   'int16': "ShortTensor", 
-                   'int32': "IntTensor", 
-                   'int64': "LongTensor", 
+                   'int16': "ShortTensor",
+                   'int32': "IntTensor",
+                   'int64': "LongTensor",
                    'bool': "BoolTensor"}
+
 
 def dtype_to_tensor_class(dtype):
     tensor_class = _DTYPE_TO_CLASS.get(str(dtype), None)
@@ -36,11 +36,11 @@ def sparse_adj_to_sparse_tensor(x, dtype=None):
     ----------
     x: scipy.sparse.sparse
         Matrix in Scipy sparse format.
-        
+
     dtype: The type of sparse matrix `x`, if not specified,
         it will automatically using appropriate data type.
         See `graphgallery.infer_type`.
-        
+
     Returns
     -------
     S: torch.sparse.FloatTensor
@@ -51,14 +51,15 @@ def sparse_adj_to_sparse_tensor(x, dtype=None):
         dtype = str(dtype).split('.')[-1]
     elif dtype is None:
         dtype = infer_type(x)
-        
+
     x = x.tocoo(copy=False)
     sparserow = torch.LongTensor(x.row)
     sparsecol = torch.LongTensor(x.col)
     sparsestack = torch.stack((sparserow, sparsecol), 0)
-    # TODO dtype
     sparsedata = torch.tensor(x.data, dtype=getattr(torch, dtype))
-    return getattr(torch.sparse, dtype_to_tensor_class(dtype))(sparsestack, sparsedata, torch.Size(x.shape))
+    return getattr(torch.sparse, dtype_to_tensor_class(dtype))(sparsestack,
+                                                               sparsedata,
+                                                               torch.Size(x.shape))
 
 
 def infer_type(x):
@@ -77,15 +78,13 @@ def infer_type(x):
         3. `'bool'` if `x` is bool.
 
     """
-
     # For tensor or variable
     if is_tensor_or_variable(x):
-
         if x.dtype.is_floating_point:
             return floatx()
         elif x.dtype == torch.bool:
             return 'bool'
-        elif 'int' or str(x.dtype):
+        elif 'int' in str(x.dtype):
             return intx()
         else:
             raise RuntimeError(f'Invalid input of `{type(x)}`')
@@ -105,8 +104,6 @@ def infer_type(x):
         raise RuntimeError(f'Invalid input of `{type(x)}`')
 
 
-    
-# @gallery_export("graphgallery.asthtensor")
 def astensor(x, dtype=None, device=None):
     """Convert input matrices to Tensor or SparseTensor.
 
@@ -118,7 +115,7 @@ def astensor(x, dtype=None, device=None):
     dtype: The type of Tensor `x`, if not specified,
         it will automatically using appropriate data type.
         See `graphgallery.infer_type`.
-        
+
     device (:class:`torch.device`, optional): the desired device of returned tensor.
         Default: if ``None``, uses the current device for the default tensor type
         (see :func:`torch.set_default_tensor_type`). :attr:`device` will be the CPU
@@ -133,7 +130,7 @@ def astensor(x, dtype=None, device=None):
     """
     if x is None:
         return x
-    
+
     if dtype is None:
         dtype = infer_type(x)
     elif isinstance(dtype, str):
@@ -144,20 +141,18 @@ def astensor(x, dtype=None, device=None):
     else:
         raise TypeError(f"argument 'dtype' must be torch.dtype or str, not {type(dtype).__name__}.")
 
-    
     if is_tensor_or_variable(x):
         tensor = x.to(getattr(torch, dtype))
     elif sp.isspmatrix(x):
         tensor = sparse_adj_to_sparse_tensor(x, dtype=dtype)
     elif isinstance(x, (np.ndarray, np.matrix)) or is_list_like(x) or is_scalar_like(x):
-        tensor = torch.tensor(x, dtype=getattr(torch, dtype))
+        tensor = torch.tensor(x, dtype=getattr(torch, dtype), device=device)
     else:
         raise TypeError(
             f'Invalid type of inputs data. Allowed data type `(Tensor, SparseTensor, Numpy array, Scipy sparse tensor, None)`, but got {type(x)}.')
 
-    if device is not None and tensor.device!=torch.device(device):
-        tensor = tensor.to(device)
-    return tensor
+    return tensor.to(device)
+
 
 astensors = MultiInputs(type_check=False)(astensor)
 astensors.__doc__ = """Convert input matrices to Tensor(s) or SparseTensor(s).
