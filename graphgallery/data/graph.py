@@ -78,12 +78,12 @@ class Graph(Basegraph):
         adj_matrix, attr_matrix, labels = _check_and_convert(
             adj_matrix, attr_matrix, labels, copy=copy)
 
-        if node_names is not None:
+        if node_names is not None and adj_matrix is not None:
             if len(node_names) != adj_matrix.shape[0]:
                 raise ValueError(
                     "Dimensions of the adjacency matrix and the node names don't agree!")
 
-        if attr_names is not None:
+        if attr_names is not None and attr_matrix is not None:
             if len(attr_names) != attr_matrix.shape[1]:
                 raise ValueError(
                     "Dimensions of the attribute matrix and the attribute names don't agree!")
@@ -232,7 +232,7 @@ class Graph(Basegraph):
     @property
     def labels_onehot(self):
         """Get the one-hot like labels of nodes."""
-        labels = self._labels
+        labels = self.labels
         if labels is not None:
             return np.eye(self.n_classes)[labels].astype(labels.dtype)
 

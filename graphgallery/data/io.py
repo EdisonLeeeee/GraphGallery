@@ -41,4 +41,4 @@ def makedirs_from_path(path, verbose=True):
         makedirs(file_dir)
         if verbose:
             logging.log(logging.WARNING,
-                        f"Make Directory in {path}.")
+                        f"Creating a folder in {path}.")
