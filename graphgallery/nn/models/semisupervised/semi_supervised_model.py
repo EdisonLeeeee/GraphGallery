@@ -13,6 +13,7 @@ from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from tensorflow.keras.callbacks import History as tf_History
 
 from graphgallery.nn.models import BaseModel
+from graphgallery.nn.models.base_model import parse_graph_inputs
 from graphgallery.nn.functions import softmax
 from graphgallery.utils.history import History
 from graphgallery.utils.tqdm import tqdm
@@ -23,13 +24,12 @@ from graphgallery.transformers import asintarr
 # Ignora warnings:
 #     UserWarning: Converting sparse IndexedSlices to a dense Tensor of unknown shape. This may consume a large amount of memory.
 #     This is caused by `tf.gather` and it will be solved in future tensorflow version.
-
 warnings.filterwarnings(
     'ignore', '.*Converting sparse IndexedSlices to a dense Tensor of unknown shape.*')
 
 
 class SemiSupervisedModel(BaseModel):
-    def process(self, graph=None, ** kwargs):
+    def process(self, *graph, **kwargs):
         """pre-process for the input graph, including manipulations
         on adjacency matrix and attribute matrix, and finally convert
         them into tensor (optional).
@@ -46,11 +46,8 @@ class SemiSupervisedModel(BaseModel):
         kwargs: other customed keyword Parameters.
 
         """
-
+        graph = parse_graph_inputs(*graph)
         if graph is not None:
-            if not isinstance(graph, Basegraph):
-                raise ValueError(
-                    "The input must be a instance of `Graph` of `MultiGraph`.")
             self.graph = graph
         return self.process_step()
 

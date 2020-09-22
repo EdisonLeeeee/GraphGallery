@@ -27,6 +27,57 @@ def _check_cur_module(module, kind):
         raise RuntimeError(f"You are currently using models in '{cur_module}' but with backend '{backend()}'."
                            "Please use `set_backend()` to change the current backend.")
 
+def parse_graph_inputs(*graph):
+    # TODO: Maybe I could write it a little more elegantly here?
+    if len(graph) == 0:
+        graph = None
+    elif len(graph) == 1:
+        graph, = graph
+        if isinstance(graph, Basegraph):
+            ...
+        elif sp.isspmatrix(graph):
+            graph = Graph(graph)
+        elif isinstance(graph, dict):
+            return Graph(**graph)            
+        elif is_list_like(graph):
+            # TODO: multi graph
+            ...
+        else:
+            raise ValueError(f"Unrecognized inputs {graph}.")
+    else:
+        if sp.isspmatrix(graph[0]):
+            graph = Graph(*graph)
+        elif is_list_like(graph[0]):
+            # TODO: multi graph
+            ...
+        else:
+            raise ValueError(f"Unrecognized inputs {graph}.")
+            
+    return graph
+            
+
+
+def parse_device(device: str, kind: str) -> str:
+    # TODO:
+    # 1. device can be torch.device
+    # 2. check if gpu is available
+    _device = osp.split(device.lower())[1]
+    if not any((_device.startswith("cpu"),
+                _device.startswith("cuda"),
+                _device.startswith("gpu"))):
+        raise RuntimeError(
+            f" Expected one of cpu (CPU), cuda (CUDA), gpu (GPU) device type at start of device string: {device}")
+
+    if _device.startswith("cuda"):
+        if kind == "T":
+            _device = "GPU" + _device[4:]
+    elif _device.startswith("gpu"):
+        if kind == "P":
+            _device = "cuda" + _device[3:]
+
+    if kind == "P":
+        return torch.device(_device)
+    return _device
 
 class BaseModel(ABC):
     """Base model for semi-supervised learning and unsupervised learning."""
@@ -48,32 +99,11 @@ class BaseModel(ABC):
             kwargs: other customed keyword Parameters.
 
         """
-        # TODO: Maybe I could write it a little more elegantly here?
-        if len(graph) == 1:
-            graph, = graph
-            if isinstance(graph, Basegraph):
-                ...
-            elif sp.isspmatrix(graph):
-                graph = Graph(graph)
-            elif is_list_like(graph):
-                # TODO: multi graph
-                ...
-            else:
-                raise ValueError(f"Unrecognized inputs {graph}.")
-        else:
-            if sp.isspmatrix(graph[0]):
-                graph = Graph(*graph)
-            elif is_list_like(graph[0]):
-                # TODO: multi graph
-                ...
-            else:
-                raise ValueError(f"Unrecognized inputs {graph}.")
-
-        check = kwargs.pop('check', True)
+        graph = parse_graph_inputs(*graph)
         self.backend = backend()
         self.kind = self.backend.kind
         
-        if check:
+        if kwargs.pop('check', True):
             _check_cur_module(self.__module__, self.kind)
 
         _id = np.random.RandomState(None).randint(100)
@@ -82,9 +112,7 @@ class BaseModel(ABC):
 
         if seed is not None:
             np.random.seed(seed)
-            # TODO: torch set seed
             random.seed(seed)
-
             if self.kind == "P":
                 torch.manual_seed(seed)
                 torch.cuda.manual_seed(seed)
@@ -105,7 +133,7 @@ class BaseModel(ABC):
         self.backup = None
 
         self._model = None
-        self._custom_objects = None  # used for save/load model
+        self._custom_objects = None  # used for save/load TF model
 
         # log path
         # add random integer to avoid duplication
@@ -194,25 +222,3 @@ class BaseModel(ABC):
         return f"GraphGallery.nn.{self.name}(device={self.device}, backend={self.backend})"
 
 
-
-def parse_device(device: str, kind: str) -> str:
-    # TODO:
-    # 1. device can be torch.device
-    # 2. check if gpu is available
-    _device = osp.split(device.lower())[1]
-    if not any((_device.startswith("cpu"),
-                _device.startswith("cuda"),
-                _device.startswith("gpu"))):
-        raise RuntimeError(
-            f" Expected one of cpu (CPU), cuda (CUDA), gpu (GPU) device type at start of device string: {device}")
-
-    if _device.startswith("cuda"):
-        if kind == "T":
-            _device = "GPU" + _device[4:]
-    elif _device.startswith("gpu"):
-        if kind == "P":
-            _device = "cuda" + _device[3:]
-
-    if kind == "P":
-        return torch.device(_device)
-    return _device
