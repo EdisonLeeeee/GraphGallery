@@ -8,6 +8,7 @@ from graphgallery.utils.decorators import MultiInputs
 
 class ChebyBasis(Transformer):
     def __init__(self, order=2, rate=-0.5):
+        super().__init__()
         self.order = order
         self.rate = rate
 

@@ -10,6 +10,9 @@ from graphgallery.transformers import NeighborSampler
 from graphgallery.transformers import GraphPartition
 from graphgallery.transformers import GDC
 from graphgallery.transformers import SVD
+from graphgallery.transformers import SparseAdjToSparseEdges
+from graphgallery.transformers import SparseEdgesToSparseAdj
+
 
 
 _TRANSFORMER = {"normalize_adj": NormalizeAdj,
@@ -20,7 +23,9 @@ _TRANSFORMER = {"normalize_adj": NormalizeAdj,
                 "neighbor_sampler": NeighborSampler,
                 "graph_partition": GraphPartition,
                 "gdc": GDC,
-                "svd": SVD}
+                "svd": SVD,
+                "sparse_adj_to_sparse_edges": SparseAdjToSparseEdges,
+                "sparse_edges_to_sparse_adj": SparseEdgesToSparseAdj,}
 
 _ALLOWED = set(list(_TRANSFORMER.keys()))
 
@@ -31,7 +36,10 @@ class Pipeline(Transformer):
         
     def __call__(self, inputs):
         for transformer in self.transformers:
-            inputs = transformer(inputs)
+            if isinstance(inputs, tuple):
+                inputs = transformer(*inputs)
+            else:
+                inputs = transformer(inputs)
             
         return inputs
     

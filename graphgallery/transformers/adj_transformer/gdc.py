@@ -13,6 +13,7 @@ from graphgallery.utils.decorators import MultiInputs
 
 class GDC(Transformer):
     def __init__(self, alpha: float=0.3, t: float=None, eps: float=None, k: int=128, which: str='PPR'):
+        super().__init__()
         self.alpha = alpha
         self.t = t
         self.eps = eps

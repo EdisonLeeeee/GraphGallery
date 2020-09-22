@@ -12,10 +12,15 @@ from graphgallery.transformers.adj_transformer.chebyshef import ChebyBasis, cheb
 from graphgallery.transformers.adj_transformer.neighbor_sampler import NeighborSampler, neighbor_sampler
 from graphgallery.transformers.adj_transformer.gdc import GDC, gdc
 from graphgallery.transformers.adj_transformer.svd import SVD, svd
+from graphgallery.transformers.adj_transformer.adj2edges import sparse_adj_to_sparse_edges, SparseAdjToSparseEdges
 
 # attr_transformer
 from graphgallery.transformers.attr_transformer.normalize_attr import NormalizeAttr, normalize_attr
 
+# edge_transformer
+from graphgallery.transformers.edge_transformer.edges2adj import sparse_edges_to_sparse_adj, SparseEdgesToSparseAdj
+
+
 # other transformer
 from graphgallery.transformers.get_transformer import get, Pipeline
-from graphgallery.transformers.transform import indices2mask, sparse_adj_to_edges, edges_to_sparse_adj, asintarr
+from graphgallery.transformers.transform import indices2mask, asintarr

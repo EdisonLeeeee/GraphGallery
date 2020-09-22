@@ -10,16 +10,18 @@ from graphgallery.utils.type_check import (is_list_like,
 
 from graphgallery.utils.decorators import MultiInputs
 
-# def sparse_adj_to_sparse_tensor(x):
-#     """Converts a Scipy sparse matrix to a tensorflow SparseTensor."""
-#     sparse_coo = x.tocoo()
-#     row, col = sparse_coo.row, sparse_coo.col
-#     data, shape = sparse_coo.data, sparse_coo.shape
-#     indices = np.concatenate(
-#         (np.expand_dims(row, axis=1), np.expand_dims(col, axis=1)), axis=1)
-#     return tf.sparse.SparseTensor(indices, data, shape)
 
-
+def sparse_edges_to_sparse_tensor(edge_index: np.ndarray, edge_weight: np.ndarray=None, shape: tuple=None):
+    
+    if edge_weight is None:
+        edge_weight = tf.ones(edge_index.shape[0], dtype=floatx())
+        
+    if shape is None:
+        N = np.max(edge_index) + 1
+        shape = (N, N)
+        
+    return tf.SparseTensor(edge_index, edge_weight, shape)
+    
 def sparse_adj_to_sparse_tensor(x: sp.csr_matrix, dtype=None):
     """Converts a Scipy sparse matrix to a tensorflow SparseTensor.
 
@@ -43,8 +45,15 @@ def sparse_adj_to_sparse_tensor(x: sp.csr_matrix, dtype=None):
         dtype = infer_type(x)
         
     x = x.tocoo(copy=False)
-    return tf.SparseTensor(np.vstack((x.row, x.col)).T, x.data.astype(dtype, copy=False), x.shape)
+    return sparse_edges_to_sparse_tensor(np.vstack((x.row, x.col)).T, x.data.astype(dtype, copy=False), x.shape)
 
+
+def sparse_tensor_to_sparse_adj(x):
+    """Converts a SparseTensor to a Scipy sparse matrix (CSR matrix)."""
+    data = x.values.numpy()
+    indices = x.indices.numpy().T
+    shape = x.shape
+    return sp.csr_matrix((data, indices), shape=shape)
 
 def infer_type(x):
     """Infer type of the input `x`.
@@ -211,9 +220,3 @@ def normalize_edge_tensor(edge_index, edge_weight=None, n_nodes=None, fill_weigh
     return edge_index, edge_weight_norm
 
 
-def sparse_tensor_to_sparse_adj(x):
-    """Converts a SparseTensor to a Scipy sparse matrix (CSR matrix)."""
-    data = x.values.astype(floatx())
-    indices = x.indices.numpy().T
-    shape = x.shape
-    return sp.csr_matrix((data, indices), shape=shape)

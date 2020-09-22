@@ -85,6 +85,7 @@ from graphgallery.utils.decorators import MultiInputs
 
 class WaveletBasis(Transformer):
     def __init__(self, order=3, wavelet_s=1.2, threshold=1e-4, wavelet_normalize=True):
+        super().__init__()
         self.order = order
         self.wavelet_s = wavelet_s
         self.threshold = threshold

@@ -117,3 +117,11 @@ def sparse_tensor_to_sparse_adj(x):
         return tf_tensor.sparse_tensor_to_sparse_adj(x)
     else:
         return th_tensor.sparse_tensor_to_sparse_adj(x)
+    
+    
+def sparse_edges_to_sparse_tensor(edge_index: np.ndarray, edge_weight: np.ndarray=None, shape: tuple=None):
+    
+    if backend().kind == "T":
+        return tf_tensor.sparse_edges_to_sparse_tensor(edge_index, edge_weight, shape)
+    else:
+        return th_tensor.sparse_edges_to_sparse_tensor(edge_index, edge_weight, shape)

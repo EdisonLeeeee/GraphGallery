@@ -79,14 +79,14 @@ def normalize_adj(adj_matrix, rate=-0.5, selfloop=1.0):
     def _normalize_adj(adj, r):
 
         # here a new copy of adj is created
-        adj = adj + selfloop * sp.eye(adj.shape[0])
+        adj = adj + selfloop * sp.eye(adj.shape[0], dtype=adj.dtype)
 
         if r is None:
             return adj
 
         degree = adj.sum(1).A1
         degree_power = np.power(degree, r)
-
+        
         if sp.isspmatrix(adj):
             adj = adj.tocoo(copy=False)
             adj.data = degree_power[adj.row] * adj.data * degree_power[adj.col]
@@ -95,7 +95,6 @@ def normalize_adj(adj_matrix, rate=-0.5, selfloop=1.0):
             degree_power_matrix = sp.diags(degree_power)
             adj = degree_power_matrix @ adj @ degree_power_matrix
             adj = adj.A
-
         return adj
 
     if is_list_like(rate):

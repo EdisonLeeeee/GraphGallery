@@ -80,7 +80,7 @@ class EdgeGCN(SemiSupervisedModel):
         graph = self.graph
         adj_matrix = self.adj_transformer(graph.adj_matrix)
         attr_matrix = self.attr_transformer(graph.attr_matrix)
-        edge_index, edge_weight = T.sparse_adj_to_edges(adj_matrix)
+        edge_index, edge_weight = T.sparse_adj_to_sparse_edges(adj_matrix)
 
         with tf.device(self.device):
             self.feature_inputs, self.structure_inputs = astensors(

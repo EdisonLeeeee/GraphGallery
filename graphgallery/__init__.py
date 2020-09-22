@@ -9,6 +9,7 @@ from graphgallery.utils.export import gallery_export
 
 from graphgallery.tensor.astensor import (astensor, astensors,
                                           sparse_tensor_to_sparse_adj,
+                                          sparse_edges_to_sparse_tensor,
                                           normalize_adj_tensor,
                                           normalize_edge_tensor)
 
