@@ -3,7 +3,8 @@
   <br/>
 </p>
 
-<p align="center"><strong>A <em>gallery</em> of state-of-the-art Graph Neural Networks (GNNs) for TensorFlow and PyTorch</strong>.</p>
+<p align="center"><strong><em>TensorFLow</em> or <em>PyTorch</em>? Both!</strong></p>
+<!-- <p align="center"><strong>A <em>gallery</em> of state-of-the-art Graph Neural Networks (GNNs) for TensorFlow and PyTorch</strong>.</p> -->
 
 <p align=center>
   <a href="https://www.python.org/downloads/release/python-370/">
@@ -26,9 +27,10 @@
   </a>       
 </p>
 
-<!-- GraphGallery is a gallery of state-of-the-arts graph neural networks for [TensorFlow 2.x](https://github.com/tensorflow/tensorflow) and [PyTorch](https://github.com/pytorch/pytorch). NOTE: Version 0.3.0 is still in testing. -->
 
 
+# GraphGallery
+GraphGallery is a gallery of state-of-the-arts graph neural networks for [TensorFlow 2.x](https://github.com/tensorflow/tensorflow) and [PyTorch](https://github.com/pytorch/pytorch). NOTE: Version 0.3.0 is still in testing.
 <!-- 
 This repo aims to achieve 4 goals:
 + Similar or higher performance
