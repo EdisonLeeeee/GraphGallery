@@ -1,5 +1,4 @@
 import numpy as np
-import scipy.sparse as sp
 import networkx as nx
 import scipy.sparse as sp
 import pickle as pkl
@@ -87,10 +86,9 @@ def create_subgraph(sparse_graph, *, nodes_to_remove=None, nodes_to_keep=None):
         raise ValueError(
             "Only one of nodes_to_remove or nodes_to_keep must be provided.")
     elif nodes_to_remove is not None:
-        nodes_to_keep = [i for i in range(
-            sparse_graph.num_nodes()) if i not in nodes_to_remove]
+        nodes_to_keep = np.setdiff1d(np.arange(sparse_graph.n_nodes), nodes_to_remove)
     elif nodes_to_keep is not None:
-        nodes_to_keep = sorted(nodes_to_keep)
+        nodes_to_keep = np.sort(nodes_to_keep)
     else:
         raise RuntimeError("This should never happen.")
 
@@ -114,7 +112,7 @@ def binarize_labels(labels, sparse_output=False, return_classes=False):
     labels = [[y11, y12], [y21, y22, y23], [y31], ...].
     Parameters
     ----------
-    labels : array-like, shape [num_samples]
+    labels : array-like, shape [n_samples]
         Array of node labels in categorical single- or multi-label format.
     sparse_output : bool, default False
         Whether return the label_matrix in CSR format.
@@ -122,11 +120,11 @@ def binarize_labels(labels, sparse_output=False, return_classes=False):
         Whether return the classes corresponding to the columns of the label matrix.
     Returns
     -------
-    label_matrix : np.ndarray or sp.csr_matrix, shape [num_samples, num_classes]
+    label_matrix : np.ndarray or sp.csr_matrix, shape [n_samples, n_classes]
         Binary matrix of class labels.
-        num_classes = number of unique values in "labels" array.
+        n_classes = number of unique values in "labels" array.
         label_matrix[i, k] = 1 <=> node i belongs to class k.
-    classes : np.array, shape [num_classes], optional
+    classes : np.array, shape [n_classes], optional
         Classes that correspond to each column of the label_matrix.
     """
     if hasattr(labels[0], '__iter__'):  # labels[0] is iterable <=> multilabel format
@@ -139,7 +137,7 @@ def binarize_labels(labels, sparse_output=False, return_classes=False):
 
 def remove_underrepresented_classes(g, train_examples_per_class, val_examples_per_class):
     """Remove nodes from graph that correspond to a class of which there are less than
-    num_classes * train_examples_per_class + num_classes * val_examples_per_class nodes.
+    n_classes * train_examples_per_class + n_classes * val_examples_per_class nodes.
     Those classes would otherwise break the training procedure.
     """
     min_examples_per_class = train_examples_per_class + val_examples_per_class
@@ -188,7 +186,7 @@ def get_train_val_test_split(stratify,
     return idx_train, idx_val, idx_test
 
 
-def sample_per_class(stratify, num_examples_per_class,
+def sample_per_class(stratify, n_examples_per_class,
                      forbidden_indices=None, random_state=None):
 
     n_classes = stratify.max() + 1
@@ -204,7 +202,7 @@ def sample_per_class(stratify, num_examples_per_class,
 
     # get specified number of indices for each class
     return np.concatenate(
-        [random_state.choice(sample_indices_per_class[class_index], num_examples_per_class, replace=False)
+        [random_state.choice(sample_indices_per_class[class_index], n_examples_per_class, replace=False)
          for class_index in range(len(sample_indices_per_class))
          ])
 

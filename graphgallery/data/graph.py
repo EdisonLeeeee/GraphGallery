@@ -7,7 +7,7 @@ import scipy.sparse as sp
 from functools import lru_cache
 from copy import copy as copy_fn
 
-from graphgallery.data.preprocess import largest_connected_components
+from graphgallery.data.preprocess import largest_connected_components, create_subgraph
 from graphgallery.data.base_graph import Basegraph
 
 
@@ -299,6 +299,9 @@ class Graph(Basegraph):
         else:
             create_using = nx.Graph
         return nx.from_scipy_sparse_matrix(self.adj_matrix, create_using=create_using)
+    
+    def subgraph(self,  *, nodes_to_remove=None, nodes_to_keep=None):
+        return create_subgraph(self, nodes_to_remove=nodes_to_remove, nodes_to_keep=nodes_to_keep)
 
     def to_npz(self, filepath):
         filepath = save_sparse_graph_to_npz(filepath, self)
