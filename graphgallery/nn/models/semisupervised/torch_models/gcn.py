@@ -17,11 +17,10 @@ class _Model(TorchKerasModel):
     def __init__(self, input_channels, hiddens, output_channels, use_bias=False):
         super().__init__()
         self.gc1 = GraphConvolution(input_channels, hiddens, use_bias=use_bias)
-        self.gc2 = GraphConvolution(
-            hiddens, output_channels, use_bias=use_bias)
+        self.gc2 = GraphConvolution(hiddens, output_channels, use_bias=use_bias)
 
-        self.optimizer = optim.Adam(
-            self.parameters(), lr=0.01, weight_decay=5e-4)
+        self.optimizer = optim.Adam(self.parameters(), 
+                                    lr=0.01, weight_decay=5e-4)
         self.loss_fn = torch.nn.CrossEntropyLoss()
 
     def forward(self, inputs):
@@ -29,6 +28,8 @@ class _Model(TorchKerasModel):
         x = F.relu(self.gc1([x, adj]))
         x = F.dropout(x, 0.5, training=self.training)
         x = self.gc2([x, adj])
+        if idx is None:
+            return x
         return x[idx]
 
     def reset_parameters(self):
@@ -97,20 +98,20 @@ class GCN(SemiSupervisedModel):
         adj_matrix = self.adj_transformer(graph.adj_matrix)
         attr_matrix = self.attr_transformer(graph.attr_matrix)
 
-        self.feature_inputs, self.structure_inputs = T.astensors(
-            attr_matrix, adj_matrix)
+        self.feature_inputs, self.structure_inputs = T.astensors(attr_matrix, adj_matrix)
 
     @EqualVarLength()
     def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5],
               l2_norms=[5e-4], lr=0.01, use_bias=False):
 
-        self.model = _Model(
-            self.graph.n_attrs, 16, self.graph.n_classes, use_bias=use_bias).to(self.device)
+        self.model = _Model(self.graph.n_attrs, 16, self.graph.n_classes, 
+                            use_bias=use_bias).to(self.device)
 
     def train_sequence(self, index):
         index = T.asintarr(index)
         labels = self.graph.labels[index]
-        sequence = FullBatchNodeSequence(
-            [self.feature_inputs, self.structure_inputs, index], labels, device=self.device)
+        sequence = FullBatchNodeSequence([self.feature_inputs, 
+                                          self.structure_inputs, index], 
+                                         labels, device=self.device)
 
         return sequence
