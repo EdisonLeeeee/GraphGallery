@@ -2,6 +2,8 @@ import functools
 import inspect
 
 from graphgallery.utils.type_check import is_list_like, is_scalar_like
+from graphgallery.utils.shape import get_length
+
 from graphgallery.utils.shape import repeat
 
 
@@ -109,10 +111,9 @@ class EqualVarLength:
     def base_vars():
         return _BASE_VARS
 
-
-def get_length(arr):
-    if isinstance(arr, (list, tuple)):
-        length = len(arr)
-    else:
-        length = 1
-    return length
+# def get_length(arr):
+#     if isinstance(arr, (list, tuple)):
+#         length = len(arr)
+#     else:
+#         length = 1
+#     return length

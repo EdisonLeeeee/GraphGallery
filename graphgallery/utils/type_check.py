@@ -3,9 +3,12 @@ import numpy as np
 import tensorflow as tf
 import collections.abc as collections_abc
 import tensorflow.keras.backend as K
+from collections import Iterable
 
 from graphgallery import backend
 
+def iterable(obj):
+    return isinstance(obj, Iterable) and not isinstance(obj, str)
 
 def is_list_like(x):
     """Check whether `x` is list like, e.g., Tuple or List.
