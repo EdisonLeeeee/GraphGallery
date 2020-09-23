@@ -98,4 +98,4 @@ ENV/
 *.pickle
 
 # My codes
-
+*.ipynb

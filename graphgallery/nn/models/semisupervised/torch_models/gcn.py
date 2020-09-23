@@ -1,7 +1,7 @@
 import torch
 import torch.nn.functional as F
 
-from torch.nn import Module
+from torch.nn import Module, ModuleList
 from torch import optim
 
 from graphgallery.nn.models import SemiSupervisedModel
@@ -11,31 +11,60 @@ from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.decorators import EqualVarLength
 from graphgallery import transformers as T
 
+# a map for activation functions 
+ACT2FN = {
+    "relu": F.relu,
+    "tanh": F.tanh,
+    "elu": F.elu,
+}
 
-class _Model(TorchKerasModel):
+def get_activation(activation_string):
+    if activation_string in ACT2FN:
+        return ACT2FN[activation_string]
+    else:
+        raise KeyError(
+            "function {} not found in ACT2FN mapping {} or torch.nn.functional".format(
+                activation_string, list(ACT2FN.keys())
+            )
+        )
 
-    def __init__(self, input_channels, hiddens, output_channels, use_bias=False):
+class _Model(Module):
+    
+    def __init__(self, input_channels, hiddens, output_channels, activations=['relu'], dropouts=[0.5], lr=0.01, use_bias=False):
         super().__init__()
-        self.gc1 = GraphConvolution(input_channels, hiddens, use_bias=use_bias)
-        self.gc2 = GraphConvolution(hiddens, output_channels, use_bias=use_bias)
 
-        self.optimizer = optim.Adam(self.parameters(), 
-                                    lr=0.01, weight_decay=5e-4)
+        # save for later usage
+        self.activations = activations
+        self.dropouts = dropouts
+
+        inc, outc = input_channels, hiddens[0] 
+        self.gcs = ModuleList()
+
+        # use ModuleList to create layers with different size
+        iterlist = [input_channels] + hiddens + [output_channels]
+        for i in range(len(iterlist) - 1):
+            inc, outc = iterlist[i], iterlist[i+1]
+            self.gcs.append(GraphConvolution(inc, outc, use_bias=use_bias))
+
+        self.optimizer = optim.Adam(self.parameters(), lr=lr, weight_decay=5e-4)
         self.loss_fn = torch.nn.CrossEntropyLoss()
-
+        
     def forward(self, inputs):
-        x, adj, idx = inputs
-        x = F.relu(self.gc1([x, adj]))
-        x = F.dropout(x, 0.5, training=self.training)
-        x = self.gc2([x, adj])
-        if idx is None:
-            return x
+        x, adj, idx = inputs        
+
+        for i in range(len(self.gcs) - 1):
+                func = get_activation(self.activations[i])
+                x = func(self.gcs[i]([x, adj]))
+                x = F.dropout(x, self.dropouts[i], training=self.training)
+        x = self.gcs[-1]([x,adj]) # last layer
+
         return x[idx]
-
+    
     def reset_parameters(self):
-        self.gc1.reset_parameters()
-        self.gc2.reset_parameters()
-
+        for i, l in enumerate(self.gcs):
+            self.gcs[i].reset_parameters()
+                       
+                       
 
 class GCN(SemiSupervisedModel):
     """
@@ -98,20 +127,21 @@ class GCN(SemiSupervisedModel):
         adj_matrix = self.adj_transformer(graph.adj_matrix)
         attr_matrix = self.attr_transformer(graph.attr_matrix)
 
-        self.feature_inputs, self.structure_inputs = T.astensors(attr_matrix, adj_matrix)
+        self.feature_inputs, self.structure_inputs = T.astensors(
+            attr_matrix, adj_matrix)
 
+    # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
     def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5],
               l2_norms=[5e-4], lr=0.01, use_bias=False):
-
-        self.model = _Model(self.graph.n_attrs, 16, self.graph.n_classes, 
-                            use_bias=use_bias).to(self.device)
-
+        
+        self.model = _Model(self.graph.n_attrs, hiddens, self.graph.n_classes, activations=activations, dropouts=dropouts, lr=lr, use_bias=use_bias).to(self.device)
+        
+        
     def train_sequence(self, index):
         index = T.asintarr(index)
         labels = self.graph.labels[index]
-        sequence = FullBatchNodeSequence([self.feature_inputs, 
-                                          self.structure_inputs, index], 
-                                         labels, device=self.device)
+        sequence = FullBatchNodeSequence(
+            [self.feature_inputs, self.structure_inputs, index], labels, device=self.device)
 
         return sequence
