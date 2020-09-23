@@ -7,25 +7,25 @@ from graphgallery.utils.shape import get_length
 def augment_adj(adj_matrix: sp.csr_matrix, N: int, *,
                 nbrs_per_node: Union[list, np.ndarray, None]=None, 
                 common_nbrs: Union[list, np.ndarray, None]=None,
-                edge_weight: float=1.0) -> sp.csr_matrix:
-    """Augment N nodes for a specified CSR matrix.
+                weight: float=1.0) -> sp.csr_matrix:
+    """Augment a specified adjacency matrix by adding N nodes.
     
     Examples
-    ---------
+    ----------
     # add 2 nodes, which are adjacent to [2,3] and 3, respectively.
     >>> augmented_adj = augment_adj(adj_matrix, N=2, 
                                 nbrs_per_node=[[2,3],3], 
-                                edge_weight=1.0)
+                                weight=1.0)
                                 
                                 
     # add 2 nodes, all adjacent to [1,2,3].
     >>> augmented_adj = augment_adj(adj_matrix, N=2, 
                                 common_nbrs=[1,2,3], 
-                                edge_weight=1.0)  
+                                weight=1.0)  
                                 
     Parameters
     ----------
-    adj: shape [n_nodes, n_nodes].
+    adj_matrix: shape [n_nodes, n_nodes].
         A Scipy sparse adjacency matrix.
     N: number of added nodes.
         node ids [n_nodes, ..., n_nodes+N-1].
@@ -34,6 +34,7 @@ def augment_adj(adj_matrix: sp.csr_matrix, N: int, *,
         if `None`, it will be set to `[0, ..., N-1]`.
     common_nbrs: shape [None,].
         specified common neighbors for each added node.
+    weight: edge weight for the added edges.
     
     NOTE:
     ----------
@@ -67,7 +68,7 @@ def augment_adj(adj_matrix: sp.csr_matrix, N: int, *,
                                  for node in added_nodes])
         
     added_edges_T = added_edges[[1,0]]
-    added_edge_weight = np.zeros(added_edges.shape[1]*2, dtype=adj_matrix.dtype) + edge_weight
+    added_edge_weight = np.zeros(added_edges.shape[1]*2, dtype=adj_matrix.dtype) + weight
 
     augmented_edges = np.hstack([edges, added_edges, added_edges_T])
     augmented_data = np.hstack([adj_matrix.data, added_edge_weight])
