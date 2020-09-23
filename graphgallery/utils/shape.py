@@ -1,6 +1,6 @@
 import itertools
 from numbers import Number
-from graphgallery.utils.type_check import iterable
+from graphgallery.utils.type_check import is_iterable
 
 def repeat(src, length):
     if src is None:
@@ -15,7 +15,7 @@ def repeat(src, length):
 
 
 def get_length(obj):
-    if iterable(obj):
+    if is_iterable(obj):
         length = len(obj)
     else:
         length = 1

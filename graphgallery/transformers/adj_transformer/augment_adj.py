@@ -4,7 +4,7 @@ import scipy.sparse as sp
 from typing import Union
 from graphgallery.utils.shape import get_length
 
-def augment_nodes(adj_matrix: sp.csr_matrix, N: int, *,
+def augment_adj(adj_matrix: sp.csr_matrix, N: int, *,
                 nbrs_per_node: Union[list, np.ndarray, None]=None, 
                 common_nbrs: Union[list, np.ndarray, None]=None,
                 edge_weight: float=1.0) -> sp.csr_matrix:
@@ -13,13 +13,13 @@ def augment_nodes(adj_matrix: sp.csr_matrix, N: int, *,
     Examples
     ---------
     # add 2 nodes, which are adjacent to [2,3] and 3, respectively.
-    >>> augmented_adj = augment_nodes(adj_matrix, N=2, 
+    >>> augmented_adj = augment_adj(adj_matrix, N=2, 
                                 nbrs_per_node=[[2,3],3], 
                                 edge_weight=1.0)
                                 
                                 
     # add 2 nodes, all adjacent to [1,2,3].
-    >>> augmented_adj = augment_nodes(adj_matrix, N=2, 
+    >>> augmented_adj = augment_adj(adj_matrix, N=2, 
                                 common_nbrs=[1,2,3], 
                                 edge_weight=1.0)  
                                 
