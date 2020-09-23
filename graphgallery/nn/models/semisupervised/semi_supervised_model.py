@@ -13,7 +13,6 @@ from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from tensorflow.keras.callbacks import History as tf_History
 
 from graphgallery.nn.models import BaseModel
-from graphgallery.nn.models.base_model import parse_graph_inputs
 from graphgallery.nn.functions import softmax
 from graphgallery.utils.history import History
 from graphgallery.utils.tqdm import tqdm
@@ -46,9 +45,16 @@ class SemiSupervisedModel(BaseModel):
         kwargs: other customed keyword Parameters.
 
         """
-        graph = parse_graph_inputs(*graph)
-        if graph is not None:
-            self.graph = graph
+        if len(graph) > 0:
+            if len(graph) == 1:
+                graph, = graph
+                if isinstance(graph, Basegraph):
+                    self.graph = graph
+                elif isinstance(graph, dict):
+                    self.graph.set_inputs(**graph)
+            else:
+                self.graph.set_inputs(*graph)
+                
         return self.process_step()
 
     def process_step(self):

@@ -3,11 +3,13 @@ import scipy.sparse as sp
 
 from typing import Union
 from graphgallery.utils.shape import get_length
+from graphgallery.transformers import augment_edge
+
 
 def augment_adj(adj_matrix: sp.csr_matrix, N: int, *,
                 nbrs_per_node: Union[list, np.ndarray, None]=None, 
                 common_nbrs: Union[list, np.ndarray, None]=None,
-                weight: float=1.0) -> sp.csr_matrix:
+                fill_weight: float=1.0) -> sp.csr_matrix:
     """Augment a specified adjacency matrix by adding N nodes.
     
     Examples
@@ -15,13 +17,13 @@ def augment_adj(adj_matrix: sp.csr_matrix, N: int, *,
     # add 2 nodes, which are adjacent to [2,3] and 3, respectively.
     >>> augmented_adj = augment_adj(adj_matrix, N=2, 
                                 nbrs_per_node=[[2,3],3], 
-                                weight=1.0)
+                                fill_weight=1.0)
                                 
                                 
     # add 2 nodes, all adjacent to [1,2,3].
     >>> augmented_adj = augment_adj(adj_matrix, N=2, 
                                 common_nbrs=[1,2,3], 
-                                weight=1.0)  
+                                fill_weight=1.0)  
                                 
     Parameters
     ----------
@@ -34,11 +36,16 @@ def augment_adj(adj_matrix: sp.csr_matrix, N: int, *,
         if `None`, it will be set to `[0, ..., N-1]`.
     common_nbrs: shape [None,].
         specified common neighbors for each added node.
-    weight: edge weight for the added edges.
+    fill_weight: edge weight for the added edges.
     
     NOTE:
     ----------
     Both `nbrs_per_node` and `common_nbrs` should not be specified together.
+    
+    
+    See Also
+    ----------
+    graphgallery.transformers.augment_edge    
         
     """
     
@@ -56,24 +63,16 @@ def augment_adj(adj_matrix: sp.csr_matrix, N: int, *,
     added_nodes = range(n_nodes, n_augmented_nodes)
 
     adj_matrix = adj_matrix.tocoo(copy=False)
-    edges = adj_matrix.row, adj_matrix.col
+    edge_index = adj_matrix.row, adj_matrix.col
 
-    if nbrs_per_node is not None:
-        added_edges = np.vstack([added_nodes, nbrs_per_node])
-        added_edges = np.hstack([np.vstack([np.tile(node, get_length(nbr)), nbr]) 
-                                            for node, nbr in zip(added_nodes, nbrs_per_node)]) 
-    else:
-        n_repeat = len(common_nbrs)
-        added_edges = np.hstack([np.vstack([np.tile(node, n_repeat), common_nbrs]) 
-                                 for node in added_nodes])
-        
-    added_edges_T = added_edges[[1,0]]
-    added_edge_weight = np.zeros(added_edges.shape[1]*2, dtype=adj_matrix.dtype) + weight
-
-    augmented_edges = np.hstack([edges, added_edges, added_edges_T])
-    augmented_data = np.hstack([adj_matrix.data, added_edge_weight])
+    augmented_edge_index, augmented_edge_weight = augment_edge(edge_index, N,
+                                                               edge_weight=adj_matrix.data,
+                                                               nbrs_per_node=nbrs_per_node,
+                                                               common_nbrs=common_nbrs,
+                                                               fill_weight=fill_weight)
     
-    augmented_adj = sp.csr_matrix((augmented_data, augmented_edges), 
+    
+    augmented_adj = sp.csr_matrix((augmented_edge_weight, augmented_edge_index), 
                                shape=(n_augmented_nodes, n_augmented_nodes))
     
     augmented_adj.eliminate_zeros()

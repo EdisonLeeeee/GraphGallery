@@ -2,6 +2,12 @@ from graphgallery.transformers import adj_transformer
 from graphgallery.transformers import attr_transformer
 from graphgallery.transformers import graph_transformer
 
+# edge_transformer
+from graphgallery.transformers.edge_transformer.edge_transpose import edge_transpose
+from graphgallery.transformers.edge_transformer.add_selfloops_edge import add_selfloops_edge
+from graphgallery.transformers.edge_transformer.augment_edge import augment_edge
+from graphgallery.transformers.edge_transformer.normalize_edge import normalize_edge
+
 # adj_transformer
 from graphgallery.transformers.base_transformer import Transformer, NullTransformer
 from graphgallery.transformers.graph_partition import GraphPartition, graph_partition
@@ -19,7 +25,8 @@ from graphgallery.transformers.adj_transformer.augment_adj import augment_adj
 from graphgallery.transformers.attr_transformer.normalize_attr import NormalizeAttr, normalize_attr
 from graphgallery.transformers.attr_transformer.augment_attr import augment_attr
 
-# edge_transformer
+
+
 from graphgallery.transformers.edge_transformer.edges2adj import (sparse_edges_to_sparse_adj,
                                                                   SparseEdgesToSparseAdj)
 

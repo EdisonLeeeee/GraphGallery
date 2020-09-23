@@ -104,7 +104,8 @@ class Graph(Basegraph):
             self.metadata = metadata
 
     def set_inputs(self, adj_matrix, attr_matrix=None, labels=None,
-                   node_names=None, attr_names=None, class_names=None, metadata=None, copy=False):
+                   node_names=None, attr_names=None, class_names=None, 
+                   metadata=None, copy=False):
         adj_matrix, attr_matrix, labels = _check_and_convert(adj_matrix, attr_matrix,
                                                              labels, copy=copy)
 
@@ -188,10 +189,10 @@ class Graph(Basegraph):
     @property
     def degrees(self):
         if not self.is_directed():
-            return self.adj_matrix.sum(1)
+            return self.adj_matrix.sum(1).A1
         else:
             # in-degree and out-degree
-            return self.adj_matrix.sum(0), self.adj_matrix.sum(1)
+            return self.adj_matrix.sum(0).A1, self.adj_matrix.sum(1).A1
 
     @property
     def n_nodes(self):

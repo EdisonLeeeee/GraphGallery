@@ -8,7 +8,7 @@ from graphgallery.utils.decorators import MultiInputs
 class NormalizeAdj(Transformer):
     """Normalize adjacency matrix."""
 
-    def __init__(self, rate=-0.5, selfloop=1.0):
+    def __init__(self, rate=-0.5, fille_weight=1.0):
         """
         # return a normalized adjacency matrix
         >>> normalize_adj(adj, rate=-0.5) 
@@ -20,12 +20,12 @@ class NormalizeAdj(Transformer):
         ----------
             rate: Single or a list of float scale, optional.
                 the normalize rate for `adj_matrix`.
-            selfloop: float scalar, optional.
+            fille_weight: float scalar, optional.
                 weight of self loops for the adjacency matrix.
         """
         super().__init__()
         self.rate = rate
-        self.selfloop = selfloop
+        self.fille_weight = fille_weight
 
     def __call__(self, *adj_matrix):
         """
@@ -43,14 +43,14 @@ class NormalizeAdj(Transformer):
             graphgallery.transformers.normalize_adj
         """
         return normalize_adj(*adj_matrix, rate=self.rate,
-                             selfloop=self.selfloop)
+                             fille_weight=self.fille_weight)
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(normalize rate={self.rate}, self-loop weight={self.selfloop})"
+        return f"{self.__class__.__name__}(normalize rate={self.rate}, fill_weight={self.fille_weight})"
 
 
 @MultiInputs()
-def normalize_adj(adj_matrix, rate=-0.5, selfloop=1.0):
+def normalize_adj(adj_matrix, rate=-0.5, fille_weight=1.0):
     """Normalize adjacency matrix.
 
     >>> normalize_adj(adj, rate=-0.5) # return a normalized adjacency matrix
@@ -64,7 +64,7 @@ def normalize_adj(adj_matrix, rate=-0.5, selfloop=1.0):
             Single or a list of Scipy sparse matrices or Numpy arrays.
         rate: Single or a list of float scale, optional.
             the normalize rate for `adj_matrix`.
-        selfloop: float scalar, optional.
+        fille_weight: float scalar, optional.
             weight of self loops for the adjacency matrix.
 
     Returns
@@ -79,7 +79,10 @@ def normalize_adj(adj_matrix, rate=-0.5, selfloop=1.0):
     def _normalize_adj(adj, r):
 
         # here a new copy of adj is created
-        adj = adj + selfloop * sp.eye(adj.shape[0], dtype=adj.dtype)
+        if fille_weight:
+            adj = adj + fille_weight * sp.eye(adj.shape[0], dtype=adj.dtype)
+        else:
+            adj = adj.copy()
 
         if r is None:
             return adj

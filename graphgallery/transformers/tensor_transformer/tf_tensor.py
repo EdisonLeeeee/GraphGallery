@@ -181,7 +181,7 @@ def add_selfloop_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0):
     if edge_weight is None:
         edge_weight = tf.ones([edge_index.shape[0]], dtype=floatx())
 
-    range_arr = tf.range(n_nodes, dtype=intx())
+    range_arr = tf.range(n_nodes, dtype=edge_index.dtype)
     diagnal_edge_index = tf.stack([range_arr, range_arr], axis=1)
     updated_edge_index = tf.concat([edge_index, diagnal_edge_index], axis=0)
 
