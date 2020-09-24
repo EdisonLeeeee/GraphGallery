@@ -9,15 +9,15 @@ from graphgallery.utils.decorators import MultiInputs
 class AddSelfLoops(Transformer):
     """Add self loops for adjacency matrix."""
 
-    def __init__(self, fille_weight: float = 1.0):
+    def __init__(self, fill_weight: float = 1.0):
         """
         Parameters
         ----------
-            fille_weight: float scalar, optional.
+            fill_weight: float scalar, optional.
                 weight of self loops for the adjacency matrix.
         """
         super().__init__()
-        self.fille_weight = fille_weight
+        self.fill_weight = fill_weight
 
     def __call__(self, *adj_matrix):
         """
@@ -34,26 +34,26 @@ class AddSelfLoops(Transformer):
         ----------
             graphgallery.transformers.add_selfloops
         """
-        return add_selfloops(*adj_matrix, fille_weight=self.fille_weight)
+        return add_selfloops(*adj_matrix, fill_weight=self.fill_weight)
 
     def __repr__(self):
-        return f"{self.__class__.__name__}(fille_weight={self.fille_weight})"
+        return f"{self.__class__.__name__}(fill_weight={self.fill_weight})"
 
 
 @MultiInputs()
-def add_selfloops(adj_matrix, fille_weight: float = 1.0):
+def add_selfloops(adj_matrix, fill_weight: float = 1.0):
     """Normalize adjacency matrix.
 
-    >>> add_selfloops(adj, fille_weight=1.0) # return a normalized adjacency matrix
+    >>> add_selfloops(adj, fill_weight=1.0) # return a normalized adjacency matrix
 
     # return a list of normalized adjacency matrices
-    >>> selfloop(adj, adj, fille_weight=[1.0, 2.0]) 
+    >>> selfloop(adj, adj, fill_weight=[1.0, 2.0]) 
 
     Parameters
     ----------
         adj_matrix: Scipy matrix or Numpy array or a list of them 
             Single or a list of Scipy sparse matrices or Numpy arrays.
-        fille_weight: float scalar, optional.
+        fill_weight: float scalar, optional.
             weight of self loops for the adjacency matrix.
 
     Returns
@@ -73,8 +73,8 @@ def add_selfloops(adj_matrix, fille_weight: float = 1.0):
         else:
             return adj.copy()
 
-    if is_list_like(fille_weight):
-        return tuple(_add_selfloops(adj_matrix, w) for w in fille_weight)
+    if is_list_like(fill_weight):
+        return tuple(_add_selfloops(adj_matrix, w) for w in fill_weight)
     else:
-        return _add_selfloops(adj_matrix, fille_weight)
+        return _add_selfloops(adj_matrix, fill_weight)
     

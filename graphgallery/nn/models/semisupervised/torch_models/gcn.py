@@ -6,59 +6,61 @@ from torch import optim
 
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.nn.models import TorchKerasModel
+from graphgallery.nn.models.get_activation import get_activation
 from graphgallery.nn.layers import GraphConvolution
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.decorators import EqualVarLength
+
 from graphgallery import transformers as T
 
-# a map for activation functions 
-ACT2FN = {
-    "relu": F.relu,
-    "tanh": F.tanh,
-    "elu": F.elu,
-}
-
-def get_activation(activation_string):
-    if activation_string in ACT2FN:
-        return ACT2FN[activation_string]
-    else:
-        raise KeyError(
-            "function {} not found in ACT2FN mapping {} or torch.nn.functional".format(
-                activation_string, list(ACT2FN.keys())
-            )
-        )
-
-class _Model(Module):
+class _Model(TorchKerasModel):
     
-    def __init__(self, input_channels, hiddens, output_channels, activations=['relu'], dropouts=[0.5], lr=0.01, use_bias=False):
+    def __init__(self, input_channels, hiddens, 
+                 output_channels, activations=['relu'], 
+                 dropouts=[0.5], l2_norms=[5e-4], 
+                 lr=0.01, use_bias=False):
+        
         super().__init__()
 
         # save for later usage
         self.activations = activations
         self.dropouts = dropouts
 
-        inc, outc = input_channels, hiddens[0] 
         self.gcs = ModuleList()
+        self.acts = []
+        paras = []
 
         # use ModuleList to create layers with different size
-        iterlist = [input_channels] + hiddens + [output_channels]
-        for i in range(len(iterlist) - 1):
-            inc, outc = iterlist[i], iterlist[i+1]
-            self.gcs.append(GraphConvolution(inc, outc, use_bias=use_bias))
+        inc = input_channels
+        for hidden, act, l2_norm in zip(hiddens, activations, l2_norms):
+            layer = GraphConvolution(inc, hidden, use_bias=use_bias)
+            self.gcs.append(layer)
+            self.acts.append(get_activation(act))
+            paras.append(dict(params=layer.parameters(), weight_decay=l2_norm))
+            inc = hidden
+            
+        layer = GraphConvolution(inc, output_channels, use_bias=use_bias)
+        self.gcs.append(layer)
+        # do not use weight_decay in the final layer
+        paras.append(dict(params=layer.parameters(), weight_decay=0.))
 
-        self.optimizer = optim.Adam(self.parameters(), lr=lr, weight_decay=5e-4)
+        self.optimizer = optim.Adam(paras, lr=lr)
         self.loss_fn = torch.nn.CrossEntropyLoss()
         
     def forward(self, inputs):
         x, adj, idx = inputs        
 
         for i in range(len(self.gcs) - 1):
-                func = get_activation(self.activations[i])
-                x = func(self.gcs[i]([x, adj]))
-                x = F.dropout(x, self.dropouts[i], training=self.training)
+            act = self.acts[i]
+            x = act(self.gcs[i]([x, adj]))
+            x = F.dropout(x, self.dropouts[i], training=self.training)
+            
         x = self.gcs[-1]([x,adj]) # last layer
-
-        return x[idx]
+        
+        if idx is None:
+            return x
+        else:
+            return x[idx]
     
     def reset_parameters(self):
         for i, l in enumerate(self.gcs):
@@ -135,7 +137,9 @@ class GCN(SemiSupervisedModel):
     def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5],
               l2_norms=[5e-4], lr=0.01, use_bias=False):
         
-        self.model = _Model(self.graph.n_attrs, hiddens, self.graph.n_classes, activations=activations, dropouts=dropouts, lr=lr, use_bias=use_bias).to(self.device)
+        self.model = _Model(self.graph.n_attrs, hiddens, self.graph.n_classes, 
+                            activations=activations, dropouts=dropouts, l2_norms=l2_norms, 
+                            lr=lr, use_bias=use_bias).to(self.device)
         
         
     def train_sequence(self, index):

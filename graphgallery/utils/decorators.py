@@ -100,8 +100,9 @@ class EqualVarLength:
                     max_length = max(get_length(val), max_length)
 
             for var in self.var_names:
-                val = paras.get(var, None)
-                if val is not None:
+                # use `NOTHING` instead of `None` to avoid `None` exists
+                val = paras.get(var, "NOTHING")
+                if val!="NOTHING":
                     paras[var] = repeat(val, max_length)
 
             return func(model, **paras)
@@ -111,9 +112,3 @@ class EqualVarLength:
     def base_vars():
         return _BASE_VARS
 
-# def get_length(arr):
-#     if isinstance(arr, (list, tuple)):
-#         length = len(arr)
-#     else:
-#         length = 1
-#     return length
