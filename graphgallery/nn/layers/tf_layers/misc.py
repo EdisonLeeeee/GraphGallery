@@ -111,17 +111,19 @@ class Mask(Layer):
 
 
 class Laplacian(Layer):
-    def __init__(self, rate=-0.5, selfloop=1.0, *args, **kwargs):
+    def __init__(self, rate=-0.5, fill_weight=1.0, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if not rate:
             raise ValueError(
                 f"`rate` must be an integer scalr larger than zero, but got {rate}.")
         self.rate = rate
-        self.selfloop = selfloop
+        self.fill_weight = fill_weight
         self.trainable = False
 
     def call(self, adj):
-        adj = adj + self.selfloop * tf.eye(tf.shape(adj)[0], dtype=adj.dtype)
+        if self.fill_weight:
+            adj = adj + self.fill_weight * \
+                tf.eye(tf.shape(adj)[0], dtype=adj.dtype)
         d = tf.reduce_sum(adj, axis=1)
         d_power = tf.pow(d, self.rate)
         d_power_mat = tf.linalg.diag(d_power)

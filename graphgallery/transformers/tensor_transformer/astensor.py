@@ -9,7 +9,7 @@ __all__ = ["sparse_adj_to_sparse_tensor",
            "sparse_tensor_to_sparse_adj",
            "sparse_edges_to_sparse_tensor",
            "astensor", "astensors",
-           "normalize_adj_tensor", "add_selfloop_edge", "normalize_edge_tensor"]
+           "normalize_adj_tensor", "add_selfloops_edge", "normalize_edge_tensor"]
 
 
 def sparse_adj_to_sparse_tensor(x):
@@ -72,7 +72,8 @@ def astensor(x, dtype=None, device=None):
     """
     if backend().kind == "T":
         if device is not None:
-            raise RuntimeError(f"The argument `device` only work for `PyTorch backend`, but currently is {backend()}.")
+            raise RuntimeError(
+                f"The argument `device` only work for `PyTorch backend`, but currently is {backend()}.")
         return tf_tensor.astensor(x, dtype=dtype)
     else:
         return th_tensor.astensor(x, dtype=dtype, device=device)
@@ -104,20 +105,21 @@ def astensors(*xs, device=None):
     """
     if backend().kind == "T":
         if device is not None:
-            raise RuntimeError(f"The argument `device` only work for `PyTorch backend`, but currently is {backend()}.")
+            raise RuntimeError(
+                f"The argument `device` only work for `PyTorch backend`, but currently is {backend()}.")
         return tf_tensor.astensors(*xs)
     else:
         return th_tensor.astensors(*xs, device=device)
 
 
-def normalize_adj_tensor(adj, rate=-0.5, selfloop=1.0):
+def normalize_adj_tensor(adj, rate=-0.5, fill_weight=1.0):
     if backend().kind == "T":
-        return tf_tensor.normalize_adj_tensor(adj, rate=rate, selfloop=selfloop)
+        return tf_tensor.normalize_adj_tensor(adj, rate=rate, fill_weight=fill_weight)
     else:
-        return th_tensor.normalize_adj_tensor(adj, rate=rate, selfloop=selfloop)
+        return th_tensor.normalize_adj_tensor(adj, rate=rate, fill_weight=fill_weight)
 
 
-def add_selfloop_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0):
+def add_selfloops_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0):
     if backend().kind == "T":
         return tf_tensor.normalize_adj_tensor(edge_index, edge_weight, n_nodes=n_nodes, fill_weight=fill_weight)
     else:

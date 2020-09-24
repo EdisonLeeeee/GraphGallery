@@ -22,7 +22,7 @@ class NormalizeLayer(Layer):
             edge_weight = tf.ones([edge_index.shape[0]], dtype=floatx())
 
         fill_weight = 2.0 if improved else 1.0
-        edge_index, edge_weight = self.add_selfloop_edge(
+        edge_index, edge_weight = self.add_selfloops_edge(
             edge_index, n_nodes, edge_weight=edge_weight, fill_weight=fill_weight)
 
         row = tf.gather(edge_index, 0, axis=1)
@@ -41,7 +41,7 @@ class NormalizeLayer(Layer):
         return edge_index, noremd_edge_weight
 
     @staticmethod
-    def add_selfloop_edge(edge_index, n_nodes, edge_weight=None, fill_weight=1.0):
+    def add_selfloops_edge(edge_index, n_nodes, edge_weight=None, fill_weight=1.0):
         diagnal_edge_index = tf.reshape(
             tf.repeat(tf.range(n_nodes, dtype=intx()), 2), [n_nodes, 2])
 

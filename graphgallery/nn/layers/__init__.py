@@ -23,4 +23,3 @@ if _BACKEND .kind == "T":
 
 else:
     from graphgallery.nn.layers.torch_layers.gcn import GraphConvolution
-

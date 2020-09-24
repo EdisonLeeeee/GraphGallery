@@ -94,6 +94,7 @@ class SGC(SemiSupervisedModel):
         with tf.device(self.device):
             self.feature_inputs, self.structure_inputs = feature_inputs, structure_inputs
 
+    # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
     def build(self, lr=0.2, l2_norms=[5e-5], use_bias=True):
 

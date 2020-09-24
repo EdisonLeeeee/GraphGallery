@@ -1,4 +1,6 @@
 """ Utility functions for sparse matrix module
+
+Unused
 """
 
 import sys
@@ -296,13 +298,15 @@ def check_shape(args, current_shape=None):
                                  .format(current_size, new_shape))
         elif len(negative_indexes) == 1:
             skip = negative_indexes[0]
-            specified = prod(new_shape[0:skip] + new_shape[skip+1:])
+            specified = prod(new_shape[0:skip] + new_shape[skip + 1:])
             unspecified, remainder = divmod(current_size, specified)
             if remainder != 0:
-                err_shape = tuple('newshape' if x < 0 else x for x in new_shape)
+                err_shape = tuple('newshape' if x <
+                                  0 else x for x in new_shape)
                 raise ValueError('cannot reshape array of size {} into shape {}'
                                  ''.format(current_size, err_shape))
-            new_shape = new_shape[0:skip] + (unspecified,) + new_shape[skip+1:]
+            new_shape = new_shape[0:skip] + \
+                (unspecified,) + new_shape[skip + 1:]
         else:
             raise ValueError('can only specify one unknown dimension')
 

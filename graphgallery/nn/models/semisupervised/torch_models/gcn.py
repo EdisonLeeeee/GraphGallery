@@ -13,17 +13,17 @@ from graphgallery.utils.decorators import EqualVarLength
 
 from graphgallery import transformers as T
 
+
 class _Model(TorchKerasModel):
-    
-    def __init__(self, input_channels, hiddens, 
-                 output_channels, activations=['relu'], 
-                 dropouts=[0.5], l2_norms=[5e-4], 
+
+    def __init__(self, in_channels, hiddens,
+                 out_channels, activations=['relu'],
+                 dropouts=[0.5], l2_norms=[5e-4],
                  lr=0.01, use_bias=False):
-        
+
         super().__init__()
 
         # save for later usage
-        self.activations = activations
         self.dropouts = dropouts
 
         self.gcs = ModuleList()
@@ -31,42 +31,41 @@ class _Model(TorchKerasModel):
         paras = []
 
         # use ModuleList to create layers with different size
-        inc = input_channels
+        inc = in_channels
         for hidden, act, l2_norm in zip(hiddens, activations, l2_norms):
             layer = GraphConvolution(inc, hidden, use_bias=use_bias)
             self.gcs.append(layer)
             self.acts.append(get_activation(act))
             paras.append(dict(params=layer.parameters(), weight_decay=l2_norm))
             inc = hidden
-            
-        layer = GraphConvolution(inc, output_channels, use_bias=use_bias)
+
+        layer = GraphConvolution(inc, out_channels, use_bias=use_bias)
         self.gcs.append(layer)
         # do not use weight_decay in the final layer
         paras.append(dict(params=layer.parameters(), weight_decay=0.))
 
         self.optimizer = optim.Adam(paras, lr=lr)
         self.loss_fn = torch.nn.CrossEntropyLoss()
-        
+
     def forward(self, inputs):
-        x, adj, idx = inputs        
+        x, adj, idx = inputs
 
         for i in range(len(self.gcs) - 1):
             act = self.acts[i]
             x = act(self.gcs[i]([x, adj]))
             x = F.dropout(x, self.dropouts[i], training=self.training)
-            
-        x = self.gcs[-1]([x,adj]) # last layer
-        
+
+        x = self.gcs[-1]([x, adj])  # last layer
+
         if idx is None:
             return x
         else:
             return x[idx]
-    
+
     def reset_parameters(self):
         for i, l in enumerate(self.gcs):
             self.gcs[i].reset_parameters()
-                       
-                       
+
 
 class GCN(SemiSupervisedModel):
     """
@@ -136,12 +135,11 @@ class GCN(SemiSupervisedModel):
     @EqualVarLength()
     def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5],
               l2_norms=[5e-4], lr=0.01, use_bias=False):
-        
-        self.model = _Model(self.graph.n_attrs, hiddens, self.graph.n_classes, 
-                            activations=activations, dropouts=dropouts, l2_norms=l2_norms, 
+
+        self.model = _Model(self.graph.n_attrs, hiddens, self.graph.n_classes,
+                            activations=activations, dropouts=dropouts, l2_norms=l2_norms,
                             lr=lr, use_bias=use_bias).to(self.device)
-        
-        
+
     def train_sequence(self, index):
         index = T.asintarr(index)
         labels = self.graph.labels[index]

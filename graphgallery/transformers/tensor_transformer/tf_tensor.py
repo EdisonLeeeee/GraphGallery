@@ -11,17 +11,18 @@ from graphgallery.utils.type_check import (is_list_like,
 from graphgallery.utils.decorators import MultiInputs
 
 
-def sparse_edges_to_sparse_tensor(edge_index: np.ndarray, edge_weight: np.ndarray=None, shape: tuple=None):
-    
+def sparse_edges_to_sparse_tensor(edge_index: np.ndarray, edge_weight: np.ndarray = None, shape: tuple = None):
+
     if edge_weight is None:
         edge_weight = tf.ones(edge_index.shape[0], dtype=floatx())
-        
+
     if shape is None:
         N = np.max(edge_index) + 1
         shape = (N, N)
-        
+
     return tf.SparseTensor(edge_index, edge_weight, shape)
-    
+
+
 def sparse_adj_to_sparse_tensor(x: sp.csr_matrix, dtype=None):
     """Converts a Scipy sparse matrix to a tensorflow SparseTensor.
 
@@ -29,7 +30,7 @@ def sparse_adj_to_sparse_tensor(x: sp.csr_matrix, dtype=None):
     ----------
     x: scipy.sparse.sparse
         Matrix in Scipy sparse format.
-        
+
     dtype: The type of sparse matrix `x`, if not specified,
         it will automatically using appropriate data type.
         See `graphgallery.infer_type`.            
@@ -38,12 +39,12 @@ def sparse_adj_to_sparse_tensor(x: sp.csr_matrix, dtype=None):
     S: tf.sparse.SparseTensor
         Matrix as a sparse tensor.
     """
-    
+
     if isinstance(dtype, tf.dtypes.DType):
         dtype = dtype.name
     elif dtype is None:
         dtype = infer_type(x)
-        
+
     x = x.tocoo(copy=False)
     return sparse_edges_to_sparse_tensor(np.vstack((x.row, x.col)).T, x.data.astype(dtype, copy=False), x.shape)
 
@@ -54,6 +55,7 @@ def sparse_tensor_to_sparse_adj(x):
     indices = x.indices.numpy().T
     shape = x.shape
     return sp.csr_matrix((data, indices), shape=shape)
+
 
 def infer_type(x):
     """Infer type of the input `x`.
@@ -129,9 +131,9 @@ def astensor(x, dtype=None):
     elif isinstance(dtype, tf.dtypes.DType):
         dtype = dtype.name
     else:
-        raise TypeError(f"argument 'dtype' must be tensorflow.dtypes.DType or str, not {type(dtype).__name__}.")
-        
-        
+        raise TypeError(
+            f"argument 'dtype' must be tensorflow.dtypes.DType or str, not {type(dtype).__name__}.")
+
     if is_tensor_or_variable(x):
         if x.dtype != dtype:
             x = tf.cast(x, dtype=dtype)
@@ -165,15 +167,16 @@ astensors.__doc__ = """Convert input matrices to Tensor(s) or SparseTensor(s).
     """
 
 
-def normalize_adj_tensor(adj, rate=-0.5, selfloop=1.0):
-    adj = adj + selfloop * tf.eye(tf.shape(adj)[0], dtype=adj.dtype)
+def normalize_adj_tensor(adj, rate=-0.5, fill_weight=1.0):
+    if fill_weight:
+        adj = adj + fill_weight * tf.eye(tf.shape(adj)[0], dtype=adj.dtype)
     d = tf.reduce_sum(adj, axis=1)
     d_power = tf.pow(d, rate)
     d_power_mat = tf.linalg.diag(d_power)
     return d_power_mat @ adj @ d_power_mat
 
 
-def add_selfloop_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0):
+def add_selfloops_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0):
 
     if n_nodes is None:
         n_nodes = tf.reduce_max(edge_index) + 1
@@ -199,7 +202,7 @@ def normalize_edge_tensor(edge_index, edge_weight=None, n_nodes=None, fill_weigh
     if n_nodes is None:
         n_nodes = tf.reduce_max(edge_index) + 1
 
-    edge_index, edge_weight = add_selfloop_edge(
+    edge_index, edge_weight = add_selfloops_edge(
         edge_index, edge_weight, n_nodes=n_nodes, fill_weight=fill_weight)
 
     row, col = tf.unstack(edge_index, axis=1)
@@ -218,5 +221,3 @@ def normalize_edge_tensor(edge_index, edge_weight=None, n_nodes=None, fill_weigh
         deg_inv_sqrt, row) * edge_weight * tf.gather(deg_inv_sqrt, col)
 
     return edge_index, edge_weight_norm
-
-

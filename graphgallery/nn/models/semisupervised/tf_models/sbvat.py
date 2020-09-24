@@ -89,6 +89,7 @@ class SBVAT(SemiSupervisedModel):
             self.feature_inputs, self.structure_inputs = T.astensors(
                 attr_matrix, adj_matrix)
 
+    # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
     def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5],
               lr=0.01, l2_norms=[5e-4], use_bias=False, p1=1., p2=1.,

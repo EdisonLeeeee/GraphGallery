@@ -47,7 +47,7 @@ def add_selfloops(adj_matrix, fill_weight: float = 1.0):
     >>> add_selfloops(adj, fill_weight=1.0) # return a normalized adjacency matrix
 
     # return a list of normalized adjacency matrices
-    >>> selfloop(adj, adj, fill_weight=[1.0, 2.0]) 
+    >>> add_selfloops(adj, adj, fill_weight=[1.0, 2.0]) 
 
     Parameters
     ----------
@@ -77,4 +77,3 @@ def add_selfloops(adj_matrix, fill_weight: float = 1.0):
         return tuple(_add_selfloops(adj_matrix, w) for w in fill_weight)
     else:
         return _add_selfloops(adj_matrix, fill_weight)
-    

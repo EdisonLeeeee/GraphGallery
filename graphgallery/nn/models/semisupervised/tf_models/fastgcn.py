@@ -84,6 +84,7 @@ class FastGCN(SemiSupervisedModel):
             self.feature_inputs, self.structure_inputs = T.astensor(
                 attr_matrix), adj_matrix
 
+    # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
     def build(self, hiddens=[32], activations=['relu'], dropouts=[0.5],
               l2_norms=[5e-4], lr=0.01, use_bias=False):

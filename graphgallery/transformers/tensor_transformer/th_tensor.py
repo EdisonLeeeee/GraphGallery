@@ -139,7 +139,8 @@ def astensor(x, dtype=None, device=None):
     elif isinstance(dtype, torch.dtype):
         dtype = str(dtype).split('.')[-1]
     else:
-        raise TypeError(f"argument 'dtype' must be torch.dtype or str, not {type(dtype).__name__}.")
+        raise TypeError(
+            f"argument 'dtype' must be torch.dtype or str, not {type(dtype).__name__}.")
 
     if is_tensor_or_variable(x):
         tensor = x.to(getattr(torch, dtype))
@@ -180,11 +181,11 @@ astensors.__doc__ = """Convert input matrices to Tensor(s) or SparseTensor(s).
     """
 
 
-def normalize_adj_tensor(adj, rate=-0.5, selfloop=1.0):
+def normalize_adj_tensor(adj, rate=-0.5, fill_weight=1.0):
     ...
 
 
-def add_selfloop_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0):
+def add_selfloops_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0):
 
     ...
 

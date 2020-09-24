@@ -64,6 +64,7 @@ class GCNA(GCN):
                          adj_transformer=adj_transformer, attr_transformer=attr_transformer,
                          device=device, seed=seed, name=name, **kwargs)
 
+    # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
     def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5],
               l2_norms=[5e-4], lr=0.01, use_bias=False):
