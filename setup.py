@@ -43,13 +43,9 @@ setup(
     packages=find_packages(exclude=("examples", "imgs", "scripts")),
     classifiers=[
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python:: 3.7",
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: MIT License",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
-        "Operating System:: Microsoft:: Windows",
-        "Operating System:: POSIX",
-        "Operating System:: Unix",
-        "Operating System:: MacOS"
+        "Operating System :: OS Independent"
     ],
 )
