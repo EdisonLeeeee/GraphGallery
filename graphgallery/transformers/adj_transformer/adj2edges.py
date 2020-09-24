@@ -12,15 +12,15 @@ class SparseAdjToSparseEdges(Transformer):
     
     
     
-def sparse_adj_to_sparse_edges(adj: sp.csr_matrix):
+def sparse_adj_to_sparse_edges(adj_matrix: sp.csr_matrix):
     """Convert a Scipy sparse matrix to (edge_index, edge_weight) representation
 
-    edge_index: shape [M, 2]
+    edge_index: shape [2, M]
     edge_weight: shape [M,]
 
     """
-    adj = adj.tocoo()
-    edge_index = np.stack([adj.row, adj.col], axis=1)
-    edge_weight = adj.data
+    adj_matrix = adj_matrix.tocoo(copy=False)
+    edge_index = np.asarray((adj_matrix.row, adj_matrix.col))
+    edge_weight = adj_matrix.data
 
     return edge_index, edge_weight    

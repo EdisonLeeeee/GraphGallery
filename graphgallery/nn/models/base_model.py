@@ -76,6 +76,8 @@ def parse_device(device: str, kind: str) -> str:
             _device = "cuda" + _device[3:]
 
     if kind == "P":
+        if _device.startswith('cuda'):
+            torch.cuda.empty_cache()
         return torch.device(_device)
     return _device
 

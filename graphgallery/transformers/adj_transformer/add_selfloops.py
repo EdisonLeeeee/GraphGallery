@@ -62,7 +62,7 @@ def add_selfloops(adj_matrix, fill_weight: float = 1.0):
 
     See also
     ----------
-        graphgallery.transformers.NormalizeAdj          
+        graphgallery.transformers.AddSelfLoops          
 
     """
     def _add_selfloops(adj, w):

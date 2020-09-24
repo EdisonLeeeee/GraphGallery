@@ -83,7 +83,7 @@ class EdgeGCN(SemiSupervisedModel):
 
         with tf.device(self.device):
             self.feature_inputs, self.structure_inputs = T.astensors(
-                attr_matrix, (edge_index, edge_weight))
+                attr_matrix, (edge_index.T, edge_weight))
 
     # use decorator to make sure all list arguments have the same length
     @EqualVarLength()

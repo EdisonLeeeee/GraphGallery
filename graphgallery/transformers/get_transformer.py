@@ -1,4 +1,6 @@
 from typing import Union, List, Tuple
+from graphgallery.transformers import GDC
+from graphgallery.transformers import SVD
 from graphgallery.utils.type_check import is_list_like
 from graphgallery.transformers import Transformer, NullTransformer
 from graphgallery.transformers import NormalizeAdj
@@ -8,24 +10,25 @@ from graphgallery.transformers import WaveletBasis
 from graphgallery.transformers import ChebyBasis
 from graphgallery.transformers import NeighborSampler
 from graphgallery.transformers import GraphPartition
-from graphgallery.transformers import GDC
-from graphgallery.transformers import SVD
 from graphgallery.transformers import SparseAdjToSparseEdges
 from graphgallery.transformers import SparseEdgesToSparseAdj
+from graphgallery.transformers import SparseReshape
 
 
 
-_TRANSFORMER = {"normalize_adj": NormalizeAdj,
+
+_TRANSFORMER = {"gdc": GDC,
+                "svd": SVD,
+                "normalize_adj": NormalizeAdj,
                 "normalize_attr": NormalizeAttr,
                 "add_selfloops": AddSelfLoops,
                 "wavelet_basis": WaveletBasis,
                 "cheby_basis": ChebyBasis,
                 "neighbor_sampler": NeighborSampler,
                 "graph_partition": GraphPartition,
-                "gdc": GDC,
-                "svd": SVD,
                 "sparse_adj_to_sparse_edges": SparseAdjToSparseEdges,
-                "sparse_edges_to_sparse_adj": SparseEdgesToSparseAdj,}
+                "sparse_edges_to_sparse_adj": SparseEdgesToSparseAdj,
+                "sparse_reshape": SparseReshape}
 
 _ALLOWED = set(list(_TRANSFORMER.keys()))
 
@@ -50,7 +53,7 @@ def get(transformer: Union[str, Transformer, None, List, Tuple, Pipeline]) -> Tr
     if is_list_like(transformer):
         return Pipeline(*transformer)
     
-    if isinstance(transformer, Transformer):
+    if isinstance(transformer, Transformer) or callable(transformer):
         return transformer
     elif transformer is None:
         return NullTransformer()
@@ -58,6 +61,6 @@ def get(transformer: Union[str, Transformer, None, List, Tuple, Pipeline]) -> Tr
     _transformer = _TRANSFORMER.get(_transformer, None)
     if _transformer is None:
         raise ValueError(
-            f"Unknown transformer: '{transformer}', expected one of {_ALLOWED} or None.")
+            f"Unknown transformer: '{transformer}', expected one of {_ALLOWED}, None or a callable function.")
     return _transformer()
 

@@ -20,6 +20,8 @@ from graphgallery.transformers.adj_transformer.gdc import GDC, gdc
 from graphgallery.transformers.adj_transformer.svd import SVD, svd
 from graphgallery.transformers.adj_transformer.adj2edges import sparse_adj_to_sparse_edges, SparseAdjToSparseEdges
 from graphgallery.transformers.adj_transformer.augment_adj import augment_adj
+from graphgallery.transformers.adj_transformer.sparse_reshape import SparseReshape, sparse_reshape
+
 
 # attr_transformer
 from graphgallery.transformers.attr_transformer.normalize_attr import NormalizeAttr, normalize_attr

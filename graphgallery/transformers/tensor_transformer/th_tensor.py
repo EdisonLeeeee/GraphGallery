@@ -11,6 +11,8 @@ from graphgallery.utils.type_check import (is_list_like,
 
 
 from graphgallery.utils.decorators import MultiInputs
+from graphgallery import transformers as T
+
 
 _DTYPE_TO_CLASS = {'float16': "HalfTensor",
                    'float32': "FloatTensor",
@@ -52,13 +54,11 @@ def sparse_adj_to_sparse_tensor(x, dtype=None):
     elif dtype is None:
         dtype = infer_type(x)
 
-    x = x.tocoo(copy=False)
-    sparserow = torch.LongTensor(x.row)
-    sparsecol = torch.LongTensor(x.col)
-    sparsestack = torch.stack((sparserow, sparsecol), 0)
-    sparsedata = torch.tensor(x.data, dtype=getattr(torch, dtype))
-    return getattr(torch.sparse, dtype_to_tensor_class(dtype))(sparsestack,
-                                                               sparsedata,
+    edge_index, edge_weight = T.sparse_adj_to_sparse_edges(x)
+    edge_index = torch.LongTensor(edge_index)
+    edge_weight = torch.tensor(edge_weight, dtype=getattr(torch, dtype))
+    return getattr(torch.sparse, dtype_to_tensor_class(dtype))(edge_index,
+                                                               edge_weight,
                                                                torch.Size(x.shape))
 
 

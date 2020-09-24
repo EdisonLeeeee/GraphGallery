@@ -9,18 +9,23 @@ from graphgallery.utils.type_check import (is_list_like,
                                            is_scalar_like)
 
 from graphgallery.utils.decorators import MultiInputs
+from graphgallery import transformers as T
+
 
 
 def sparse_edges_to_sparse_tensor(edge_index: np.ndarray, edge_weight: np.ndarray = None, shape: tuple = None):
-
+    """
+    edge_index: shape [2, M]
+    edge_weight: shape [M,]
+    """
     if edge_weight is None:
-        edge_weight = tf.ones(edge_index.shape[0], dtype=floatx())
+        edge_weight = tf.ones(edge_index.shape[1], dtype=floatx())
 
     if shape is None:
         N = np.max(edge_index) + 1
         shape = (N, N)
 
-    return tf.SparseTensor(edge_index, edge_weight, shape)
+    return tf.SparseTensor(edge_index.T, edge_weight, shape)
 
 
 def sparse_adj_to_sparse_tensor(x: sp.csr_matrix, dtype=None):
@@ -45,8 +50,8 @@ def sparse_adj_to_sparse_tensor(x: sp.csr_matrix, dtype=None):
     elif dtype is None:
         dtype = infer_type(x)
 
-    x = x.tocoo(copy=False)
-    return sparse_edges_to_sparse_tensor(np.vstack((x.row, x.col)).T, x.data.astype(dtype, copy=False), x.shape)
+    edge_index, edge_weight = T.sparse_adj_to_sparse_edges(x)
+    return sparse_edges_to_sparse_tensor(edge_index, edge_weight.astype(dtype, copy=False), x.shape)
 
 
 def sparse_tensor_to_sparse_adj(x):
