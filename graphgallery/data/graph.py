@@ -5,6 +5,7 @@ import os.path as osp
 import scipy.sparse as sp
 
 from functools import lru_cache
+from collections import Counter
 from copy import copy as copy_fn
 
 from graphgallery.data.preprocess import largest_connected_components, create_subgraph
@@ -275,7 +276,33 @@ class Graph(Basegraph):
         A.eliminate_zeros()
         G.adj_matrix = A
         return G
-
+    
+    def eliminate_classes(self, threshold=0):
+        """Remove nodes from graph that correspond to a class of which there are less 
+        or equal than 'threshold'. Those classes would otherwise break the training procedure.
+        """
+        if self.labels is None:
+            return self
+        labels = self.labels
+        counts = np.bincount(labels)
+        nodes_to_remove = []
+        removed = 0
+        left = []
+        for _class, count in enumerate(counts):
+            if count<=threshold:
+                nodes_to_remove.extend(np.where(labels==_class)[0])
+                removed += 1
+            else:
+                left.append(_class)
+                
+        if removed > 0:
+            G = self.subgraph(nodes_to_remove=nodes_to_remove)
+            mapping = dict(zip(left, range(self.n_classes-removed)))
+            G.labels = np.asarray(list(map(lambda key: mapping[key], G.labels)), dtype=np.int32)      
+            return G
+        else:
+            return self
+    
     def add_selfloops(self, value=1.0):
         """Set the diagonal."""
         G = self.eliminate_selfloops()
@@ -305,7 +332,7 @@ class Graph(Basegraph):
         return create_subgraph(self, nodes_to_remove=nodes_to_remove, nodes_to_keep=nodes_to_keep)
 
     def to_npz(self, filepath):
-        filepath = save_sparse_graph_to_npz(filepath, self)
+        filepath = save_graph_to_npz(filepath, self)
         print(f"save to {filepath}.")
 
     @staticmethod
@@ -357,7 +384,7 @@ def load_dataset(data_path):
 
     Returns
     -------
-    sparse_graph : Graph
+    graph : Graph
         The requested dataset in sparse format.
     """
     data_path = osp.abspath(osp.expanduser(osp.normpath(data_path)))
@@ -380,7 +407,7 @@ def load_npz_to_graph(file_name):
 
     Returns
     -------
-    sparse_graph : Graph
+    graph : Graph
         Graph in sparse matrix format.
     """
 
@@ -417,17 +444,17 @@ def load_npz_to_graph(file_name):
     return Graph(adj_matrix, attr_matrix, labels, node_names, attr_names, class_names, metadata)
 
 
-def save_sparse_graph_to_npz(filepath, sparse_graph):
+def save_graph_to_npz(filepath, graph):
     """Save a Graph to a Numpy binary file.
 
     Parameters
     ----------
     filepath : str
         Name of the output file.
-    sparse_graph : graphgalllery.data.Graph
+    graph : graphgalllery.data.Graph
         Graph in sparse matrix format.
     """
-    adj_matrix, attr_matrix, labels = sparse_graph.raw()
+    adj_matrix, attr_matrix, labels = graph.raw()
 
     data_dict = {
         'adj_data': adj_matrix.data,
@@ -451,17 +478,17 @@ def save_sparse_graph_to_npz(filepath, sparse_graph):
     elif isinstance(labels, np.ndarray):
         data_dict['labels'] = labels
 
-    if sparse_graph.node_names is not None:
-        data_dict['node_names'] = sparse_graph.node_names
+    if graph.node_names is not None:
+        data_dict['node_names'] = graph.node_names
 
-    if sparse_graph.attr_names is not None:
-        data_dict['attr_names'] = sparse_graph.attr_names
+    if graph.attr_names is not None:
+        data_dict['attr_names'] = graph.attr_names
 
-    if sparse_graph.class_names is not None:
-        data_dict['class_names'] = sparse_graph.class_names
+    if graph.class_names is not None:
+        data_dict['class_names'] = graph.class_names
 
-    if sparse_graph.metadata is not None:
-        data_dict['metadata'] = sparse_graph.metadata
+    if graph.metadata is not None:
+        data_dict['metadata'] = graph.metadata
 
     if not filepath.endswith('.npz'):
         filepath = filepath + '.npz'

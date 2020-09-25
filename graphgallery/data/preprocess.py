@@ -35,39 +35,39 @@ def train_val_test_split_tabular(N,
     return idx_train, idx_val, idx_test
 
 
-def largest_connected_components(sparse_graph, n_components=1):
+def largest_connected_components(graph, n_components=1):
     """Select the largest connected components in the graph.
 
     Parameters
     ----------
-    sparse_graph : Graph
+    graph : Graph
         Input graph.
     n_components : int, default 1
         Number of largest connected components to keep.
     Returns
     -------
-    sparse_graph : Graph
+    graph : Graph
         Subgraph of the input graph where only the nodes in largest n_components are kept.
     """
     _, component_indices = sp.csgraph.connected_components(
-        sparse_graph.adj_matrix)
+        graph.adj_matrix)
     component_sizes = np.bincount(component_indices)
     # reverse order to sort descending
     components_to_keep = np.argsort(component_sizes)[::-1][:n_components]
     nodes_to_keep = [
         idx for (idx, component) in enumerate(component_indices) if component in components_to_keep
     ]
-    return create_subgraph(sparse_graph, nodes_to_keep=nodes_to_keep)
+    return create_subgraph(graph, nodes_to_keep=nodes_to_keep)
 
 
-def create_subgraph(sparse_graph, *, nodes_to_remove=None, nodes_to_keep=None):
+def create_subgraph(graph, *, nodes_to_remove=None, nodes_to_keep=None):
     """Create a graph with the specified subset of nodes.
     Exactly one of (nodes_to_remove, nodes_to_keep) should be provided, while the other stays None.
     Note that to avoid confusion, it is required to pass node indices as named Parameters to this function.
 
     Parameters
     ----------
-    sparse_graph : Graph
+    graph : Graph
         Input graph.
     nodes_to_remove : array-like of int
         Indices of nodes that have to removed.
@@ -75,7 +75,7 @@ def create_subgraph(sparse_graph, *, nodes_to_remove=None, nodes_to_keep=None):
         Indices of nodes that have to be kept.
     Returns
     -------
-    sparse_graph : Graph
+    graph : Graph
         Graph with specified nodes removed.
     """
     # Check that Parameters are passed correctly
@@ -86,21 +86,24 @@ def create_subgraph(sparse_graph, *, nodes_to_remove=None, nodes_to_keep=None):
         raise ValueError(
             "Only one of nodes_to_remove or nodes_to_keep must be provided.")
     elif nodes_to_remove is not None:
-        nodes_to_keep = np.setdiff1d(np.arange(sparse_graph.n_nodes), nodes_to_remove)
+        if len(nodes_to_remove)==0:
+            return graph.copy()
+        nodes_to_keep = np.setdiff1d(np.arange(graph.n_nodes), nodes_to_remove)
     elif nodes_to_keep is not None:
         nodes_to_keep = np.sort(nodes_to_keep)
     else:
         raise RuntimeError("This should never happen.")
 
-    sparse_graph = sparse_graph.copy()
-    sparse_graph.adj_matrix = sparse_graph.adj_matrix[nodes_to_keep][:, nodes_to_keep]
-    if sparse_graph.attr_matrix is not None:
-        sparse_graph.attr_matrix = sparse_graph.attr_matrix[nodes_to_keep]
-    if sparse_graph.labels is not None:
-        sparse_graph.labels = sparse_graph.labels[nodes_to_keep]
-    if sparse_graph.node_names is not None:
-        sparse_graph.node_names = sparse_graph.node_names[nodes_to_keep]
-    return sparse_graph
+    graph = graph.copy()
+    adj_matrix, attr_matrix, labels = graph.raw()
+    graph.adj_matrix = adj_matrix[nodes_to_keep][:, nodes_to_keep]
+    if attr_matrix is not None:
+        graph.attr_matrix = attr_matrix[nodes_to_keep]
+    if labels is not None:
+        graph.labels = labels[nodes_to_keep]
+    if graph.node_names is not None:
+        graph.node_names = graph.node_names[nodes_to_keep]
+    return graph
 
 
 def binarize_labels(labels, sparse_output=False, return_classes=False):
@@ -133,21 +136,6 @@ def binarize_labels(labels, sparse_output=False, return_classes=False):
         binarizer = LabelBinarizer(sparse_output=sparse_output)
     label_matrix = binarizer.fit_transform(labels).astype(np.float32)
     return (label_matrix, binarizer.classes_) if return_classes else label_matrix
-
-
-def remove_underrepresented_classes(g, train_examples_per_class, val_examples_per_class):
-    """Remove nodes from graph that correspond to a class of which there are less than
-    n_classes * train_examples_per_class + n_classes * val_examples_per_class nodes.
-    Those classes would otherwise break the training procedure.
-    """
-    min_examples_per_class = train_examples_per_class + val_examples_per_class
-    examples_counter = Counter(g.labels)
-    keep_classes = set(class_ for class_, count in examples_counter.items(
-    ) if count > min_examples_per_class)
-    keep_indices = [i for i in range(
-        len(g.labels)) if g.labels[i] in keep_classes]
-
-    return create_subgraph(g, nodes_to_keep=keep_indices)
 
 
 def get_train_val_test_split(stratify,

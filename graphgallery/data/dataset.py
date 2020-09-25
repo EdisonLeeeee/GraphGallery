@@ -7,8 +7,7 @@ import os.path as osp
 
 from abc import ABC
 from graphgallery.data.preprocess import (train_val_test_split_tabular,
-                                          get_train_val_test_split,
-                                          remove_underrepresented_classes)
+                                          get_train_val_test_split)
 
 
 class Dataset(ABC):
@@ -60,8 +59,8 @@ class Dataset(ABC):
                         random_state=None):
 
         if self.name == 'cora_full':
-            self.graph = remove_underrepresented_classes(self.graph,
-                                                         train_examples_per_class, val_examples_per_class).standardize()
+            self.graph = self.graph.eliminate_classes(train_examples_per_class+val_examples_per_class).standardize()
+            
         labels = self.graph.labels
         idx_train, idx_val, idx_test = get_train_val_test_split(labels,
                                                                 train_examples_per_class,
