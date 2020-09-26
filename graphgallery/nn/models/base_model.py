@@ -21,11 +21,12 @@ from graphgallery.utils import save
 
 def _check_cur_module(module, kind):
     modules = module.split('.')[-4:]
-    if any(("tf_models" in modules and kind == "P",
-            "torch_models" in modules and kind == "T")):
+    if any(("TF" in modules and kind == "P",
+            "PTH" in modules and kind == "T")):
         cur_module = "Tensorflow models" if kind == "P" else "PyTorch models"
         raise RuntimeError(f"You are currently using models in '{cur_module}' but with backend '{backend()}'."
                            "Please use `set_backend()` to change the current backend.")
+
 
 def parse_graph_inputs(*graph):
     # TODO: Maybe I could write it a little more elegantly here?
@@ -38,7 +39,7 @@ def parse_graph_inputs(*graph):
         elif sp.isspmatrix(graph):
             graph = Graph(graph)
         elif isinstance(graph, dict):
-            return Graph(**graph)            
+            return Graph(**graph)
         elif is_list_like(graph):
             # TODO: multi graph
             ...
@@ -52,9 +53,8 @@ def parse_graph_inputs(*graph):
             ...
         else:
             raise ValueError(f"Unrecognized inputs {graph}.")
-            
+
     return graph
-            
 
 
 def parse_device(device: str, kind: str) -> str:
@@ -81,6 +81,7 @@ def parse_device(device: str, kind: str) -> str:
         return torch.device(_device)
     return _device
 
+
 class BaseModel(ABC):
     """Base model for semi-supervised learning and unsupervised learning."""
 
@@ -104,7 +105,7 @@ class BaseModel(ABC):
         graph = parse_graph_inputs(*graph)
         self.backend = backend()
         self.kind = self.backend.kind
-        
+
         if kwargs.pop('check', True):
             _check_cur_module(self.__module__, self.kind)
 
@@ -147,10 +148,10 @@ class BaseModel(ABC):
         self.intx = intx()
 
     def save(self, path=None, as_model=False, overwrite=True, save_format=None, **kwargs):
-        
+
         if not path:
             path = self.weight_path
-            
+
         makedirs_from_path(path)
 
         if as_model:
@@ -222,5 +223,3 @@ class BaseModel(ABC):
 
     def __repr__(self):
         return f"GraphGallery.nn.{self.name}(device={self.device}, backend={self.backend})"
-
-
