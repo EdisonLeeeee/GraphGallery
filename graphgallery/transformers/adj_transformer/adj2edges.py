@@ -21,6 +21,6 @@ def sparse_adj_to_sparse_edges(adj_matrix: sp.csr_matrix):
     """
     adj_matrix = adj_matrix.tocoo(copy=False)
     edge_index = np.asarray((adj_matrix.row, adj_matrix.col))
-    edge_weight = adj_matrix.data
+    edge_weight = adj_matrix.data.copy()
 
     return edge_index, edge_weight    
