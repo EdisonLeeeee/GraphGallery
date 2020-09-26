@@ -11,7 +11,7 @@
     <img src="https://img.shields.io/badge/Python->=3.7-3776AB?logo=python" alt="Python">
   </a>    
   <a href="https://github.com/tensorflow/tensorflow/releases/tag/v2.1.0">
-    <img src="https://img.shields.io/badge/TensorFlow->=2.1-FF6F00?logo=tensorflow" alt="tensorflow">
+    <img src="https://img.shields.io/badge/TensorFlow->=2.1.2-FF6F00?logo=tensorflow" alt="tensorflow">
   </a>      
   <a href="https://github.com/pytorch/pytorch">
     <img src="https://img.shields.io/badge/PyTorch->=1.5-FF6F00?logo=pytorch" alt="pytorch">
@@ -30,7 +30,7 @@
 
 
 # GraphGallery
-GraphGallery is a gallery of state-of-the-arts graph neural networks for [TensorFlow 2.x](https://github.com/tensorflow/tensorflow) and [PyTorch](https://github.com/pytorch/pytorch). 
+GraphGallery is a gallery of state-of-the-arts graph neural networks for [TensorFlow 2.x](https://github.com/tensorflow/tensorflow) and [PyTorch](https://github.com/pytorch/pytorch). GraphGallery 0.3.0 is a total re-write from 0.2.0, and some things have changed. 
 <!-- 
 This repo aims to achieve 4 goals:
 + Similar or higher performance
@@ -163,33 +163,25 @@ Test loss 1.4124, Test accuracy 81.20%
 
 ## Visualization
 NOTE: you must install [SciencePlots](https://github.com/garrettj403/SciencePlots) package for a better preview.
-+ Accuracy
-```python
-import matplotlib.pyplot as plt
-with plt.style.context(['science', 'no-latex']):
-    plt.plot(his.history['acc'])
-    plt.plot(his.history['val_acc'])
-    plt.legend(['Train Accuracy', 'Val Accuracy'])
-    plt.ylabel('Accuracy')
-    plt.xlabel('Epochs')
-    plt.autoscale(tight=True)
-    plt.show()    
-```
-![visualization](https://github.com/EdisonLeeeee/GraphGallery/blob/master/imgs/visualization_acc.png)
 
-+ Loss
 ```python
 import matplotlib.pyplot as plt
 with plt.style.context(['science', 'no-latex']):
-    plt.plot(his.history['loss'])
-    plt.plot(his.history['val_loss'])
-    plt.legend(['Train Loss', 'Val Loss'])
-    plt.ylabel('Loss')
-    plt.xlabel('Epochs')
+    fig, axes = plt.subplots(1, 2, figsize=(15, 5))
+    axes[0].plot(his.history['acc'], label='Train accuracy')
+    axes[0].plot(his.history['val_acc'], label='Val accuracy')
+    axes[0].set_xlabel('Epochs')
+    axes[0].legend()
+
+    axes[1].plot(his.history['loss'], label='Training loss')
+    axes[1].plot(his.history['val_loss'], label='Validation loss')
+    axes[1].set_xlabel('Epochs')
+    axes[1].legend()
+    
     plt.autoscale(tight=True)
     plt.show()    
 ```
-![visualization](https://github.com/EdisonLeeeee/GraphGallery/blob/master/imgs/visualization_loss.png)
+![visualization](https://github.com/EdisonLeeeee/GraphGallery/blob/master/imgs/history.png)
 
 ## Using TensorFlow/PyTorch Backend
 ```python
