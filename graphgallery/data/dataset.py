@@ -43,6 +43,11 @@ class Dataset(ABC):
     def split(self, train_size=0.1, val_size=0.1, test_size=0.8,
               random_state=None):
 
+        assert all((train_size, val_size))
+        if test_size is None:
+            test_size = 1.0 - train_size - val_size
+        assert train_size+val_size+test_size<1.0
+        
         labels = self.graph.labels
         idx_train, idx_val, idx_test = train_val_test_split_tabular(labels.shape[0],
                                                                     train_size,

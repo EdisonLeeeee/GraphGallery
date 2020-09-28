@@ -45,31 +45,34 @@ class Planetoid(Dataset):
     def download(self):
 
         if files_exist(self.raw_paths):
-            print(f"Downloaded dataset files have existed.")
             if self.verbose:
+                print(f"Downloaded dataset files have existed.")
                 self.print_files(self.raw_paths)
             return
 
-        print("Downloading...")
+        if self.verbose:
+            print("Downloading...")
         download_file(self.raw_paths, self.urls)
         if self.verbose:
             self.print_files(self.raw_paths)
-        print("Downloading completed.")
+            print("Downloading completed.")
 
     def process(self):
 
-        print("Processing...")
+        if self.verbose:
+            print("Processing...")
         adj, attributes, labels, idx_train, idx_val, idx_test = process_planetoid_datasets(
             self.name, self.raw_paths)
         self.graph = Graph(adj, attributes, labels).eliminate_selfloops()
         self.idx_train = idx_train
         self.idx_val = idx_val
         self.idx_test = idx_test
-        print("Processing completed.")
+        if self.verbose:
+            print("Processing completed.")
 
     def split(self, train_size=None, val_size=None, test_size=None,
               random_state=None):
-        if train_size is None:
+        if not all((train_size, val_size, test_size)):
             return self.idx_train, self.idx_val, self.idx_test
         else:
             return super().split(train_size, val_size, test_size, random_state)
