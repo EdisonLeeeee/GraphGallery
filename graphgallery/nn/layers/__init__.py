@@ -23,3 +23,4 @@ if _BACKEND .kind == "T":
 
 else:
     from graphgallery.nn.layers.PTH.gcn import GraphConvolution
+    from graphgallery.nn.layers.PTH.gat import GraphAttention
