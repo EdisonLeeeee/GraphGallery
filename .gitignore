@@ -97,3 +97,4 @@ ENV/
 
 *.pickle
 .vscode
+*ipynb
