@@ -35,6 +35,7 @@ if _BACKEND .kind == "T":
     from graphgallery.nn.models.semisupervised.experimental.gcna import GCNA
 else:
     from graphgallery.nn.models.semisupervised.PTH.gcn import GCN
+    from graphgallery.nn.models.semisupervised.PTH.gat import GAT
 
 # unsupervised model
 from graphgallery.nn.models.unsupervised.unsupervised_model import UnsupervisedModel

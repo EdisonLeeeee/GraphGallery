@@ -3,6 +3,7 @@ import math
 import torch
 
 __all__ = ['uniform', 'kaiming_uniform',
+           'xavier_uniform',
            'glorot_uniform',
            'glorot_orthogonal', 'zeros',
            'ones', 'normal', 'reset']
