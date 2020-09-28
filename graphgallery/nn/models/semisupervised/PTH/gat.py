@@ -69,11 +69,51 @@ class _Model(TorchKerasModel):
 
 class GAT(SemiSupervisedModel):
     """
+        Implementation of Graph Attention Networks (GAT).
+        `Graph Attention Networks <https://arxiv.org/abs/1710.10903>`
+        Tensorflow 1.x implementation: <https://github.com/PetarV-/GAT>
+        Pytorch implementation: <https://github.com/Diego999/pyGAT>
+        Keras implementation: <https://github.com/danielegrattarola/keras-gat>
+
     """
 
     def __init__(self, *graph, adj_transformer="add_selfloops", attr_transformer=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
-        """
+        """Creat a Graph Attention Networks (GAT) model.
+
+
+        This can be instantiated in several ways:
+
+            model = GAT(graph)
+                with a `graphgallery.data.Graph` instance representing
+                A sparse, attributed, labeled graph.
+
+            model = GAT(adj_matrix, attr_matrix, labels)
+                where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
+                 `attr_matrix` is a 2D Numpy array-like matrix denoting the node 
+                 attributes, `labels` is a 1D Numpy array denoting the node labels.
+        Parameters:
+        ----------
+        graph: graphgallery.data.Graph, or `adj_matrix, attr_matrix and labels` triplets.
+            A sparse, attributed, labeled graph.
+        adj_transformer: string, transformer, or None. optional
+            How to transform the adjacency matrix. (default: :obj:`'normalize_adj'`
+            with normalize rate `-0.5`.
+            i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
+        attr_transformer: string, transformer, or None. optional
+            How to transform the node attribute matrix. See `graphgallery.transformers`
+            (default :obj: `None`)
+        device: string. optional
+            The device where the model is running on. You can specified `CPU` or `GPU`
+            for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
+        seed: interger scalar. optional 
+            Used in combination with `tf.random.set_seed` & `np.random.seed` 
+            & `random.seed` to create a reproducible sequence of tensors across 
+            multiple calls. (default :obj: `None`, i.e., using random seed)
+        name: string. optional
+            Specified name for the model. (default: :str: `class.__name__`)
+        kwargs: other customed keyword Parameters.
+
         """
 
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
