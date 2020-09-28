@@ -6,6 +6,7 @@ from numba.typed import Dict
 
 @njit
 def mixing_matrix(edges, in_deg, out_deg, mapping):
+
     n_degrees = len(mapping)
     M = np.zeros((n_degrees, n_degrees))
 
@@ -21,9 +22,9 @@ def mixing_matrix(edges, in_deg, out_deg, mapping):
     return M
 
 
-def degree_mixing_matrix(adj, normalize=True):
-    out_deg = adj.sum(1).A1.astype('int64')
-    in_deg = adj.sum(0).A1.astype('int64')
+def degree_mixing_matrix(adj_matrix, normalize=True):
+    out_deg = adj_matrix.sum(1).A1.astype('int64')
+    in_deg = adj_matrix.sum(0).A1.astype('int64')
     deg_set = np.union1d(out_deg, in_deg)
 
     mapping = Dict.empty(
@@ -33,7 +34,7 @@ def degree_mixing_matrix(adj, normalize=True):
     for x, y in enumerate(deg_set):
         mapping[y] = x
 
-    edges = np.transpose(adj.nonzero()).astype('int64')
+    edges = np.transpose(adj_matrix.nonzero()).astype('int64')
 
     M = mixing_matrix(edges, in_deg, out_deg, mapping)
 
@@ -58,7 +59,7 @@ def numeric_ac(M, mapping):
     return (xy * (M - ab)).sum() / vara
 
 
-def degree_assortativity_coefficient(adj):
+def degree_assortativity_coefficient(adj_matrix):
     """Compute degree assortativity of graph.
 
     Assortativity measures the similarity of connections
@@ -66,7 +67,7 @@ def degree_assortativity_coefficient(adj):
 
     Parameters
     ----------
-    adj : Scipy sparse adjacency matrix representing a graph
+    adj_matrix: Scipy sparse adjacency matrix representing a graph
 
     Returns
     -------
@@ -75,7 +76,7 @@ def degree_assortativity_coefficient(adj):
 
     Notes
     --------
-    This is a faster implementation of 
+    This is a faster implementation of
         networkx.degree_assortativity_coefficient
 
     See Also
@@ -88,8 +89,8 @@ def degree_assortativity_coefficient(adj):
     ----------
     .. [1] M. E. J. Newman, Mixing patterns in networks,
     Physical Review E, 67 026126, 2003
-    .. [2] Foster, J.G., Foster, D.V., Grassberger, P. & Paczuski, M. 
+    .. [2] Foster, J.G., Foster, D.V., Grassberger, P. & Paczuski, M.
     Edge direction and the structure of networks, PNAS 107, 10815-20 (2010).
     """
-    M, mapping = degree_mixing_matrix(adj)
+    M, mapping = degree_mixing_matrix(adj_matrix)
     return numeric_ac(M, mapping)

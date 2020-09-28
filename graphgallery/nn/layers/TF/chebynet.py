@@ -77,7 +77,7 @@ class ChebyConvolution(Layer):
     def build(self, input_shapes):
         self.kernel, self.bias = [], []
         input_dim = input_shapes[0][-1]
-        for i in range(self.order+1):
+        for i in range(self.order + 1):
             kernel = self.add_weight(shape=(input_dim, self.units),
                                      initializer=self.kernel_initializer,
                                      name=f'kernel_{i}',

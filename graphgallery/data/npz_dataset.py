@@ -20,7 +20,10 @@ class NPZDataset(Dataset):
     def __init__(self, name, root=None, url=None, standardize=False, verbose=True):
 
         if not name.lower() in self.supported_datasets:
-            print(f"Dataset not Found. Using custom dataset: {name}.\n")
+            print(f"Dataset not Found. Using customized dataset: {name}.")
+            customized = True
+        else:
+            customized = False
 
         super().__init__(name, root, verbose)
 
@@ -28,36 +31,41 @@ class NPZDataset(Dataset):
         self.download_dir = osp.join(self.root, "npz")
         self.standardize = standardize
 
-        makedirs(self.download_dir)
+        if not customized:
+            makedirs(self.download_dir)
+            self.download()
+        elif not osp.exists(self.raw_paths[0]):
+            raise RuntimeError(f"dataset file '{name}' not exists. Please put the file in {self.raw_paths[0]}")
 
-        self.download()
         self.process()
 
     def download(self):
 
         if files_exist(self.raw_paths):
-            print(f"Downloaded dataset files have existed.")
             if self.verbose:
+                print(f"Downloaded dataset files have existed.")
                 self.print_files(self.raw_paths)
             return
 
         self.print_files(self.raw_paths)
 
-        print("Downloading...")
+        if self.verbose:
+            print("Downloading...")
         download_file(self.raw_paths, self.urls)
         if self.verbose:
             self.print_files(self.raw_paths)
-        print("Downloading completed.")
+            print("Downloading completed.")
 
     def process(self):
-
-        print("Processing...")
+        if self.verbose:
+            print("Processing...")
         graph = load_dataset(
             self.raw_paths[0]).eliminate_selfloops().to_undirected()
         if self.standardize:
             graph = graph.standardize()
         self.graph = graph
-        print("Processing completed.")
+        if self.verbose:
+            print("Processing completed.")
 
     @property
     def url(self):

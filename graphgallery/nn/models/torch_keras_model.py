@@ -11,9 +11,10 @@ from graphgallery.utils import save
 
 
 class TorchKerasModel(Module):
-    """Keras like PyTorch Model"""
+    """Keras like PyTorch Model."""
 
     def __init__(self, *args, **kwargs):
+
         super().__init__(*args, **kwargs)
 
         # To be compatible with TensorFlow
@@ -25,7 +26,7 @@ class TorchKerasModel(Module):
 
     def compile(self):
         ...
-        
+
     def summary(self):
         ...
 

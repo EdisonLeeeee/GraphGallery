@@ -1,7 +1,4 @@
-from graphgallery.utils.export import gallery_export
 
-
-@gallery_export("graphgallery.Bunch")
 class Bunch(dict):
     """Container object for datasets
     Dictionary-like object that exposes its keys as attributes.
