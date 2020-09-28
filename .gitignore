@@ -96,4 +96,4 @@ ENV/
 .ropeproject
 
 *.pickle
-
+.vscode
