@@ -8,8 +8,8 @@ from graphgallery.data.io import makedirs, files_exist, download_file
 from graphgallery.data.graph import Graph, load_dataset
 
 
-_DATASETS = ('citeseer', 'cora', 'cora_ml', 'cora_full', 'amazon_cs', 'amazon_photo',
-             'coauthor_cs', 'coauthor_phy', 'polblogs', 'pubmed', 'flickr', 'flickr_sdm', 'blogcatalog')
+_DATASETS = ('citeseer', 'citeseer_full', 'cora', 'cora_ml', 'cora_full', 'amazon_cs', 'amazon_photo',
+             'coauthor_cs', 'coauthor_phy', 'polblogs', 'pubmed', 'flickr', 'blogcatalog')
 
 
 class NPZDataset(Dataset):
@@ -28,7 +28,7 @@ class NPZDataset(Dataset):
         super().__init__(name, root, verbose)
 
         self._url = url
-        self.download_dir = osp.join(self.root, "npz")
+        self.download_dir = self.root
         self.standardize = standardize
 
         if not customized:

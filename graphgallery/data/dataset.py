@@ -58,8 +58,7 @@ class Dataset(ABC):
                         test_examples_per_class,
                         random_state=None):
 
-        if self.name == 'cora_full':
-            self.graph = self.graph.eliminate_classes(train_examples_per_class+val_examples_per_class).standardize()
+        self.graph = self.graph.eliminate_classes(train_examples_per_class+val_examples_per_class).standardize()
             
         labels = self.graph.labels
         idx_train, idx_val, idx_test = get_train_val_test_split(labels,
