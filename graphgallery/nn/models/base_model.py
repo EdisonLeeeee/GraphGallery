@@ -16,6 +16,7 @@ from graphgallery import intx, floatx, backend, set_backend, is_list_like
 from graphgallery.data.io import makedirs_from_path
 from graphgallery.data import Basegraph, Graph
 from graphgallery.utils.raise_error import raise_if_kwargs
+from graphgallery.utils.device import parse_device
 from graphgallery.utils import save
 
 
@@ -56,30 +57,6 @@ def parse_graph_inputs(*graph):
 
     return graph
 
-
-def parse_device(device: str, kind: str) -> str:
-    # TODO:
-    # 1. device can be torch.device
-    # 2. check if gpu is available
-    _device = osp.split(device.lower())[1]
-    if not any((_device.startswith("cpu"),
-                _device.startswith("cuda"),
-                _device.startswith("gpu"))):
-        raise RuntimeError(
-            f" Expected one of cpu (CPU), cuda (CUDA), gpu (GPU) device type at start of device string: {device}")
-
-    if _device.startswith("cuda"):
-        if kind == "T":
-            _device = "GPU" + _device[4:]
-    elif _device.startswith("gpu"):
-        if kind == "P":
-            _device = "cuda" + _device[3:]
-
-    if kind == "P":
-        if _device.startswith('cuda'):
-            torch.cuda.empty_cache()
-        return torch.device(_device)
-    return _device
 
 
 class BaseModel(ABC):
