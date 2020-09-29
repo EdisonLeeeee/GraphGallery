@@ -53,9 +53,9 @@ class GraphAttention(Module):
     def reset_parameters(self):
         for head in range(self.attn_heads):
             W, a1, a2 = self.kernels[head], self.attn_kernel_self[head], self.attn_kernel_neighs[head]
-            xavier_uniform(W.data, gain=1.414)
-            xavier_uniform(a1.data, gain=1.414)
-            xavier_uniform(a2.data, gain=1.414)
+            xavier_uniform(W, gain=1.414)
+            xavier_uniform(a1, gain=1.414)
+            xavier_uniform(a2, gain=1.414)
 
             if self.use_bias:
                 zeros(self.biases[head])
