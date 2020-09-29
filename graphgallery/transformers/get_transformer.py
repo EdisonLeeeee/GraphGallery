@@ -47,7 +47,15 @@ class Pipeline(Transformer):
         return inputs
     
     def __repr__(self):
-        return f"{self.__class__.__name__}(transformer={self.transformers})"
+        format_string = self.__class__.__name__ + '('
+        for t in self.transformers:
+            format_string += '\n'
+            format_string += '    {0}'.format(t)
+        format_string += '\n)'
+        return format_string    
+    
+#     def __repr__(self):
+#         return f"{self.__class__.__name__}(transformer={self.transformers})"
     
 def get(transformer: Union[str, Transformer, None, List, Tuple, Pipeline]) -> Transformer:
     if is_list_like(transformer):
