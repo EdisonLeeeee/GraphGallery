@@ -91,8 +91,7 @@ class ClusterGCN(SemiSupervisedModel):
 
         batch_adj = self.adj_transformer(*batch_adj)
 
-        with tf.device(self.device):
-            (self.batch_adj, self.batch_x) = T.astensors(batch_adj, batch_x)
+        (self.batch_adj, self.batch_x) = T.astensors(batch_adj, batch_x, device=self.device)
 
     # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
@@ -145,8 +144,7 @@ class ClusterGCN(SemiSupervisedModel):
 
         batch_data = tuple(zip(batch_x, batch_adj, batch_mask))
 
-        with tf.device(self.device):
-            sequence = ClusterMiniBatchSequence(batch_data, batch_labels)
+        sequence = ClusterMiniBatchSequence(batch_data, batch_labels, device=self.device)
         return sequence
 
     def predict(self, index):
@@ -170,8 +168,9 @@ class ClusterGCN(SemiSupervisedModel):
         batch_data = tuple(zip(batch_x, batch_adj, batch_mask))
 
         logit = np.zeros((index.size, self.graph.n_classes), dtype=self.floatx)
+        batch_data = T.astensors(batch_data, device=self.device)
+
         with tf.device(self.device):
-            batch_data = T.astensors(batch_data)
             for order, inputs in zip(orders, batch_data):
                 output = self.model.predict_on_batch(inputs)
                 logit[order] = output

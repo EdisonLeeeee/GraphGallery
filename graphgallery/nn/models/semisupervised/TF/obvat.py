@@ -73,9 +73,8 @@ class OBVAT(SemiSupervisedModel):
         adj_matrix = self.adj_transformer(graph.adj_matrix)
         attr_matrix = self.attr_transformer(graph.attr_matrix)
 
-        with tf.device(self.device):
-            self.feature_inputs, self.structure_inputs = T.astensors(
-                attr_matrix, adj_matrix)
+        self.feature_inputs, self.structure_inputs = T.astensors(
+            attr_matrix, adj_matrix, device=self.device)
 
     # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
@@ -135,7 +134,7 @@ class OBVAT(SemiSupervisedModel):
         h = self.GCN_layers[-1]([h, adj])
         return h
 
-    @ tf.function
+    @tf.function
     def extra_train(self, epochs=10):
 
         with tf.device(self.device):
@@ -159,7 +158,6 @@ class OBVAT(SemiSupervisedModel):
     def train_sequence(self, index):
         index = T.asintarr(index)
         labels = self.graph.labels[index]
-        with tf.device(self.device):
-            sequence = FullBatchNodeSequence(
-                [self.feature_inputs, self.structure_inputs, index], labels)
+        sequence = FullBatchNodeSequence(
+            [self.feature_inputs, self.structure_inputs, index], labels, device=self.device)
         return sequence

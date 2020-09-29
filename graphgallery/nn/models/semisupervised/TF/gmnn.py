@@ -76,9 +76,8 @@ class GMNN(SemiSupervisedModel):
         adj_matrix = self.adj_transformer(graph.adj_matrix)
         attr_matrix = self.attr_transformer(graph.attr_matrix)
 
-        with tf.device(self.device):
-            self.feature_inputs, self.structure_inputs = T.astensors(
-                attr_matrix, adj_matrix)
+        self.feature_inputs, self.structure_inputs = T.astensors(
+            attr_matrix, adj_matrix, device=self.device)
 
     # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
@@ -140,15 +139,16 @@ class GMNN(SemiSupervisedModel):
         label_predict[idx_train] = self.graph.labels[idx_train]
         label_predict = tf.one_hot(label_predict, depth=self.graph.n_classes)
         # train model_p fitst
-        with tf.device(self.device):
-            train_sequence = FullBatchNodeSequence([label_predict,
-                                                    self.structure_inputs, index_all], label_predict)
-            if idx_val is not None:
-                val_sequence = FullBatchNodeSequence([label_predict,
-                                                      self.structure_inputs, idx_val],
-                                                     self.labels_onehot[idx_val])
-            else:
-                val_sequence = None
+        train_sequence = FullBatchNodeSequence([label_predict,
+                                                self.structure_inputs, index_all], label_predict, 
+                                                device=self.device)
+        if idx_val is not None:
+            val_sequence = FullBatchNodeSequence([label_predict,
+                                                    self.structure_inputs, idx_val],
+                                                    self.labels_onehot[idx_val], 
+                                                    device=self.device)
+        else:
+            val_sequence = None
 
         self.model = self.model_p
         history = super().train(train_sequence, val_sequence, epochs=epochs,
@@ -159,7 +159,7 @@ class GMNN(SemiSupervisedModel):
 
         # then train model_q again
         label_predict = self.model.predict_on_batch(
-            T.astensors(label_predict, self.structure_inputs, index_all))
+            T.astensors(label_predict, self.structure_inputs, index_all, device=self.device))
 
         label_predict = softmax(label_predict)
         if tf.is_tensor(label_predict):
@@ -168,10 +168,9 @@ class GMNN(SemiSupervisedModel):
         label_predict[idx_train] = self.labels_onehot[idx_train]
 
         self.model = self.model_q
-        with tf.device(self.device):
-            train_sequence = FullBatchNodeSequence([self.feature_inputs,
-                                                    self.structure_inputs, index_all],
-                                                   label_predict)
+        train_sequence = FullBatchNodeSequence([self.feature_inputs,
+                                                self.structure_inputs, index_all],
+                                                label_predict, device=self.device)
         history = super().train(train_sequence, idx_val, epochs=epochs,
                                 early_stopping=early_stopping,
                                 verbose=verbose, save_best=save_best,
@@ -186,7 +185,6 @@ class GMNN(SemiSupervisedModel):
         index = T.asintarr(index)
         # if the graph is changed?
         labels = self.labels_onehot[index]
-        with tf.device(self.device):
-            sequence = FullBatchNodeSequence(
-                [self.feature_inputs, self.structure_inputs, index], labels)
+        sequence = FullBatchNodeSequence(
+            [self.feature_inputs, self.structure_inputs, index], labels, device=self.device)
         return sequence

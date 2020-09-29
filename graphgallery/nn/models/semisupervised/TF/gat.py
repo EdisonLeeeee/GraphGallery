@@ -72,9 +72,8 @@ class GAT(SemiSupervisedModel):
         adj_matrix = self.adj_transformer(graph.adj_matrix)
         attr_matrix = self.attr_transformer(graph.attr_matrix)
 
-        with tf.device(self.device):
-            self.feature_inputs, self.structure_inputs = T.astensors(
-                attr_matrix, adj_matrix)
+        self.feature_inputs, self.structure_inputs = T.astensors(
+            attr_matrix, adj_matrix, device=self.device)
 
     @EqualVarLength(include=["n_heads"])
     def build(self, hiddens=[8], n_heads=[8], activations=['elu'], dropouts=[0.6], l2_norms=[5e-4],
@@ -114,7 +113,6 @@ class GAT(SemiSupervisedModel):
     def train_sequence(self, index):
         index = T.asintarr(index)
         labels = self.graph.labels[index]
-        with tf.device(self.device):
-            sequence = FullBatchNodeSequence(
-                [self.feature_inputs, self.structure_inputs, index], labels)
+        sequence = FullBatchNodeSequence(
+            [self.feature_inputs, self.structure_inputs, index], labels, device=self.device)
         return sequence

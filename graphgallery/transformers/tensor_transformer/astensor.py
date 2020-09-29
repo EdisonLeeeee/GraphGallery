@@ -71,10 +71,7 @@ def astensor(x, dtype=None, device=None):
         3. `Bool` if `x` is bool.
     """
     if backend().kind == "T":
-        if device is not None:
-            raise RuntimeError(
-                f"The argument `device` only work for `PyTorch backend`, but currently is {backend()}.")
-        return tf_tensor.astensor(x, dtype=dtype)
+        return tf_tensor.astensor(x, dtype=dtype, device=device)
     else:
         return th_tensor.astensor(x, dtype=dtype, device=device)
 
@@ -104,10 +101,7 @@ def astensors(*xs, device=None):
         3. `Bool` if `x` in `xs` is bool.
     """
     if backend().kind == "T":
-        if device is not None:
-            raise RuntimeError(
-                f"The argument `device` only work for `PyTorch backend`, but currently is {backend()}.")
-        return tf_tensor.astensors(*xs)
+        return tf_tensor.astensors(*xs, device=device)
     else:
         return th_tensor.astensors(*xs, device=device)
 

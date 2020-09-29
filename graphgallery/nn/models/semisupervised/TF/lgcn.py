@@ -71,8 +71,7 @@ class LGCN(SemiSupervisedModel):
         adj_matrix = self.adj_transformer(graph.adj_matrix).toarray()
         attr_matrix = self.attr_transformer(graph.attr_matrix)
 
-        with tf.device(self.device):
-            self.feature_inputs, self.structure_inputs = attr_matrix, adj_matrix
+        self.feature_inputs, self.structure_inputs = attr_matrix, adj_matrix
 
     # @EqualVarLength()
     def build(self, hiddens=[32], n_filters=[8, 8], activations=[None, None], dropouts=[0.8, 0.8],
@@ -132,9 +131,8 @@ class LGCN(SemiSupervisedModel):
         mask = mask[index]
         labels = self.graph.labels[index[mask]]
 
-        with tf.device(self.device):
-            sequence = FullBatchNodeSequence(
-                [feature_inputs, structure_inputs, mask], labels)
+        sequence = FullBatchNodeSequence(
+            [feature_inputs, structure_inputs, mask], labels, device=self.device)
         return sequence
 
 

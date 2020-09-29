@@ -124,7 +124,7 @@ class GAT(SemiSupervisedModel):
         attr_matrix = self.attr_transformer(graph.attr_matrix)
 
         self.feature_inputs, self.structure_inputs = T.astensors(
-            attr_matrix, adj_matrix)
+            attr_matrix, adj_matrix, device=self.device)
 
     # use decorator to make sure all list arguments have the same length
     @EqualVarLength(include=["n_heads"])

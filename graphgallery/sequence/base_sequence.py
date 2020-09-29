@@ -3,15 +3,21 @@ import tensorflow as tf
 
 
 from tensorflow.keras.utils import Sequence as tf_Sequence
-from tensorflow.keras.layers import Layer
 from torch.nn import Module
 
+from functools import partial
+
+from graphgallery import transformers as T
 
 class Sequence(tf_Sequence):
 
     def __init__(self, *args, **kwargs):
-        self.device = kwargs.pop('device', None)
+        device = kwargs.pop('device', 'cpu')
         super().__init__(*args, **kwargs)
+        self.astensor = partial(T.astensor, device=device)
+        self.astensors = partial(T.astensors, device=device)
+        self.device = device
+        
 
     def __len__(self):
         raise NotImplementedError

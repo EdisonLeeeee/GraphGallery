@@ -30,7 +30,7 @@ class SBVATSampleSequence(Sequence):
         return 1
 
     def __getitem__(self, index):
-        return T.astensors(*self.x, self.adv_mask), T.astensor(self.y)
+        return self.astensors(*self.x, self.adv_mask), self.astensor(self.y)
 
     def on_epoch_end(self):
         if self.resample:

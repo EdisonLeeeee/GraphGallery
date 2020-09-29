@@ -81,9 +81,8 @@ class EdgeGCN(SemiSupervisedModel):
         attr_matrix = self.attr_transformer(graph.attr_matrix)
         edge_index, edge_weight = T.sparse_adj_to_sparse_edges(adj_matrix)
 
-        with tf.device(self.device):
-            self.feature_inputs, self.structure_inputs = T.astensors(
-                attr_matrix, (edge_index.T, edge_weight))
+        self.feature_inputs, self.structure_inputs = T.astensors(
+            attr_matrix, (edge_index.T, edge_weight), device=self.device)
 
     # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
@@ -121,7 +120,6 @@ class EdgeGCN(SemiSupervisedModel):
     def train_sequence(self, index):
         index = T.asintarr(index)
         labels = self.graph.labels[index]
-        with tf.device(self.device):
-            sequence = FullBatchNodeSequence(
-                [self.feature_inputs, *self.structure_inputs, index], labels)
+        sequence = FullBatchNodeSequence(
+            [self.feature_inputs, *self.structure_inputs, index], labels, device=self.device)
         return sequence

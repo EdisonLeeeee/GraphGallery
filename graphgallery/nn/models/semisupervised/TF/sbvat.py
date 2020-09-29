@@ -85,9 +85,8 @@ class SBVAT(SemiSupervisedModel):
         attr_matrix = self.attr_transformer(graph.attr_matrix)
         self.neighbors = find_4o_nbrs(adj_matrix)
 
-        with tf.device(self.device):
-            self.feature_inputs, self.structure_inputs = T.astensors(
-                attr_matrix, adj_matrix)
+        self.feature_inputs, self.structure_inputs = T.astensors(
+            attr_matrix, adj_matrix, device=self.device)
 
     # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
@@ -205,11 +204,10 @@ class SBVAT(SemiSupervisedModel):
         index = T.asintarr(index)
         labels = self.graph.labels[index]
 
-        with tf.device(self.device):
-            sequence = SBVATSampleSequence([self.feature_inputs, self.structure_inputs,
-                                            index], labels,
-                                           neighbors=self.neighbors,
-                                           n_samples=self.n_samples)
+        sequence = SBVATSampleSequence([self.feature_inputs, self.structure_inputs,
+                                        index], labels,
+                                        neighbors=self.neighbors,
+                                        n_samples=self.n_samples, device=self.device)
 
         return sequence
 
@@ -217,12 +215,11 @@ class SBVAT(SemiSupervisedModel):
         index = T.asintarr(index)
         labels = self.graph.labels[index]
 
-        with tf.device(self.device):
-            sequence = SBVATSampleSequence([self.feature_inputs, self.structure_inputs,
-                                            index], labels,
-                                           neighbors=self.neighbors,
-                                           n_samples=self.n_samples,
-                                           resample=False)
+        sequence = SBVATSampleSequence([self.feature_inputs, self.structure_inputs,
+                                        index], labels,
+                                        neighbors=self.neighbors,
+                                        n_samples=self.n_samples,
+                                        resample=False, device=self.device)
 
         return sequence
 

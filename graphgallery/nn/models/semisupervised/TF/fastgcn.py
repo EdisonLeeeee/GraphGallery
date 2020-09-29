@@ -80,9 +80,8 @@ class FastGCN(SemiSupervisedModel):
 
         attr_matrix = adj_matrix @ attr_matrix
 
-        with tf.device(self.device):
-            self.feature_inputs, self.structure_inputs = T.astensor(
-                attr_matrix), adj_matrix
+        self.feature_inputs, self.structure_inputs = T.astensor(
+            attr_matrix, device=self.device), adj_matrix
 
     # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
@@ -116,11 +115,10 @@ class FastGCN(SemiSupervisedModel):
         adj_matrix = self.graph.adj_matrix[index][:, index]
         adj_matrix = self.adj_transformer(adj_matrix)
 
-        with tf.device(self.device):
-            feature_inputs = tf.gather(self.feature_inputs, index)
-            sequence = FastGCNBatchSequence([feature_inputs, adj_matrix], labels,
-                                            batch_size=self.batch_size,
-                                            rank=self.rank)
+        feature_inputs = tf.gather(self.feature_inputs, index)
+        sequence = FastGCNBatchSequence([feature_inputs, adj_matrix], labels,
+                                        batch_size=self.batch_size,
+                                        rank=self.rank, device=self.device)
         return sequence
 
     def test_sequence(self, index):
@@ -128,7 +126,6 @@ class FastGCN(SemiSupervisedModel):
         labels = self.graph.labels[index]
         structure_inputs = self.structure_inputs[index]
 
-        with tf.device(self.device):
-            sequence = FastGCNBatchSequence([self.feature_inputs, structure_inputs],
-                                            labels, batch_size=None, rank=None)  # use full batch
+        sequence = FastGCNBatchSequence([self.feature_inputs, structure_inputs],
+                                        labels, batch_size=None, rank=None, device=self.device)  # use full batch
         return sequence

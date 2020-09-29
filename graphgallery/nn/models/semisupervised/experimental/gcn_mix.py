@@ -68,7 +68,6 @@ class GCN_MIX(FastGCN):
         index = asintarr(index)
         labels = self.graph.labels[index]
 
-        with tf.device(self.device):
-            sequence = FullBatchNodeSequence(
-                [self.feature_inputs, self.structure_inputs[index]], labels)
+        sequence = FullBatchNodeSequence(
+            [self.feature_inputs, self.structure_inputs[index]], labels, device=self.device)
         return sequence

@@ -105,7 +105,7 @@ def infer_type(x):
         raise RuntimeError(f'Invalid input of `{type(x)}`')
 
 
-def astensor(x, dtype=None):
+def astensor(x, dtype=None, device=None):
     """Convert input matrices to Tensor or SparseTensor.
 
     Parameters:
@@ -116,6 +116,9 @@ def astensor(x, dtype=None):
     dtype: The type of Tensor `x`, if not specified,
         it will automatically using appropriate data type.
         See `graphgallery.infer_type`.
+        
+    device (:class:`tf.device`, optional): the desired device of returned tensor.
+        Default: if ``None``, uses the current device for the default tensor type.
 
     Returns:
     ----------      
@@ -139,17 +142,18 @@ def astensor(x, dtype=None):
         raise TypeError(
             f"argument 'dtype' must be tensorflow.dtypes.DType or str, not {type(dtype).__name__}.")
 
-    if is_tensor_or_variable(x):
-        if x.dtype != dtype:
-            x = tf.cast(x, dtype=dtype)
-        return x
-    elif sp.isspmatrix(x):
-        return sparse_adj_to_sparse_tensor(x, dtype=dtype)
-    elif isinstance(x, (np.ndarray, np.matrix)) or is_list_like(x) or is_scalar_like(x):
-        return tf.convert_to_tensor(x, dtype=dtype)
-    else:
-        raise TypeError(
-            f'Invalid type of inputs data. Allowed data type `(Tensor, SparseTensor, Numpy array, Scipy sparse tensor, None)`, but got {type(x)}.')
+    with tf.device(device):
+        if is_tensor_or_variable(x):
+            if x.dtype != dtype:
+                x = tf.cast(x, dtype=dtype)
+            return x
+        elif sp.isspmatrix(x):
+            return sparse_adj_to_sparse_tensor(x, dtype=dtype)
+        elif isinstance(x, (np.ndarray, np.matrix)) or is_list_like(x) or is_scalar_like(x):
+            return tf.convert_to_tensor(x, dtype=dtype)
+        else:
+            raise TypeError(
+                f'Invalid type of inputs data. Allowed data type `(Tensor, SparseTensor, Numpy array, Scipy sparse tensor, None)`, but got {type(x)}.')
 
 
 astensors = MultiInputs(type_check=False)(astensor)

@@ -19,7 +19,7 @@ class ClusterMiniBatchSequence(Sequence):
     ):
         super().__init__(*args, **kwargs)
         assert batch_size == 1
-        self.x, self.y = T.astensors(x, y)
+        self.x, self.y = self.astensors(x, y)
         self.n_batches = len(self.x)
         self.shuffle = shuffle
         self.batch_size = batch_size
@@ -63,7 +63,7 @@ class SAGEMiniBatchSequence(Sequence):
         self.indices = np.arange(len(self.batch_nodes))
         self.n_samples = n_samples
 
-        self.attr_matrix = T.astensor(self.attr_matrix)
+        self.attr_matrix = self.astensor(self.attr_matrix)
 
     def __len__(self):
         return self.n_batches
@@ -83,7 +83,7 @@ class SAGEMiniBatchSequence(Sequence):
 
         y = self.y[idx] if self.y is not None else None
 
-        return T.astensors([self.attr_matrix, *nodes_input], y)
+        return self.astensors([self.attr_matrix, *nodes_input], y)
 
     def on_epoch_end(self):
         if self.shuffle:
@@ -151,7 +151,7 @@ class FastGCNBatchSequence(Sequence):
             else:
                 attr_matrix = attr_matrix[q]
 
-        return T.astensors((attr_matrix, adj_matrix), y)
+        return self.astensors((attr_matrix, adj_matrix), y)
 
     def full_batch(self):
         return (self.attr_matrix, self.adj_matrix), self.y

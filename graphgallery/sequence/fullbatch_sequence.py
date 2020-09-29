@@ -7,8 +7,8 @@ class FullBatchNodeSequence(Sequence):
     def __init__(self, x, y=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.x = T.astensors(x, device=self.device)
-        self.y = T.astensor(y, device=self.device)
+        self.x = self.astensors(x, device=self.device)
+        self.y = self.astensor(y, device=self.device)
 
     def __len__(self):
         return 1

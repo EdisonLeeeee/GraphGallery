@@ -82,9 +82,8 @@ class GraphSAGE(SemiSupervisedModel):
         attr_matrix = np.vstack(
             [attr_matrix, np.zeros(attr_matrix.shape[1], dtype=self.floatx)])
 
-        with tf.device(self.device):
-            self.feature_inputs, self.structure_inputs = T.astensors(
-                attr_matrix), adj_matrix
+        self.feature_inputs, self.structure_inputs = T.astensors(
+            attr_matrix, device=self.device), adj_matrix
 
     # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
@@ -141,8 +140,7 @@ class GraphSAGE(SemiSupervisedModel):
     def train_sequence(self, index):
         index = T.asintarr(index)
         labels = self.graph.labels[index]
-        with tf.device(self.device):
-            sequence = SAGEMiniBatchSequence(
-                [self.feature_inputs, self.structure_inputs, index], labels,
-                n_samples=self.n_samples)
+        sequence = SAGEMiniBatchSequence(
+            [self.feature_inputs, self.structure_inputs, index], labels,
+            n_samples=self.n_samples, device=self.device)
         return sequence
