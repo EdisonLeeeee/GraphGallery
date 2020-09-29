@@ -7,12 +7,11 @@ from torch import optim
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.nn.models import TorchKerasModel
 from graphgallery.nn.models.get_activation import get_activation
-from graphgallery.nn.layers import GraphAttention
+from graphgallery.nn.layers import GraphAttention, SparseGraphAttention
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.decorators import EqualVarLength
 
 from graphgallery import transformers as T
-
 
 class _Model(TorchKerasModel):
 
@@ -33,14 +32,14 @@ class _Model(TorchKerasModel):
         inc = in_channels
         pre_head = 1
         for hidden, n_head, act, l2_norm in zip(hiddens, n_heads, activations, l2_norms):
-            layer = GraphAttention(inc * pre_head, hidden, attn_heads=n_head, attn_heads_reduction='concat', activation=act, use_bias=use_bias)
+            layer = GraphAttention(inc * pre_head, hidden, attn_heads=n_head, reduction='concat', activation=act, use_bias=use_bias)
             self.gcs.append(layer)
             self.acts.append(get_activation(act))
             paras.append(dict(params=layer.parameters(), weight_decay=l2_norm))
             inc = hidden
             pre_head = n_head
 
-        layer = GraphAttention(inc * pre_head, out_channels, attn_heads=1, attn_heads_reduction='average', use_bias=use_bias)
+        layer = GraphAttention(inc * pre_head, out_channels, attn_heads=1, reduction='average', use_bias=use_bias)
         self.gcs.append(layer)
         # do not use weight_decay in the final layer
         paras.append(dict(params=layer.parameters(), weight_decay=0.))
@@ -52,21 +51,19 @@ class _Model(TorchKerasModel):
         x, adj, idx = inputs
 
         for i in range(len(self.gcs) - 1):
+            x = F.dropout(x, self.dropouts[i], training=self.training)
             act = self.acts[i]
             x = act(self.gcs[i]([x, adj]))
-            x = F.dropout(x, self.dropouts[i], training=self.training)
 
+        x = F.dropout(x, self.dropouts[-1], training=self.training)
         x = self.gcs[-1]([x, adj])  # last layer
 
-        if idx is None:
-            return x
-        else:
-            return x[idx]
+        return x[idx]
 
     def reset_parameters(self):
-        for i, l in enumerate(self.gcs):
-            self.gcs[i].reset_parameters()
-
+        for layer in self.gcs:
+            layer.reset_parameters()
+        
 class GAT(SemiSupervisedModel):
     """
         Implementation of Graph Attention Networks (GAT).
@@ -146,3 +143,4 @@ class GAT(SemiSupervisedModel):
             [self.feature_inputs, self.structure_inputs, index], labels, device=self.device)
 
         return sequence
+        
