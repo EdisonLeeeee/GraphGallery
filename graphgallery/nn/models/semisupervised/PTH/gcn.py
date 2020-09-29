@@ -26,7 +26,7 @@ class _Model(TorchKerasModel):
         # save for later usage
         self.dropouts = dropouts
 
-        self.gcs = ModuleList()
+        self.layers = ModuleList()
         self.acts = []
         paras = []
 
@@ -34,13 +34,13 @@ class _Model(TorchKerasModel):
         inc = in_channels
         for hidden, act, l2_norm in zip(hiddens, activations, l2_norms):
             layer = GraphConvolution(inc, hidden, use_bias=use_bias)
-            self.gcs.append(layer)
+            self.layers.append(layer)
             self.acts.append(get_activation(act))
             paras.append(dict(params=layer.parameters(), weight_decay=l2_norm))
             inc = hidden
 
         layer = GraphConvolution(inc, out_channels, use_bias=use_bias)
-        self.gcs.append(layer)
+        self.layers.append(layer)
         # do not use weight_decay in the final layer
         paras.append(dict(params=layer.parameters(), weight_decay=0.))
 
@@ -50,21 +50,16 @@ class _Model(TorchKerasModel):
     def forward(self, inputs):
         x, adj, idx = inputs
 
-        for i in range(len(self.gcs) - 1):
-            act = self.acts[i]
-            x = act(self.gcs[i]([x, adj]))
+        for i in range(len(self.layers) - 1):
             x = F.dropout(x, self.dropouts[i], training=self.training)
+            act = self.acts[i]
+            x = act(self.layers[i]([x, adj]))
+            
+        # add extra dropout
+        x = F.dropout(x, self.dropouts[-1], training=self.training)
+        x = self.layers[-1]([x, adj])  # last layer
 
-        x = self.gcs[-1]([x, adj])  # last layer
-
-        if idx is None:
-            return x
-        else:
-            return x[idx]
-
-    def reset_parameters(self):
-        for i, l in enumerate(self.gcs):
-            self.gcs[i].reset_parameters()
+        return x[idx]
 
 
 class GCN(SemiSupervisedModel):

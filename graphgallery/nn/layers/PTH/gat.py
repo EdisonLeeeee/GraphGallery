@@ -98,6 +98,8 @@ class GraphAttention(Module):
 
 
 
+#########################Sparse Version of `GraphAttention` layer###################
+
 class SpecialSpmmFunction(torch.autograd.Function):
     """Special function for only sparse region backpropataion layer."""
     @staticmethod

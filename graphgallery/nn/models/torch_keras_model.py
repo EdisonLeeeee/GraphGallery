@@ -35,6 +35,10 @@ class TorchKerasModel(Module):
 
     def save(self, filepath, overwrite=True, save_format=None, **kwargs):
         save.save_torch_model(self, filepath, overwrite=overwrite, save_format=save_format, **kwargs)
+        
+    def reset_parameters(self):
+        for layer in self.layers:
+            layer.reset_parameters()        
 
 
 def dummy_function(*args, **kwargs):
