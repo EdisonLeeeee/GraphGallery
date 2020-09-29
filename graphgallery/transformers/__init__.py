@@ -40,5 +40,5 @@ from graphgallery.transformers.tensor_transformer.astensor import (astensor, ast
                                                                    normalize_edge_tensor)
 
 # other transformer
-from graphgallery.transformers.get_transformer import get, Pipeline
+from graphgallery.transformers.get_transformer import get, Compose
 from graphgallery.transformers.transform import indices2mask, asintarr

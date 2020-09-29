@@ -33,7 +33,7 @@ _TRANSFORMER = {"gdc": GDC,
 _ALLOWED = set(list(_TRANSFORMER.keys()))
 
 
-class Pipeline(Transformer):
+class Compose(Transformer):
     def __init__(self, *transformers, **kwargs):
         self.transformers = tuple(get(transformer) for transformer in transformers)
         
@@ -57,9 +57,9 @@ class Pipeline(Transformer):
 #     def __repr__(self):
 #         return f"{self.__class__.__name__}(transformer={self.transformers})"
     
-def get(transformer: Union[str, Transformer, None, List, Tuple, Pipeline]) -> Transformer:
+def get(transformer: Union[str, Transformer, None, List, Tuple, Compose]) -> Transformer:
     if is_list_like(transformer):
-        return Pipeline(*transformer)
+        return Compose(*transformer)
     
     if isinstance(transformer, Transformer) or callable(transformer):
         return transformer
