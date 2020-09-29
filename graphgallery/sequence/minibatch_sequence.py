@@ -3,11 +3,10 @@ import numpy as np
 import tensorflow as tf
 import scipy.sparse as sp
 
-from graphgallery import transformers as T
 from graphgallery.sequence.base_sequence import Sequence
 
 
-class ClusterMiniBatchSequence(Sequence):
+class MiniBatchSequence(Sequence):
 
     def __init__(
         self,

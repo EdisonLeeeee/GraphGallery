@@ -1,4 +1,4 @@
 from graphgallery.sequence.base_sequence import Sequence
-from graphgallery.sequence.minibatch_sequence import ClusterMiniBatchSequence, SAGEMiniBatchSequence, FastGCNBatchSequence
+from graphgallery.sequence.minibatch_sequence import MiniBatchSequence, SAGEMiniBatchSequence, FastGCNBatchSequence
 from graphgallery.sequence.fullbatch_sequence import FullBatchNodeSequence
 from graphgallery.sequence.sample_sequence import SBVATSampleSequence

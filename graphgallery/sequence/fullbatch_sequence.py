@@ -1,4 +1,3 @@
-from graphgallery import transformers as T
 from graphgallery.sequence.base_sequence import Sequence
 
 

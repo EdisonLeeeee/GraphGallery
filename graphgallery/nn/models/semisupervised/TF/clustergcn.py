@@ -9,7 +9,7 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 from graphgallery.nn.layers import GraphConvolution, Mask
 from graphgallery.nn.models import SemiSupervisedModel
-from graphgallery.sequence import ClusterMiniBatchSequence
+from graphgallery.sequence import MiniBatchSequence
 from graphgallery.utils.decorators import EqualVarLength
 from graphgallery import transformers as T
 
@@ -144,7 +144,7 @@ class ClusterGCN(SemiSupervisedModel):
 
         batch_data = tuple(zip(batch_x, batch_adj, batch_mask))
 
-        sequence = ClusterMiniBatchSequence(batch_data, batch_labels, device=self.device)
+        sequence = MiniBatchSequence(batch_data, batch_labels, device=self.device)
         return sequence
 
     def predict(self, index):
