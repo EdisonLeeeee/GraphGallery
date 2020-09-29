@@ -66,7 +66,7 @@ In detail, the following methods are currently implemented:
 + **LGCN** from  *Hongyang Gao et al*, [📝Large-Scale Learnable Graph Convolutional Networks](https://arxiv.org/abs/1808.03965), *KDD'18*. 
  [[🌋 TF]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_LGCN.ipynb)
 + **GAT** from *Petar Veličković et al*, [📝Graph Attention Networks](https://arxiv.org/abs/1710.10903), *ICLR'18*. 
- ), [[🌋 TF]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_GAT.ipynb)
+ ), [[🌋 TF]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_GAT.ipynb), [[🔥 Torch]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyTorch/test_GAT.ipynb)
 + **SGC** from *Felix Wu et al*, [📝Simplifying Graph Convolutional Networks](https://arxiv.org/abs/1902.07153), *ICML'19*. 
  [[🌋 TF]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_SGC.ipynb)
 + **GWNN** from *Bingbing Xu et al*, [📝Graph Wavelet Neural Network](https://arxiv.org/abs/1904.07785), *ICLR'19*. 
