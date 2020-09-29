@@ -17,9 +17,9 @@ normal = torch.nn.init.normal_
 
 
 
-def uniform(size, tensor):
-    bound = 1.0 / math.sqrt(size)
+def uniform(tensor):
     if tensor is not None:
+        bound = 1.0 / math.sqrt(tensor.size(-1))
         tensor.data.uniform_(-bound, bound)
 
 
@@ -29,9 +29,9 @@ def uniform(size, tensor):
 #         tensor.data.uniform_(-bound, bound)
 
 
-def glorot_uniform(tensor, scale=1.0):
+def glorot_uniform(tensor, scale=6.0):
     if tensor is not None:
-        stdv = math.sqrt(6.0 / (tensor.size(-2) + tensor.size(-1)))
+        stdv = math.sqrt(scale / (tensor.size(-2) + tensor.size(-1)))
         tensor.data.uniform_(-stdv, stdv)
 
 

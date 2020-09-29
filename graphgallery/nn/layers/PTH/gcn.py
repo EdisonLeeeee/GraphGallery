@@ -3,7 +3,7 @@ import math
 import numpy as np
 from torch.nn.parameter import Parameter
 from torch.nn import Module
-from graphgallery.nn.init import kaiming_uniform, zeros
+from graphgallery.nn.init import uniform, zeros
 
 # TODO: change dtypes of trainable weights based on `floax`
 class GraphConvolution(Module):
@@ -21,7 +21,7 @@ class GraphConvolution(Module):
         self.reset_parameters()
 
     def reset_parameters(self):
-        kaiming_uniform(self.kernel, a=math.sqrt(5))
+        uniform(self.kernel)
         zeros(self.bias)
 
     def forward(self, inputs):
