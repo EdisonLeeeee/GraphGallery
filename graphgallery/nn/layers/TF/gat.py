@@ -16,7 +16,7 @@ class GraphAttention(Layer):
         Parameters:
           units: Positive integer, dimensionality of the output space.
           atten_heads: Positive integer, number of attention heads.
-          attn_heads_reduction: {'concat', 'average'}, whether to enforce concat or average for the outputs from different heads.
+          reduction: {'concat', 'average'}, whether to enforce concat or average for the outputs from different heads.
           dropout: Float, internal dropout rate
           activation: Activation function to use.
             If you don't specify anything, no activation is applied
@@ -49,7 +49,7 @@ class GraphAttention(Layer):
     def __init__(self,
                  units,
                  attn_heads=1,
-                 attn_heads_reduction='concat',
+                 reduction='concat',
                  dropout=0.5,
                  activation=None,
                  use_bias=True,
@@ -67,12 +67,12 @@ class GraphAttention(Layer):
 
         super().__init__(**kwargs)
 
-        if attn_heads_reduction not in {'concat', 'average'}:
+        if reduction not in {'concat', 'average'}:
             raise ValueError('Possbile reduction methods: concat, average')
 
         self.units = units  # Number of output attributes (F' in the paper)
         self.attn_heads = attn_heads  # Number of attention heads (K in the paper)
-        self.attn_heads_reduction = attn_heads_reduction  # Eq. 5 and 6 in the paper
+        self.reduction = reduction  # Eq. 5 and 6 in the paper
         self.dropout = dropout  # Internal dropout rate
         self.activation = activations.get(activation)  # Eq. 4 in the paper
         self.use_bias = use_bias
@@ -95,7 +95,7 @@ class GraphAttention(Layer):
         self.biases = []        # Layer biases for attention heads
         self.attn_kernels = []  # Attention kernels for attention heads
 
-        if attn_heads_reduction == 'concat':
+        if reduction == 'concat':
             # Output will have shape (..., K * F')
             self.output_dim = self.units * self.attn_heads
         else:
@@ -196,7 +196,7 @@ class GraphAttention(Layer):
             outputs.append(h)
 
         # Aggregate the heads' output according to the reduction method
-        if self.attn_heads_reduction == 'concat':
+        if self.reduction == 'concat':
             output = tf.concat(outputs, axis=1)  # (N x KF')
         else:
             output = tf.reduce_mean(tf.stack(outputs), axis=0)  # (N x F')
@@ -207,7 +207,7 @@ class GraphAttention(Layer):
 
         config = {'units': self.units,
                   'attn_heads': self.attn_heads,
-                  'attn_heads_reduction': self.attn_heads_reduction,
+                  'reduction': self.reduction,
                   'use_bias': self.use_bias,
                   'activation': keras.activations.serialize(self.activation),
                   'kernel_initializer': keras.initializers.serialize(

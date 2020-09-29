@@ -92,7 +92,7 @@ class GAT(SemiSupervisedModel):
             h = x
             for hid, n_head, activation, dropout, l2_norm in zip(hiddens, n_heads, activations, dropouts, l2_norms):
                 h = GraphAttention(hid, attn_heads=n_head,
-                                   attn_heads_reduction='concat',
+                                   reduction='concat',
                                    use_bias=use_bias,
                                    activation=activation,
                                    kernel_regularizer=regularizers.l2(l2_norm),
@@ -102,7 +102,7 @@ class GAT(SemiSupervisedModel):
                 h = Dropout(rate=dropout)(h)
 
             h = GraphAttention(self.graph.n_classes, use_bias=use_bias,
-                               attn_heads=1, attn_heads_reduction='average')([h, adj])
+                               attn_heads=1, reduction='average')([h, adj])
             h = Gather()([h, index])
 
             model = Model(inputs=[x, adj, index], outputs=h)
