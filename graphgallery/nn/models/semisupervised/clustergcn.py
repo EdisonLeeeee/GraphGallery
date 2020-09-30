@@ -1,16 +1,14 @@
+import torch
 import numpy as np
 import networkx as nx
 import tensorflow as tf
-from tensorflow.keras import Model, Input
-from tensorflow.keras.layers import Dropout
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras import regularizers
-from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tf_layers import GraphConvolution, Gather
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import MiniBatchSequence
 from graphgallery.utils.decorators import EqualVarLength
+
+from graphgallery.nn.models.semisupervised.th_models.gcn import GCN as pyGCN
+from graphgallery.nn.models.semisupervised.tf_models.gcn import GCN as tfGCN
 from graphgallery import transformers as T
 
 
@@ -96,33 +94,23 @@ class ClusterGCN(SemiSupervisedModel):
     # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
     def build(self, hiddens=[32], activations=['relu'], dropout=0.5,
-              l2_norms=[1e-5], lr=0.01, use_bias=False):
+              l2_norms=[0.], lr=0.01, use_bias=False):
 
-        with tf.device(self.device):
+#         if not self.kind == "T":
+#             raise RuntimeError(f"Currently {self.name} only support for tensorflow backend.")
+            
+        if self.kind == "P":
+             model = pyGCN(self.graph.n_attrs, hiddens, self.graph.n_classes,
+                                activations=activations, l2_norms=l2_norms, dropout=dropout,
+                                lr=lr, use_bias=use_bias).to(self.device)
+        else:
+            with tf.device(self.device):
+                with tf.device(self.device):
+                    model = tfGCN(self.graph.n_attrs, hiddens, self.graph.n_classes,
+                                    activations=activations, l2_norms=l2_norms, dropout=dropout,
+                                    lr=lr, use_bias=use_bias, experimental_run_tf_function=False)
 
-            x = Input(batch_shape=[None, self.graph.n_attrs],
-                      dtype=self.floatx, name='attr_matrix')
-            adj = Input(batch_shape=[None, None], dtype=self.floatx,
-                        sparse=True, name='adj_matrix')
-            index = Input(batch_shape=[None], dtype=self.intx, name='node_index')
-
-            h = x
-            for hid, activation, l2_norm in zip(hiddens, activations, l2_norms):
-                h = Dropout(rate=dropout)(h)
-                h = GraphConvolution(hid, use_bias=use_bias, activation=activation,
-                                     kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
-
-            h = Dropout(rate=dropout)(h)
-            h = GraphConvolution(self.graph.n_classes,
-                                 use_bias=use_bias)([h, adj])
-            h = Gather()([h, index])
-
-            model = Model(inputs=[x, adj, index], outputs=h)
-            model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
-                          optimizer=Adam(lr=lr), metrics=['accuracy'],
-                          experimental_run_tf_function=False)
-
-            self.model = model
+        self.model = model
 
     def train_sequence(self, index):
         index = T.asintarr(index)
@@ -170,9 +158,17 @@ class ClusterGCN(SemiSupervisedModel):
         logit = np.zeros((index.size, self.graph.n_classes), dtype=self.floatx)
         batch_data = T.astensors(batch_data, device=self.device)
 
-        with tf.device(self.device):
-            for order, inputs in zip(orders, batch_data):
-                output = self.model.predict_on_batch(inputs)
-                logit[order] = output
+        model = self.model
+        if self.kind == "P":
+            model.eval()
+            with torch.no_grad():
+                for order, inputs in zip(orders, batch_data):
+                    output = model(inputs).detach().cpu().numpy()
+                    logit[order] = output 
+        else:
+            with tf.device(self.device):
+                for order, inputs in zip(orders, batch_data):
+                    output = model.predict_on_batch(inputs)
+                    logit[order] = output
 
         return logit

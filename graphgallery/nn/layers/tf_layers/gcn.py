@@ -90,7 +90,7 @@ class GraphConvolution(Layer):
     def call(self, inputs):
 
         x, adj = inputs
-        h = x @ self.kernel
+        h = tf.matmul(x, self.kernel)
         output = tf.sparse.sparse_dense_matmul(adj, h)
 
         if self.use_bias:

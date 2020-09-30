@@ -820,8 +820,8 @@ def train_step_torch(model, sequence):
     optimizer = model.optimizer
     loss_fn = model.loss_fn
 
-    accuracy = 0
-    loss = 0
+    accuracy = 0.
+    loss = 0.
     n_inputs = 0
 
     for inputs, labels in sequence:
@@ -835,7 +835,7 @@ def train_step_torch(model, sequence):
             accuracy += (output.argmax(1) == labels).float().sum()
             n_inputs += labels.size(0)
 
-    return (loss / n_inputs).detach().item(), (accuracy / n_inputs).detach().item()
+    return loss.detach().item(), (accuracy / n_inputs).detach().item()
 
 
 def test_step_tf(model, sequence, device):
@@ -868,8 +868,8 @@ def test_step_tf(model, sequence, device):
 def test_step_torch(model, sequence):
     model.eval()
     loss_fn = model.loss_fn
-    accuracy = 0
-    loss = 0
+    accuracy = 0.
+    loss = 0.
     n_inputs = 0
 
     for inputs, labels in sequence:
@@ -880,7 +880,7 @@ def test_step_torch(model, sequence):
         n_inputs += labels.size(0)
         accuracy += (output.argmax(1) == labels).float().sum()
 
-    return (loss / n_inputs).detach().item(), (accuracy / n_inputs).detach().item()
+    return loss.detach().item(), (accuracy / n_inputs).detach().item()
 
 
 def predict_step_tf(model, sequence, device):

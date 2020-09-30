@@ -20,13 +20,13 @@ from graphgallery.utils.device import parse_device
 from graphgallery.utils import save
 
 
-def _check_cur_module(module, kind):
-    modules = module.split('.')[-4:]
-    if any(("tf_models" in modules and kind == "P",
-            "th_models" in modules and kind == "T")):
-        cur_module = "Tensorflow models" if kind == "P" else "PyTorch models"
-        raise RuntimeError(f"You are currently using models in '{cur_module}' but with backend '{backend()}'."
-                           "Please use `set_backend()` to change the current backend.")
+# def _check_cur_module(module, kind):
+#     modules = module.split('.')[-4:]
+#     if any(("tf_models" in modules and kind == "P",
+#             "th_models" in modules and kind == "T")):
+#         cur_module = "Tensorflow models" if kind == "P" else "PyTorch models"
+#         raise RuntimeError(f"You are currently using models in '{cur_module}' but with backend '{backend()}'."
+#                            "Please use `set_backend()` to change the current backend.")
 
 
 def parse_graph_inputs(*graph):
@@ -83,8 +83,8 @@ class BaseModel(ABC):
         self.backend = backend()
         self.kind = self.backend.kind
 
-        if kwargs.pop('check', True):
-            _check_cur_module(self.__module__, self.kind)
+#         if kwargs.pop('check', True):
+#             _check_cur_module(self.__module__, self.kind)
 
         _id = np.random.RandomState(None).randint(100)
 
@@ -96,7 +96,7 @@ class BaseModel(ABC):
             if self.kind == "P":
                 torch.manual_seed(seed)
                 torch.cuda.manual_seed(seed)
-#                 torch.cuda.manual_seed_all(seed)
+                # torch.cuda.manual_seed_all(seed)
             else:
                 tf.random.set_seed(seed)
 

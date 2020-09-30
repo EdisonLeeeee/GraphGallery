@@ -8,22 +8,22 @@ from graphgallery.nn.models.semisupervised.semi_supervised_model import SemiSupe
 
 from graphgallery.nn.models.semisupervised.gcn import GCN
 from graphgallery.nn.models.semisupervised.gat import GAT
+from graphgallery.nn.models.semisupervised.clustergcn import ClusterGCN
 
 
 ### only tensorflow models#######################################################
-from graphgallery.nn.models.semisupervised.tf_models.sgc import SGC
-from graphgallery.nn.models.semisupervised.tf_models.clustergcn import ClusterGCN
-from graphgallery.nn.models.semisupervised.tf_models.gwnn import GWNN
-from graphgallery.nn.models.semisupervised.tf_models.robustgcn import RobustGCN
-from graphgallery.nn.models.semisupervised.tf_models.graphsage import GraphSAGE
-from graphgallery.nn.models.semisupervised.tf_models.fastgcn import FastGCN
-from graphgallery.nn.models.semisupervised.tf_models.chebynet import ChebyNet
-from graphgallery.nn.models.semisupervised.tf_models.densegcn import DenseGCN
-from graphgallery.nn.models.semisupervised.tf_models.lgcn import LGCN
-from graphgallery.nn.models.semisupervised.tf_models.obvat import OBVAT
-from graphgallery.nn.models.semisupervised.tf_models.sbvat import SBVAT
-from graphgallery.nn.models.semisupervised.tf_models.gmnn import GMNN
-from graphgallery.nn.models.semisupervised.tf_models.dagnn import DAGNN
+from graphgallery.nn.models.semisupervised.sgc import SGC
+from graphgallery.nn.models.semisupervised.gwnn import GWNN
+from graphgallery.nn.models.semisupervised.robustgcn import RobustGCN
+from graphgallery.nn.models.semisupervised.graphsage import GraphSAGE
+from graphgallery.nn.models.semisupervised.fastgcn import FastGCN
+from graphgallery.nn.models.semisupervised.chebynet import ChebyNet
+from graphgallery.nn.models.semisupervised.densegcn import DenseGCN
+from graphgallery.nn.models.semisupervised.lgcn import LGCN
+from graphgallery.nn.models.semisupervised.obvat import OBVAT
+from graphgallery.nn.models.semisupervised.sbvat import SBVAT
+from graphgallery.nn.models.semisupervised.gmnn import GMNN
+from graphgallery.nn.models.semisupervised.dagnn import DAGNN
 
 # experimental model
 from graphgallery.nn.models.semisupervised.experimental.mediansage import MedianSAGE

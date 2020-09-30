@@ -28,7 +28,7 @@ class GraphConvolution(Module):
 
     def forward(self, inputs):
         x, adj = inputs
-        h = torch.spmm(x, self.kernel)
+        h = torch.mm(x, self.kernel)
         output = torch.spmm(adj, h)
 
         if self.bias is not None:

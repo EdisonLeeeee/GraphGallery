@@ -1,17 +1,13 @@
 import tensorflow as tf
-from tensorflow.keras import Model, Input
-from tensorflow.keras.layers import Dropout
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras import regularizers
-from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tf_layers import GraphConvolution, Gather
 
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.decorators import EqualVarLength
 
 from graphgallery.nn.models.semisupervised.th_models.gcn import GCN as pyGCN
+from graphgallery.nn.models.semisupervised.tf_models.gcn import GCN as tfGCN
+
 from graphgallery import transformers as T
 
 
@@ -80,38 +76,19 @@ class GCN(SemiSupervisedModel):
 
     # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
-    def build(self, hiddens=[16], activations=['relu'], dropout=0.5,
-              l2_norms=[5e-4], lr=0.01, use_bias=False):
+    def build(self, hiddens=[16], activations=['relu'],
+              l2_norms=[5e-4], dropout=0.5, lr=0.01, use_bias=False):
         
         if self.kind == "P":
              model = pyGCN(self.graph.n_attrs, hiddens, self.graph.n_classes,
-                                activations=activations, dropout=dropout, l2_norms=l2_norms,
+                                activations=activations, l2_norms=l2_norms, dropout=dropout,
                                 lr=lr, use_bias=use_bias).to(self.device)
         else:
 
             with tf.device(self.device):
-
-                x = Input(batch_shape=[None, self.graph.n_attrs],
-                          dtype=self.floatx, name='attr_matrix')
-                adj = Input(batch_shape=[None, None], dtype=self.floatx, 
-                            sparse=True, name='adj_matrix')
-                index = Input(batch_shape=[None], dtype=self.intx, name='node_index')
-
-                h = x
-                for hid, activation, l2_norm in zip(hiddens, activations, l2_norms):
-                    h = GraphConvolution(hid, use_bias=use_bias,
-                                         activation=activation,
-                                         kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
-
-                    h = Dropout(rate=dropout)(h)
-
-                h = GraphConvolution(self.graph.n_classes,
-                                     use_bias=use_bias)([h, adj])
-                h = Gather()([h, index])
-
-                model = Model(inputs=[x, adj, index], outputs=h)
-                model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
-                              optimizer=Adam(lr=lr), metrics=['accuracy'])
+                model = tfGCN(self.graph.n_attrs, hiddens, self.graph.n_classes,
+                                activations=activations, l2_norms=l2_norms, dropout=dropout,
+                                lr=lr, use_bias=use_bias)
 
         self.model = model
 

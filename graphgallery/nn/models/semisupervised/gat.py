@@ -12,6 +12,7 @@ from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.decorators import EqualVarLength
 
 from graphgallery.nn.models.semisupervised.th_models.gat import GAT as pyGAT
+from graphgallery.nn.models.semisupervised.tf_models.gat import GAT as tfGAT
 from graphgallery import transformers as T
 
 
@@ -83,38 +84,16 @@ class GAT(SemiSupervisedModel):
               lr=0.01, use_bias=True):
 
         if self.kind == "P":
-            model = pyGAT(self.graph.n_attrs, hiddens, self.graph.n_classes,
-                          activations=activations, dropout=dropout, l2_norms=l2_norms,
+            model = pyGAT(self.graph.n_attrs, hiddens, self.graph.n_classes, n_heads=n_heads,
+                          activations=activations, l2_norms=l2_norms, dropout=dropout,
                           lr=lr, use_bias=use_bias).to(self.device)
         else:
             with tf.device(self.device):
+                model = tfGAT(self.graph.n_attrs, hiddens, self.graph.n_classes, n_heads=n_heads,
+                              activations=activations, l2_norms=l2_norms, dropout=dropout,
+                              lr=lr, use_bias=use_bias)
 
-                x = Input(batch_shape=[None, self.graph.n_attrs],
-                        dtype=self.floatx, name='attr_matrix')
-                adj = Input(
-                    batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix')
-                index = Input(batch_shape=[None],
-                            dtype=self.intx, name='node_index')
 
-                h = x
-                for hid, n_head, activation, l2_norm in zip(hiddens, n_heads, activations, l2_norms):
-                    h = GraphAttention(hid, attn_heads=n_head,
-                                    reduction='concat',
-                                    use_bias=use_bias,
-                                    activation=activation,
-                                    kernel_regularizer=regularizers.l2(l2_norm),
-                                    attn_kernel_regularizer=regularizers.l2(
-                                        l2_norm),
-                                    )([h, adj])
-                    h = Dropout(rate=dropout)(h)
-
-                h = GraphAttention(self.graph.n_classes, use_bias=use_bias,
-                                attn_heads=1, reduction='average')([h, adj])
-                h = Gather()([h, index])
-
-                model = Model(inputs=[x, adj, index], outputs=h)
-                model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
-                            optimizer=Adam(lr=lr), metrics=['accuracy'])
 
         self.model = model
 
