@@ -54,14 +54,14 @@ def assert_same_type(*inputs):
     return True
 
 
-_BASE_VARS = ['hiddens', 'activations', 'dropouts', 'l2_norms']
+_BASE_VARS = ['hiddens', 'activations', 'l2_norms']
 
 
 class EqualVarLength:
     """
     A decorator class which makes the values of the variables 
     equal in max-length. variables consist of 'hiddens', 'activations', 
-    'dropouts', 'l2_norms' and other customed ones in `include`.
+    'l2_norms' and other customed ones in `include`.
 
     """
 
@@ -69,7 +69,7 @@ class EqualVarLength:
         """
         include: string, a list or tuple of string, optional.
             the customed variable name except for 'hiddens', 'activations', 
-            'dropouts', 'l2_norms'. 
+            'l2_norms'. 
         exclude: string, a list or tuple of string, optional.
             the exclued variable name.
         """

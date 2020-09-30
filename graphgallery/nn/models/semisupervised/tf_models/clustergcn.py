@@ -7,7 +7,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tf_layers import GraphConvolution, Mask
+from graphgallery.nn.layers.tf_layers import GraphConvolution, Gather
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import MiniBatchSequence
 from graphgallery.utils.decorators import EqualVarLength
@@ -95,7 +95,7 @@ class ClusterGCN(SemiSupervisedModel):
 
     # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
-    def build(self, hiddens=[32], activations=['relu'], dropouts=[0.5],
+    def build(self, hiddens=[32], activations=['relu'], dropout=0.5,
               l2_norms=[1e-5], lr=0.01, use_bias=False):
 
         with tf.device(self.device):
@@ -104,10 +104,10 @@ class ClusterGCN(SemiSupervisedModel):
                       dtype=self.floatx, name='attr_matrix')
             adj = Input(batch_shape=[None, None], dtype=self.floatx,
                         sparse=True, name='adj_matrix')
-            mask = Input(batch_shape=[None], dtype=tf.bool, name='node_mask')
+            index = Input(batch_shape=[None], dtype=self.intx, name='node_index')
 
             h = x
-            for hid, activation, dropout, l2_norm in zip(hiddens, activations, dropouts, l2_norms):
+            for hid, activation, l2_norm in zip(hiddens, activations, l2_norms):
                 h = Dropout(rate=dropout)(h)
                 h = GraphConvolution(hid, use_bias=use_bias, activation=activation,
                                      kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
@@ -115,9 +115,9 @@ class ClusterGCN(SemiSupervisedModel):
             h = Dropout(rate=dropout)(h)
             h = GraphConvolution(self.graph.n_classes,
                                  use_bias=use_bias)([h, adj])
-            h = Mask()([h, mask])
+            h = Gather()([h, index])
 
-            model = Model(inputs=[x, adj, mask], outputs=h)
+            model = Model(inputs=[x, adj, index], outputs=h)
             model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
                           optimizer=Adam(lr=lr), metrics=['accuracy'],
                           experimental_run_tf_function=False)
@@ -129,7 +129,7 @@ class ClusterGCN(SemiSupervisedModel):
         mask = T.indices2mask(index, self.graph.n_nodes)
         labels = self.graph.labels
 
-        batch_mask, batch_labels = [], []
+        batch_idx, batch_labels = [], []
         batch_x, batch_adj = [], []
         for cluster in range(self.n_clusters):
             nodes = self.cluster_member[cluster]
@@ -139,10 +139,10 @@ class ClusterGCN(SemiSupervisedModel):
                 continue
             batch_x.append(self.batch_x[cluster])
             batch_adj.append(self.batch_adj[cluster])
-            batch_mask.append(mini_mask)
+            batch_idx.append(np.where(mini_mask)[0])
             batch_labels.append(mini_labels)
 
-        batch_data = tuple(zip(batch_x, batch_adj, batch_mask))
+        batch_data = tuple(zip(batch_x, batch_adj, batch_idx))
 
         sequence = MiniBatchSequence(batch_data, batch_labels, device=self.device)
         return sequence
@@ -152,7 +152,7 @@ class ClusterGCN(SemiSupervisedModel):
         mask = T.indices2mask(index, self.graph.n_nodes)
 
         orders_dict = {idx: order for order, idx in enumerate(index)}
-        batch_mask, orders = [], []
+        batch_idx, orders = [], []
         batch_x, batch_adj = [], []
         for cluster in range(self.n_clusters):
             nodes = self.cluster_member[cluster]
@@ -162,10 +162,10 @@ class ClusterGCN(SemiSupervisedModel):
                 continue
             batch_x.append(self.batch_x[cluster])
             batch_adj.append(self.batch_adj[cluster])
-            batch_mask.append(mini_mask)
+            batch_idx.append(np.where(mini_mask)[0])
             orders.append([orders_dict[n] for n in batch_nodes])
 
-        batch_data = tuple(zip(batch_x, batch_adj, batch_mask))
+        batch_data = tuple(zip(batch_x, batch_adj, batch_idx))
 
         logit = np.zeros((index.size, self.graph.n_classes), dtype=self.floatx)
         batch_data = T.astensors(batch_data, device=self.device)

@@ -64,7 +64,7 @@ class MedianSAGE(GraphSAGE):
 
     # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
-    def build(self, hiddens=[32], activations=['relu'], dropouts=[0.5],
+    def build(self, hiddens=[32], activations=['relu'], dropout=0.5,
               l2_norms=[5e-4], lr=0.01, use_bias=True, output_normalize=False, aggrator='median'):
 
         with tf.device(self.device):
@@ -100,7 +100,7 @@ class MedianSAGE(GraphSAGE):
                     h[hop] = aggrator(
                         [h[hop], tf.reshape(h[hop + 1], neighbor_shape)])
                     if hop != len(self.n_samples) - 1:
-                        h[hop] = Dropout(rate=dropouts[hop])(h[hop])
+                        h[hop] = Dropout(rate=dropout)(h[hop])
                 h.pop()
 
             h = h[0]

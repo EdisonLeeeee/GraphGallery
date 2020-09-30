@@ -69,7 +69,7 @@ class SimplifiedOBVAT(OBVAT):
 
     # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
-    def build(self, hiddens=[16], activations=['relu'], dropouts=[0.],
+    def build(self, hiddens=[16], activations=['relu'], dropout=0.,
               lr=0.01, l2_norms=[5e-4], p1=1.4, p2=0.7, use_bias=False,
               epsilon=0.01):
 
@@ -84,7 +84,7 @@ class SimplifiedOBVAT(OBVAT):
 
             GCN_layers = []
             dropout_layers = []
-            for hid, activation, dropout, l2_norm in zip(hiddens, activations, dropouts, l2_norms):
+            for hid, activation, l2_norm in zip(hiddens, activations, l2_norms):
                 GCN_layers.append(GraphConvolution(hid,
                                                    activation=activation,
                                                    use_bias=use_bias,

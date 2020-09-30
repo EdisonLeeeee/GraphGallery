@@ -77,7 +77,7 @@ class GWNN(SemiSupervisedModel):
 
     # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
-    def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5], l2_norms=[5e-4], lr=0.01,
+    def build(self, hiddens=[16], activations=['relu'], dropout=0.5, l2_norms=[5e-4], lr=0.01,
               use_bias=False):
 
         with tf.device(self.device):
@@ -93,7 +93,7 @@ class GWNN(SemiSupervisedModel):
                           dtype=self.intx, name='node_index')
 
             h = x
-            for hid, activation, dropout, l2_norm in zip(hiddens, activations, dropouts, l2_norms):
+            for hid, activation, l2_norm in zip(hiddens, activations, l2_norms):
                 h = WaveletConvolution(hid, activation=activation, use_bias=use_bias,
                                        kernel_regularizer=regularizers.l2(l2_norm))([h, wavelet, inverse_wavelet])
                 h = Dropout(rate=dropout)(h)

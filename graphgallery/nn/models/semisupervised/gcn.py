@@ -80,12 +80,12 @@ class GCN(SemiSupervisedModel):
 
     # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
-    def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5],
+    def build(self, hiddens=[16], activations=['relu'], dropout=0.5,
               l2_norms=[5e-4], lr=0.01, use_bias=False):
         
         if self.kind == "P":
              model = pyGCN(self.graph.n_attrs, hiddens, self.graph.n_classes,
-                                activations=activations, dropouts=dropouts, l2_norms=l2_norms,
+                                activations=activations, dropout=dropout, l2_norms=l2_norms,
                                 lr=lr, use_bias=use_bias).to(self.device)
         else:
 
@@ -98,7 +98,7 @@ class GCN(SemiSupervisedModel):
                 index = Input(batch_shape=[None], dtype=self.intx, name='node_index')
 
                 h = x
-                for hid, activation, dropout, l2_norm in zip(hiddens, activations, dropouts, l2_norms):
+                for hid, activation, l2_norm in zip(hiddens, activations, l2_norms):
                     h = GraphConvolution(hid, use_bias=use_bias,
                                          activation=activation,
                                          kernel_regularizer=regularizers.l2(l2_norm))([h, adj])

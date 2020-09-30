@@ -2,7 +2,6 @@
 
 from graphgallery.nn.models.base_model import BaseModel
 from graphgallery.nn.models.torch_keras_model import TorchKerasModel
-from graphgallery.nn.models.get_activation import get_activation
 
 # (semi-)supervised model
 from graphgallery.nn.models.semisupervised.semi_supervised_model import SemiSupervisedModel

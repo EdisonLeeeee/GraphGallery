@@ -5,9 +5,10 @@ from torch.nn import Module, Parameter, ParameterList, LeakyReLU, Dropout
 import torch.nn.functional as F
 
 from graphgallery.nn.init import glorot_uniform, zeros
-    
+from .get_activation import get_activation
+
 class GraphAttention(Module):
-    def __init__(self, in_channels, out_channels, 
+    def __init__(self, in_channels, out_channels, activation=None,
                  attn_heads=8, alpha=0.2, reduction='concat', 
                  dropout=0.6, use_bias=False):
         super().__init__()
@@ -17,7 +18,8 @@ class GraphAttention(Module):
 
         self.in_channels = in_channels
         self.out_channels = out_channels
-
+        self.activation = get_activation(activation)
+        
         self.dropout = dropout
         self.attn_heads = attn_heads
         self.reduction = reduction
@@ -87,7 +89,7 @@ class GraphAttention(Module):
         else:
             output = torch.mean(torch.stack(outputs), 0)
 
-        return output
+        return self.activation(output)
     
     def __repr__(self):
         return self.__class__.__name__ + ' (' \
@@ -131,7 +133,7 @@ class SparseGraphAttention(Module):
     Sparse version GAT layer, similar to https://arxiv.org/abs/1710.10903
     """
 
-    def __init__(self, in_channels, out_channels, 
+    def __init__(self, in_channels, out_channels, activation=None,
                  attn_heads=8, alpha=0.2, reduction='concat', 
                  dropout=0.6, use_bias=False):
         super().__init__()
@@ -141,6 +143,9 @@ class SparseGraphAttention(Module):
 
         self.in_channels = in_channels
         self.out_channels = out_channels
+        self.activation = get_activation(activation)
+        
+        self.dropout = Dropout(dropout)
         self.attn_heads = attn_heads
         self.reduction = reduction
         
@@ -163,7 +168,6 @@ class SparseGraphAttention(Module):
                 bias = Parameter(torch.Tensor(out_channels))
                 self.biases.append(bias)
                 
-        self.dropout = Dropout(dropout)
         self.leakyrelu = LeakyReLU(alpha)
         self.special_spmm = SpecialSpmm()
         self.reset_parameters()
@@ -211,7 +215,7 @@ class SparseGraphAttention(Module):
         else:
             output = torch.mean(torch.stack(outputs), 0)
 
-        return output
+        return self.activation(output)
     
     def __repr__(self):
         return self.__class__.__name__ + ' (' + str(self.in_channels) + ' -> ' + str(self.out_channels) + ')'    

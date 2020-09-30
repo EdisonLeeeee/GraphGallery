@@ -90,7 +90,7 @@ class SBVAT(SemiSupervisedModel):
 
     # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
-    def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5],
+    def build(self, hiddens=[16], activations=['relu'], dropout=0.5,
               lr=0.01, l2_norms=[5e-4], use_bias=False, p1=1., p2=1.,
               n_power_iterations=1, epsilon=0.03, xi=1e-6):
 
@@ -105,7 +105,7 @@ class SBVAT(SemiSupervisedModel):
 
             GCN_layers = []
             dropout_layers = []
-            for hid, activation, dropout, l2_norm in zip(hiddens, activations, dropouts, l2_norms):
+            for hid, activation, l2_norm in zip(hiddens, activations, l2_norms):
                 GCN_layers.append(GraphConvolution(hid, activation=activation, use_bias=use_bias,
                                                    kernel_regularizer=regularizers.l2(l2_norm)))
                 dropout_layers.append(Dropout(rate=dropout))

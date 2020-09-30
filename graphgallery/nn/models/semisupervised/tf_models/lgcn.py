@@ -74,7 +74,7 @@ class LGCN(SemiSupervisedModel):
         self.feature_inputs, self.structure_inputs = attr_matrix, adj_matrix
 
     # @EqualVarLength()
-    def build(self, hiddens=[32], n_filters=[8, 8], activations=[None, None], dropouts=[0.8, 0.8],
+    def build(self, hiddens=[32], n_filters=[8, 8], activations=[None, None], dropout=0.8,
               l2_norms=[5e-4, 5e-4], lr=0.1, use_bias=False, k=8):
 
         with tf.device(self.device):
@@ -87,7 +87,7 @@ class LGCN(SemiSupervisedModel):
 
             h = x
             for idx, hid in enumerate(hiddens):
-                h = Dropout(rate=dropouts[idx])(h)
+                h = Dropout(rate=dropout)(h)
                 h = DenseConvolution(hid,
                                      use_bias=use_bias,
                                      activation=activations[idx],
@@ -98,13 +98,13 @@ class LGCN(SemiSupervisedModel):
                 cur_h = LGConvolution(n_filter,
                                       kernel_size=k,
                                       use_bias=use_bias,
-                                      dropout=dropouts[idx],
+                                      dropout=dropout,
                                       activation=activations[idx],
                                       kernel_regularizer=regularizers.l2(l2_norms[idx]))(top_k_h)
                 cur_h = BatchNormalization()(cur_h)
                 h = Concatenate()([h, cur_h])
 
-            h = Dropout(rate=dropouts[-1])(h)
+            h = Dropout(rate=dropout)(h)
             h = DenseConvolution(self.graph.n_classes,
                                  use_bias=use_bias,
                                  activation=activations[-1],

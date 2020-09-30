@@ -79,12 +79,12 @@ class GAT(SemiSupervisedModel):
 
     @EqualVarLength(include=["n_heads"])
     def build(self, hiddens=[8], n_heads=[8], activations=['elu'], 
-              dropouts=[0.6], l2_norms=[5e-4],
+              dropout=0.6, l2_norms=[5e-4],
               lr=0.01, use_bias=True):
 
         if self.kind == "P":
             model = pyGAT(self.graph.n_attrs, hiddens, self.graph.n_classes,
-                          activations=activations, dropouts=dropouts, l2_norms=l2_norms,
+                          activations=activations, dropout=dropout, l2_norms=l2_norms,
                           lr=lr, use_bias=use_bias).to(self.device)
         else:
             with tf.device(self.device):
@@ -97,7 +97,7 @@ class GAT(SemiSupervisedModel):
                             dtype=self.intx, name='node_index')
 
                 h = x
-                for hid, n_head, activation, dropout, l2_norm in zip(hiddens, n_heads, activations, dropouts, l2_norms):
+                for hid, n_head, activation, l2_norm in zip(hiddens, n_heads, activations, l2_norms):
                     h = GraphAttention(hid, attn_heads=n_head,
                                     reduction='concat',
                                     use_bias=use_bias,

@@ -75,7 +75,7 @@ class RobustGCN(SemiSupervisedModel):
 
     # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
-    def build(self, hiddens=[64], activations=['relu'], use_bias=False, dropouts=[0.5],
+    def build(self, hiddens=[64], activations=['relu'], use_bias=False, dropout=0.5,
               l2_norms=[5e-4], lr=0.01, kl=5e-4, gamma=1.):
 
         with tf.device(self.device):
@@ -101,7 +101,7 @@ class RobustGCN(SemiSupervisedModel):
                 kl_loss = kl * KL_divergence
 
             # additional layers (usually unnecessay)
-            for hid, activation, dropout, l2_norm in zip(hiddens[1:], activations[1:], dropouts[1:], l2_norms[1:]):
+            for hid, activation, l2_norm in zip(hiddens[1:], activations[1:], l2_norms[1:]):
 
                 mean, var = GaussionConvolution_D(
                     hid, gamma=gamma, use_bias=use_bias, activation=activation)([mean, var, *adj])
