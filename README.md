@@ -143,7 +143,7 @@ you can use the following statement to build your model
 # two hidden layer with hidden units 32, 64 and activation functions RELU and ELU
 >>> model.build(hiddens=[32, 64], activations=['relu', 'elu'])
 
-# other parameters like `dropouts` and `l2_norms` (if have) are the SAME.
+# other parameters like `l2_norms` (if have) is the SAME.
 ```
 + Train your model
 ```python
