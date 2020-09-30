@@ -28,7 +28,7 @@ class GAT(SemiSupervisedModel):
 
     def __init__(self, *graph, adj_transformer="add_selfloops", attr_transformer=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
-        """Creat a Graph Attention Networks (GAT) model.
+        """Create a Graph Attention Networks (GAT) model.
 
 
         This can be instantiated in several ways:
@@ -84,12 +84,12 @@ class GAT(SemiSupervisedModel):
               lr=0.01, use_bias=True):
 
         if self.kind == "P":
-            model = pyGAT(self.graph.n_attrs, hiddens, self.graph.n_classes, n_heads=n_heads,
+            model = pyGAT(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens, n_heads=n_heads,
                           activations=activations, l2_norms=l2_norms, dropout=dropout,
                           lr=lr, use_bias=use_bias).to(self.device)
         else:
             with tf.device(self.device):
-                model = tfGAT(self.graph.n_attrs, hiddens, self.graph.n_classes, n_heads=n_heads,
+                model = tfGAT(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens, n_heads=n_heads,
                               activations=activations, l2_norms=l2_norms, dropout=dropout,
                               lr=lr, use_bias=use_bias)
 

@@ -24,7 +24,7 @@ class RobustGCN(SemiSupervisedModel):
 
     def __init__(self, *graph, adj_transformer=T.NormalizeAdj(rate=[-0.5, -1.0]),
                  attr_transformer=None, device='cpu:0', seed=None, name=None, **kwargs):
-        """Creat a Robust Graph Convolutional Networks (RobustGCN or RGCN) model.
+        """Create a Robust Graph Convolutional Networks (RobustGCN or RGCN) model.
 
         This can be instantiated in several ways:
 
@@ -101,10 +101,10 @@ class RobustGCN(SemiSupervisedModel):
                 kl_loss = kl * KL_divergence
 
             # additional layers (usually unnecessay)
-            for hid, activation, l2_norm in zip(hiddens[1:], activations[1:], l2_norms[1:]):
+            for hidden, activation, l2_norm in zip(hiddens[1:], activations[1:], l2_norms[1:]):
 
                 mean, var = GaussionConvolution_D(
-                    hid, gamma=gamma, use_bias=use_bias, activation=activation)([mean, var, *adj])
+                    hidden, gamma=gamma, use_bias=use_bias, activation=activation)([mean, var, *adj])
                 mean = Dropout(rate=dropout)(mean)
                 var = Dropout(rate=dropout)(var)
 

@@ -29,7 +29,7 @@ class ClusterGCN(SemiSupervisedModel):
     def __init__(self, *graph, n_clusters=None,
                  adj_transformer="normalize_adj", attr_transformer=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
-        """Creat a Cluster Graph Convolutional Networks (ClusterGCN) model.
+        """Create a Cluster Graph Convolutional Networks (ClusterGCN) model.
 
         This can be instantiated in several ways:
 
@@ -100,13 +100,13 @@ class ClusterGCN(SemiSupervisedModel):
 #             raise RuntimeError(f"Currently {self.name} only support for tensorflow backend.")
             
         if self.kind == "P":
-             model = pyGCN(self.graph.n_attrs, hiddens, self.graph.n_classes,
+             model = pyGCN(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
                                 activations=activations, l2_norms=l2_norms, dropout=dropout,
                                 lr=lr, use_bias=use_bias).to(self.device)
         else:
             with tf.device(self.device):
                 with tf.device(self.device):
-                    model = tfGCN(self.graph.n_attrs, hiddens, self.graph.n_classes,
+                    model = tfGCN(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
                                     activations=activations, l2_norms=l2_norms, dropout=dropout,
                                     lr=lr, use_bias=use_bias, experimental_run_tf_function=False)
 

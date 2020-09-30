@@ -25,7 +25,7 @@ class GMNN(SemiSupervisedModel):
 
     def __init__(self, *graph, adj_transformer="normalize_adj", attr_transformer=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
-        """Creat a Graph Markov Neural Networks (GMNN) model
+        """Create a Graph Markov Neural Networks (GMNN) model
 
        This can be instantiated in several ways:
 
@@ -96,8 +96,8 @@ class GMNN(SemiSupervisedModel):
 
             def build_GCN(x):
                 h = x
-                for hid, activation, l2_norm in zip(hiddens, activations, l2_norms):
-                    h = GraphConvolution(hid, use_bias=use_bias,
+                for hidden, activation, l2_norm in zip(hiddens, activations, l2_norms):
+                    h = GraphConvolution(hidden, use_bias=use_bias,
                                          activation=activation,
                                          kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
                     h = Dropout(rate=dropout)(h)

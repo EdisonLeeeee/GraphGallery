@@ -32,7 +32,7 @@ class SBVAT(SemiSupervisedModel):
     def __init__(self, *graph, n_samples=50,
                  adj_transformer="normalize_adj", attr_transformer=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
-        """Creat a sample-based Batch Virtual Adversarial Training
+        """Create a sample-based Batch Virtual Adversarial Training
         Graph Convolutional Networks (SBVAT) model.
 
          This can be instantiated in several ways:
@@ -105,8 +105,8 @@ class SBVAT(SemiSupervisedModel):
 
             GCN_layers = []
             dropout_layers = []
-            for hid, activation, l2_norm in zip(hiddens, activations, l2_norms):
-                GCN_layers.append(GraphConvolution(hid, activation=activation, use_bias=use_bias,
+            for hidden, activation, l2_norm in zip(hiddens, activations, l2_norms):
+                GCN_layers.append(GraphConvolution(hidden, activation=activation, use_bias=use_bias,
                                                    kernel_regularizer=regularizers.l2(l2_norm)))
                 dropout_layers.append(Dropout(rate=dropout))
 

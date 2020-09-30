@@ -14,7 +14,7 @@ class Deepwalk(UnsupervisedModel):
         Implementation: <https://github.com/phanein/deepwalk>
     """
     def __init__(self, *graph, device='cpu:0', seed=None, name=None, **kwargs):
-        """Creat an unsupervised Deepwalk model.
+        """Create an unsupervised Deepwalk model.
 
         This can be instantiated in several ways:
 

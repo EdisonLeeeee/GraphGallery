@@ -23,7 +23,7 @@ class ChebyNet(SemiSupervisedModel):
 
     def __init__(self, *graph, adj_transformer="cheby_basis", attr_transformer=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
-        """Creat a ChebyNet model.
+        """Create a ChebyNet model.
 
         This can be instantiated in several ways:
 
@@ -90,8 +90,8 @@ class ChebyNet(SemiSupervisedModel):
                           dtype=self.intx, name='node_index')
 
             h = x
-            for hid, activation, l2_norm in zip(hiddens, activations, l2_norms):
-                h = ChebyConvolution(hid, order=order, use_bias=use_bias,
+            for hidden, activation, l2_norm in zip(hiddens, activations, l2_norms):
+                h = ChebyConvolution(hidden, order=order, use_bias=use_bias,
                                      activation=activation,
                                      kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
                 h = Dropout(rate=dropout)(h)

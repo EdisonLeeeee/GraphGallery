@@ -1,14 +1,15 @@
 import tensorflow as tf
-from tensorflow.keras import Model, Input
-from tensorflow.keras.layers import Dense
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras import regularizers
-from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tf_layers import SGConvolution
+from graphgallery.nn.layers.tf_layers import SGConvolution as tfSGConvolution
+from graphgallery.nn.layers.th_layers import SGConvolution as pySGConvolution
+
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.decorators import EqualVarLength
+
+from graphgallery.nn.models.semisupervised.th_models.sgc import SGC as pySGC
+from graphgallery.nn.models.semisupervised.tf_models.sgc import SGC as tfSGC
+
 from graphgallery import transformers as T
 
 
@@ -22,7 +23,7 @@ class SGC(SemiSupervisedModel):
 
     def __init__(self, *graph, order=2, adj_transformer="normalize_adj", attr_transformer=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
-        """Creat a Simplifying Graph Convolutional Networks (SGC) model.
+        """Create a Simplifying Graph Convolutional Networks (SGC) model.
 
 
         This can be instantiated in several ways:
@@ -74,47 +75,54 @@ class SGC(SemiSupervisedModel):
         adj_matrix = self.adj_transformer(graph.adj_matrix)
         attr_matrix = self.attr_transformer(graph.attr_matrix)
 
-        self.feature_inputs, self.structure_inputs = T.astensors(
+        feature_inputs, structure_inputs = T.astensors(
             attr_matrix, adj_matrix, device=self.device)
 
-        # To avoid this tensorflow error in large dataset:
-        # InvalidArgumentError: Cannot use GPU when output.shape[1] * nnz(a) > 2^31 [Op:SparseTensorDenseMatMul]
-        if self.graph.n_attrs * adj_matrix.nnz > 2**31:
-            device = "CPU"
-        else:
-            device = self.device
-
-        feature_inputs, structure_inputs = T.astensors(
-            attr_matrix, adj_matrix, device=device)
-        
-        with tf.device(device):
-            feature_inputs = SGConvolution(order=self.order)(
+        if self.kind == "P":
+            feature_inputs = pySGConvolution(order=self.order)(
                 [feature_inputs, structure_inputs])
-
-        with tf.device(self.device):
             self.feature_inputs, self.structure_inputs = feature_inputs, structure_inputs
+        else:
+            # To avoid this tensorflow error in large dataset:
+            # InvalidArgumentError: Cannot use GPU when output.shape[1] * nnz(a) > 2^31 [Op:SparseTensorDenseMatMul]
+            if self.graph.n_attrs * adj_matrix.nnz > 2**31:
+                device = "CPU"
+            else:
+                device = self.device
+
+            with tf.device(device):
+                feature_inputs = tfSGConvolution(order=self.order)(
+                    [feature_inputs, structure_inputs])
+
+            with tf.device(self.device):
+                self.feature_inputs, self.structure_inputs = feature_inputs, structure_inputs
+
+            
 
     # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
-    def build(self, lr=0.2, l2_norms=[5e-5], use_bias=True):
+    def build(self, hiddens=[], activations=[], l2_norms=[5e-5], dropout=0.5, lr=0.2, use_bias=True):
 
-        with tf.device(self.device):
+        if self.kind == "P":
+            model = pySGC(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
+                          activations=activations, l2_norms=l2_norms, dropout=dropout,
+                          lr=lr, use_bias=use_bias).to(self.device)
+        else:
 
-            x = Input(batch_shape=[None, self.graph.n_attrs],
-                      dtype=self.floatx, name='attr_matrix')
+            with tf.device(self.device):
+                model = tfSGC(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
+                              activations=activations, l2_norms=l2_norms, dropout=dropout,
+                              lr=lr, use_bias=use_bias)
 
-            h = Dense(self.graph.n_classes, activation=None, use_bias=use_bias,
-                      kernel_regularizer=regularizers.l2(l2_norms[0]))(x)
-
-            model = Model(inputs=x, outputs=h)
-            model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
-                          optimizer=Adam(lr=lr), metrics=['accuracy'])
-
-            self.model = model
+        self.model = model
 
     def train_sequence(self, index):
-        index = T.asintarr(index)
+        index = T.astensor(T.asintarr(index))
         labels = self.graph.labels[index]
-        feature_inputs = tf.gather(self.feature_inputs, index)
+        
+        if self.kind == "P":
+            feature_inputs = self.feature_inputs[index]
+        else:
+            feature_inputs = tf.gather(self.feature_inputs, index)
         sequence = FullBatchNodeSequence(feature_inputs, labels, device=self.device)
         return sequence

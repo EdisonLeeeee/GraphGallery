@@ -56,7 +56,7 @@ class Base(ABC):
     """Base model for all class."""
 
     def __init__(self, *graph, device="cpu:0", seed=None, name=None, **kwargs):
-        """Creat an Base model for semi-supervised learning and unsupervised learning.
+        """Create an Base model for semi-supervised learning and unsupervised learning.
 
         Parameters:
         ----------

@@ -24,7 +24,7 @@ class GCNA(GCN):
 
     def __init__(self, *graph, adj_transformer="normalize_adj", attr_transformer=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
-        """Creat a Graph Convolutional Networks(GCN) model 
+        """Create a Graph Convolutional Networks(GCN) model 
             concated with attribute matrix (GCNA).
 
         This can be instantiated in several ways:
@@ -79,8 +79,8 @@ class GCNA(GCN):
                           dtype=self.intx, name='node_index')
 
             h = x
-            for hid, activation, l2_norm in zip(hiddens, activations, l2_norms):
-                h = GraphConvAttribute(hid, use_bias=use_bias,
+            for hidden, activation, l2_norm in zip(hiddens, activations, l2_norms):
+                h = GraphConvAttribute(hidden, use_bias=use_bias,
                                        activation=activation,
                                        kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
 

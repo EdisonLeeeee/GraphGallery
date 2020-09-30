@@ -24,7 +24,7 @@ class SimplifiedOBVAT(OBVAT):
 
     def __init__(self, *graph, adj_transformer="normalize_adj", attr_transformer=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
-        """Creat a Simplified OBVAT model.
+        """Create a Simplified OBVAT model.
 
         This can be instantiated in several ways:
 
@@ -84,8 +84,8 @@ class SimplifiedOBVAT(OBVAT):
 
             GCN_layers = []
             dropout_layers = []
-            for hid, activation, l2_norm in zip(hiddens, activations, l2_norms):
-                GCN_layers.append(GraphConvolution(hid,
+            for hidden, activation, l2_norm in zip(hiddens, activations, l2_norms):
+                GCN_layers.append(GraphConvolution(hidden,
                                                    activation=activation,
                                                    use_bias=use_bias,
                                                    kernel_regularizer=regularizers.l2(l2_norm)))

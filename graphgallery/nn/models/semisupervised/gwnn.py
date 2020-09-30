@@ -24,7 +24,7 @@ class GWNN(SemiSupervisedModel):
 
     def __init__(self, *graph, adj_transformer="wavelet_basis", attr_transformer=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
-        """Creat a Graph Wavelet Neural Networks (GWNN) model.
+        """Create a Graph Wavelet Neural Networks (GWNN) model.
 
 
         This can be instantiated in several ways:
@@ -93,8 +93,8 @@ class GWNN(SemiSupervisedModel):
                           dtype=self.intx, name='node_index')
 
             h = x
-            for hid, activation, l2_norm in zip(hiddens, activations, l2_norms):
-                h = WaveletConvolution(hid, activation=activation, use_bias=use_bias,
+            for hidden, activation, l2_norm in zip(hiddens, activations, l2_norms):
+                h = WaveletConvolution(hidden, activation=activation, use_bias=use_bias,
                                        kernel_regularizer=regularizers.l2(l2_norm))([h, wavelet, inverse_wavelet])
                 h = Dropout(rate=dropout)(h)
 

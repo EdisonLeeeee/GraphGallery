@@ -22,7 +22,7 @@ class UnsupervisedModel(BaseModel):
     """
 
     def __init__(self, *graph, device='cpu:0', seed=None, name=None, **kwargs):
-        """Creat an unsupervised model.
+        """Create an unsupervised model.
 
         Parameters:
         ----------

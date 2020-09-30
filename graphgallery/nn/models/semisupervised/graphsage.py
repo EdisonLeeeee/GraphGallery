@@ -24,7 +24,7 @@ class GraphSAGE(SemiSupervisedModel):
     def __init__(self, *graph, n_samples=(15, 5),
                  adj_transformer="neighbor_sampler", attr_transformer=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
-        """Creat a SAmple and aggreGatE Graph Convolutional Networks (GraphSAGE) model.
+        """Create a SAmple and aggreGatE Graph Convolutional Networks (GraphSAGE) model.
 
         This can be instantiated in several ways:
 
@@ -107,9 +107,9 @@ class GraphSAGE(SemiSupervisedModel):
                          for hop, n_sample in enumerate(self.n_samples)]
 
             aggrators = []
-            for i, (hid, activation, l2_norm) in enumerate(zip(hiddens, activations, l2_norms)):
+            for i, (hidden, activation, l2_norm) in enumerate(zip(hiddens, activations, l2_norms)):
                 # you can use `GCNAggregator` instead
-                aggrators.append(Agg(hid, concat=True, activation=activation,
+                aggrators.append(Agg(hidden, concat=True, activation=activation,
                                      use_bias=use_bias,
                                      kernel_regularizer=regularizers.l2(l2_norm)))
 

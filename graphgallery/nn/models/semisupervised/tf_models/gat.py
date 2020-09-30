@@ -10,8 +10,8 @@ from graphgallery import floatx, intx
                 
 class GAT(Model):
 
-    def __init__(self, in_channels, hiddens,
-                 out_channels, n_heads=[8], activations=['elu'], 
+    def __init__(self, in_channels,
+                 out_channels, hiddens=[16], n_heads=[8], activations=['elu'], 
                  l2_norms=[5e-4], dropout=0.6,
                  lr=0.01, use_bias=True):
         
@@ -22,8 +22,8 @@ class GAT(Model):
         index = Input(batch_shape=[None], dtype=intx(), name='node_index')
 
         h = x
-        for hid, n_head, activation, l2_norm in zip(hiddens, n_heads, activations, l2_norms):
-            h = GraphAttention(hid, attn_heads=n_head,
+        for hidden, n_head, activation, l2_norm in zip(hiddens, n_heads, activations, l2_norms):
+            h = GraphAttention(hidden, attn_heads=n_head,
                             reduction='concat',
                             use_bias=use_bias,
                             activation=activation,

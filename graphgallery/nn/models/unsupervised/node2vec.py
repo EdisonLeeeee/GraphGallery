@@ -17,7 +17,7 @@ class Node2vec(UnsupervisedModel):
     """
 
     def __init__(self, *graph, device='cpu:0', seed=None, name=None, **kwargs):
-        """Creat an unsupervised Node2Vec model.
+        """Create an unsupervised Node2Vec model.
         
         This can be instantiated in several ways:
 

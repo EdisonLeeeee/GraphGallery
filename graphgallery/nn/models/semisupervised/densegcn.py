@@ -23,7 +23,7 @@ class DenseGCN(SemiSupervisedModel):
 
     def __init__(self, *graph, adj_transformer="normalize_adj", attr_transformer=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
-        """Creat a Dense Graph Convolutional Networks (DenseGCN) model.
+        """Create a Dense Graph Convolutional Networks (DenseGCN) model.
 
 
         This can be instantiated in several ways:
@@ -89,8 +89,8 @@ class DenseGCN(SemiSupervisedModel):
                           dtype=self.intx, name='node_index')
 
             h = x
-            for hid, activation, l2_norm in zip(hiddens, activations, l2_norms):
-                h = DenseConvolution(hid, use_bias=use_bias,
+            for hidden, activation, l2_norm in zip(hiddens, activations, l2_norms):
+                h = DenseConvolution(hidden, use_bias=use_bias,
                                      activation=activation,
                                      kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
 

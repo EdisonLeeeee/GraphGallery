@@ -23,7 +23,7 @@ class LGCN(SemiSupervisedModel):
 
     def __init__(self, *graph, adj_transformer="normalize_adj", attr_transformer=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
-        """Creat a Large-Scale Learnable Graph Convolutional Networks (LGCN) model.
+        """Create a Large-Scale Learnable Graph Convolutional Networks (LGCN) model.
 
 
         This can be instantiated in several ways:
@@ -86,9 +86,9 @@ class LGCN(SemiSupervisedModel):
             mask = Input(batch_shape=[None], dtype=tf.bool, name='node_mask')
 
             h = x
-            for idx, hid in enumerate(hiddens):
+            for idx, hidden in enumerate(hiddens):
                 h = Dropout(rate=dropout)(h)
-                h = DenseConvolution(hid,
+                h = DenseConvolution(hidden,
                                      use_bias=use_bias,
                                      activation=activations[idx],
                                      kernel_regularizer=regularizers.l2(l2_norms[idx]))([h, adj])

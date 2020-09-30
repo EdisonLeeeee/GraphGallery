@@ -23,7 +23,7 @@ class GCN(SemiSupervisedModel):
 
     def __init__(self, *graph, adj_transformer="normalize_adj", attr_transformer=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
-        """Creat a Graph Convolutional Networks (GCN) model.
+        """Create a Graph Convolutional Networks (GCN) model.
 
 
         This can be instantiated in several ways:
@@ -80,13 +80,13 @@ class GCN(SemiSupervisedModel):
               l2_norms=[5e-4], dropout=0.5, lr=0.01, use_bias=False):
         
         if self.kind == "P":
-             model = pyGCN(self.graph.n_attrs, hiddens, self.graph.n_classes,
-                                activations=activations, l2_norms=l2_norms, dropout=dropout,
-                                lr=lr, use_bias=use_bias).to(self.device)
+             model = pyGCN(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
+                           activations=activations, l2_norms=l2_norms, dropout=dropout,
+                           lr=lr, use_bias=use_bias).to(self.device)
         else:
 
             with tf.device(self.device):
-                model = tfGCN(self.graph.n_attrs, hiddens, self.graph.n_classes,
+                model = tfGCN(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
                                 activations=activations, l2_norms=l2_norms, dropout=dropout,
                                 lr=lr, use_bias=use_bias)
 

@@ -21,7 +21,7 @@ class DAGNN(SemiSupervisedModel):
 
     def __init__(self, graph, K=10, adj_transformer="normalize_adj", attr_transformer=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
-        """Creat a Deep Adaptive Graph Neural Network (DAGNN) model.
+        """Create a Deep Adaptive Graph Neural Network (DAGNN) model.
 
         This can be instantiated in several ways:
 
@@ -91,8 +91,8 @@ class DAGNN(SemiSupervisedModel):
                           dtype=self.intx, name='node_index')
 
             h = x
-            for hid, activation, l2_norm in zip(hiddens, activations, l2_norms):
-                h = Dense(hid, use_bias=use_bias, activation=activation,
+            for hidden, activation, l2_norm in zip(hiddens, activations, l2_norms):
+                h = Dense(hidden, use_bias=use_bias, activation=activation,
                           kernel_regularizer=regularizers.l2(l2_norm))(h)
                 h = Dropout(dropout)(h)
 

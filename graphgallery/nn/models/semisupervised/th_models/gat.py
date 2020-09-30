@@ -10,8 +10,9 @@ from graphgallery.nn.layers.th_layers import GraphAttention, SparseGraphAttentio
 
 class GAT(TorchKerasModel):
 
-    def __init__(self, in_channels, hiddens,
-                 out_channels, n_heads=[8], activations=['elu'],
+    def __init__(self, in_channels,
+                 out_channels, hiddens=[8],
+                 n_heads=[8], activations=['elu'],
                  dropout=0.6, l2_norms=[5e-4],
                  lr=0.01, use_bias=True):
 

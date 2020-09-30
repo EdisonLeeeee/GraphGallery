@@ -24,7 +24,7 @@ class FastGCN(SemiSupervisedModel):
     def __init__(self, *graph, batch_size=256, rank=100,
                  adj_transformer="normalize_adj", attr_transformer=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
-        """Creat a Fast Graph Convolutional Networks (FastGCN) model.
+        """Create a Fast Graph Convolutional Networks (FastGCN) model.
 
 
         This can be instantiated in several ways:
@@ -96,8 +96,8 @@ class FastGCN(SemiSupervisedModel):
                         dtype=self.floatx, sparse=True, name='adj_matrix')
 
             h = x
-            for hid, activation, l2_norm in zip(hiddens, activations, l2_norms):
-                h = Dense(hid, use_bias=use_bias, activation=activation,
+            for hidden, activation, l2_norm in zip(hiddens, activations, l2_norms):
+                h = Dense(hidden, use_bias=use_bias, activation=activation,
                           kernel_regularizer=regularizers.l2(l2_norm))(h)
                 h = Dropout(rate=dropout)(h)
 

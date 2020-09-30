@@ -5,6 +5,8 @@ from graphgallery.utils.type_check import is_iterable
 def repeat(src, length):
     if src is None:
         return [None for _ in range(length)]
+    if not src:
+        return []
     if isinstance(src, (Number, str)):
         return list(itertools.repeat(src, length))
     if (len(src) > length):

@@ -10,8 +10,9 @@ from graphgallery.nn.layers.th_layers import GraphConvolution
 
 class GCN(TorchKerasModel):
 
-    def __init__(self, in_channels, hiddens,
-                 out_channels, activations=['relu'],
+    def __init__(self, in_channels, out_channels, 
+                 hiddens=[16],
+                 activations=['relu'],
                  l2_norms=[5e-4], dropout=0.5, 
                  lr=0.01, use_bias=False):
 

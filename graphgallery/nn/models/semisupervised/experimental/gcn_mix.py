@@ -21,7 +21,7 @@ class GCN_MIX(FastGCN):
 
     def __init__(self, *graph, adj_transformer="normalize_adj", attr_transformer=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
-        """Creat Mixed Graph Convolutional Networks (GCN_MIX) occured in FastGCN.
+        """Create Mixed Graph Convolutional Networks (GCN_MIX) occured in FastGCN.
 
         Calculating `A @ X` in advance to save time.
 
