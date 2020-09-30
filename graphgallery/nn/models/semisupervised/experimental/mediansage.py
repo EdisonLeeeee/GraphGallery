@@ -6,7 +6,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers import MedianAggregator, MedianGCNAggregator
+from graphgallery.nn.layers.tf_layers import MedianAggregator, MedianGCNAggregator
 from graphgallery.nn.models import GraphSAGE
 from graphgallery.utils.decorators import EqualVarLength
 

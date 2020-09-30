@@ -5,7 +5,7 @@ from tensorflow.keras.layers import Dense, Dropout
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 
-from graphgallery.nn.layers import GraphConvolution
+from graphgallery.nn.layers.tf_layers import GraphConvolution
 from graphgallery.nn.models import FastGCN
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.transformers import asintarr

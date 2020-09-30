@@ -7,7 +7,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers import GraphConvolution, Mask
+from graphgallery.nn.layers.tf_layers import GraphConvolution, Mask
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import MiniBatchSequence
 from graphgallery.utils.decorators import EqualVarLength

@@ -1,56 +1,56 @@
-import scipy.sparse as sp
 import tensorflow as tf
 from tensorflow.keras import Model, Input
-from tensorflow.keras.layers import Dropout, Softmax
+from tensorflow.keras.layers import Dropout
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers import GraphAttention, Gather
+from graphgallery.nn.layers.tf_layers import DenseConvolution, Gather
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.decorators import EqualVarLength
 from graphgallery import transformers as T
 
 
-class GAT(SemiSupervisedModel):
+class DenseGCN(SemiSupervisedModel):
     """
-        Implementation of Graph Attention Networks (GAT).
-        `Graph Attention Networks <https://arxiv.org/abs/1710.10903>`
-        Tensorflow 1.x implementation: <https://github.com/PetarV-/GAT>
-        Pytorch implementation: <https://github.com/Diego999/pyGAT>
-        Keras implementation: <https://github.com/danielegrattarola/keras-gat>
+        Implementation of Dense version of Graph Convolutional Networks (GCN).
+        `[`Semi-Supervised Classification with Graph Convolutional Networks <https://arxiv.org/abs/1609.02907>`
+        Tensorflow 1.x `Sparse version` implementation: <https://github.com/tkipf/gcn>
+        Pytorch `Sparse version` implementation: <https://github.com/tkipf/pygcn>
 
     """
 
-    def __init__(self, *graph, adj_transformer="add_selfloops", attr_transformer=None,
+    def __init__(self, *graph, adj_transformer="normalize_adj", attr_transformer=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
-        """Creat a Graph Attention Networks (GAT) model.
+        """Creat a Dense Graph Convolutional Networks (DenseGCN) model.
 
 
         This can be instantiated in several ways:
 
-            model = GAT(graph)
+            model = DenseGCN(graph)
                 with a `graphgallery.data.Graph` instance representing
                 A sparse, attributed, labeled graph.
 
-            model = GAT(adj_matrix, attr_matrix, labels)
+            model = DenseGCN(adj_matrix, attr_matrix, labels)
                 where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
                  `attr_matrix` is a 2D Numpy array-like matrix denoting the node 
                  attributes, `labels` is a 1D Numpy array denoting the node labels.
+
+
         Parameters:
         ----------
-        graph: graphgallery.data.Graph, or `adj_matrix, attr_matrix and labels` triplets.
+        graph: An instance of `graphgallery.data.Graph` or a tuple (list) of inputs.
             A sparse, attributed, labeled graph.
-        adj_transformer: string, transformer, or None. optional
-            How to transform the adjacency matrix. (default: :obj:`'normalize_adj'`
-            with normalize rate `-0.5`.
+        adj_transformer: string, `transformer`, or None. optional
+            How to transform the adjacency matrix. See `graphgallery.transformers`
+            (default: :obj:`'normalize_adj'` with normalize rate `-0.5`.
             i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
         attr_transformer: string, transformer, or None. optional
             How to transform the node attribute matrix. See `graphgallery.transformers`
             (default :obj: `None`)
-        device: string. optional
-            The device where the model is running on. You can specified `CPU` or `GPU`
+        device: string. optional 
+            The device where the model is running on. You can specified `CPU` or `GPU` 
             for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
         seed: interger scalar. optional 
             Used in combination with `tf.random.set_seed` & `np.random.seed` 
@@ -59,7 +59,6 @@ class GAT(SemiSupervisedModel):
         name: string. optional
             Specified name for the model. (default: :str: `class.__name__`)
         kwargs: other customed keyword Parameters.
-
         """
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
@@ -69,39 +68,36 @@ class GAT(SemiSupervisedModel):
 
     def process_step(self):
         graph = self.graph
-        adj_matrix = self.adj_transformer(graph.adj_matrix)
+        adj_matrix = self.adj_transformer(graph.adj_matrix).toarray()
         attr_matrix = self.attr_transformer(graph.attr_matrix)
 
         self.feature_inputs, self.structure_inputs = T.astensors(
             attr_matrix, adj_matrix, device=self.device)
 
-    @EqualVarLength(include=["n_heads"])
-    def build(self, hiddens=[8], n_heads=[8], activations=['elu'], dropouts=[0.6], l2_norms=[5e-4],
-              lr=0.01, use_bias=True):
+    # use decorator to make sure all list arguments have the same length
+    @EqualVarLength()
+    def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5],
+              l2_norms=[5e-4], lr=0.01, use_bias=False):
 
         with tf.device(self.device):
 
             x = Input(batch_shape=[None, self.graph.n_attrs],
                       dtype=self.floatx, name='attr_matrix')
-            adj = Input(
-                batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix')
+            adj = Input(batch_shape=[None, None],
+                        dtype=self.floatx, name='adj_matrix')
             index = Input(batch_shape=[None],
                           dtype=self.intx, name='node_index')
 
             h = x
-            for hid, n_head, activation, dropout, l2_norm in zip(hiddens, n_heads, activations, dropouts, l2_norms):
-                h = GraphAttention(hid, attn_heads=n_head,
-                                   reduction='concat',
-                                   use_bias=use_bias,
-                                   activation=activation,
-                                   kernel_regularizer=regularizers.l2(l2_norm),
-                                   attn_kernel_regularizer=regularizers.l2(
-                                       l2_norm),
-                                   )([h, adj])
+            for hid, activation, dropout, l2_norm in zip(hiddens, activations, dropouts, l2_norms):
+                h = DenseConvolution(hid, use_bias=use_bias,
+                                     activation=activation,
+                                     kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
+
                 h = Dropout(rate=dropout)(h)
 
-            h = GraphAttention(self.graph.n_classes, use_bias=use_bias,
-                               attn_heads=1, reduction='average')([h, adj])
+            h = DenseConvolution(self.graph.n_classes,
+                                 use_bias=use_bias)([h, adj])
             h = Gather()([h, index])
 
             model = Model(inputs=[x, adj, index], outputs=h)

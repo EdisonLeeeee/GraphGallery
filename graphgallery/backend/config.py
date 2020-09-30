@@ -1,6 +1,5 @@
 """Inspired by Keras backend config API. https://tensorflow.google.com """
 
-import importlib
 import graphgallery
 from graphgallery.backend.modules import TensorFlowBackend, PyTorchBackend
 from tensorflow.keras import backend as K
@@ -157,9 +156,6 @@ def set_backend(module_name):
     if kind != _BACKEND.kind:
         # TODO: improve
         _BACKEND = _MODULE.get(kind)()
-        # importlib.reload(graphgallery)
-        importlib.reload(graphgallery.nn.layers)
-        importlib.reload(graphgallery.nn.models)
 
         if kind == "P":
             # PyTorch uses Long integer as default.

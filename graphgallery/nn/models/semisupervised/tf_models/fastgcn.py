@@ -1,47 +1,52 @@
 import tensorflow as tf
 from tensorflow.keras import Model, Input
-from tensorflow.keras.layers import Dropout
+from tensorflow.keras.layers import Dense, Dropout
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers import DenseConvolution, Gather
+from graphgallery.nn.layers.tf_layers import GraphConvolution
 from graphgallery.nn.models import SemiSupervisedModel
-from graphgallery.sequence import FullBatchNodeSequence
+from graphgallery.sequence import FastGCNBatchSequence
 from graphgallery.utils.decorators import EqualVarLength
 from graphgallery import transformers as T
 
 
-class DenseGCN(SemiSupervisedModel):
+class FastGCN(SemiSupervisedModel):
     """
-        Implementation of Dense version of Graph Convolutional Networks (GCN).
-        `[`Semi-Supervised Classification with Graph Convolutional Networks <https://arxiv.org/abs/1609.02907>`
-        Tensorflow 1.x `Sparse version` implementation: <https://github.com/tkipf/gcn>
-        Pytorch `Sparse version` implementation: <https://github.com/tkipf/pygcn>
+        Implementation of Fast Graph Convolutional Networks (FastGCN).
+        `FastGCN: Fast Learning with Graph Convolutional Networks via Importance Sampling 
+        <https://arxiv.org/abs/1801.10247>`
+        Tensorflow 1.x implementation: <https://github.com/matenure/FastGCN>
 
     """
 
-    def __init__(self, *graph, adj_transformer="normalize_adj", attr_transformer=None,
+    def __init__(self, *graph, batch_size=256, rank=100,
+                 adj_transformer="normalize_adj", attr_transformer=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
-        """Creat a Dense Graph Convolutional Networks (DenseGCN) model.
+        """Creat a Fast Graph Convolutional Networks (FastGCN) model.
 
 
         This can be instantiated in several ways:
 
-            model = DenseGCN(graph)
+            model = FastGCN(graph)
                 with a `graphgallery.data.Graph` instance representing
                 A sparse, attributed, labeled graph.
 
-            model = DenseGCN(adj_matrix, attr_matrix, labels)
+            model = FastGCN(adj_matrix, attr_matrix, labels)
                 where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
                  `attr_matrix` is a 2D Numpy array-like matrix denoting the node 
                  attributes, `labels` is a 1D Numpy array denoting the node labels.
-
 
         Parameters:
         ----------
         graph: An instance of `graphgallery.data.Graph` or a tuple (list) of inputs.
             A sparse, attributed, labeled graph.
+        batch_size (Positive integer, optional):
+            Batch size for the training nodes. (default :int: `256`)
+        rank (Positive integer, optional):
+            The selected nodes for each batch nodes, `rank` must be smaller than
+            `batch_size`. (default :int: `100`)
         adj_transformer: string, `transformer`, or None. optional
             How to transform the adjacency matrix. See `graphgallery.transformers`
             (default: :obj:`'normalize_adj'` with normalize rate `-0.5`.
@@ -49,8 +54,8 @@ class DenseGCN(SemiSupervisedModel):
         attr_transformer: string, transformer, or None. optional
             How to transform the node attribute matrix. See `graphgallery.transformers`
             (default :obj: `None`)
-        device: string. optional 
-            The device where the model is running on. You can specified `CPU` or `GPU` 
+        device: string. optional
+            The device where the model is running on. You can specified `CPU` or `GPU`
             for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
         seed: interger scalar. optional 
             Used in combination with `tf.random.set_seed` & `np.random.seed` 
@@ -62,21 +67,25 @@ class DenseGCN(SemiSupervisedModel):
         """
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
+        self.rank = rank
+        self.batch_size = batch_size
         self.adj_transformer = T.get(adj_transformer)
         self.attr_transformer = T.get(attr_transformer)
         self.process()
 
     def process_step(self):
         graph = self.graph
-        adj_matrix = self.adj_transformer(graph.adj_matrix).toarray()
+        adj_matrix = self.adj_transformer(graph.adj_matrix)
         attr_matrix = self.attr_transformer(graph.attr_matrix)
 
-        self.feature_inputs, self.structure_inputs = T.astensors(
-            attr_matrix, adj_matrix, device=self.device)
+        attr_matrix = adj_matrix @ attr_matrix
+
+        self.feature_inputs, self.structure_inputs = T.astensor(
+            attr_matrix, device=self.device), adj_matrix
 
     # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
-    def build(self, hiddens=[16], activations=['relu'], dropouts=[0.5],
+    def build(self, hiddens=[32], activations=['relu'], dropouts=[0.5],
               l2_norms=[5e-4], lr=0.01, use_bias=False):
 
         with tf.device(self.device):
@@ -84,31 +93,39 @@ class DenseGCN(SemiSupervisedModel):
             x = Input(batch_shape=[None, self.graph.n_attrs],
                       dtype=self.floatx, name='attr_matrix')
             adj = Input(batch_shape=[None, None],
-                        dtype=self.floatx, name='adj_matrix')
-            index = Input(batch_shape=[None],
-                          dtype=self.intx, name='node_index')
+                        dtype=self.floatx, sparse=True, name='adj_matrix')
 
             h = x
             for hid, activation, dropout, l2_norm in zip(hiddens, activations, dropouts, l2_norms):
-                h = DenseConvolution(hid, use_bias=use_bias,
-                                     activation=activation,
-                                     kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
-
+                h = Dense(hid, use_bias=use_bias, activation=activation,
+                          kernel_regularizer=regularizers.l2(l2_norm))(h)
                 h = Dropout(rate=dropout)(h)
 
-            h = DenseConvolution(self.graph.n_classes,
+            h = GraphConvolution(self.graph.n_classes,
                                  use_bias=use_bias)([h, adj])
-            h = Gather()([h, index])
 
-            model = Model(inputs=[x, adj, index], outputs=h)
+            model = Model(inputs=[x, adj], outputs=h)
             model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
                           optimizer=Adam(lr=lr), metrics=['accuracy'])
-
             self.model = model
 
     def train_sequence(self, index):
         index = T.asintarr(index)
         labels = self.graph.labels[index]
-        sequence = FullBatchNodeSequence(
-            [self.feature_inputs, self.structure_inputs, index], labels, device=self.device)
+        adj_matrix = self.graph.adj_matrix[index][:, index]
+        adj_matrix = self.adj_transformer(adj_matrix)
+
+        feature_inputs = tf.gather(self.feature_inputs, index)
+        sequence = FastGCNBatchSequence([feature_inputs, adj_matrix], labels,
+                                        batch_size=self.batch_size,
+                                        rank=self.rank, device=self.device)
+        return sequence
+
+    def test_sequence(self, index):
+        index = T.asintarr(index)
+        labels = self.graph.labels[index]
+        structure_inputs = self.structure_inputs[index]
+
+        sequence = FastGCNBatchSequence([self.feature_inputs, structure_inputs],
+                                        labels, batch_size=None, rank=None, device=self.device)  # use full batch
         return sequence

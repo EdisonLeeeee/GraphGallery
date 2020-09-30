@@ -4,13 +4,12 @@ import numpy as np
 from torch.nn import Module, Parameter, ParameterList, LeakyReLU, Dropout
 import torch.nn.functional as F
 
-from graphgallery.nn.models.get_activation import get_activation
 from graphgallery.nn.init import glorot_uniform, zeros
     
 class GraphAttention(Module):
     def __init__(self, in_channels, out_channels, 
                  attn_heads=8, alpha=0.2, reduction='concat', 
-                 dropout=0.6, activation=None, use_bias=False):
+                 dropout=0.6, use_bias=False):
         super().__init__()
 
         if reduction not in {'concat', 'average'}:
@@ -22,7 +21,6 @@ class GraphAttention(Module):
         self.dropout = dropout
         self.attn_heads = attn_heads
         self.reduction = reduction
-        self.activation = get_activation(activation)
 
         self.kernels = ParameterList()
         self.attn_kernel_self, self.attn_kernel_neighs = ParameterList(), ParameterList()
@@ -89,7 +87,7 @@ class GraphAttention(Module):
         else:
             output = torch.mean(torch.stack(outputs), 0)
 
-        return self.activation(output)
+        return output
     
     def __repr__(self):
         return self.__class__.__name__ + ' (' \
@@ -135,7 +133,7 @@ class SparseGraphAttention(Module):
 
     def __init__(self, in_channels, out_channels, 
                  attn_heads=8, alpha=0.2, reduction='concat', 
-                 dropout=0.6, activation=None, use_bias=False):
+                 dropout=0.6, use_bias=False):
         super().__init__()
 
         if reduction not in {'concat', 'average'}:
@@ -168,7 +166,6 @@ class SparseGraphAttention(Module):
         self.dropout = Dropout(dropout)
         self.leakyrelu = LeakyReLU(alpha)
         self.special_spmm = SpecialSpmm()
-        self.activation = get_activation(activation)
         self.reset_parameters()
 
         
@@ -214,7 +211,7 @@ class SparseGraphAttention(Module):
         else:
             output = torch.mean(torch.stack(outputs), 0)
 
-        return self.activation(output)
+        return output
     
     def __repr__(self):
         return self.__class__.__name__ + ' (' + str(self.in_channels) + ' -> ' + str(self.out_channels) + ')'    

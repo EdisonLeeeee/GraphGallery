@@ -9,7 +9,7 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy
 from tensorflow.keras.activations import softmax
 from tensorflow.keras.metrics import SparseCategoricalAccuracy
 
-from graphgallery.nn.layers import GraphConvolution, Gather
+from graphgallery.nn.layers.tf_layers import GraphConvolution, Gather
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import SBVATSampleSequence
 from graphgallery.utils.sample import find_4o_nbrs

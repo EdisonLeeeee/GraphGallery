@@ -7,7 +7,7 @@ from tensorflow.keras.optimizers import Nadam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers import Top_k_features, LGConvolution, DenseConvolution, Mask
+from graphgallery.nn.layers.tf_layers import Top_k_features, LGConvolution, DenseConvolution, Mask
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.decorators import EqualVarLength

@@ -7,7 +7,7 @@ from tensorflow.keras import regularizers
 from tensorflow.keras.losses import CategoricalCrossentropy
 from tensorflow.keras.activations import softmax
 
-from graphgallery.nn.layers import GraphConvolution, Gather
+from graphgallery.nn.layers.tf_layers import GraphConvolution, Gather
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.utils.decorators import EqualVarLength
