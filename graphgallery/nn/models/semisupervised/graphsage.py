@@ -107,7 +107,7 @@ class GraphSAGE(SemiSupervisedModel):
                          for hop, n_sample in enumerate(self.n_samples)]
 
             aggrators = []
-            for i, (hidden, activation) in enumerate(zip(hiddens, activations)):
+            for hidden, activation in zip(hiddens, activations):
                 # you can use `GCNAggregator` instead
                 aggrators.append(Agg(hidden, concat=True, activation=activation,
                                      use_bias=use_bias,
