@@ -96,19 +96,18 @@ class ClusterGCN(SemiSupervisedModel):
     def build(self, hiddens=[32], activations=['relu'], dropout=0.5,
               l2_norm=0., lr=0.01, use_bias=False):
 
-#         if not self.kind == "T":
+#         if self.kind == "P":
 #             raise RuntimeError(f"Currently {self.name} only support for tensorflow backend.")
             
-        if self.kind == "P":
-            self.model = pyGCN(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
-                                activations=activations, dropout=dropout, l2_norm=l2_norm,
-                                lr=lr, use_bias=use_bias).to(self.device)
-        else:
+        if self.kind == "T":
             with tf.device(self.device):
-                # TODO
                 self.model = tfGCN(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
                                 activations=activations, dropout=dropout, l2_norm=l2_norm,
                                 lr=lr, use_bias=use_bias, experimental_run_tf_function=False)
+        else:
+            self.model = pyGCN(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
+                                activations=activations, dropout=dropout, l2_norm=l2_norm,
+                               lr=lr, use_bias=use_bias).to(self.device)
 
 
     def train_sequence(self, index):

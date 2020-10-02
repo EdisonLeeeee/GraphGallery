@@ -835,7 +835,7 @@ def train_step_torch(model, sequence):
         _loss.backward()
         optimizer.step()
         with torch.no_grad():
-            loss += _loss.data * labels.size(0) if loss_fn.reduction == 'mean' else _loss.data
+            loss += _loss.data
             accuracy += (output.argmax(1) == labels).float().sum()
             n_inputs += labels.size(0)
 
@@ -877,10 +877,9 @@ def test_step_torch(model, sequence):
     n_inputs = 0
 
     for inputs, labels in sequence:
-        # TODO: multi batches
         output = model(inputs)
         _loss = loss_fn(output, labels)
-        loss += _loss.data * labels.size(0) if loss_fn.reduction == 'mean' else _loss.data
+        loss += _loss.data 
         n_inputs += labels.size(0)
         accuracy += (output.argmax(1) == labels).float().sum()
 

@@ -65,16 +65,25 @@ class EqualVarLength:
 
     """
 
-    def __init__(self, *, include=[], exclude=[]):
+    def __init__(self, *, include: list=[], exclude: list=[], length_as: str='hiddens'):
         """
-        include: string, a list or tuple of string, optional.
-            the customized variable name except for 
-            'hiddens', 'activations'.
-        exclude: string, a list or tuple of string, optional.
-            the exclued variable name.
+
+        Parameters
+        ----------
+        include : list, optional
+            the customized variable names except for 
+            'hiddens', 'activations', by default []
+        exclude : list, optional
+            the exclued variable names, by default []
+        length_as : str, optional
+            the variable name whose length is used for all variables,
+            by default ['hiddens']
         """
-        self.var_names = list(include) + self.base_vars()
-        self.var_names = list(set(self.var_names) - set(list(exclude)))
+        vars = list(include) + self.base_vars()
+        vars = list(set(vars) - set(list(exclude)))
+        assert length_as in vars
+        self.vars = vars
+        self.length_as = length_as
 
     def __call__(self, func):
 
@@ -93,17 +102,12 @@ class EqualVarLength:
             paras = dict(zip(ArgSpec.args[1:], values))
             paras.update(kwargs)
 
-            max_length = 0
-            for var in self.var_names:
-                val = paras.get(var, None)
-                if val is not None:
-                    max_length = max(get_length(val), max_length)
-
-            for var in self.var_names:
+            repeated = get_length(paras.get(self.length_as, 0))
+            for var in self.vars:
                 # use `NOTHING` instead of `None` to avoid `None` exists
                 val = paras.get(var, "NOTHING")
-                if val!="NOTHING":
-                    paras[var] = repeat(val, max_length)
+                if val != "NOTHING":
+                    paras[var] = repeat(val, repeated)
 
             return func(model, **paras)
         return wrapper
