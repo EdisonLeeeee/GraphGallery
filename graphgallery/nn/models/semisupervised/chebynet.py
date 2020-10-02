@@ -1,14 +1,12 @@
 import tensorflow as tf
-from tensorflow.keras import Model, Input
-from tensorflow.keras.layers import Dropout
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras import regularizers
-from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tf_layers import ChebyConvolution, Gather
-from graphgallery.sequence import FullBatchNodeSequence
+
 from graphgallery.nn.models import SemiSupervisedModel
+from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.decorators import EqualVarLength
+
+from graphgallery.nn.models.semisupervised.tf_models.chebynet import ChebyNet as tfChebyNet
+
 from graphgallery import transforms as T
 
 
@@ -76,34 +74,17 @@ class ChebyNet(SemiSupervisedModel):
     @EqualVarLength()
     def build(self, hiddens=[16], activations=['relu'], dropout=0.5, l2_norm=5e-4, lr=0.01,
               use_bias=False):
-
-        with tf.device(self.device):
-
-            order = len(self.structure_inputs) - 1
-
-            x = Input(batch_shape=[None, self.graph.n_attrs],
-                      dtype=self.floatx, name='attr_matrix')
-            adj = [Input(batch_shape=[None, None],
-                         dtype=self.floatx, sparse=True, name=f'adj_matrix_{i}') for i in range(order + 1)]
-
-            index = Input(batch_shape=[None],
-                          dtype=self.intx, name='node_index')
-
-            h = x
-            for hidden, activation in zip(hiddens, activations):
-                h = ChebyConvolution(hidden, order=order, use_bias=use_bias,
-                                     activation=activation,
-                                     kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
-                h = Dropout(rate=dropout)(h)
-
-            h = ChebyConvolution(self.graph.n_classes,
-                                 order=order, use_bias=use_bias)([h, adj])
-            h = Gather()([h, index])
-
-            model = Model(inputs=[x, *adj, index], outputs=h)
-            model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
-                          optimizer=Adam(lr=lr), metrics=['accuracy'])
-            self.model = model
+        
+        if self.kind == "T":
+            with tf.device(self.device):
+                self.model = tfChebyNet(self.graph.n_attrs, self.graph.n_classes,
+                                         hiddens=hiddens,
+                                         activations=activations, 
+                                         dropout=dropout, l2_norm=l2_norm,
+                                         order=self.adj_transform.order,
+                                         lr=lr, use_bias=use_bias)
+        else:
+            raise NotImplementedError
 
     def train_sequence(self, index):
         index = T.asintarr(index)

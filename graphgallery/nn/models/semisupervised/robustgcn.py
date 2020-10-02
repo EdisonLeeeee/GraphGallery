@@ -1,16 +1,11 @@
 import tensorflow as tf
-from tensorflow.keras import Model, Input
-from tensorflow.keras.layers import Dropout
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras import regularizers
-from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tf_layers import GaussionConvolution_F, GaussionConvolution_D, Sample, Gather
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.decorators import EqualVarLength
+
+from graphgallery.nn.models.semisupervised.tf_models.robustgcn import RobustGCN as tfRobustGCN
 from graphgallery import transforms as T
-from graphgallery.transforms import NormalizeAdj
 
 
 class RobustGCN(SemiSupervisedModel):
@@ -75,51 +70,19 @@ class RobustGCN(SemiSupervisedModel):
 
     # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
-    def build(self, hiddens=[64], activations=['relu'], use_bias=False, dropout=0.5,
-              l2_norm=5e-4, lr=0.01, kl=5e-4, gamma=1.):
+    def build(self, hiddens=[64], activations=['relu'], dropout=0.5,
+              l2_norm=5e-4, lr=0.01, kl=5e-4, gamma=1., use_bias=False):
 
-        with tf.device(self.device):
-            x = Input(batch_shape=[None, self.graph.n_attrs],
-                      dtype=self.floatx, name='attr_matrix')
-            adj = [Input(batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix_1'),
-                   Input(batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix_2')]
-            index = Input(batch_shape=[None],
-                          dtype=self.intx, name='node_index')
-
-            h = x
-            mean, var = GaussionConvolution_F(hiddens[0], gamma=gamma,
-                                              use_bias=use_bias,
-                                              activation=activations[0],
-                                              kernel_regularizer=regularizers.l2(l2_norm))([h, *adj])
-            if kl:
-                KL_divergence = 0.5 * \
-                    tf.reduce_mean(tf.math.square(mean) + var -
-                                   tf.math.log(1e-8 + var) - 1, axis=1)
-                KL_divergence = tf.reduce_sum(KL_divergence)
-
-                # KL loss
-                kl_loss = kl * KL_divergence
-
-            # additional layers (usually unnecessay)
-            for hidden, activation in zip(hiddens[1:], activations[1:]):
-
-                mean, var = GaussionConvolution_D(
-                    hidden, gamma=gamma, use_bias=use_bias, activation=activation)([mean, var, *adj])
-                mean = Dropout(rate=dropout)(mean)
-                var = Dropout(rate=dropout)(var)
-
-            mean, var = GaussionConvolution_D(
-                self.graph.n_classes, gamma=gamma, use_bias=use_bias)([mean, var, *adj])
-            h = Sample(seed=self.seed)([mean, var])
-            h = Gather()([h, index])
-
-            model = Model(inputs=[x, *adj, index], outputs=h)
-            model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
-                          optimizer=Adam(lr=lr), metrics=['accuracy'])
-
-            if kl:
-                model.add_loss(kl_loss)
-            self.model = model
+        if self.kind == "T":
+            with tf.device(self.device):
+                self.model = tfRobustGCN(self.graph.n_attrs, self.graph.n_classes,
+                                         hiddens=hiddens,
+                                         activations=activations,
+                                         dropout=dropout, l2_norm=l2_norm,
+                                         kl=kl, gamma=gamma,
+                                         lr=lr, use_bias=use_bias)
+        else:
+            raise NotImplementedError
 
     def train_sequence(self, index):
         index = T.asintarr(index)
