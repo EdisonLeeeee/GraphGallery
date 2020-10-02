@@ -93,6 +93,9 @@ In detail, the following methods are currently implemented:
 
 # Quick Start
 ## Datasets
+more details please refer to [GraphData](https://github.com/EdisonLeeeee/GraphData).
+### Planetoid
+fixed datasets
 ```python
 from graphgallery.data import Planetoid
 # set `verbose=False` to avoid these printed tables
@@ -105,11 +108,30 @@ idx_train, idx_val, idx_test = data.split()
 >>> graph
 Graph(adj_matrix(2708, 2708), attr_matrix(2708, 2708), labels(2708,))
 ```
-
 currently the supported datasets are:
 ```python
 >>> data.supported_datasets
 ('citeseer', 'cora', 'pubmed')
+```
+### NPZDataset
+more scalable datasets (stored with `.npz`)
+```python
+from graphgallery.data import NPZDataset;
+data = NPZDataset('cora', verbose=False)
+graph = data.graph
+idx_train, idx_val, idx_test = data.split(random_state=42)
+# idx_train:  training indices: 1D Numpy array
+# idx_val:  validation indices: 1D Numpy array
+# idx_test:  testing indices: 1D Numpy array
+>>> graph
+Graph(adj_matrix(2708, 2708), attr_matrix(2708, 2708), labels(2708,))
+```
+currently the supported datasets are:
+```python
+>>> data.supported_datasets
+('citeseer', 'citeseer_full', 'cora', 'cora_ml', 'cora_full', 
+ 'amazon_cs', 'amazon_photo', 'coauthor_cs', 'coauthor_phy', 
+ 'polblogs', 'pubmed', 'flickr', 'blogcatalog')
 ```
 
 ## Example of GCN model
@@ -127,7 +149,10 @@ print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 ```
 On `Cora` dataset:
 ```
-<Loss = 1.0161 Acc = 0.9500 Val_Loss = 1.4101 Val_Acc = 0.7740 >: 100%|██████████| 100/100 [00:01<00:00, 118.02it/s]
+Training...
+100/100 [==============================] - 1s 14ms/step - loss: 1.0161 - acc: 0.9500 - val_loss: 1.4101 - val_acc: 0.7740 - time: 1.4180
+Testing...
+1/1 [==============================] - 0s 62ms/step - test_loss: 1.4123 - test_acc: 0.8120 - time: 0.0620
 Test loss 1.4123, Test accuracy 81.20%
 ```
 ## Customization
@@ -156,8 +181,10 @@ here `his` is tensorflow `History` (like) instance.
 + Test you model
 ```python
 >>> loss, accuracy = model.test(idx_test)
+Testing...
+1/1 [==============================] - 0s 62ms/step - test_loss: 1.4123 - test_acc: 0.8120 - time: 0.0620
 >>> print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
-Test loss 1.4124, Test accuracy 81.20%
+Test loss 1.4123, Test accuracy 81.20%
 ```
 
 ## Visualization
@@ -199,10 +226,13 @@ GCN using PyTorch backend
 >>> model = GCN(graph, attr_transform="normalize_attr", device="GPU", seed=123);
 >>> model.build()
 >>> his = model.train(idx_train, idx_val, verbose=1, epochs=100)
-<Loss = 0.6813 Acc = 0.9214 Val_Loss = 1.0506 Val_Acc = 0.7820 >: 100%|██████████| 100/100 [00:00<00:00, 173.95it/s]
+Training...
+100/100 [==============================] - 0s 5ms/step - loss: 0.6813 - acc: 0.9214 - val_loss: 1.0506 - val_acc: 0.7820 - time: 0.4734
 >>> loss, accuracy = model.test(idx_test)
+Testing...
+1/1 [==============================] - 0s 1ms/step - test_loss: 1.0131 - test_acc: 0.8220 - time: 0.0013
 >>> print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
-Test loss 1013.1, Test accuracy 82.20%
+Test loss 1.0131, Test accuracy 82.20%
 
 ```
 
