@@ -9,7 +9,7 @@ from graphgallery.nn.layers.tf_layers import ChebyConvolution, Gather
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.utils.decorators import EqualVarLength
-from graphgallery import transformers as T
+from graphgallery import transforms as T
 
 
 class ChebyNet(SemiSupervisedModel):
@@ -21,7 +21,7 @@ class ChebyNet(SemiSupervisedModel):
 
     """
 
-    def __init__(self, *graph, adj_transformer="cheby_basis", attr_transformer=None,
+    def __init__(self, *graph, adj_transform="cheby_basis", attr_transform=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
         """Create a ChebyNet model.
 
@@ -40,11 +40,11 @@ class ChebyNet(SemiSupervisedModel):
         ----------
         graph: An instance of `graphgallery.data.Graph` or a tuple (list) of inputs.
             A sparse, attributed, labeled graph.
-        adj_transformer: string, `transformer`, or None. optional
-            How to transform the adjacency matrix. See `graphgallery.transformers`
+        adj_transform: string, `transform`, or None. optional
+            How to transform the adjacency matrix. See `graphgallery.transforms`
             (default: :obj:`'cheby_basis'`) 
-        attr_transformer: string, transformer, or None. optional
-            How to transform the node attribute matrix. See `graphgallery.transformers`
+        attr_transform: string, `transform`, or None. optional
+            How to transform the node attribute matrix. See `graphgallery.transforms`
             (default :obj: `None`)
         device: string. optional
             The device where the model is running on. You can specified `CPU` or `GPU`
@@ -55,26 +55,26 @@ class ChebyNet(SemiSupervisedModel):
             multiple calls. (default :obj: `None`, i.e., using random seed)
         name: string. optional
             Specified name for the model. (default: :str: `class.__name__`)
-        kwargs: other customed keyword Parameters.
+        kwargs: other customized keyword Parameters.
 
         """
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
-        self.adj_transformer = T.get(adj_transformer)
-        self.attr_transformer = T.get(attr_transformer)
+        self.adj_transform = T.get(adj_transform)
+        self.attr_transform = T.get(attr_transform)
         self.process()
 
     def process_step(self):
         graph = self.graph
-        adj_matrix = self.adj_transformer(graph.adj_matrix)
-        attr_matrix = self.attr_transformer(graph.attr_matrix)
+        adj_matrix = self.adj_transform(graph.adj_matrix)
+        attr_matrix = self.attr_transform(graph.attr_matrix)
 
         self.feature_inputs, self.structure_inputs = T.astensors(
             attr_matrix, adj_matrix, device=self.device)
 
     # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
-    def build(self, hiddens=[16], activations=['relu'], dropout=0.5, l2_norms=[5e-4], lr=0.01,
+    def build(self, hiddens=[16], activations=['relu'], dropout=0.5, l2_norm=5e-4, lr=0.01,
               use_bias=False):
 
         with tf.device(self.device):
@@ -90,7 +90,7 @@ class ChebyNet(SemiSupervisedModel):
                           dtype=self.intx, name='node_index')
 
             h = x
-            for hidden, activation, l2_norm in zip(hiddens, activations, l2_norms):
+            for hidden, activation in zip(hiddens, activations):
                 h = ChebyConvolution(hidden, order=order, use_bias=use_bias,
                                      activation=activation,
                                      kernel_regularizer=regularizers.l2(l2_norm))([h, adj])

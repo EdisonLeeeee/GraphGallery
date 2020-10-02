@@ -8,7 +8,7 @@ from tensorflow.keras import regularizers
 from graphgallery.nn.layers.tf_layers import GraphConvolution
 from graphgallery.nn.models import FastGCN
 from graphgallery.sequence import FullBatchNodeSequence
-from graphgallery.transformers import asintarr
+from graphgallery.transforms import asintarr
 
 
 class GCN_MIX(FastGCN):
@@ -19,7 +19,7 @@ class GCN_MIX(FastGCN):
 
     """
 
-    def __init__(self, *graph, adj_transformer="normalize_adj", attr_transformer=None,
+    def __init__(self, *graph, adj_transform="normalize_adj", attr_transform=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
         """Create Mixed Graph Convolutional Networks (GCN_MIX) occured in FastGCN.
 
@@ -42,12 +42,12 @@ class GCN_MIX(FastGCN):
         ----------
         graph: An instance of `graphgallery.data.Graph` or a tuple (list) of inputs.
             A sparse, attributed, labeled graph.
-        adj_transformer: string, `transformer`, or None. optional
-            How to transform the adjacency matrix. See `graphgallery.transformers`
+        adj_transform: string, `transform`, or None. optional
+            How to transform the adjacency matrix. See `graphgallery.transforms`
             (default: :obj:`'normalize_adj'` with normalize rate `-0.5`.
             i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
-        attr_transformer: string, transformer, or None. optional
-            How to transform the node attribute matrix. See `graphgallery.transformers`
+        attr_transform: string, `transform`, or None. optional
+            How to transform the node attribute matrix. See `graphgallery.transforms`
             (default :obj: `None`)
         device: string. optional 
             The device where the model is running on. You can specified `CPU` or `GPU` 
@@ -58,10 +58,10 @@ class GCN_MIX(FastGCN):
             multiple calls. (default :obj: `None`, i.e., using random seed)
         name: string. optional
             Specified name for the model. (default: :str: `class.__name__`)
-        kwargs: other customed keyword Parameters.
+        kwargs: other customized keyword Parameters.
         """
         super().__init__(*graph,
-                         adj_transformer=adj_transformer, attr_transformer=attr_transformer,
+                         adj_transform=adj_transform, attr_transform=attr_transform,
                          device=device, seed=seed, name=name, **kwargs)
 
     def train_sequence(self, index):

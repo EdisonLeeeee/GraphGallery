@@ -3,7 +3,7 @@ import scipy.sparse as sp
 
 from typing import Union
 from graphgallery.utils.shape import get_length
-from graphgallery.transformers import edge_transpose
+from graphgallery.transforms import edge_transpose
 from graphgallery import is_interger_scalar
 
 def augment_edge(edge_index: np.ndarray, nodes: Union[list, int, np.ndarray], 
@@ -39,7 +39,7 @@ def augment_edge(edge_index: np.ndarray, nodes: Union[list, int, np.ndarray],
     
     See Also
     ----------
-    graphgallery.transformers.augment_adj
+    graphgallery.transforms.augment_adj
         
     """
     

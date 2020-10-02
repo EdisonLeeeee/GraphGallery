@@ -11,7 +11,7 @@ from graphgallery.utils.type_check import (is_list_like,
 
 
 from graphgallery.utils.decorators import MultiInputs
-from graphgallery import transformers as T
+from graphgallery import transforms as T
 
 
 _DTYPE_TO_CLASS = {'float16': "HalfTensor",

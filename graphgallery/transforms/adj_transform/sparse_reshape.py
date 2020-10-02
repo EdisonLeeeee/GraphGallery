@@ -1,10 +1,10 @@
 import numpy as np
 import scipy.sparse as sp
 from graphgallery.utils.decorators import MultiInputs
-from graphgallery import transformers as T
+from graphgallery import transforms as T
 
 
-class SparseReshape(T.Transformer):
+class SparseReshape(T.Transform):
     """Add self loops for adjacency matrix."""
 
     def __init__(self, shape: tuple = None):
@@ -29,7 +29,7 @@ class SparseReshape(T.Transformer):
 
         See also
         ----------
-            graphgallery.transformers.sparse_reshape
+            graphgallery.transforms.sparse_reshape
         """
         return sparse_reshape(*adj_matrix, shape=self.shape)
 
@@ -53,7 +53,7 @@ def sparse_reshape(adj_matrix, shape: tuple = None):
 
     See also
     ----------
-        graphgallery.transformers.SparseReshape          
+        graphgallery.transforms.SparseReshape          
 
     """
     if shape is None:

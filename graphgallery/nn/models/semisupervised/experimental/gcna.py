@@ -22,7 +22,7 @@ class GCNA(GCN):
 
     """
 
-    def __init__(self, *graph, adj_transformer="normalize_adj", attr_transformer=None,
+    def __init__(self, *graph, adj_transform="normalize_adj", attr_transform=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
         """Create a Graph Convolutional Networks(GCN) model 
             concated with attribute matrix (GCNA).
@@ -42,12 +42,12 @@ class GCNA(GCN):
         ----------
         graph: An instance of `graphgallery.data.Graph` or a tuple(list) of inputs.
             A sparse, attributed, labeled graph.
-        adj_transformer: string, `transformer`, or None. optional
-            How to transform the adjacency matrix. See `graphgallery.transformers`
+        adj_transform: string, `transform`, or None. optional
+            How to transform the adjacency matrix. See `graphgallery.transforms`
             (default:: obj: `'normalize_adj'` with normalize rate `- 0.5`.
             i.e., math: : \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}})
-        attr_transformer: string, transformer, or None. optional
-            How to transform the node attribute matrix. See `graphgallery.transformers`
+        attr_transform: string, `transform`, or None. optional
+            How to transform the node attribute matrix. See `graphgallery.transforms`
             (default: obj: `None`)
         device: string. optional
             The device where the model is running on. You can specified `CPU` or `GPU`
@@ -58,16 +58,16 @@ class GCNA(GCN):
             multiple calls. (default: obj: `None`, i.e., using random seed)
         name: string. optional
             Specified name for the model. (default:: str: `class.__name__`)
-        kwargs: other customed keyword Parameters.
+        kwargs: other customized keyword Parameters.
         """
         super().__init__(*graph,
-                         adj_transformer=adj_transformer, attr_transformer=attr_transformer,
+                         adj_transform=adj_transform, attr_transform=attr_transform,
                          device=device, seed=seed, name=name, **kwargs)
 
     # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
     def build(self, hiddens=[16], activations=['relu'], dropout=0.5,
-              l2_norms=[5e-4], lr=0.01, use_bias=False):
+              l2_norm=5e-4, lr=0.01, use_bias=False):
 
         with tf.device(self.device):
 
@@ -79,7 +79,7 @@ class GCNA(GCN):
                           dtype=self.intx, name='node_index')
 
             h = x
-            for hidden, activation, l2_norm in zip(hiddens, activations, l2_norms):
+            for hidden, activation in zip(hiddens, activations):
                 h = GraphConvAttribute(hidden, use_bias=use_bias,
                                        activation=activation,
                                        kernel_regularizer=regularizers.l2(l2_norm))([h, adj])

@@ -1,12 +1,12 @@
 import numpy as np
 import scipy.sparse as sp
-from graphgallery.transformers import Transformer
+from graphgallery.transforms import Transform
 from graphgallery.utils.type_check import is_list_like
 from graphgallery.utils.shape import repeat
 from graphgallery.utils.decorators import MultiInputs
 
 
-class AddSelfLoops(Transformer):
+class AddSelfLoops(Transform):
     """Add self loops for adjacency matrix."""
 
     def __init__(self, fill_weight: float = 1.0):
@@ -32,7 +32,7 @@ class AddSelfLoops(Transformer):
 
         See also
         ----------
-            graphgallery.transformers.add_selfloops
+            graphgallery.transforms.add_selfloops
         """
         return add_selfloops(*adj_matrix, fill_weight=self.fill_weight)
 
@@ -62,7 +62,7 @@ def add_selfloops(adj_matrix, fill_weight: float = 1.0):
 
     See also
     ----------
-        graphgallery.transformers.AddSelfLoops          
+        graphgallery.transforms.AddSelfLoops          
 
     """
     def _add_selfloops(adj, w):

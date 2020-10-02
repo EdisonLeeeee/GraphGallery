@@ -1,6 +1,6 @@
 import numpy as np
 from graphgallery import floatx
-from graphgallery.transformers import edge_transpose, add_selfloops_edge
+from graphgallery.transforms import edge_transpose, add_selfloops_edge
 
 
 def normalize_edge(edge_index, edge_weight=None, rate=-0.5, fill_weight=1.0):

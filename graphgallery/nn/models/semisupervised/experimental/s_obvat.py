@@ -22,7 +22,7 @@ class SimplifiedOBVAT(OBVAT):
 
     """
 
-    def __init__(self, *graph, adj_transformer="normalize_adj", attr_transformer=None,
+    def __init__(self, *graph, adj_transform="normalize_adj", attr_transform=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
         """Create a Simplified OBVAT model.
 
@@ -41,12 +41,12 @@ class SimplifiedOBVAT(OBVAT):
         ----------
         graph: An instance of `graphgallery.data.Graph` or a tuple(list) of inputs.
             A sparse, attributed, labeled graph.
-        adj_transformer: string, `transformer`, or None. optional
-            How to transform the adjacency matrix. See `graphgallery.transformers`
+        adj_transform: string, `transform`, or None. optional
+            How to transform the adjacency matrix. See `graphgallery.transforms`
             (default: : obj: `'normalize_adj'` with normalize rate `- 0.5`.
             i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}})
-        attr_transformer: string, transformer, or None. optional
-            How to transform the node attribute matrix. See `graphgallery.transformers`
+        attr_transform: string, `transform`, or None. optional
+            How to transform the node attribute matrix. See `graphgallery.transforms`
             (default: obj: `None`)
         device: string. optional
             The device where the model is running on. You can specified `CPU` or `GPU`
@@ -57,20 +57,20 @@ class SimplifiedOBVAT(OBVAT):
             multiple calls. (default: obj: `None`, i.e., using random seed)
         name: string. optional
             Specified name for the model. (default: : str: `class.__name__`)
-        kwargs: other customed keyword Parameters.
+        kwargs: other customized keyword Parameters.
 
         Note:
         ----------
         This is a simplified implementation of `OBVAT`.                
         """
         super().__init__(*graph,
-                         adj_transformer=adj_transformer, attr_transformer=attr_transformer,
+                         adj_transform=adj_transform, attr_transform=attr_transform,
                          device=device, seed=seed, name=name, **kwargs)
 
     # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
     def build(self, hiddens=[16], activations=['relu'], dropout=0.,
-              lr=0.01, l2_norms=[5e-4], p1=1.4, p2=0.7, use_bias=False,
+              lr=0.01, l2_norm=5e-4, p1=1.4, p2=0.7, use_bias=False,
               epsilon=0.01):
 
         with tf.device(self.device):
@@ -84,7 +84,7 @@ class SimplifiedOBVAT(OBVAT):
 
             GCN_layers = []
             dropout_layers = []
-            for hidden, activation, l2_norm in zip(hiddens, activations, l2_norms):
+            for hidden, activation in zip(hiddens, activations):
                 GCN_layers.append(GraphConvolution(hidden,
                                                    activation=activation,
                                                    use_bias=use_bias,

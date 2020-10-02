@@ -11,7 +11,7 @@ from graphgallery.nn.layers.tf_layers import Top_k_features, LGConvolution, Dens
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.decorators import EqualVarLength
-from graphgallery import transformers as T
+from graphgallery import transforms as T
 
 
 class LGCN(SemiSupervisedModel):
@@ -21,7 +21,7 @@ class LGCN(SemiSupervisedModel):
         Tensorflow 1.x implementation: <https://github.com/divelab/lgcn>
     """
 
-    def __init__(self, *graph, adj_transformer="normalize_adj", attr_transformer=None,
+    def __init__(self, *graph, adj_transform="normalize_adj", attr_transform=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
         """Create a Large-Scale Learnable Graph Convolutional Networks (LGCN) model.
 
@@ -42,12 +42,12 @@ class LGCN(SemiSupervisedModel):
         ----------
         graph: An instance of `graphgallery.data.Graph` or a tuple (list) of inputs.
             A sparse, attributed, labeled graph.
-        adj_transformer: string, `transformer`, or None. optional
-            How to transform the adjacency matrix. See `graphgallery.transformers`
+        adj_transform: string, `transform`, or None. optional
+            How to transform the adjacency matrix. See `graphgallery.transforms`
             (default: :obj:`'normalize_adj'` with normalize rate `-0.5`.
             i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
-        attr_transformer: string, transformer, or None. optional
-            How to transform the node attribute matrix. See `graphgallery.transformers`
+        attr_transform: string, `transform`, or None. optional
+            How to transform the node attribute matrix. See `graphgallery.transforms`
             (default :obj: `None`)
         device: string. optional 
             The device where the model is running on. You can specified `CPU` or `GPU` 
@@ -58,24 +58,24 @@ class LGCN(SemiSupervisedModel):
             multiple calls. (default :obj: `None`, i.e., using random seed)
         name: string. optional
             Specified name for the model. (default: :str: `class.__name__`)
-        kwargs: other customed keyword Parameters.
+        kwargs: other customized keyword Parameters.
         """
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
-        self.adj_transformer = T.get(adj_transformer)
-        self.attr_transformer = T.get(attr_transformer)
+        self.adj_transform = T.get(adj_transform)
+        self.attr_transform = T.get(attr_transform)
         self.process()
 
     def process_step(self):
         graph = self.graph
-        adj_matrix = self.adj_transformer(graph.adj_matrix).toarray()
-        attr_matrix = self.attr_transformer(graph.attr_matrix)
+        adj_matrix = self.adj_transform(graph.adj_matrix).toarray()
+        attr_matrix = self.attr_transform(graph.attr_matrix)
 
         self.feature_inputs, self.structure_inputs = attr_matrix, adj_matrix
 
     # @EqualVarLength()
     def build(self, hiddens=[32], n_filters=[8, 8], activations=[None, None], dropout=0.8,
-              l2_norms=[5e-4, 5e-4], lr=0.1, use_bias=False, k=8):
+              l2_norm=5e-4, lr=0.1, use_bias=False, k=8):
 
         with tf.device(self.device):
 
@@ -91,7 +91,7 @@ class LGCN(SemiSupervisedModel):
                 h = DenseConvolution(hidden,
                                      use_bias=use_bias,
                                      activation=activations[idx],
-                                     kernel_regularizer=regularizers.l2(l2_norms[idx]))([h, adj])
+                                     kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
 
             for idx, n_filter in enumerate(n_filters):
                 top_k_h = Top_k_features(k=k)([h, adj])
@@ -100,7 +100,7 @@ class LGCN(SemiSupervisedModel):
                                       use_bias=use_bias,
                                       dropout=dropout,
                                       activation=activations[idx],
-                                      kernel_regularizer=regularizers.l2(l2_norms[idx]))(top_k_h)
+                                      kernel_regularizer=regularizers.l2(l2_norm))(top_k_h)
                 cur_h = BatchNormalization()(cur_h)
                 h = Concatenate()([h, cur_h])
 
@@ -108,7 +108,7 @@ class LGCN(SemiSupervisedModel):
             h = DenseConvolution(self.graph.n_classes,
                                  use_bias=use_bias,
                                  activation=activations[-1],
-                                 kernel_regularizer=regularizers.l2(l2_norms[-1]))([h, adj])
+                                 kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
 
             h = Mask()([h, mask])
 

@@ -1,12 +1,12 @@
 import scipy.sparse as sp
 import numpy as np
 
-from graphgallery.transformers import Transformer
-from graphgallery.transformers import normalize_adj
+from graphgallery.transforms import Transform
+from graphgallery.transforms import normalize_adj
 from graphgallery.utils.decorators import MultiInputs
 
 
-class ChebyBasis(Transformer):
+class ChebyBasis(Transform):
     def __init__(self, order=2, rate=-0.5):
         super().__init__()
         self.order = order

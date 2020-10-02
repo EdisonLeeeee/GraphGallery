@@ -18,7 +18,7 @@ from graphgallery.utils.history import History
 from graphgallery.utils.tqdm import tqdm
 from graphgallery.data.io import makedirs_from_path
 from graphgallery.data import Basegraph
-from graphgallery.transformers import asintarr
+from graphgallery.transforms import asintarr
 
 # Ignora warnings:
 #     UserWarning: Converting sparse IndexedSlices to a dense Tensor of unknown shape. This may consume a large amount of memory.
@@ -42,7 +42,7 @@ class SemiSupervisedModel(BaseModel):
         ----------
         graph: An instance of `graphgallery.data.Graph` or a tuple (list) of inputs.
             A sparse, attributed, labeled graph.
-        kwargs: other customed keyword Parameters.
+        kwargs: other customized keyword Parameters.
 
         """
         if len(graph) > 0:
@@ -81,9 +81,9 @@ class SemiSupervisedModel(BaseModel):
                 final output.
             dropout: float scalar
                 Dropout rate for the hidden outputs.
-            l2_norms:  `list` of float scalar or float scalar
+            l2_norm:  float scalar
                 L2 normalize parameters for the hidden layers. (only used in the hidden layers)
-            lr: Float scalar
+            lr: float scalar
                 Learning rate for the training model.
             use_bias: bool
                 Whether to use bias in the hidden layers.
@@ -106,7 +106,11 @@ class SemiSupervisedModel(BaseModel):
 
         """
         # TODO: check for the input model
-        self.model = model
+        if self.kind == "T":
+            self.model = model.to(self.device)
+        else:
+            with tf.device(self.device):
+                self.model = model
 
     def train_v1(self, idx_train, idx_val=None,
                  epochs=200, early_stopping=None,

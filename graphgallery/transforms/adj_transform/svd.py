@@ -1,12 +1,12 @@
 import numpy as np
 import scipy.sparse as sp
-from graphgallery.transformers import Transformer
+from graphgallery.transforms import Transform
 from graphgallery.utils.type_check import is_list_like
 from graphgallery.utils.shape import repeat
 from graphgallery.utils.decorators import MultiInputs
 
 
-class SVD(Transformer):
+class SVD(Transform):
 
     def __init__(self, k=50, threshold=0.01, binaryzation=False):
         super().__init__()

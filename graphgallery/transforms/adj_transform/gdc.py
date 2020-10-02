@@ -3,15 +3,15 @@ import scipy.sparse as sp
 from sklearn.preprocessing import normalize
 from scipy.linalg import expm
 
-from graphgallery.transformers import normalize_adj
-from graphgallery.transformers import Transformer
+from graphgallery.transforms import normalize_adj
+from graphgallery.transforms import Transform
 from graphgallery.utils.decorators import MultiInputs
 
 
 
 
 
-class GDC(Transformer):
+class GDC(Transform):
     def __init__(self, alpha: float=0.3, t: float=None, eps: float=None, k: int=128, which: str='PPR'):
         super().__init__()
         self.alpha = alpha

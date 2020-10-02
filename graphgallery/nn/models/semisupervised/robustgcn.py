@@ -9,8 +9,8 @@ from graphgallery.nn.layers.tf_layers import GaussionConvolution_F, GaussionConv
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.decorators import EqualVarLength
-from graphgallery import transformers as T
-from graphgallery.transformers import NormalizeAdj
+from graphgallery import transforms as T
+from graphgallery.transforms import NormalizeAdj
 
 
 class RobustGCN(SemiSupervisedModel):
@@ -22,8 +22,8 @@ class RobustGCN(SemiSupervisedModel):
 
     """
 
-    def __init__(self, *graph, adj_transformer=T.NormalizeAdj(rate=[-0.5, -1.0]),
-                 attr_transformer=None, device='cpu:0', seed=None, name=None, **kwargs):
+    def __init__(self, *graph, adj_transform=T.NormalizeAdj(rate=[-0.5, -1.0]),
+                 attr_transform=None, device='cpu:0', seed=None, name=None, **kwargs):
         """Create a Robust Graph Convolutional Networks (RobustGCN or RGCN) model.
 
         This can be instantiated in several ways:
@@ -41,11 +41,11 @@ class RobustGCN(SemiSupervisedModel):
         ----------
             graph: An instance of `graphgallery.data.Graph` or a tuple (list) of inputs.
                 A sparse, attributed, labeled graph.
-            adj_transformer: string, `transformer`, or None. optional
-                How to transform the adjacency matrix. See `graphgallery.transformers`
+            adj_transform: string, `transform`, or None. optional
+                How to transform the adjacency matrix. See `graphgallery.transforms`
                 (default: :obj:`'normalize_adj'` with normalize rate `-0.5` and `-1`.) 
-            attr_transformer: string, transformer, or None. optional
-                How to transform the node attribute matrix. See `graphgallery.transformers`
+            attr_transform: string, `transform`, or None. optional
+                How to transform the node attribute matrix. See `graphgallery.transforms`
                 (default :obj: `None`)               
             device: string. optional 
                 The device where the model is running on. You can specified `CPU` or `GPU` 
@@ -56,19 +56,19 @@ class RobustGCN(SemiSupervisedModel):
                 multiple calls. (default :obj: `None`, i.e., using random seed)
             name: string. optional
                 Specified name for the model. (default: :str: `class.__name__`)
-            kwargs: other customed keyword Parameters.
+            kwargs: other customized keyword Parameters.
 
         """
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
-        self.adj_transformer = T.get(adj_transformer)
-        self.attr_transformer = T.get(attr_transformer)
+        self.adj_transform = T.get(adj_transform)
+        self.attr_transform = T.get(attr_transform)
         self.process()
 
     def process_step(self):
         graph = self.graph
-        adj_matrix = self.adj_transformer(graph.adj_matrix)
-        attr_matrix = self.attr_transformer(graph.attr_matrix)
+        adj_matrix = self.adj_transform(graph.adj_matrix)
+        attr_matrix = self.attr_transform(graph.attr_matrix)
 
         self.feature_inputs, self.structure_inputs = T.astensors(
             attr_matrix, adj_matrix, device=self.device)
@@ -76,7 +76,7 @@ class RobustGCN(SemiSupervisedModel):
     # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
     def build(self, hiddens=[64], activations=['relu'], use_bias=False, dropout=0.5,
-              l2_norms=[5e-4], lr=0.01, kl=5e-4, gamma=1.):
+              l2_norm=5e-4, lr=0.01, kl=5e-4, gamma=1.):
 
         with tf.device(self.device):
             x = Input(batch_shape=[None, self.graph.n_attrs],
@@ -90,7 +90,7 @@ class RobustGCN(SemiSupervisedModel):
             mean, var = GaussionConvolution_F(hiddens[0], gamma=gamma,
                                               use_bias=use_bias,
                                               activation=activations[0],
-                                              kernel_regularizer=regularizers.l2(l2_norms[0]))([h, *adj])
+                                              kernel_regularizer=regularizers.l2(l2_norm))([h, *adj])
             if kl:
                 KL_divergence = 0.5 * \
                     tf.reduce_mean(tf.math.square(mean) + var -
@@ -101,7 +101,7 @@ class RobustGCN(SemiSupervisedModel):
                 kl_loss = kl * KL_divergence
 
             # additional layers (usually unnecessay)
-            for hidden, activation, l2_norm in zip(hiddens[1:], activations[1:], l2_norms[1:]):
+            for hidden, activation in zip(hiddens[1:], activations[1:]):
 
                 mean, var = GaussionConvolution_D(
                     hidden, gamma=gamma, use_bias=use_bias, activation=activation)([mean, var, *adj])

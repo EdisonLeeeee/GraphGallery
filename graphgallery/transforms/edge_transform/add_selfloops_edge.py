@@ -1,6 +1,6 @@
 import numpy as np
 from graphgallery import floatx
-from graphgallery.transformers import edge_transpose
+from graphgallery.transforms import edge_transpose
 
 
 def add_selfloops_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0):

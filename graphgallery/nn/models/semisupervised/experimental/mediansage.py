@@ -14,7 +14,7 @@ from graphgallery.utils.decorators import EqualVarLength
 class MedianSAGE(GraphSAGE):
 
     def __init__(self, *graph, n_samples=(15, 5),
-                 adj_transformer="neighbor_sampler", attr_transformer=None,
+                 adj_transform="neighbor_sampler", attr_transform=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
         """Create a SAmple and aggreGatE Graph Convolutional Networks (GraphSAGE) 
             moel using Median convolution (MedianSAGE).
@@ -39,11 +39,11 @@ class MedianSAGE(GraphSAGE):
             The number of sampled neighbors for each nodes in each layer. 
             (default :obj: `(15, 3)`, i.e., sample `15` first-order neighbors and 
             `3` sencond-order neighbors, and the radius for `MedianSAGE` is `2`)
-        adj_transformer: string, `transformer`, or None. optional
-            How to transform the adjacency matrix. See `graphgallery.transformers`
+        adj_transform: string, `transform`, or None. optional
+            How to transform the adjacency matrix. See `graphgallery.transforms`
             (default: :obj:`'neighbor_sampler'`) 
-        attr_transformer: string, transformer, or None. optional
-            How to transform the node attribute matrix. See `graphgallery.transformers`
+        attr_transform: string, `transform`, or None. optional
+            How to transform the node attribute matrix. See `graphgallery.transforms`
             (default :obj: `None`)
         device: string. optional 
             The device where the model is running on. You can specified `CPU` or `GPU` 
@@ -54,18 +54,18 @@ class MedianSAGE(GraphSAGE):
             multiple calls. (default :obj: `None`, i.e., using random seed)
         name: string. optional
             Specified name for the model. (default: :str: `class.__name__`)
-        kwargs: other customed keyword Parameters.
+        kwargs: other customized keyword Parameters.
 
         """
 
         super().__init__(*graph, n_samples=n_samples,
-                         adj_transformer=adj_transformer, attr_transformer=attr_transformer,
+                         adj_transform=adj_transform, attr_transform=attr_transform,
                          device=device, seed=seed, name=name, **kwargs)
 
     # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
     def build(self, hiddens=[32], activations=['relu'], dropout=0.5,
-              l2_norms=[5e-4], lr=0.01, use_bias=True, output_normalize=False, aggrator='median'):
+              l2_norm=5e-4, lr=0.01, use_bias=True, output_normalize=False, aggrator='median'):
 
         with tf.device(self.device):
 
@@ -84,7 +84,7 @@ class MedianSAGE(GraphSAGE):
                          for hop, n_sample in enumerate(self.n_samples)]
 
             aggrators = []
-            for i, (hidden, activation, l2_norm) in enumerate(zip(hiddens, activations, l2_norms)):
+            for i, (hidden, activation) in enumerate(zip(hiddens, activations)):
                 # you can use `GCNAggregator` instead
                 aggrators.append(Agg(hidden, concat=True, activation=activation, use_bias=use_bias,
                                      kernel_regularizer=regularizers.l2(l2_norm)))

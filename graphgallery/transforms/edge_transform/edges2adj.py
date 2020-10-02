@@ -1,10 +1,10 @@
 import numpy as np
 import scipy.sparse as sp
-from graphgallery.transformers import Transformer
-from graphgallery.transformers import edge_transpose
+from graphgallery.transforms import Transform
+from graphgallery.transforms import edge_transpose
 
 
-class SparseEdgesToSparseAdj(Transformer):
+class SparseEdgesToSparseAdj(Transform):
     def __call__(self, edge_index: np.ndarray, edge_weight: np.ndarray=None, shape=None) -> sp.csr_matrix:
         return sparse_adj_to_sparse_edges(edge_index=edge_index, edge_weight=edge_weight, shape=shape)
 

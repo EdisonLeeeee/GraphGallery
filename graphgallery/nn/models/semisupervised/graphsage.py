@@ -10,7 +10,7 @@ from graphgallery.nn.layers.tf_layers import MeanAggregator, GCNAggregator
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import SAGEMiniBatchSequence
 from graphgallery.utils.decorators import EqualVarLength
-from graphgallery import transformers as T
+from graphgallery import transforms as T
 
 
 class GraphSAGE(SemiSupervisedModel):
@@ -22,7 +22,7 @@ class GraphSAGE(SemiSupervisedModel):
     """
 
     def __init__(self, *graph, n_samples=(15, 5),
-                 adj_transformer="neighbor_sampler", attr_transformer=None,
+                 adj_transform="neighbor_sampler", attr_transform=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
         """Create a SAmple and aggreGatE Graph Convolutional Networks (GraphSAGE) model.
 
@@ -46,11 +46,11 @@ class GraphSAGE(SemiSupervisedModel):
             The number of sampled neighbors for each nodes in each layer. 
             (default :obj: `(15, 5)`, i.e., sample `15` first-order neighbors and 
             `5` sencond-order neighbors, and the radius for `GraphSAGE` is `2`)
-        adj_transformer: string, `transformer`, or None. optional
-            How to transform the adjacency matrix. See `graphgallery.transformers`
+        adj_transform: string, `transform`, or None. optional
+            How to transform the adjacency matrix. See `graphgallery.transforms`
             (default: :obj:`'neighbor_sampler'`) 
-        attr_transformer: string, transformer, or None. optional
-            How to transform the node attribute matrix. See `graphgallery.transformers`
+        attr_transform: string, `transform`, or None. optional
+            How to transform the node attribute matrix. See `graphgallery.transforms`
             (default :obj: `None`)
         device: string. optional 
             The device where the model is running on. You can specified `CPU` or `GPU` 
@@ -61,22 +61,22 @@ class GraphSAGE(SemiSupervisedModel):
             multiple calls. (default :obj: `None`, i.e., using random seed)
         name: string. optional
             Specified name for the model. (default: :str: `class.__name__`)
-        kwargs: other customed keyword Parameters.
+        kwargs: other customized keyword Parameters.
 
         """
 
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
         self.n_samples = n_samples
-        self.adj_transformer = T.get(adj_transformer)
-        self.attr_transformer = T.get(attr_transformer)
+        self.adj_transform = T.get(adj_transform)
+        self.attr_transform = T.get(attr_transform)
         self.process()
 
     def process_step(self):
         graph = self.graph
         # Dense matrix, shape [n_nodes, max_degree]
-        adj_matrix = self.adj_transformer(graph.adj_matrix)
-        attr_matrix = self.attr_transformer(graph.attr_matrix)
+        adj_matrix = self.adj_transform(graph.adj_matrix)
+        attr_matrix = self.attr_transform(graph.attr_matrix)
 
         # pad with a dummy zero vector
         attr_matrix = np.vstack(
@@ -88,7 +88,7 @@ class GraphSAGE(SemiSupervisedModel):
     # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
     def build(self, hiddens=[32], activations=['relu'], dropout=0.5,
-              l2_norms=[5e-4], lr=0.01, use_bias=True, output_normalize=False, aggrator='mean'):
+              l2_norm=5e-4, lr=0.01, use_bias=True, output_normalize=False, aggrator='mean'):
 
         with tf.device(self.device):
 
@@ -107,7 +107,7 @@ class GraphSAGE(SemiSupervisedModel):
                          for hop, n_sample in enumerate(self.n_samples)]
 
             aggrators = []
-            for i, (hidden, activation, l2_norm) in enumerate(zip(hiddens, activations, l2_norms)):
+            for i, (hidden, activation) in enumerate(zip(hiddens, activations)):
                 # you can use `GCNAggregator` instead
                 aggrators.append(Agg(hidden, concat=True, activation=activation,
                                      use_bias=use_bias,

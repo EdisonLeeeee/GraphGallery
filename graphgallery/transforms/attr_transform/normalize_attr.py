@@ -1,11 +1,11 @@
 import numpy as np
 import scipy.sparse as sp
 from sklearn.preprocessing import normalize, StandardScaler, RobustScaler
-from graphgallery.transformers import Transformer
+from graphgallery.transforms import Transform
 from graphgallery.utils.decorators import MultiInputs
 
 
-class NormalizeAttr(Transformer):
+class NormalizeAttr(Transform):
     """Normalize the attribute matrix with given type."""
 
     def __init__(self, norm='l1'):
@@ -40,7 +40,7 @@ class NormalizeAttr(Transformer):
 
         See also
         ----------
-            graphgallery.transformers.normalize_attr
+            graphgallery.transforms.normalize_attr
         """
         return normalize_attr(attr_matrix, norm=self.norm)
 
@@ -70,7 +70,7 @@ def normalize_attr(x, norm='l1'):
 
     See also
     ----------
-        graphgallery.transformers.NormalizeAttr        
+        graphgallery.transforms.NormalizeAttr        
     """
     if norm not in {'l1', 'l1_0', 'scale', 'robust_scale', None}:
         raise ValueError(f'{norm} is not a supported norm.')

@@ -13,7 +13,7 @@ class GAT(TorchKerasModel):
     def __init__(self, in_channels,
                  out_channels, hiddens=[8],
                  n_heads=[8], activations=['elu'],
-                 dropout=0.6, l2_norms=[5e-4],
+                 dropout=0.6, l2_norm=5e-4,
                  lr=0.01, use_bias=True):
 
         super().__init__()
@@ -23,7 +23,7 @@ class GAT(TorchKerasModel):
 
         inc = in_channels
         pre_head = 1
-        for hidden, n_head, activation, l2_norm in zip(hiddens, n_heads, activations, l2_norms):
+        for hidden, n_head, activation in zip(hiddens, n_heads, activations):
             layer = SparseGraphAttention(inc * pre_head, hidden, activation=activation, 
                                          attn_heads=n_head, reduction='concat', use_bias=use_bias)
             self.layers.append(layer)

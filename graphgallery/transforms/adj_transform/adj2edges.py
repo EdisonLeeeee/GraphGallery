@@ -1,9 +1,9 @@
 import numpy as np
 import scipy.sparse as sp
-from graphgallery.transformers import Transformer
+from graphgallery.transforms import Transform
 
 
-class SparseAdjToSparseEdges(Transformer):
+class SparseAdjToSparseEdges(Transform):
     def __call__(self, adj_matrix):
         return sparse_adj_to_sparse_edges(adj_matrix)
 

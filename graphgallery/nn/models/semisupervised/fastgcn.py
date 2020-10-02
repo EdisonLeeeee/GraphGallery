@@ -9,7 +9,7 @@ from graphgallery.nn.layers.tf_layers import GraphConvolution
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FastGCNBatchSequence
 from graphgallery.utils.decorators import EqualVarLength
-from graphgallery import transformers as T
+from graphgallery import transforms as T
 
 
 class FastGCN(SemiSupervisedModel):
@@ -22,7 +22,7 @@ class FastGCN(SemiSupervisedModel):
     """
 
     def __init__(self, *graph, batch_size=256, rank=100,
-                 adj_transformer="normalize_adj", attr_transformer=None,
+                 adj_transform="normalize_adj", attr_transform=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
         """Create a Fast Graph Convolutional Networks (FastGCN) model.
 
@@ -47,12 +47,12 @@ class FastGCN(SemiSupervisedModel):
         rank (Positive integer, optional):
             The selected nodes for each batch nodes, `rank` must be smaller than
             `batch_size`. (default :int: `100`)
-        adj_transformer: string, `transformer`, or None. optional
-            How to transform the adjacency matrix. See `graphgallery.transformers`
+        adj_transform: string, `transform`, or None. optional
+            How to transform the adjacency matrix. See `graphgallery.transforms`
             (default: :obj:`'normalize_adj'` with normalize rate `-0.5`.
             i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
-        attr_transformer: string, transformer, or None. optional
-            How to transform the node attribute matrix. See `graphgallery.transformers`
+        attr_transform: string, `transform`, or None. optional
+            How to transform the node attribute matrix. See `graphgallery.transforms`
             (default :obj: `None`)
         device: string. optional
             The device where the model is running on. You can specified `CPU` or `GPU`
@@ -63,20 +63,20 @@ class FastGCN(SemiSupervisedModel):
             multiple calls. (default :obj: `None`, i.e., using random seed)
         name: string. optional
             Specified name for the model. (default: :str: `class.__name__`)
-        kwargs: other customed keyword Parameters.
+        kwargs: other customized keyword Parameters.
         """
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
         self.rank = rank
         self.batch_size = batch_size
-        self.adj_transformer = T.get(adj_transformer)
-        self.attr_transformer = T.get(attr_transformer)
+        self.adj_transform = T.get(adj_transform)
+        self.attr_transform = T.get(attr_transform)
         self.process()
 
     def process_step(self):
         graph = self.graph
-        adj_matrix = self.adj_transformer(graph.adj_matrix)
-        attr_matrix = self.attr_transformer(graph.attr_matrix)
+        adj_matrix = self.adj_transform(graph.adj_matrix)
+        attr_matrix = self.attr_transform(graph.attr_matrix)
 
         attr_matrix = adj_matrix @ attr_matrix
 
@@ -86,7 +86,7 @@ class FastGCN(SemiSupervisedModel):
     # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
     def build(self, hiddens=[32], activations=['relu'], dropout=0.5,
-              l2_norms=[5e-4], lr=0.01, use_bias=False):
+              l2_norm=5e-4, lr=0.01, use_bias=False):
 
         with tf.device(self.device):
 
@@ -96,7 +96,7 @@ class FastGCN(SemiSupervisedModel):
                         dtype=self.floatx, sparse=True, name='adj_matrix')
 
             h = x
-            for hidden, activation, l2_norm in zip(hiddens, activations, l2_norms):
+            for hidden, activation in zip(hiddens, activations):
                 h = Dense(hidden, use_bias=use_bias, activation=activation,
                           kernel_regularizer=regularizers.l2(l2_norm))(h)
                 h = Dropout(rate=dropout)(h)
@@ -113,7 +113,7 @@ class FastGCN(SemiSupervisedModel):
         index = T.asintarr(index)
         labels = self.graph.labels[index]
         adj_matrix = self.graph.adj_matrix[index][:, index]
-        adj_matrix = self.adj_transformer(adj_matrix)
+        adj_matrix = self.adj_transform(adj_matrix)
 
         feature_inputs = tf.gather(self.feature_inputs, index)
         sequence = FastGCNBatchSequence([feature_inputs, adj_matrix], labels,

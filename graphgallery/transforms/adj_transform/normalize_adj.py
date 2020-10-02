@@ -1,11 +1,11 @@
 import numpy as np
 import scipy.sparse as sp
-from graphgallery.transformers import Transformer
+from graphgallery.transforms import Transform
 from graphgallery.utils.type_check import is_list_like
 from graphgallery.utils.shape import repeat
 from graphgallery.utils.decorators import MultiInputs
 
-class NormalizeAdj(Transformer):
+class NormalizeAdj(Transform):
     """Normalize adjacency matrix."""
 
     def __init__(self, rate=-0.5, fill_weight=1.0):
@@ -40,7 +40,7 @@ class NormalizeAdj(Transformer):
 
         See also
         ----------
-            graphgallery.transformers.normalize_adj
+            graphgallery.transforms.normalize_adj
         """
         return normalize_adj(*adj_matrix, rate=self.rate,
                              fill_weight=self.fill_weight)
@@ -73,7 +73,7 @@ def normalize_adj(adj_matrix, rate=-0.5, fill_weight=1.0):
 
     See also
     ----------
-        graphgallery.transformers.NormalizeAdj          
+        graphgallery.transforms.NormalizeAdj          
 
     """
     def _normalize_adj(adj, r):

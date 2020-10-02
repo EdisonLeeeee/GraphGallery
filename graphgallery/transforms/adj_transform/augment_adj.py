@@ -3,7 +3,7 @@ import scipy.sparse as sp
 
 from typing import Union
 from graphgallery.utils.shape import get_length
-from graphgallery.transformers import augment_edge
+from graphgallery.transforms import augment_edge
 
 
 def augment_adj(adj_matrix: sp.csr_matrix, nodes: Union[list, int, np.ndarray], 
@@ -54,7 +54,7 @@ def augment_adj(adj_matrix: sp.csr_matrix, nodes: Union[list, int, np.ndarray],
     
     See Also
     ----------
-    graphgallery.transformers.augment_edge    
+    graphgallery.transforms.augment_edge    
         
     """
     

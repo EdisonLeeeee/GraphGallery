@@ -7,7 +7,7 @@ from torch.nn import Module
 
 from functools import partial
 
-from graphgallery import transformers as T
+from graphgallery import transforms as T
 
 class Sequence(tf_Sequence):
 

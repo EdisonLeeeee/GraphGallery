@@ -2,7 +2,7 @@ from abc import ABC
 from typing import Any
 
 
-class Transformer(ABC):
+class Transform(ABC):
 
     def __init__(self):
         ...
@@ -11,7 +11,7 @@ class Transformer(ABC):
         ...
 
 
-class NullTransformer(Transformer):
+class NullTransformer(Transform):
     def __init__(self, *args, **kwargs):
         ...
 

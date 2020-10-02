@@ -26,10 +26,10 @@ from graphgallery import utils
 from graphgallery import sequence
 from graphgallery import data
 from graphgallery import backend
-from graphgallery import transformers
+from graphgallery import transforms
 
 
-__version__ = '0.3.0'
+__version__ = '0.4.0'
 
 __all__ = ['graphgallery', 'nn', 'utils', 'sequence', 'data',
-           'backend', 'transformers', '__version__']
+           'backend', 'transforms', '__version__']

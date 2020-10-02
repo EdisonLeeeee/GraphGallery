@@ -3,7 +3,7 @@ import numpy as np
 
 from sklearn.preprocessing import normalize
 
-from graphgallery.transformers import Transformer
+from graphgallery.transforms import Transform
 from graphgallery.utils.decorators import MultiInputs
 
 # Version: Compute the exact signature
@@ -83,7 +83,7 @@ from graphgallery.utils.decorators import MultiInputs
 # ==================================================================
 # Version: Approximate with Chebychev polynomial
 
-class WaveletBasis(Transformer):
+class WaveletBasis(Transform):
     def __init__(self, order=3, wavelet_s=1.2, threshold=1e-4, wavelet_normalize=True):
         super().__init__()
         self.order = order

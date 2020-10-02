@@ -3,7 +3,7 @@ import tensorflow as tf
 import scipy.sparse as sp
 
 from graphgallery import backend
-from graphgallery.transformers.tensor_transformer import tf_tensor, th_tensor
+from graphgallery.transforms.tensor_transform import tf_tensor, th_tensor
 from graphgallery.utils.device import parse_device
 
 __all__ = ["sparse_adj_to_sparse_tensor",

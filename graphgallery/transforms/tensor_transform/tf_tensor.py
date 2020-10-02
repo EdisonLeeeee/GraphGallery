@@ -9,7 +9,7 @@ from graphgallery.utils.type_check import (is_list_like,
                                            is_scalar_like)
 
 from graphgallery.utils.decorators import MultiInputs
-from graphgallery import transformers as T
+from graphgallery import transforms as T
 
 
 

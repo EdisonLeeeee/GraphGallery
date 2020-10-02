@@ -9,7 +9,7 @@ from graphgallery.utils.decorators import EqualVarLength
 
 from graphgallery.nn.models.semisupervised.th_models.gcn import GCN as pyGCN
 from graphgallery.nn.models.semisupervised.tf_models.gcn import GCN as tfGCN
-from graphgallery import transformers as T
+from graphgallery import transforms as T
 
 
 class ClusterGCN(SemiSupervisedModel):
@@ -27,7 +27,7 @@ class ClusterGCN(SemiSupervisedModel):
     """
 
     def __init__(self, *graph, n_clusters=None,
-                 adj_transformer="normalize_adj", attr_transformer=None,
+                 adj_transform="normalize_adj", attr_transform=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
         """Create a Cluster Graph Convolutional Networks (ClusterGCN) model.
 
@@ -51,12 +51,12 @@ class ClusterGCN(SemiSupervisedModel):
             The number of clusters that the graph being seperated, 
             if not specified (`None`), it will be set to the number 
             of classes automatically. (default :obj: `None`).            
-        adj_transformer: string, `transformer`, or None. optional
-            How to transform the adjacency matrix. See `graphgallery.transformers`
+        adj_transform: string, `transform`, or None. optional
+            How to transform the adjacency matrix. See `graphgallery.transforms`
             (default: :obj:`'normalize_adj'` with normalize rate `-0.5`.
             i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
-        attr_transformer: string, transformer, or None. optional
-            How to transform the node attribute matrix. See `graphgallery.transformers`
+        attr_transform: string, `transform`, or None. optional
+            How to transform the node attribute matrix. See `graphgallery.transforms`
             (default :obj: `None`)
         device: string. optional 
             The device where the model is running on. You can specified `CPU` or `GPU` 
@@ -67,7 +67,7 @@ class ClusterGCN(SemiSupervisedModel):
             multiple calls. (default :obj: `None`, i.e., using random seed)
         name: string. optional
             Specified name for the model. (default: :str: `class.__name__`)
-        kwargs: other customed keyword Parameters.
+        kwargs: other customized keyword Parameters.
         """
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
@@ -75,42 +75,41 @@ class ClusterGCN(SemiSupervisedModel):
             n_clusters = self.graph.n_classes
 
         self.n_clusters = n_clusters
-        self.adj_transformer = T.get(adj_transformer)
-        self.attr_transformer = T.get(attr_transformer)
+        self.adj_transform = T.get(adj_transform)
+        self.attr_transform = T.get(attr_transform)
         self.process()
 
     def process_step(self):
         graph = self.graph
-        attr_matrix = self.attr_transformer(graph.attr_matrix)
+        attr_matrix = self.attr_transform(graph.attr_matrix)
 
         batch_adj, batch_x, self.cluster_member = T.graph_partition(graph.adj_matrix,
                                                                     attr_matrix,
                                                                     n_clusters=self.n_clusters)
 
-        batch_adj = self.adj_transformer(*batch_adj)
+        batch_adj = self.adj_transform(*batch_adj)
 
         (self.batch_adj, self.batch_x) = T.astensors(batch_adj, batch_x, device=self.device)
 
     # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
     def build(self, hiddens=[32], activations=['relu'], dropout=0.5,
-              l2_norms=[0.], lr=0.01, use_bias=False):
+              l2_norm=0., lr=0.01, use_bias=False):
 
 #         if not self.kind == "T":
 #             raise RuntimeError(f"Currently {self.name} only support for tensorflow backend.")
             
         if self.kind == "P":
-             model = pyGCN(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
-                                activations=activations, l2_norms=l2_norms, dropout=dropout,
+            self.model = pyGCN(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
+                                activations=activations, dropout=dropout, l2_norm=l2_norm,
                                 lr=lr, use_bias=use_bias).to(self.device)
         else:
             with tf.device(self.device):
-                with tf.device(self.device):
-                    model = tfGCN(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
-                                    activations=activations, l2_norms=l2_norms, dropout=dropout,
-                                    lr=lr, use_bias=use_bias, experimental_run_tf_function=False)
+                # TODO
+                self.model = tfGCN(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
+                                activations=activations, dropout=dropout, l2_norm=l2_norm,
+                                lr=lr, use_bias=use_bias, experimental_run_tf_function=False)
 
-        self.model = model
 
     def train_sequence(self, index):
         index = T.asintarr(index)

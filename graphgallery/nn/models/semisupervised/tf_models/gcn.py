@@ -11,9 +11,12 @@ from graphgallery import floatx, intx
 class GCN(Model):
 
     def __init__(self, in_channels, out_channels, 
-                 hiddens=[16], activations=['relu'],
-                 l2_norms=[5e-4], dropout=0.5, 
-                 lr=0.01, use_bias=False, experimental_run_tf_function=True):
+                 hiddens=[16], 
+                 activations=['relu'], 
+                 dropout=0.5,
+                 l2_norm=5e-4, 
+                 lr=0.01, use_bias=False, 
+                 experimental_run_tf_function=True):
         
         x = Input(batch_shape=[None, in_channels],
                   dtype=floatx(), name='attr_matrix')
@@ -22,7 +25,7 @@ class GCN(Model):
         index = Input(batch_shape=[None], dtype=intx(), name='node_index')
 
         h = x
-        for hidden, activation, l2_norm in zip(hiddens, activations, l2_norms):
+        for hidden, activation in zip(hiddens, activations):
             h = GraphConvolution(hidden, use_bias=use_bias,
                                  activation=activation,
                                  kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
@@ -41,7 +44,7 @@ class GCN(Model):
 
 #     def __init__(self, hiddens,
 #                  out_channels, activations=['relu'],
-#                  l2_norms=[5e-4], dropout=0.5, 
+#                  l2_norm=5e-4, dropout=0.5, 
 #                  lr=0.01, use_bias=False):
 
 #         super().__init__()
