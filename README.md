@@ -116,7 +116,7 @@ currently the supported datasets are:
 ```python
 from graphgallery.nn.models import GCN
 
-model = GCN(graph, attr_transformer="normalize_attr", device="CPU", seed=123)
+model = GCN(graph, attr_transform="normalize_attr", device="CPU", seed=123)
 # build your GCN model with default hyper-parameters
 model.build()
 # train your model. here idx_train and idx_val are numpy arrays
@@ -143,7 +143,6 @@ you can use the following statement to build your model
 # two hidden layer with hidden units 32, 64 and activation functions RELU and ELU
 >>> model.build(hiddens=[32, 64], activations=['relu', 'elu'])
 
-# other parameters like `l2_norms` (if have) is the SAME.
 ```
 + Train your model
 ```python
@@ -152,7 +151,7 @@ you can use the following statement to build your model
 # train without validation
 >>> his = model.train(idx_train, verbose=1, epochs=100)
 ```
-here `his` is tensorflow `Histoory` (like) instance.
+here `his` is tensorflow `History` (like) instance.
 
 + Test you model
 ```python
@@ -197,7 +196,7 @@ GCN using PyTorch backend
 
 # The following codes are the same with TensorFlow Backend
 >>> from graphgallery.nn.models import GCN
->>> model = GCN(graph, attr_transformer="normalize_attr", device="GPU", seed=123);
+>>> model = GCN(graph, attr_transform="normalize_attr", device="GPU", seed=123);
 >>> model.build()
 >>> his = model.train(idx_train, idx_val, verbose=1, epochs=100)
 loss 0.57, acc 96.43%, val_loss 1.04, val_acc 78.20%: 100%|██████████| 100/100 [00:00<00:00, 210.90it/s]
