@@ -2,14 +2,16 @@
 # from graphgallery.transforms import attr_transform
 # from graphgallery.transforms import graph_transform
 
+from graphgallery.transforms.transform import Transform, NullTransform, indices2mask, asintarr
+
 # edge_transform
 from graphgallery.transforms.edge_transform.edge_transpose import edge_transpose
 from graphgallery.transforms.edge_transform.add_selfloops_edge import add_selfloops_edge
 from graphgallery.transforms.edge_transform.augment_edge import augment_edge
 from graphgallery.transforms.edge_transform.normalize_edge import normalize_edge
-
+from graphgallery.transforms.edge_transform.edges2adj import (sparse_edges_to_sparse_adj,
+                                                                  SparseEdgesToSparseAdj)
 # adj_transform
-from graphgallery.transforms.base_transform import Transform, NullTransformer
 from graphgallery.transforms.graph_partition import GraphPartition, graph_partition
 from graphgallery.transforms.adj_transform.normalize_adj import NormalizeAdj, normalize_adj
 from graphgallery.transforms.adj_transform.add_selfloops import AddSelfLoops, add_selfloops
@@ -29,9 +31,6 @@ from graphgallery.transforms.attr_transform.augment_attr import augment_attr
 
 
 
-from graphgallery.transforms.edge_transform.edges2adj import (sparse_edges_to_sparse_adj,
-                                                                  SparseEdgesToSparseAdj)
-
 # tensor transform
 from graphgallery.transforms.tensor_transform.astensor import (astensor, astensors,
                                                                    sparse_tensor_to_sparse_adj,
@@ -41,4 +40,3 @@ from graphgallery.transforms.tensor_transform.astensor import (astensor, astenso
 
 # other transform
 from graphgallery.transforms.get_transform import get, Compose
-from graphgallery.transforms.transform import indices2mask, asintarr

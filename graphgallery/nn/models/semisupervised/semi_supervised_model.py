@@ -1,4 +1,6 @@
 import os
+import time
+import copy
 import logging
 import warnings
 import torch
@@ -6,17 +8,20 @@ import os.path as osp
 import numpy as np
 import tensorflow as tf
 import scipy.sparse as sp
+from functools import partial
 
 from tensorflow.keras.utils import Sequence
 from tensorflow.python.keras import callbacks as callbacks_module
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ProgbarLogger
 from tensorflow.keras.callbacks import History as tf_History
+from tensorflow.python.keras import callbacks as cbks
 
 from graphgallery.nn.models import BaseModel
 from graphgallery.nn.functions import softmax
 from graphgallery.utils.history import History
 from graphgallery.utils.tqdm import tqdm
 from graphgallery.data.io import makedirs_from_path
+from graphgallery.utils.raise_error import raise_if_kwargs
 from graphgallery.data import Basegraph
 from graphgallery.transforms import asintarr
 
@@ -28,6 +33,18 @@ warnings.filterwarnings(
 
 
 class SemiSupervisedModel(BaseModel):
+    def __init__(self, *graph, device='cpu:0', seed=None, name=None, **kwargs):
+        super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
+    
+        if self.kind == "T":
+            self.train_step_fn = partial(train_step_tf, device=self.device)
+            self.test_step_fn = partial(test_step_tf, device=self.device)
+            self.predict_step_fn = partial(predict_step_tf, device=self.device)
+        else:
+            self.train_step_fn = train_step_torch
+            self.test_step_fn =test_step_torch
+            self.predict_step_fn =predict_step_torch
+        
     def process(self, *graph, **kwargs):
         """pre-process for the input graph, including manipulations
         on adjacency matrix and attribute matrix, and finally convert
@@ -246,10 +263,9 @@ class SemiSupervisedModel(BaseModel):
 
     def train(self, idx_train, idx_val=None,
               epochs=200, early_stopping=None,
-              verbose=False, save_best=True, weight_path=None, as_model=False,
+              verbose=0, save_best=True, weight_path=None, as_model=False,
               monitor='val_acc', early_stop_metric='val_loss', callbacks=None, **kwargs):
-        """
-            Train the model for the input `idx_train` of nodes or `sequence`.
+        """Train the model for the input `idx_train` of nodes or `sequence`.
 
         Note:
         ----------
@@ -263,13 +279,16 @@ class SemiSupervisedModel(BaseModel):
             `graphgallery.Sequence`, optional
             The index of nodes (or sequence) that will be used for validation.
             (default :obj: `None`, i.e., do not use validation during training)
-        epochs: Postive integer
+        epochs: Positive integer
             The number of epochs of training.(default :obj: `200`)
-        early_stopping: Postive integer or None
+        early_stopping: Positive integer or None
             The number of early stopping patience during training. (default :obj: `None`,
             i.e., do not use early stopping during training)
-        verbose: bool
-            Whether to show the training details. (default :obj: `None`)
+        verbose: int in {0, 1, 2}
+                'verbose=0': not verbose; 
+                'verbose=1': tqdm verbose; 
+                'verbose=2': tensorflow probar verbose;        
+            (default :obj: 0)
         save_best: bool
             Whether to save the best weights (accuracy of loss depend on `monitor`)
             of training or validation (depend on `validation` is `False` or `True`).
@@ -297,13 +316,19 @@ class SemiSupervisedModel(BaseModel):
             and validation metrics values (if applicable).
 
         """
-
+        if not verbose in {0, 1, 2}:
+            raise ValueError("'verbose=0': not verbose; 'verbose=1': tqdm verbose; "
+                             "'verbose=2': tensorflow probar verbose; "
+                             f"but got {verbose}")
         model = self.model
         # Check if model has been built
         if model is None:
             raise RuntimeError(
                 'You must compile your model before training/testing/predicting. Use `model.build()`.')
 
+        # TODO: add metric names in `model`
+        metric_names = ['loss', 'acc']
+        callback_metrics = metric_names
         model.stop_training = False
 
         if isinstance(idx_train, Sequence):
@@ -322,14 +347,20 @@ class SemiSupervisedModel(BaseModel):
                 idx_val = asintarr(idx_val)
                 val_data = self.test_sequence(idx_val)
                 self.idx_val = idx_val
+            callback_metrics = copy.copy(metric_names)
+            callback_metrics += ['val_' + n for n in metric_names]
         else:
             monitor = 'acc' if monitor[:3] == 'val' else monitor
 
         if not isinstance(callbacks, callbacks_module.CallbackList):
             callbacks = callbacks_module.CallbackList(callbacks)
 
-        his = tf_History()
-        callbacks.append(his)
+        history = tf_History()
+        callbacks.append(history)
+        
+        if verbose == 2:
+            callbacks.append(ProgbarLogger(stateful_metrics=metric_names[1:]))
+
 
         if early_stopping:
             es_callback = EarlyStopping(monitor=early_stop_metric,
@@ -345,7 +376,7 @@ class SemiSupervisedModel(BaseModel):
             makedirs_from_path(weight_path)
 
             if not weight_path.endswith('.h5'):
-                weight_path += '.h5'
+                weight_path = weight_path + '.h5'
 
             mc_callback = ModelCheckpoint(weight_path,
                                           monitor=monitor,
@@ -353,47 +384,55 @@ class SemiSupervisedModel(BaseModel):
                                           save_weights_only=not as_model,
                                           verbose=0)
             callbacks.append(mc_callback)
+            
         callbacks.set_model(model)
-
-        # leave it blank for the future
-        allowed_kwargs = set([])
-        unknown_kwargs = set(kwargs.keys()) - allowed_kwargs
-        if unknown_kwargs:
-            raise TypeError(
-                "Invalid keyword argument(s) in `__init__`: %s" % (unknown_kwargs,))
+        # TODO: to be improved
+        callback_params = {
+            'batch_size': None,
+            'epochs': epochs,
+            'steps': 1,
+            'samples': 1,
+            'verbose': verbose==2,
+            'do_validation': validation,
+            'metrics': callback_metrics,
+        }
+        callbacks.set_params(callback_params)
+        raise_if_kwargs(kwargs)
 
         callbacks.on_train_begin()
 
-        if verbose:
+        if verbose == 1:
             pbar = tqdm(range(1, epochs + 1))
         else:
-            pbar = range(1, epochs + 1)
+            pbar = range(epochs)
 
         for epoch in pbar:
             callbacks.on_epoch_begin(epoch)
 
             callbacks.on_train_batch_begin(0)
             loss, accuracy = self.train_step(train_data)
-            train_data.on_epoch_end()
 
             training_logs = {'loss': loss, 'acc': accuracy}
-            callbacks.on_train_batch_end(0, training_logs)
 
             if validation:
-
                 val_loss, val_accuracy = self.test_step(val_data)
                 training_logs.update(
                     {'val_loss': val_loss, 'val_acc': val_accuracy})
                 val_data.on_epoch_end()
+            callbacks.on_train_batch_end(0, training_logs)
             callbacks.on_epoch_end(epoch, training_logs)
 
-            if verbose:
+            if verbose == 1:
                 msg = "<"
                 for key, val in training_logs.items():
                     msg += f"{key.title()} = {val:.4f} "
                 msg += ">"
                 pbar.set_description(msg)
-
+            train_data.on_epoch_end()
+            
+            if verbose == 2:
+                print()
+                
             if model.stop_training:
                 break
 
@@ -403,7 +442,7 @@ class SemiSupervisedModel(BaseModel):
             self.load(weight_path, as_model=as_model)
             remove_tf_weights(weight_path)
 
-        return his
+        return history
 
     def train_v2(self, idx_train, idx_val=None,
                  epochs=200, early_stopping=None,
@@ -425,9 +464,9 @@ class SemiSupervisedModel(BaseModel):
             `graphgallery.Sequence`, optional
             The index of nodes (or sequence) that will be used for validation.
             (default :obj: `None`, i.e., do not use validation during training)
-        epochs: Postive integer
+        epochs: Positive integer
             The number of epochs of training.(default :obj: `200`)
-        early_stopping: Postive integer or None
+        early_stopping: Positive integer or None
             The number of early stopping patience during training. (default :obj: `None`,
             i.e., do not use early stopping during training)
         verbose: bool
@@ -523,7 +562,7 @@ class SemiSupervisedModel(BaseModel):
         unknown_kwargs = set(kwargs.keys()) - allowed_kwargs
         if unknown_kwargs:
             raise TypeError(
-                "Invalid keyword argument(s) in `__init__`: %s" % (unknown_kwargs,))
+                "Invalid keyword argument(s): %s" % (unknown_kwargs,))
 
         callbacks.on_train_begin()
 
@@ -599,8 +638,8 @@ class SemiSupervisedModel(BaseModel):
     def train_step(self, sequence):
         """
         Forward propagation for the input `sequence`. This method will be called
-        in `train`. If you want to specify your customized data during traing/testing/predicting,
-        you can implement a subclass of `graphgallery.Sequence`, wich is iterable
+        in `train`. If you want to specify your customized data during training/testing/predicting,
+        you can implement a subclass of `graphgallery.Sequence`, which is iterable
         and yields `inputs` and `labels` in each iteration.
 
 
@@ -622,16 +661,13 @@ class SemiSupervisedModel(BaseModel):
             Output accuracy of prediction.
 
         """
-        if self.kind == "T":
-            return train_step_tf(self.model, sequence, self.device)
-        else:
-            return train_step_torch(self.model, sequence)
+        return self.train_step_fn(self.model, sequence)
 
     def test_step(self, sequence):
         """
         Forward propagation for the input `sequence`. This method will be called
-        in `test`. If you want to specify your customized data during traing/testing/predicting,
-        you can implement a subclass of `graphgallery.Sequence`, wich is iterable
+        in `test`. If you want to specify your customized data during training/testing/predicting,
+        you can implement a subclass of `graphgallery.Sequence`, which is iterable
         and yields `inputs` and `labels` in each iteration.
 
         Note:
@@ -652,10 +688,8 @@ class SemiSupervisedModel(BaseModel):
             Output accuracy of prediction.
 
         """
-        if self.kind == "T":
-            return test_step_tf(self.model, sequence, self.device)
-        else:
-            return test_step_torch(self.model, sequence)
+        return self.test_step_fn(self.model, sequence)
+
 
     def predict(self, index=None, return_prob=True):
         """
@@ -696,10 +730,7 @@ class SemiSupervisedModel(BaseModel):
         return logit
 
     def predict_step(self, sequence):
-        if self.kind == "T":
-            return predict_step_tf(self.model, sequence, self.device)
-        else:
-            return predict_step_torch(self.model, sequence)
+        return self.predict_step_fn(self.model, sequence)
 
     def train_sequence(self, index):
         """

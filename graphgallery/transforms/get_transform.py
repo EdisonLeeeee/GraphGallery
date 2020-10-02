@@ -2,7 +2,7 @@ from typing import Union, List, Tuple
 from graphgallery.transforms import GDC
 from graphgallery.transforms import SVD
 from graphgallery.utils.type_check import is_list_like
-from graphgallery.transforms import Transform, NullTransformer
+from graphgallery.transforms import Transform, NullTransform
 from graphgallery.transforms import NormalizeAdj
 from graphgallery.transforms import AddSelfLoops
 from graphgallery.transforms import NormalizeAttr
@@ -54,8 +54,6 @@ class Compose(Transform):
         format_string += '\n)'
         return format_string    
     
-#     def __repr__(self):
-#         return f"{self.__class__.__name__}(transform={self.transforms})"
     
 def get(transform: Union[str, Transform, None, List, Tuple, Compose]) -> Transform:
     if is_list_like(transform):
@@ -64,7 +62,7 @@ def get(transform: Union[str, Transform, None, List, Tuple, Compose]) -> Transfo
     if isinstance(transform, Transform) or callable(transform):
         return transform
     elif transform is None:
-        return NullTransformer()
+        return NullTransform()
     _transform = str(transform).lower()
     _transform = _TRANSFORMER.get(_transform, None)
     if _transform is None:

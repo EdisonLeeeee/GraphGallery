@@ -3,23 +3,47 @@ import numpy as np
 import tensorflow as tf
 import scipy.sparse as sp
 
+from abc import ABC
+from typing import Any
+
 from graphgallery import floatx, intx, backend
 from graphgallery import (is_list_like,
                           is_interger_scalar,
                           is_tensor_or_variable)
 
 
+
+class Transform(ABC):
+
+    def __init__(self):
+        ...
+
+    def __call__(self):
+        ...
+
+
+class NullTransform(Transform):
+    def __init__(self, *args, **kwargs):
+        ...
+
+    def __call__(self, inputs: Any):
+        return inputs
+
+    def __repr__(self):
+        return "NullTransform()"
+
+    
 def asintarr(x, dtype: str = None):
     """Convert `x` to interger Numpy array.
 
     Parameters:
     ----------
-    x: tf.Tensor, tf.Variable, Scipy sparse matrix,
+    x: Tensor, Scipy sparse matrix,
         Numpy array-like, etc.
 
     Returns:
     ----------
-        Integer Numpy array with dtype or `graphgallery.intx()`
+    Integer Numpy array with dtype or `graphgallery.intx()`
 
     """
     if dtype is None:
