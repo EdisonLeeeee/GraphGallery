@@ -106,9 +106,8 @@ class SimplifiedOBVAT(OBVAT):
             entropy_loss = entropy_y_x(logit)
             vat_loss = self.virtual_adversarial_loss(x, adj, logit, epsilon)
             model.add_loss(p1 * vat_loss + p2 * entropy_loss)
-
+        
             self.model = model
-            self.adv_optimizer = Adam(lr=lr / 10)
 
     def train_step(self, sequence):
         return super(OBVAT, self).train_step(sequence)

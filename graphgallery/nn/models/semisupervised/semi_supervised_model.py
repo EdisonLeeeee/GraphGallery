@@ -12,14 +12,12 @@ from functools import partial
 
 from tensorflow.keras.utils import Sequence
 from tensorflow.python.keras import callbacks as callbacks_module
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ProgbarLogger
-from tensorflow.keras.callbacks import History as tf_History
-from tensorflow.python.keras import callbacks as cbks
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+from tensorflow.keras.callbacks import History
+from tensorflow.python.keras.utils.generic_utils import Progbar
 
 from graphgallery.nn.models import BaseModel
 from graphgallery.nn.functions import softmax
-from graphgallery.utils.history import History
-from graphgallery.utils.tqdm import tqdm
 from graphgallery.data.io import makedirs_from_path
 from graphgallery.utils.raise_error import raise_if_kwargs
 from graphgallery.data import Basegraph
@@ -30,8 +28,7 @@ from graphgallery.transforms import asintarr
 #     This is caused by `tf.gather` and it will be solved in future tensorflow version.
 warnings.filterwarnings(
     'ignore', '.*Converting sparse IndexedSlices to a dense Tensor of unknown shape.*')
-
-
+    
 class SemiSupervisedModel(BaseModel):
     def __init__(self, *graph, device='cpu:0', seed=None, name=None, **kwargs):
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
@@ -82,19 +79,19 @@ class SemiSupervisedModel(BaseModel):
 
         Note:
         ----------
-            This method must be called before training/testing/predicting.
-            Use `model.build()`. The following `Parameters` are only commonly used
-            Parameters, and other model-specific Parameters are not introduced as follows.
+        This method must be called before training/testing/predicting.
+        Use `model.build()`. The following `Parameters` are only commonly used
+        Parameters, and other model-specific Parameters are not introduced as follows.
 
         Parameters:
         ----------
             hiddens: `list` of integer or integer scalar
                 The number of hidden units of model. Note: the last hidden unit (`n_classes`)
-                aren't nececcary to specified and it will be automatically added in the last
+                aren't necessary to specified and it will be automatically added in the last
                 layer.
             activations: `list` of string or string
                 The activation function of model. Note: the last activation function (`softmax`)
-                aren't nececcary to specified and it will be automatically spefified in the
+                aren't necessary to specified and it will be automatically specified in the
                 final output.
             dropout: float scalar
                 Dropout rate for the hidden outputs.
@@ -129,138 +126,6 @@ class SemiSupervisedModel(BaseModel):
             with tf.device(self.device):
                 self.model = model
 
-    def train_v1(self, idx_train, idx_val=None,
-                 epochs=200, early_stopping=None,
-                 verbose=False, save_best=True, weight_path=None, as_model=False,
-                 monitor='val_acc', early_stop_metric='val_loss'):
-        """Train the model for the input `idx_train` of nodes or `sequence`.
-
-        Note:
-        ----------
-            You must compile your model before training/testing/predicting. Use `model.build()`.
-
-        Parameters:
-        ----------
-        idx_train: Numpy array-like, `list`, Integer scalar or
-            `graphgallery.Sequence`.
-            The index of nodes (or sequence) that will be used during training.
-        idx_val: Numpy array-like, `list`, Integer scalar or
-            `graphgallery.Sequence`, optional
-            The index of nodes (or sequence) that will be used for validation.
-            (default :obj: `None`, i.e., do not use validation during training)
-        epochs: integer
-            The number of epochs of training.(default :obj: `200`)
-        early_stopping: integer or None
-            The number of early stopping patience during training. (default :obj: `None`,
-            i.e., do not use early stopping during training)
-        verbose: bool
-            Whether to show the training details. (default :obj: `None`)
-        save_best: bool
-            Whether to save the best weights (accuracy of loss depend on `monitor`)
-            of training or validation (depend on `validation` is `False` or `True`).
-            (default :bool: `True`)
-        weight_path: String or None
-            The path of saved weights/model. (default :obj: `None`, i.e.,
-            `./log/{self.name}_weights`)
-        as_model: bool
-            Whether to save the whole model or weights only, if `True`, the `self.custom_objects`
-            must be speficied if you are using customized `layer` or `loss` and so on.
-        monitor: String
-            One of (val_loss, val_acc, loss, acc), it determines which metric will be
-            used for `save_best`. (default :obj: `val_acc`)
-        early_stop_metric: String
-            One of (val_loss, val_acc, loss, acc), it determines which metric will be
-            used for early stopping. (default :obj: `val_loss`)
-
-        Return:
-        ----------
-        history: graphgallery.utils.History
-            tensorflow like `history` instance.
-        """
-
-        # Check if model has been built
-        if self.model is None:
-            raise RuntimeError(
-                'You must compile your model before training/testing/predicting. Use `model.build()`.')
-
-        if isinstance(idx_train, Sequence):
-            train_data = idx_train
-        else:
-            idx_train = asintarr(idx_train)
-            train_data = self.train_sequence(idx_train)
-            self.idx_train = idx_train
-
-        validation = idx_val is not None
-
-        if validation:
-            if isinstance(idx_val, Sequence):
-                val_data = idx_val
-            else:
-                idx_val = asintarr(idx_val)
-                val_data = self.test_sequence(idx_val)
-                self.idx_val = idx_val
-        else:
-            monitor = 'acc' if monitor[:3] == 'val' else monitor
-
-        history = History(monitor_metric=monitor,
-                          early_stop_metric=early_stop_metric)
-
-        if not weight_path:
-            weight_path = self.weight_path
-
-        if validation is None:
-            history.register_monitor_metric('acc')
-            history.register_early_stop_metric('loss')
-
-        if verbose:
-            pbar = tqdm(range(1, epochs + 1))
-        else:
-            pbar = range(1, epochs + 1)
-
-        for epoch in pbar:
-
-            loss, accuracy = self.train_step(train_data)
-            train_data.on_epoch_end()
-
-            history.add_results(loss, 'loss')
-            history.add_results(accuracy, 'acc')
-
-            if validation:
-
-                val_loss, val_accuracy = self.test_step(val_data)
-                val_data.on_epoch_end()
-                history.add_results(val_loss, 'val_loss')
-                history.add_results(val_accuracy, 'val_acc')
-
-            # record eoch and running times
-            history.record_epoch(epoch)
-
-            if save_best and history.save_best:
-                self.save(weight_path, as_model=as_model)
-
-            # early stopping
-            if early_stopping and history.time_to_early_stopping(early_stopping):
-                msg = f'Early stopping with patience {early_stopping}.'
-                if verbose:
-                    pbar.set_description(msg)
-                    pbar.close()
-                break
-
-            if verbose:
-                msg = f'loss {loss:.2f}, acc {accuracy:.2%}'
-                if validation:
-                    msg += f', val_loss {val_loss:.2f}, val_acc {val_accuracy:.2%}'
-                pbar.set_description(msg)
-
-        if save_best:
-            self.load(weight_path, as_model=as_model)
-            if self.kind == "T":
-                remove_tf_weights(weight_path)
-            else:
-                remove_torch_weights(weight_path)
-
-        return history
-
     def train(self, idx_train, idx_val=None,
               epochs=200, early_stopping=None,
               verbose=0, save_best=True, weight_path=None, as_model=False,
@@ -284,10 +149,12 @@ class SemiSupervisedModel(BaseModel):
         early_stopping: Positive integer or None
             The number of early stopping patience during training. (default :obj: `None`,
             i.e., do not use early stopping during training)
-        verbose: int in {0, 1, 2}
+        verbose: int in {0, 1, 2, 3, 4}
                 'verbose=0': not verbose; 
-                'verbose=1': tqdm verbose; 
-                'verbose=2': tensorflow probar verbose;        
+                'verbose=1': Progbar (one line, detailed); 
+                'verbose=2': Progbar (one line, omitted); 
+                'verbose=3': Progbar (multi line, detailed); 
+                'verbose=4': Progbar (multi line, omitted); 
             (default :obj: 0)
         save_best: bool
             Whether to save the best weights (accuracy of loss depend on `monitor`)
@@ -316,20 +183,19 @@ class SemiSupervisedModel(BaseModel):
             and validation metrics values (if applicable).
 
         """
-        if not verbose in {0, 1, 2}:
-            raise ValueError("'verbose=0': not verbose; 'verbose=1': tqdm verbose; "
-                             "'verbose=2': tensorflow probar verbose; "
+        raise_if_kwargs(kwargs)
+        if not (isinstance(verbose, int) and 0<=verbose<=4):
+            raise ValueError("'verbose=0': not verbose"
+                             "'verbose=1': Progbar(one line, detailed), "
+                             "'verbose=2': Progbar(one line, omitted), "
+                             "'verbose=3': Progbar(multi line, detailed), "
+                             "'verbose=4': Progbar(multi line, omitted), "
                              f"but got {verbose}")
         model = self.model
         # Check if model has been built
         if model is None:
             raise RuntimeError(
                 'You must compile your model before training/testing/predicting. Use `model.build()`.')
-
-        # TODO: add metric names in `model`
-        metric_names = ['loss', 'acc']
-        callback_metrics = metric_names
-        model.stop_training = False
 
         if isinstance(idx_train, Sequence):
             train_data = idx_train
@@ -347,21 +213,15 @@ class SemiSupervisedModel(BaseModel):
                 idx_val = asintarr(idx_val)
                 val_data = self.test_sequence(idx_val)
                 self.idx_val = idx_val
-            callback_metrics = copy.copy(metric_names)
-            callback_metrics += ['val_' + n for n in metric_names]
         else:
             monitor = 'acc' if monitor[:3] == 'val' else monitor
 
         if not isinstance(callbacks, callbacks_module.CallbackList):
             callbacks = callbacks_module.CallbackList(callbacks)
 
-        history = tf_History()
+        history = History()
         callbacks.append(history)
         
-        if verbose == 2:
-            callbacks.append(ProgbarLogger(stateful_metrics=metric_names[1:]))
-
-
         if early_stopping:
             es_callback = EarlyStopping(monitor=early_stop_metric,
                                         patience=early_stopping,
@@ -386,52 +246,44 @@ class SemiSupervisedModel(BaseModel):
             callbacks.append(mc_callback)
             
         callbacks.set_model(model)
-        # TODO: to be improved
-        callback_params = {
-            'batch_size': None,
-            'epochs': epochs,
-            'steps': 1,
-            'samples': 1,
-            'verbose': verbose==2,
-            'do_validation': validation,
-            'metrics': callback_metrics,
-        }
-        callbacks.set_params(callback_params)
-        raise_if_kwargs(kwargs)
-
+        model.stop_training = False
         callbacks.on_train_begin()
 
-        if verbose == 1:
-            pbar = tqdm(range(1, epochs + 1))
-        else:
-            pbar = range(epochs)
+        if verbose:
+            if verbose <=2:
+                progbar = Progbar(target=epochs, verbose=verbose)
+            print("Training...")
 
-        for epoch in pbar:
+        begin_time = time.perf_counter()
+        for epoch in range(epochs):
+            if verbose > 2:
+                progbar = Progbar(target=len(train_data), verbose=verbose - 2)
+
             callbacks.on_epoch_begin(epoch)
-
             callbacks.on_train_batch_begin(0)
             loss, accuracy = self.train_step(train_data)
 
             training_logs = {'loss': loss, 'acc': accuracy}
-
             if validation:
                 val_loss, val_accuracy = self.test_step(val_data)
                 training_logs.update(
                     {'val_loss': val_loss, 'val_acc': val_accuracy})
                 val_data.on_epoch_end()
-            callbacks.on_train_batch_end(0, training_logs)
+                
+            callbacks.on_train_batch_end(len(train_data), training_logs)
             callbacks.on_epoch_end(epoch, training_logs)
 
-            if verbose == 1:
-                msg = "<"
-                for key, val in training_logs.items():
-                    msg += f"{key.title()} = {val:.4f} "
-                msg += ">"
-                pbar.set_description(msg)
             train_data.on_epoch_end()
-            
-            if verbose == 2:
-                print()
+
+            time_passed = time.perf_counter() - begin_time
+            training_logs.update({'time': time_passed})
+
+            if verbose > 2:
+                print(f"Epoch {epoch+1}/{epochs}")
+                progbar.update(len(train_data), training_logs.items())
+            else:
+                progbar.update(epoch + 1, training_logs.items())
+                
                 
             if model.stop_training:
                 break
@@ -444,159 +296,7 @@ class SemiSupervisedModel(BaseModel):
 
         return history
 
-    def train_v2(self, idx_train, idx_val=None,
-                 epochs=200, early_stopping=None,
-                 verbose=False, save_best=True, weight_path=None, as_model=False,
-                 monitor='val_acc', early_stop_metric='val_loss', callbacks=None, **kwargs):
-        """
-            Train the model for the input `idx_train` of nodes or `sequence`.
-
-        Note:
-        ----------
-        You must compile your model before training/testing/predicting. Use `model.build()`.
-
-        Parameters:
-        ----------
-        idx_train: Numpy array-like, `list`, Integer scalar or
-            `graphgallery.Sequence`.
-            The index of nodes (or sequence) that will be used during training.
-        idx_val: Numpy array-like, `list`, Integer scalar or
-            `graphgallery.Sequence`, optional
-            The index of nodes (or sequence) that will be used for validation.
-            (default :obj: `None`, i.e., do not use validation during training)
-        epochs: Positive integer
-            The number of epochs of training.(default :obj: `200`)
-        early_stopping: Positive integer or None
-            The number of early stopping patience during training. (default :obj: `None`,
-            i.e., do not use early stopping during training)
-        verbose: bool
-            Whether to show the training details. (default :obj: `None`)
-        save_best: bool
-            Whether to save the best weights (accuracy of loss depend on `monitor`)
-            of training or validation (depend on `validation` is `False` or `True`).
-            (default :bool: `True`)
-        weight_path: String or None
-            The path of saved weights/model. (default :obj: `None`, i.e.,
-            `./log/{self.name}_weights`)
-        as_model: bool
-            Whether to save the whole model or weights only, if `True`, the `self.custom_objects`
-            must be speficied if you are using customized `layer` or `loss` and so on.
-        monitor: String
-            One of (val_loss, val_acc, loss, acc), it determines which metric will be
-            used for `save_best`. (default :obj: `val_acc`)
-        early_stop_metric: String
-            One of (val_loss, val_acc, loss, acc), it determines which metric will be
-            used for early stopping. (default :obj: `val_loss`)
-        callbacks: tensorflow.keras.callbacks. (default :obj: `None`)
-        kwargs: other keyword Parameters.
-
-        Return:
-        ----------
-        A `tf.keras.callbacks.History` object. Its `History.history` attribute is
-            a record of training loss values and metrics values
-            at successive epochs, as well as validation loss values
-            and validation metrics values (if applicable).
-        """
-
-        if not tf.__version__ >= '2.2.0':
-            raise RuntimeError(
-                f'This method is only work for tensorflow version >= 2.2.0.')
-
-        # Check if model has been built
-        if self.model is None:
-            raise RuntimeError(
-                'You must compile your model before training/testing/predicting. Use `model.build()`.')
-
-        if isinstance(idx_train, Sequence):
-            train_data = idx_train
-        else:
-            idx_train = asintarr(idx_train)
-            train_data = self.train_sequence(idx_train)
-            self.idx_train = idx_train
-
-        validation = idx_val is not None
-
-        if validation:
-            if isinstance(idx_val, Sequence):
-                val_data = idx_val
-            else:
-                idx_val = asintarr(idx_val)
-                val_data = self.test_sequence(idx_val)
-                self.idx_val = idx_val
-        else:
-            monitor = 'acc' if monitor[:3] == 'val' else monitor
-
-        model = self.model
-        if not isinstance(callbacks, callbacks_module.CallbackList):
-            callbacks = callbacks_module.CallbackList(callbacks,
-                                                      add_history=True,
-                                                      add_progbar=True,
-                                                      verbose=verbose,
-                                                      epochs=epochs)
-        if early_stopping:
-            es_callback = EarlyStopping(monitor=early_stop_metric,
-                                        patience=early_stopping,
-                                        mode='auto',
-                                        verbose=kwargs.pop('es_verbose', 0))
-            callbacks.append(es_callback)
-
-        if save_best:
-            if not weight_path:
-                weight_path = self.weight_path
-
-            makedirs_from_path(weight_path)
-
-            if not weight_path.endswith('.h5'):
-                weight_path += '.h5'
-
-            mc_callback = ModelCheckpoint(weight_path,
-                                          monitor=monitor,
-                                          save_best_only=True,
-                                          save_weights_only=not as_model,
-                                          verbose=0)
-            callbacks.append(mc_callback)
-        callbacks.set_model(model)
-
-        # leave it blank for the future
-        allowed_kwargs = set([])
-        unknown_kwargs = set(kwargs.keys()) - allowed_kwargs
-        if unknown_kwargs:
-            raise TypeError(
-                "Invalid keyword argument(s): %s" % (unknown_kwargs,))
-
-        callbacks.on_train_begin()
-
-        for epoch in range(epochs):
-            callbacks.on_epoch_begin(epoch)
-
-            callbacks.on_train_batch_begin(0)
-            loss, accuracy = self.train_step(train_data)
-            train_data.on_epoch_end()
-
-            training_logs = {'loss': loss, 'acc': accuracy}
-            callbacks.on_train_batch_end(0, training_logs)
-
-            if validation:
-
-                val_loss, val_accuracy = self.test_step(val_data)
-                training_logs.update(
-                    {'val_loss': val_loss, 'val_acc': val_accuracy})
-                val_data.on_epoch_end()
-
-            callbacks.on_epoch_end(epoch, training_logs)
-
-            if model.stop_training:
-                break
-
-        callbacks.on_train_end()
-
-        if save_best:
-            self.load(weight_path, as_model=as_model)
-            remove_tf_weights(weight_path)
-
-        return model.history
-
-    def test(self, index):
+    def test(self, index, verbose=1):
         """
             Test the output accuracy for the `index` of nodes or `sequence`.
 
@@ -619,7 +319,6 @@ class SemiSupervisedModel(BaseModel):
             Output accuracy of prediction.
         """
 
-        # TODO record test logs like self.train()
         if not self.model:
             raise RuntimeError(
                 'You must compile your model before training/testing/predicting. Use `model.build()`.')
@@ -631,8 +330,13 @@ class SemiSupervisedModel(BaseModel):
             test_data = self.test_sequence(index)
             self.idx_test = index
 
+        if verbose:
+            print("Testing...")
+        progbar = Progbar(target=len(test_data), verbose=verbose)
+        begin_time = time.perf_counter()
         loss, accuracy = self.test_step(test_data)
-
+        time_passed = time.perf_counter() - begin_time
+        progbar.update(len(test_data), [('test_loss', loss), ('test_acc', accuracy), ('time', time_passed)])
         return loss, accuracy
 
     def train_step(self, sequence):
