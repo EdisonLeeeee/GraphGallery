@@ -8,7 +8,6 @@ from tensorflow.keras import regularizers
 from graphgallery.nn.layers.tf_layers import GraphConvolution
 from graphgallery.nn.models import FastGCN
 from graphgallery.sequence import FullBatchNodeSequence
-from graphgallery.transforms import asintarr
 
 
 class GCN_MIX(FastGCN):
@@ -65,7 +64,6 @@ class GCN_MIX(FastGCN):
                          device=device, seed=seed, name=name, **kwargs)
 
     def train_sequence(self, index):
-        index = asintarr(index)
         labels = self.graph.labels[index]
 
         sequence = FullBatchNodeSequence(

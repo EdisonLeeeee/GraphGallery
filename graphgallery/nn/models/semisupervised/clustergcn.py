@@ -111,7 +111,7 @@ class ClusterGCN(SemiSupervisedModel):
 
 
     def train_sequence(self, index):
-        index = T.asintarr(index)
+        
         mask = T.indices2mask(index, self.graph.n_nodes)
         labels = self.graph.labels
 
@@ -134,7 +134,7 @@ class ClusterGCN(SemiSupervisedModel):
         return sequence
 
     def predict(self, index):
-        index = T.asintarr(index)
+        
         mask = T.indices2mask(index, self.graph.n_nodes)
 
         orders_dict = {idx: order for order, idx in enumerate(index)}

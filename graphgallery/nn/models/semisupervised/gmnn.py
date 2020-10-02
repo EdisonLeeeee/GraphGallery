@@ -182,7 +182,7 @@ class GMNN(SemiSupervisedModel):
         return histories
 
     def train_sequence(self, index):
-        index = T.asintarr(index)
+        
         # if the graph is changed?
         labels = self.labels_onehot[index]
         sequence = FullBatchNodeSequence(

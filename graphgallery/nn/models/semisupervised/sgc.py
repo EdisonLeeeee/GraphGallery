@@ -115,7 +115,7 @@ class SGC(SemiSupervisedModel):
 
 
     def train_sequence(self, index):
-        index = T.astensor(T.asintarr(index))
+        index = T.astensor(index)
         labels = self.graph.labels[index]
         
         if self.kind == "T":

@@ -1,16 +1,12 @@
-import numpy as np
-import scipy.sparse as sp
 import tensorflow as tf
-from tensorflow.keras import Model, Input
-from tensorflow.keras.layers import Dropout, Concatenate, BatchNormalization
-from tensorflow.keras.optimizers import Nadam
-from tensorflow.keras import regularizers
-from tensorflow.keras.losses import SparseCategoricalCrossentropy
+import numpy as np
 
-from graphgallery.nn.layers.tf_layers import Top_k_features, LGConvolution, DenseConvolution, Mask
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.decorators import EqualVarLength
+
+from graphgallery.nn.models.semisupervised.tf_models.lgcn import LGCN as tfLGCN
+
 from graphgallery import transforms as T
 
 
@@ -75,55 +71,25 @@ class LGCN(SemiSupervisedModel):
 
     # @EqualVarLength()
     def build(self, hiddens=[32], n_filters=[8, 8], activations=[None, None], dropout=0.8,
-              l2_norm=5e-4, lr=0.1, use_bias=False, k=8):
+              l2_norm=5e-4, lr=0.1, use_bias=False, K=8):
 
-        with tf.device(self.device):
+        if self.kind == "T":
+            with tf.device(self.device):
+                self.model = tfLGCN(self.graph.n_attrs, self.graph.n_classes,
+                                     hiddens=hiddens,
+                                     activations=activations,
+                                     dropout=dropout, l2_norm=l2_norm,
+                                     lr=lr, use_bias=use_bias, K=K)
+        else:
+            raise NotImplementedError
 
-            x = Input(batch_shape=[None, self.graph.n_attrs],
-                      dtype=self.floatx, name='attr_matrix')
-            adj = Input(batch_shape=[None, None],
-                        dtype=self.floatx, sparse=False, name='adj_matrix')
-            mask = Input(batch_shape=[None], dtype=tf.bool, name='node_mask')
-
-            h = x
-            for idx, hidden in enumerate(hiddens):
-                h = Dropout(rate=dropout)(h)
-                h = DenseConvolution(hidden,
-                                     use_bias=use_bias,
-                                     activation=activations[idx],
-                                     kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
-
-            for idx, n_filter in enumerate(n_filters):
-                top_k_h = Top_k_features(k=k)([h, adj])
-                cur_h = LGConvolution(n_filter,
-                                      kernel_size=k,
-                                      use_bias=use_bias,
-                                      dropout=dropout,
-                                      activation=activations[idx],
-                                      kernel_regularizer=regularizers.l2(l2_norm))(top_k_h)
-                cur_h = BatchNormalization()(cur_h)
-                h = Concatenate()([h, cur_h])
-
-            h = Dropout(rate=dropout)(h)
-            h = DenseConvolution(self.graph.n_classes,
-                                 use_bias=use_bias,
-                                 activation=activations[-1],
-                                 kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
-
-            h = Mask()([h, mask])
-
-            model = Model(inputs=[x, adj, mask], outputs=h)
-            model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
-                          optimizer=Nadam(lr=lr), metrics=['accuracy'])
-
-            self.k = k
-            self.model = model
+        self.K = K
 
     def train_sequence(self, index, batch_size=np.inf):
-        index = T.asintarr(index)
+        
         mask = T.indices2mask(index, self.graph.n_nodes)
         index = get_indice_graph(self.structure_inputs, index, batch_size)
-        while index.size < self.k:
+        while index.size < self.K:
             index = get_indice_graph(self.structure_inputs, index)
 
         structure_inputs = self.structure_inputs[index][:, index]

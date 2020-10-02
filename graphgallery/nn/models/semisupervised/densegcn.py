@@ -89,7 +89,7 @@ class DenseGCN(SemiSupervisedModel):
                                lr=lr, use_bias=use_bias).to(self.device)
 
     def train_sequence(self, index):
-        index = T.asintarr(index)
+        
         labels = self.graph.labels[index]
         sequence = FullBatchNodeSequence(
             [self.feature_inputs, self.structure_inputs, index], labels, device=self.device)

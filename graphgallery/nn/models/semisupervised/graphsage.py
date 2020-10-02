@@ -138,7 +138,7 @@ class GraphSAGE(SemiSupervisedModel):
             self.model = model
 
     def train_sequence(self, index):
-        index = T.asintarr(index)
+        
         labels = self.graph.labels[index]
         sequence = SAGEMiniBatchSequence(
             [self.feature_inputs, self.structure_inputs, index], labels,

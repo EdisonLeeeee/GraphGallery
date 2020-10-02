@@ -201,7 +201,7 @@ class SBVAT(SemiSupervisedModel):
         return tf.identity(loss)
 
     def train_sequence(self, index):
-        index = T.asintarr(index)
+        
         labels = self.graph.labels[index]
 
         sequence = SBVATSampleSequence([self.feature_inputs, self.structure_inputs,
@@ -212,7 +212,7 @@ class SBVAT(SemiSupervisedModel):
         return sequence
 
     def test_sequence(self, index):
-        index = T.asintarr(index)
+        
         labels = self.graph.labels[index]
 
         sequence = SBVATSampleSequence([self.feature_inputs, self.structure_inputs,

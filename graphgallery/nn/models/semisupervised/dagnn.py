@@ -1,14 +1,12 @@
 import tensorflow as tf
-from tensorflow.keras import Model, Input
-from tensorflow.keras.layers import Dropout, Dense
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras import regularizers
-from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tf_layers import PropConvolution, Gather
+
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.decorators import EqualVarLength
+
+from graphgallery.nn.models.semisupervised.tf_models.dagnn import DAGNN as tfDAGNN
+
 from graphgallery import transforms as T
 
 
@@ -81,37 +79,18 @@ class DAGNN(SemiSupervisedModel):
     def build(self, hiddens=[64], activations=['relu'], dropout=0.5, l2_norm=5e-3,
               lr=0.01, use_bias=False):
 
-        with tf.device(self.device):
-
-            x = Input(batch_shape=[None, self.graph.n_attrs],
-                      dtype=self.floatx, name='attr_matrix')
-            adj = Input(
-                batch_shape=[None, None], dtype=self.floatx, sparse=True, name='adj_matrix')
-            index = Input(batch_shape=[None],
-                          dtype=self.intx, name='node_index')
-
-            h = x
-            for hidden, activation in zip(hiddens, activations):
-                h = Dense(hidden, use_bias=use_bias, activation=activation,
-                          kernel_regularizer=regularizers.l2(l2_norm))(h)
-                h = Dropout(dropout)(h)
-
-            h = Dense(self.graph.n_classes, use_bias=use_bias, activation=activation,
-                      kernel_regularizer=regularizers.l2(l2_norm))(h)
-            h = Dropout(dropout)(h)
-
-            h = PropConvolution(self.K, use_bias=use_bias, activation='sigmoid',
-                                kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
-            h = Gather()([h, index])
-
-            model = Model(inputs=[x, adj, index], outputs=h)
-            model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
-                          optimizer=Adam(lr=lr), metrics=['accuracy'])
-
-            self.model = model
+        if self.kind == "T":
+            with tf.device(self.device):
+                self.model = tfDAGNN(self.graph.n_attrs, self.graph.n_classes,
+                                        hiddens=hiddens,
+                                        activations=activations,
+                                        dropout=dropout, l2_norm=l2_norm,
+                                        lr=lr, use_bias=use_bias, K=self.K)
+        else:
+            raise NotImplementedError
 
     def train_sequence(self, index):
-        index = T.asintarr(index)
+        
         labels = self.graph.labels[index]
         sequence = FullBatchNodeSequence(
             [self.feature_inputs, self.structure_inputs, index], labels, device=self.device)

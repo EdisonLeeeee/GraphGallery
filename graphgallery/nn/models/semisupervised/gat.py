@@ -102,7 +102,7 @@ class GAT(SemiSupervisedModel):
 
 
     def train_sequence(self, index):
-        index = T.asintarr(index)
+        
         labels = self.graph.labels[index]
         sequence = FullBatchNodeSequence(
             [self.feature_inputs, self.structure_inputs, index], labels, device=self.device)

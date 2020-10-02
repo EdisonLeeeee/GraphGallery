@@ -110,7 +110,7 @@ class FastGCN(SemiSupervisedModel):
             self.model = model
 
     def train_sequence(self, index):
-        index = T.asintarr(index)
+        
         labels = self.graph.labels[index]
         adj_matrix = self.graph.adj_matrix[index][:, index]
         adj_matrix = self.adj_transform(adj_matrix)
@@ -122,7 +122,7 @@ class FastGCN(SemiSupervisedModel):
         return sequence
 
     def test_sequence(self, index):
-        index = T.asintarr(index)
+        
         labels = self.graph.labels[index]
         structure_inputs = self.structure_inputs[index]
 
