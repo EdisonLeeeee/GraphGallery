@@ -13,7 +13,7 @@ print(graph)
 
 from graphgallery.nn.models import GCN
 
-model = GCN(graph, adj_transformer="gdc", attr_transformer="normalize_attr", device="CPU", seed=123)
+model = GCN(graph, adj_transform="gdc", attr_transform="normalize_attr", device="CPU", seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=1, epochs=100)
 loss, accuracy = model.test(idx_test)

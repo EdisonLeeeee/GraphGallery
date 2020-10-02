@@ -13,7 +13,7 @@ print(graph)
 
 from graphgallery.nn.models import GCN_MIX
 
-model = GCN_MIX(graph, attr_transformer="normalize_attr",
+model = GCN_MIX(graph, attr_transform="normalize_attr",
                 device="CPU", seed=123)
 model.build(hiddens=16)
 his = model.train(idx_train, idx_val, verbose=1, epochs=100)

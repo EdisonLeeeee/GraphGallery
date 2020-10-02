@@ -13,7 +13,7 @@ print(graph)
 
 from graphgallery.nn.models import FastGCN
 
-model = FastGCN(graph, attr_transformer=None, device="CPU", seed=123)
+model = FastGCN(graph, attr_transform=None, device="CPU", seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=1, epochs=100)
 loss, accuracy = model.test(idx_test)

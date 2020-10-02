@@ -13,7 +13,7 @@ print(graph)
 
 from graphgallery.nn.models import ClusterGCN
 
-model = ClusterGCN(graph, n_clusters=10, attr_transformer="normalize_attr",
+model = ClusterGCN(graph, n_clusters=10, attr_transform="normalize_attr",
                    device="CPU", seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=1, epochs=50)

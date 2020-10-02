@@ -14,7 +14,7 @@ print(graph)
 from graphgallery.nn.models import SimplifiedOBVAT
 
 model = SimplifiedOBVAT(
-    graph, attr_transformer="normalize_attr", device="CPU", seed=123)
+    graph, attr_transform="normalize_attr", device="CPU", seed=123)
 model.build()
 his = model.train_v1(idx_train, idx_val, verbose=1, epochs=200)
 loss, accuracy = model.test(idx_test)

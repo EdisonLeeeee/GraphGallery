@@ -13,7 +13,7 @@ print(graph)
 
 from graphgallery.nn.models import ChebyNet
 
-model = ChebyNet(graph, attr_transformer="normalize_attr",
+model = ChebyNet(graph, attr_transform="normalize_attr",
                  device="CPU", seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=1, epochs=100)

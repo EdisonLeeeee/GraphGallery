@@ -13,7 +13,7 @@ print(graph)
 
 from graphgallery.nn.models import LGCN
 
-model = LGCN(graph, attr_transformer="normalize_attr", device="GPU", seed=123)
+model = LGCN(graph, attr_transform="normalize_attr", device="GPU", seed=123)
 model.build()
 his = model.train(idx_train, idx_val, verbose=1, epochs=100)
 loss, accuracy = model.test(idx_test)
