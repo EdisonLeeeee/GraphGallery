@@ -30,7 +30,7 @@
 
 
 # GraphGallery
-GraphGallery is a gallery of state-of-the-arts graph neural networks for [TensorFlow 2.x](https://github.com/tensorflow/tensorflow) and [PyTorch](https://github.com/pytorch/pytorch). GraphGallery 0.3.0 is a total re-write from 0.2.0, and some things have changed. 
+GraphGallery is a gallery of state-of-the-arts graph neural networks for [TensorFlow 2.x](https://github.com/tensorflow/tensorflow) and [PyTorch](https://github.com/pytorch/pytorch). GraphGallery 0.4.0 is a total re-write from previous versions, and some things have changed. 
 <!-- 
 This repo aims to achieve 4 goals:
 + Similar or higher performance
@@ -199,10 +199,10 @@ GCN using PyTorch backend
 >>> model = GCN(graph, attr_transform="normalize_attr", device="GPU", seed=123);
 >>> model.build()
 >>> his = model.train(idx_train, idx_val, verbose=1, epochs=100)
-loss 0.57, acc 96.43%, val_loss 1.04, val_acc 78.20%: 100%|██████████| 100/100 [00:00<00:00, 210.90it/s]
+<Loss = 0.6813 Acc = 0.9214 Val_Loss = 1.0506 Val_Acc = 0.7820 >: 100%|██████████| 100/100 [00:00<00:00, 173.95it/s]
 >>> loss, accuracy = model.test(idx_test)
 >>> print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
-Test loss 1.0271, Test accuracy 81.10%
+Test loss 1013.1, Test accuracy 82.20%
 
 ```
 
