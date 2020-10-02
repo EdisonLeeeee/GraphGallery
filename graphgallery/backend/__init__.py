@@ -1,1 +1,2 @@
-from graphgallery.backend.config import backend, set_backend
+from graphgallery.backend.config import backend, set_backend, POSTFIX
+

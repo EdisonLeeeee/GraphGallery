@@ -3,7 +3,6 @@ import time
 import copy
 import logging
 import warnings
-import torch
 import os.path as osp
 import numpy as np
 import tensorflow as tf
@@ -17,11 +16,15 @@ from tensorflow.keras.callbacks import History
 from tensorflow.python.keras.utils.generic_utils import Progbar
 
 from graphgallery.nn.models import BaseModel
+from graphgallery.nn.models import training
 from graphgallery.nn.functions import softmax
 from graphgallery.data.io import makedirs_from_path
-from graphgallery.utils.raise_error import raise_if_kwargs
 from graphgallery.data import Basegraph
 from graphgallery.transforms import asintarr
+from graphgallery.utils.raise_error import raise_if_kwargs
+from graphgallery import POSTFIX
+
+
 
 # Ignora warnings:
 #     UserWarning: Converting sparse IndexedSlices to a dense Tensor of unknown shape. This may consume a large amount of memory.
@@ -34,13 +37,13 @@ class SemiSupervisedModel(BaseModel):
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
     
         if self.kind == "T":
-            self.train_step_fn = partial(train_step_tf, device=self.device)
-            self.test_step_fn = partial(test_step_tf, device=self.device)
-            self.predict_step_fn = partial(predict_step_tf, device=self.device)
+            self.train_step_fn = partial(training.train_step_tf, device=self.device)
+            self.test_step_fn = partial(training.test_step_tf, device=self.device)
+            self.predict_step_fn = partial(training.predict_step_tf, device=self.device)
         else:
-            self.train_step_fn = train_step_torch
-            self.test_step_fn =test_step_torch
-            self.predict_step_fn =predict_step_torch
+            self.train_step_fn = training.train_step_torch
+            self.test_step_fn = training.test_step_torch
+            self.predict_step_fn = training.predict_step_torch
         
     def process(self, *graph, **kwargs):
         """pre-process for the input graph, including manipulations
@@ -232,11 +235,13 @@ class SemiSupervisedModel(BaseModel):
         if save_best:
             if not weight_path:
                 weight_path = self.weight_path
+            else:
+                self.weight_path = weight_path
 
             makedirs_from_path(weight_path)
 
-            if not weight_path.endswith('.h5'):
-                weight_path = weight_path + '.h5'
+            if not weight_path.endswith(POSTFIX):
+                weight_path = weight_path + POSTFIX
 
             mc_callback = ModelCheckpoint(weight_path,
                                           monitor=monitor,
@@ -250,14 +255,15 @@ class SemiSupervisedModel(BaseModel):
         callbacks.on_train_begin()
 
         if verbose:
+            stateful_metrics = {"acc", 'loss', 'val_acc', 'val_loss', 'time'}
             if verbose <=2:
-                progbar = Progbar(target=epochs, verbose=verbose)
+                progbar = Progbar(target=epochs, verbose=verbose, stateful_metrics=stateful_metrics)
             print("Training...")
 
         begin_time = time.perf_counter()
         for epoch in range(epochs):
             if verbose > 2:
-                progbar = Progbar(target=len(train_data), verbose=verbose - 2)
+                progbar = Progbar(target=len(train_data), verbose=verbose - 2, stateful_metrics=stateful_metrics)
 
             callbacks.on_epoch_begin(epoch)
             callbacks.on_train_batch_begin(0)
@@ -274,15 +280,15 @@ class SemiSupervisedModel(BaseModel):
             callbacks.on_epoch_end(epoch, training_logs)
 
             train_data.on_epoch_end()
-
-            time_passed = time.perf_counter() - begin_time
-            training_logs.update({'time': time_passed})
-
-            if verbose > 2:
-                print(f"Epoch {epoch+1}/{epochs}")
-                progbar.update(len(train_data), training_logs.items())
-            else:
-                progbar.update(epoch + 1, training_logs.items())
+            
+            if verbose:
+                time_passed = time.perf_counter() - begin_time
+                training_logs.update({'time': time_passed})                
+                if verbose > 2:
+                    print(f"Epoch {epoch+1}/{epochs}")
+                    progbar.update(len(train_data), training_logs.items())
+                else:
+                    progbar.update(epoch + 1, training_logs.items())
                 
                 
             if model.stop_training:
@@ -292,7 +298,7 @@ class SemiSupervisedModel(BaseModel):
 
         if save_best:
             self.load(weight_path, as_model=as_model)
-            remove_tf_weights(weight_path)
+            self.remove_weights()
 
         return history
 
@@ -332,7 +338,9 @@ class SemiSupervisedModel(BaseModel):
 
         if verbose:
             print("Testing...")
-        progbar = Progbar(target=len(test_data), verbose=verbose)
+            
+        stateful_metrics = {"test_acc", 'test_loss', 'time'}
+        progbar = Progbar(target=len(test_data), verbose=verbose, stateful_metrics=stateful_metrics)
         begin_time = time.perf_counter()
         loss, accuracy = self.test_step(test_data)
         time_passed = time.perf_counter() - begin_time
@@ -524,173 +532,10 @@ class SemiSupervisedModel(BaseModel):
         model.optimizer.learning_rate.assign(value)
 
 
-def train_step_tf(model, sequence, device):
-    model.reset_metrics()
+    def remove_weights(self):
+        filepath = self.weight_path
+        if not filepath.endswith(POSTFIX):
+            filepath = filepath + POSTFIX
 
-    with tf.device(device):
-        for inputs, labels in sequence:
-            loss, accuracy = model.train_on_batch(
-                x=inputs, y=labels, reset_metrics=False)
-
-    return loss, accuracy
-
-# def train_step_tf(model, sequence, device):
-#     model.reset_metrics()
-#     loss_fn = model.loss
-#     metric = model.metrics[0]
-#     optimizer = model.optimizer
-#     model.reset_metrics()
-#     metric.reset_states()
-
-#     loss = 0.
-#     with tf.GradientTape() as tape:
-#         for inputs, labels in sequence:
-#             output = model(inputs, training=True)
-#             loss += loss_fn(labels, output)
-#             metric.update_state(labels, output)
-
-#     grad = tape.gradient(loss, model.trainable_variables)
-#     optimizer.apply_gradients(zip(grad, model.trainable_variables))
-
-#     return loss, metric.result()
-
-def train_step_torch(model, sequence):
-    model.train()
-    optimizer = model.optimizer
-    loss_fn = model.loss_fn
-
-    accuracy = 0.
-    loss = 0.
-    n_inputs = 0
-
-    for inputs, labels in sequence:
-        optimizer.zero_grad()
-        output = model(inputs)
-        _loss = loss_fn(output, labels)
-        _loss.backward()
-        optimizer.step()
-        with torch.no_grad():
-            loss += _loss.data
-            accuracy += (output.argmax(1) == labels).float().sum()
-            n_inputs += labels.size(0)
-
-    return loss.detach().item(), (accuracy / n_inputs).detach().item()
-
-
-def test_step_tf(model, sequence, device):
-    model.reset_metrics()
-
-    with tf.device(device):
-        for inputs, labels in sequence:
-            loss, accuracy = model.test_on_batch(
-                x=inputs, y=labels, reset_metrics=False)
-
-    return loss, accuracy
-
-# def test_step_tf(model, sequence, device):
-#     model.reset_metrics()
-#     loss_fn = model.loss
-#     metric = model.metrics[0]
-#     optimizer = model.optimizer
-#     model.reset_metrics()
-
-#     loss = 0.
-#     for inputs, labels in sequence:
-#         output = model(inputs, training=False)
-#         loss += loss_fn(labels, output)
-#         metric.update_state(labels, output)
-
-#     return loss, metric.result()
-
-
-@torch.no_grad()
-def test_step_torch(model, sequence):
-    model.eval()
-    loss_fn = model.loss_fn
-    accuracy = 0.
-    loss = 0.
-    n_inputs = 0
-
-    for inputs, labels in sequence:
-        output = model(inputs)
-        _loss = loss_fn(output, labels)
-        loss += _loss.data 
-        n_inputs += labels.size(0)
-        accuracy += (output.argmax(1) == labels).float().sum()
-
-    return loss.detach().item(), (accuracy / n_inputs).detach().item()
-
-
-def predict_step_tf(model, sequence, device):
-    logits = []
-    with tf.device(device):
-        for inputs, *_ in sequence:
-            logit = model.predict_on_batch(x=inputs)
-            if tf.is_tensor(logit):
-                logit = logit.numpy()
-            logits.append(logit)
-
-    if len(sequence) > 1:
-        logits = np.vstack(logits)
-    else:
-        logits = logits[0]
-    return logits
-
-
-# def predict_step_tf(model, sequence, device):
-#     logits = []
-#     with tf.device(device):
-#         for inputs, *_ in sequence:
-#             logit = model(inputs, training=False)
-#             logits.append(logit)
-
-#     if len(sequence) > 1:
-#         logits = tf.concat(logits, axis=0)
-#     else:
-#         logits = logits[0]
-
-#     return logits.numpy()
-
-@torch.no_grad()
-def predict_step_torch(model, sequence):
-    model.eval()
-    logits = []
-
-    for inputs, _ in sequence:
-        logit = model(inputs)
-        logits.append(logit)
-
-    if len(sequence) > 1:
-        logits = torch.cat(logits)
-    else:
-        logits, = logits
-
-    return logits.detach().cpu().numpy()
-
-
-_POSTFIX = (".h5", ".data-00000-of-00001", ".index")
-
-
-def remove_tf_weights(filepath_without_h5):
-    if filepath_without_h5.endswith('.h5'):
-        filepath_without_h5 = filepath_without_h5[:-3]
-
-    # for tensorflow weights that saved without h5 formate
-    for postfix in _POSTFIX:
-        path = filepath_without_h5 + postfix
-        if osp.exists(path):
-            os.remove(path)
-
-    file_dir = osp.split(osp.realpath(filepath_without_h5))[0]
-
-    path = osp.join(file_dir, "checkpoint")
-    if osp.exists(path):
-        os.remove(path)
-
-
-def remove_torch_weights(filepath):
-    if not filepath.endswith('.pt'):
-        filepath_with_pt = filepath + '.pt'
-
-    if osp.exists(filepath_with_pt):
-        os.remove(filepath_with_pt)
+        if osp.exists(filepath):
+            os.remove(filepath)

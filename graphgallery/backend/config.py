@@ -4,6 +4,8 @@ import graphgallery
 from graphgallery.backend.modules import TensorFlowBackend, PyTorchBackend
 from tensorflow.keras import backend as K
 
+POSTFIX  = ".h5"
+
 _BACKEND = TensorFlowBackend()
 _MODULE_KIND = {"tf": "T", "tensorflow": "T", "T": "T",
                 "th": "P", "torch": "P", "pytorch": "P", "P": "P"}

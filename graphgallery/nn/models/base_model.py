@@ -12,6 +12,7 @@ from tensorflow.keras import backend as K
 from graphgallery.nn.models import Base
 from graphgallery.data.io import makedirs_from_path
 from graphgallery.utils import save
+from graphgallery import POSTFIX
 
 
 class BaseModel(Base):
@@ -48,7 +49,7 @@ class BaseModel(Base):
         # add random integer to avoid duplication
         _id = np.random.RandomState(None).randint(100)
         self.weight_path = osp.join(osp.expanduser(osp.normpath("/tmp/weight")),
-                                    f"{name}_{_id}_weights")
+                                    f"{self.name}_{_id}_weights{POSTFIX}")
 
     def save(self, path=None, as_model=False, overwrite=True, save_format=None, **kwargs):
 
