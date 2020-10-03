@@ -100,7 +100,7 @@ more details please refer to [GraphData](https://github.com/EdisonLeeeee/GraphDa
 fixed datasets
 ```python
 from graphgallery.data import Planetoid
-# set `verbose=False` to avoid these printed tables
+# set `verbose=False` to avoid additional outputs 
 data = Planetoid('cora', verbose=False)
 graph = data.graph
 idx_train, idx_val, idx_test = data.split()
@@ -119,12 +119,10 @@ currently the supported datasets are:
 more scalable datasets (stored with `.npz`)
 ```python
 from graphgallery.data import NPZDataset;
+# set `verbose=False` to avoid additional outputs 
 data = NPZDataset('cora', verbose=False)
 graph = data.graph
 idx_train, idx_val, idx_test = data.split(random_state=42)
-# idx_train:  training indices: 1D Numpy array
-# idx_val:  validation indices: 1D Numpy array
-# idx_test:  testing indices: 1D Numpy array
 >>> graph
 Graph(adj_matrix(2708, 2708), attr_matrix(2708, 2708), labels(2708,))
 ```
@@ -245,7 +243,21 @@ Test loss 1.0131, Test accuracy 82.20%
 ```
 
 # How to add your custom datasets
-TODO
+This is motivated by [gnn-benchmark](https://github.com/shchur/gnn-benchmark/)
+```python
+from graphgallery.data import Graph
+
+# Load the adjacency matrix A, attribute matrix X and labels vector y
+# A - scipy.sparse.csr_matrix of shape [n_nodes, n_nodes]
+# X - scipy.sparse.csr_matrix or np.ndarray of shape [n_nodes, n_atts]
+# y - np.ndarray of shape [n_nodes]
+
+mydataset = Graph(adj_matrix=A, attr_matrix=X, labels=y)
+# save dataset
+mydataset.to_npz('path/to/mydataset.npz')
+# load dataset
+mydataset = Graph.from_npz('path/to/mydataset.npz')
+```
 
 # How to define your custom models
 TODO
@@ -254,10 +266,11 @@ TODO
 Please refer to the [examples](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples) directory.
 
 # TODO Lists
-- [ ] Add Docstrings and Documentation (Building)
 - [x] Add PyTorch models support
-- [ ] Support for `graph Classification` and `link prediction` tasks
-- [ ] Support for Heterogeneous graphs
+- [ ] Add more GNN models (TF and Torch backend)
+- [ ] Support for more tasks, e.g., `graph Classification` and `link prediction`
+- [ ] Support for more types of graphs, e.g., Heterogeneous graph
+- [ ] Add Docstrings and Documentation (Building)
 
 
 # Acknowledgement
