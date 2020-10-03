@@ -6,13 +6,14 @@ from graphgallery.nn.models.torch_keras_model import TorchKerasModel
 # (semi-)supervised model
 from graphgallery.nn.models.semisupervised.semi_supervised_model import SemiSupervisedModel
 
+# models for both tensorflow and pytorch
 from graphgallery.nn.models.semisupervised.gcn import GCN
 from graphgallery.nn.models.semisupervised.gat import GAT
 from graphgallery.nn.models.semisupervised.clustergcn import ClusterGCN
+from graphgallery.nn.models.semisupervised.sgc import SGC
 
 
 ### only tensorflow models#######################################################
-from graphgallery.nn.models.semisupervised.sgc import SGC
 from graphgallery.nn.models.semisupervised.gwnn import GWNN
 from graphgallery.nn.models.semisupervised.robustgcn import RobustGCN
 from graphgallery.nn.models.semisupervised.graphsage import GraphSAGE

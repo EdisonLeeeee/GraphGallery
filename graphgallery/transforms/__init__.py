@@ -32,11 +32,9 @@ from graphgallery.transforms.attr_transform.augment_attr import augment_attr
 
 
 # tensor transform
-from graphgallery.transforms.tensor_transform.astensor import (astensor, astensors,
-                                                                   sparse_tensor_to_sparse_adj,
-                                                                   sparse_edges_to_sparse_tensor,
-                                                                   normalize_adj_tensor,
-                                                                   normalize_edge_tensor)
+from graphgallery.transforms.tensor_transform.tensor import *
+from graphgallery.transforms.tensor_transform import tf_tensor, th_tensor
+
 
 # other transform
 from graphgallery.transforms.get_transform import get, Compose

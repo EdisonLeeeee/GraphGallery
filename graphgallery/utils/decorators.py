@@ -3,7 +3,6 @@ import inspect
 
 from graphgallery.utils.type_check import is_list_like, is_scalar_like
 from graphgallery.utils.shape import get_length
-
 from graphgallery.utils.shape import repeat
 
 
@@ -18,12 +17,18 @@ def cal_outpus(func, args, kwargs, type_check=True):
 
 
 class MultiInputs:
-
+    
+    wrapper_doc = """NOTE: This method is decorated by 
+    'graphgallery.utils.decorators.MultiInputs',
+    which takes multi inputs and yields multi outputs.
+    """
     def __init__(self, *, type_check=True):
         self.type_check = type_check
 
     def __call__(self, func):
-
+        doc = func.__doc__ if func.__doc__ else ""
+        func.__doc__ = doc + self.wrapper_doc
+        
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             if len(args) == 1 and is_list_like(args[0]):

@@ -9,7 +9,7 @@ from typing import Any
 from graphgallery import floatx, intx, backend
 from graphgallery import (is_list_like,
                           is_interger_scalar,
-                          is_tensor_or_variable)
+                          is_tensor)
 
 
 
@@ -49,7 +49,7 @@ def asintarr(x, dtype: str = None):
     if dtype is None:
         dtype = intx()
 
-    if is_tensor_or_variable(x):
+    if is_tensor(x):
         if x.dtype != dtype:
             kind = backend().kind
             if kind == "T":

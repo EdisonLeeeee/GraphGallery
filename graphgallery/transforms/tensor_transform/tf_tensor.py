@@ -5,64 +5,22 @@ import scipy.sparse as sp
 from graphgallery import floatx, intx
 from graphgallery.utils.type_check import (is_list_like,
                                            is_interger_scalar,
-                                           is_tensor_or_variable,
+                                           is_tf_tensor,
                                            is_scalar_like)
 
 from graphgallery.utils.decorators import MultiInputs
 from graphgallery import transforms as T
 
+__all__ = ["astensor", "astensors",
+           "sparse_adj_to_sparse_tensor",
+           "sparse_tensor_to_sparse_adj",
+           "sparse_edges_to_sparse_tensor",
+           "normalize_adj_tensor", 
+           "add_selfloops_edge", 
+           "normalize_edge_tensor"]
 
 
-def sparse_edges_to_sparse_tensor(edge_index: np.ndarray, edge_weight: np.ndarray = None, shape: tuple = None):
-    """
-    edge_index: shape [2, M]
-    edge_weight: shape [M,]
-    """
-    if edge_weight is None:
-        edge_weight = tf.ones(edge_index.shape[1], dtype=floatx())
-
-    if shape is None:
-        N = np.max(edge_index) + 1
-        shape = (N, N)
-
-    return tf.SparseTensor(edge_index.T, edge_weight, shape)
-
-
-def sparse_adj_to_sparse_tensor(x: sp.csr_matrix, dtype=None):
-    """Converts a Scipy sparse matrix to a tensorflow SparseTensor.
-
-    Parameters
-    ----------
-    x: scipy.sparse.sparse
-        Matrix in Scipy sparse format.
-
-    dtype: The type of sparse matrix `x`, if not specified,
-        it will automatically using appropriate data type.
-        See `graphgallery.infer_type`.            
-    Returns
-    -------
-    S: tf.sparse.SparseTensor
-        Matrix as a sparse tensor.
-    """
-
-    if isinstance(dtype, tf.dtypes.DType):
-        dtype = dtype.name
-    elif dtype is None:
-        dtype = infer_type(x)
-
-    edge_index, edge_weight = T.sparse_adj_to_sparse_edges(x)
-    return sparse_edges_to_sparse_tensor(edge_index, edge_weight.astype(dtype, copy=False), x.shape)
-
-
-def sparse_tensor_to_sparse_adj(x):
-    """Converts a SparseTensor to a Scipy sparse matrix (CSR matrix)."""
-    data = x.values.numpy()
-    indices = x.indices.numpy().T
-    shape = x.shape
-    return sp.csr_matrix((data, indices), shape=shape)
-
-
-def infer_type(x):
+def infer_type(x)->str:
     """Infer type of the input `x`.
 
      Parameters:
@@ -80,7 +38,7 @@ def infer_type(x):
     """
 
     # For tensor or variable
-    if is_tensor_or_variable(x):
+    if is_tf_tensor(x):
         if x.dtype.is_floating:
             return floatx()
         elif x.dtype.is_integer or x.dtype.is_unsigned:
@@ -143,7 +101,7 @@ def astensor(x, dtype=None, device=None):
             f"argument 'dtype' must be tensorflow.dtypes.DType or str, not {type(dtype).__name__}.")
 
     with tf.device(device):
-        if is_tensor_or_variable(x):
+        if is_tf_tensor(x):
             if x.dtype != dtype:
                 x = tf.cast(x, dtype=dtype)
             return x
@@ -174,6 +132,57 @@ astensors.__doc__ = """Convert input matrices to Tensor(s) or SparseTensor(s).
         2. `graphgallery.intx() ` if `x` in `xs` is integer
         3. `'bool'` if `x` in 'xs' is bool.
     """
+
+def sparse_edges_to_sparse_tensor(edge_index: np.ndarray, edge_weight: np.ndarray = None, shape: tuple = None)->tf.SparseTensor:
+    """
+    edge_index: shape [2, M]
+    edge_weight: shape [M,]
+    """
+    edge_index = T.edge_transpose(edge_index)
+    
+    if edge_weight is None:
+        edge_weight = tf.ones(edge_index.shape[1], dtype=floatx())
+
+    if shape is None:
+        N = (edge_index).max + 1
+        shape = (N, N)
+
+    return tf.SparseTensor(edge_index.T, edge_weight, shape)
+
+
+def sparse_adj_to_sparse_tensor(x: sp.csr_matrix, dtype=None):
+    """Converts a Scipy sparse matrix to a tensorflow SparseTensor.
+
+    Parameters
+    ----------
+    x: scipy.sparse.sparse
+        Matrix in Scipy sparse format.
+
+    dtype: The type of sparse matrix `x`, if not specified,
+        it will automatically using appropriate data type.
+        See `graphgallery.infer_type`.            
+    Returns
+    -------
+    S: tf.sparse.SparseTensor
+        Matrix as a sparse tensor.
+    """
+
+    if isinstance(dtype, tf.dtypes.DType):
+        dtype = dtype.name
+    elif dtype is None:
+        dtype = infer_type(x)
+
+    edge_index, edge_weight = T.sparse_adj_to_sparse_edges(x)
+    return sparse_edges_to_sparse_tensor(edge_index, edge_weight.astype(dtype, copy=False), x.shape)
+
+
+def sparse_tensor_to_sparse_adj(x)->sp.csr_matrix:
+    """Converts a SparseTensor to a Scipy sparse matrix (CSR matrix)."""
+    data = x.values.numpy()
+    indices = x.indices.numpy().T
+    shape = x.shape
+    return sp.csr_matrix((data, indices), shape=shape)
+
 
 
 def normalize_adj_tensor(adj, rate=-0.5, fill_weight=1.0):

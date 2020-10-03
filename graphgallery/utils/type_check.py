@@ -6,6 +6,12 @@ from collections import Iterable
 
 from graphgallery import backend
 
+__all__ = ['is_list_like', 'is_tf_sparse_tensor',
+           'is_th_sparse_tensor', 'is_sparse_tensor',
+           'is_scalar_like',
+           'is_tf_tensor', 'is_th_tensor',
+           'is_tensor',
+           'is_interger_scalar']
 
 def is_iterable(obj):
     return isinstance(obj, Iterable) and not isinstance(obj, str)
@@ -39,25 +45,60 @@ def is_tf_sparse_tensor(x):
     """
     return K.is_sparse(x)
 
+def is_th_sparse_tensor(x):
+    """Check whether `x` is a sparse Tensor.
 
-def is_tensor_or_variable(x):
-    """Check whether `x` is tf.Tensor or tf.Variable or tf.RaggedTensor.
+    Check whether an object is a `torch.sparse.Tensor`.
+
+    NOTE: This method is different with `scipy.sparse.is_sparse`
+    which checks whether `x` is Scipy sparse matrix.
 
     Parameters:
         x: A python object to check.
 
     Returns:
-        `True` iff `x` is a `tf.Tensor` or `tf.Variable` or `tf.RaggedTensor`.
+        `True` iff `x` is a `torch.sparse.Tensor (COO Tensor)`.
     """
+    # TODO: is it right?
+    return isinstance(x, torch.Tensor) and x.layout != torch.strided
+
+def is_sparse_tensor(x):
+    """Check whether `x` is a sparse Tensor."""
+
     if backend().kind == "T":
-        return any((tf.is_tensor(x),
+        return is_tf_sparse_tensor(x)
+    else:
+        return is_th_sparse_tensor(x)
+
+def is_tf_tensor(x):
+    return any((tf.is_tensor(x),
                     isinstance(x, tf.Variable),
                     isinstance(x, tf.RaggedTensor),
                     is_tf_sparse_tensor(x)))
-    else:
-        # TODO: is it really work for all torch tensors??
-        return torch.is_tensor(x)
 
+def is_th_tensor(x):
+    # TODO: is it really work for all torch tensors?? maybe work for variable, parameters?
+    return torch.is_tensor(x)
+
+def is_tensor(x):
+    """Check whether `x` is 
+        tf.Tensor,
+        tf.Variable,
+        tf.RaggedTensor,
+        tf.sparse.SparseTensor,
+        torch.Tensor, 
+        torch.sparse.Tensor.
+
+    Parameters:
+        x: A python object to check.
+
+    Returns:
+        `True` iff `x` is a (tf or torch) (sparse-)tensor.
+    """
+    if backend().kind == "T":
+        return is_tf_tensor(x)
+    else:
+        return is_th_tensor(x)
 
 def is_interger_scalar(x):
     """Check whether `x` is an Integer scalar.

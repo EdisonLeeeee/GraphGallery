@@ -4,8 +4,9 @@ from graphgallery.backend.config import (epsilon, floatx, intx, backend, POSTFIX
                                          set_epsilon, set_floatx, set_intx, set_backend)
 
 
-from graphgallery.utils.type_check import (is_list_like, is_scalar_like,
-                                           is_tensor_or_variable, is_interger_scalar)
+from graphgallery.utils.type_check import *
+
+
 
 
 from graphgallery.utils.shape import repeat
