@@ -22,7 +22,7 @@ from graphgallery.data.io import makedirs_from_path
 from graphgallery.data import Basegraph
 from graphgallery.transforms import asintarr
 from graphgallery.utils.raise_error import raise_if_kwargs
-from graphgallery import POSTFIX
+from graphgallery import POSTFIX, intx
 
 
 
@@ -434,7 +434,9 @@ class SemiSupervisedModel(BaseModel):
                 'You must compile your model before training/testing/predicting. Use `model.build()`.')
 
         if index is None:
-            index = np.arange(self.graph.n_nodes)
+            index = np.arange(self.graph.n_nodes, dtype=intx())
+        else:
+            index = asintarr(index)
         sequence = self.predict_sequence(index)
         logit = self.predict_step(sequence)
         if return_prob:

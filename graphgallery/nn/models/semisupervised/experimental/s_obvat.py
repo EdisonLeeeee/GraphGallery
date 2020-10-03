@@ -3,7 +3,6 @@ from tensorflow.keras import Model, Input
 from tensorflow.keras.layers import Dropout
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
-from tensorflow.keras.initializers import TruncatedNormal
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 from graphgallery.nn.layers.tf_layers import GraphConvolution, Gather
@@ -83,18 +82,16 @@ class SimplifiedOBVAT(OBVAT):
                           dtype=self.intx, name='node_index')
 
             GCN_layers = []
-            dropout_layers = []
             for hidden, activation in zip(hiddens, activations):
                 GCN_layers.append(GraphConvolution(hidden,
                                                    activation=activation,
                                                    use_bias=use_bias,
                                                    kernel_regularizer=regularizers.l2(l2_norm)))
-                dropout_layers.append(Dropout(rate=dropout))
 
-            GCN_layers.append(GraphConvolution(
-                self.graph.n_classes, use_bias=use_bias))
+            GCN_layers.append(GraphConvolution(self.graph.n_classes, use_bias=use_bias))
+            
             self.GCN_layers = GCN_layers
-            self.dropout_layers = dropout_layers
+            self.dropout = Dropout(rate=dropout)
 
             logit = self.forward(x, adj)
             output = Gather()([logit, index])
@@ -113,7 +110,7 @@ class SimplifiedOBVAT(OBVAT):
         return super(OBVAT, self).train_step(sequence)
 
     def virtual_adversarial_loss(self, x, adj, logit, epsilon):
-        d = tf.random.normal(shape=tf.shape(x), dtype=self.floatx)
+        d = tf.random.normal(shape=[self.graph.n_nodes, self.graph.n_attrs], dtype=self.floatx)
 
         r_vadv = get_normalized_vector(d) * epsilon
         logit_p = tf.stop_gradient(logit)

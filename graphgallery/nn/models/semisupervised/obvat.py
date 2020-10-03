@@ -81,6 +81,9 @@ class OBVAT(SemiSupervisedModel):
     def build(self, hiddens=[16], activations=['relu'], dropout=0.5,
               l2_norm=5e-4, use_bias=False, lr=0.01, p1=1.4, p2=0.7):
 
+        if self.kind == "P":
+            raise RuntimeError(f"Currently {self.name} only supports for tensorflow backend.")        
+
         with tf.device(self.device):
 
             x = Input(batch_shape=[None, self.graph.n_attrs],
@@ -89,17 +92,15 @@ class OBVAT(SemiSupervisedModel):
                         dtype=self.floatx, sparse=True, name='adj_matrix')
             index = Input(batch_shape=[None],
                           dtype=self.intx, name='node_index')
+            
             GCN_layers = []
-            dropout_layers = []
             for hidden, activation in zip(hiddens, activations):
                 GCN_layers.append(GraphConvolution(hidden, activation=activation, use_bias=use_bias,
                                                    kernel_regularizer=regularizers.l2(l2_norm)))
-                dropout_layers.append(Dropout(rate=dropout))
 
-            GCN_layers.append(GraphConvolution(
-                self.graph.n_classes, use_bias=use_bias))
+            GCN_layers.append(GraphConvolution(self.graph.n_classes, use_bias=use_bias))
             self.GCN_layers = GCN_layers
-            self.dropout_layers = dropout_layers
+            self.dropout = Dropout(rate=dropout)
 
             logit = self.forward(x, adj)
             output = Gather()([logit, index])
@@ -108,15 +109,15 @@ class OBVAT(SemiSupervisedModel):
             model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
                           optimizer=Adam(lr=lr), metrics=['accuracy'])
 
-            self.r_vadv = tf.Variable(TruncatedNormal(stddev=0.01)(
-                shape=[self.graph.n_nodes, self.graph.n_attrs]), name="r_vadv")
+            self.r_vadv = tf.Variable(TruncatedNormal(stddev=0.01)(shape=[self.graph.n_nodes, 
+                                                                          self.graph.n_attrs]), name="r_vadv")
             entropy_loss = entropy_y_x(logit)
             vat_loss = self.virtual_adversarial_loss(x, adj, logit)
             model.add_loss(p1 * vat_loss + p2 * entropy_loss)
 
             self.model = model
             self.adv_optimizer = Adam(lr=lr / 10)
-
+            
     def virtual_adversarial_loss(self, x, adj, logit):
 
         adv_x = x + self.r_vadv
@@ -124,14 +125,12 @@ class OBVAT(SemiSupervisedModel):
         logit_m = self.forward(adv_x, adj)
         loss = kl_divergence_with_logit(logit_p, logit_m)
         return loss
-
+    
     def forward(self, x, adj):
         h = x
-        for dropout_layer, GCN_layer in zip(self.dropout_layers, self.GCN_layers[:-1]):
-            h = dropout_layer(h)
-            h = GCN_layer([h, adj])
-        h = dropout_layer(h)
-        h = self.GCN_layers[-1]([h, adj])
+        for layer in self.GCN_layers:
+            h = self.dropout(h)
+            h = layer([h, adj])
         return h
 
     @tf.function

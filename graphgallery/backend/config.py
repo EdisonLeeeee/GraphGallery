@@ -4,6 +4,7 @@ import graphgallery
 from graphgallery.backend.modules import TensorFlowBackend, PyTorchBackend
 from tensorflow.keras import backend as K
 
+# used to store the model or weights for tf and torch
 POSTFIX  = ".h5"
 
 _BACKEND = TensorFlowBackend()
