@@ -124,10 +124,10 @@ class SemiSupervisedModel(BaseModel):
         """
         # TODO: check for the input model
         if self.kind == "T":
-            self.model = model.to(self.device)
-        else:
             with tf.device(self.device):
                 self.model = model
+        else:
+            self.model = model.to(self.device)
 
     def train(self, idx_train, idx_val=None,
               epochs=200, early_stopping=None,
