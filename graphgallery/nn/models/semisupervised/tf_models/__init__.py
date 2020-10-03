@@ -8,3 +8,6 @@ from .robustgcn import RobustGCN
 from .dagnn import DAGNN
 from .lgcn import LGCN
 from .edgeconv import EdgeGCN
+from .gwnn import GWNN
+from .fastgcn import FastGCN
+from .graphsage import GraphSAGE

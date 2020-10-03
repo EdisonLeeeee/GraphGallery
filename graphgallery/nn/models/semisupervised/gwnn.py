@@ -1,15 +1,13 @@
 import tensorflow as tf
-from tensorflow.keras import Model, Input
-from tensorflow.keras.layers import Dropout, Softmax
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras import regularizers
-from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tf_layers import WaveletConvolution, Gather
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.decorators import EqualVarLength
+
+from graphgallery.nn.models.semisupervised.tf_models.gwnn import GWNN as tfGWNN
+
 from graphgallery import transforms as T
+
 
 
 class GWNN(SemiSupervisedModel):
@@ -80,34 +78,15 @@ class GWNN(SemiSupervisedModel):
     def build(self, hiddens=[16], activations=['relu'], dropout=0.5, l2_norm=5e-4, lr=0.01,
               use_bias=False):
 
-        with tf.device(self.device):
-
-            n_nodes = self.graph.n_nodes
-            x = Input(batch_shape=[None, self.graph.n_attrs],
-                      dtype=self.floatx, name='attr_matrix')
-            wavelet = Input(batch_shape=[n_nodes, n_nodes],
-                            dtype=self.floatx, sparse=True, name='wavelet_matrix')
-            inverse_wavelet = Input(batch_shape=[n_nodes, n_nodes], dtype=self.floatx, sparse=True,
-                                    name='inverse_wavelet_matrix')
-            index = Input(batch_shape=[None],
-                          dtype=self.intx, name='node_index')
-
-            h = x
-            for hidden, activation in zip(hiddens, activations):
-                h = WaveletConvolution(hidden, activation=activation, use_bias=use_bias,
-                                       kernel_regularizer=regularizers.l2(l2_norm))([h, wavelet, inverse_wavelet])
-                h = Dropout(rate=dropout)(h)
-
-            h = WaveletConvolution(self.graph.n_classes, use_bias=use_bias)(
-                [h, wavelet, inverse_wavelet])
-            h = Gather()([h, index])
-
-            model = Model(
-                inputs=[x, wavelet, inverse_wavelet, index], outputs=h)
-            model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
-                          optimizer=Adam(lr=lr), metrics=['accuracy'])
-
-            self.model = model
+        if self.kind == "T":
+            with tf.device(self.device):
+                self.model = tfGWNN(self.graph.n_attrs, self.graph.n_classes, self.graph.n_nodes,
+                                    hiddens=hiddens,
+                                    activations=activations,
+                                    dropout=dropout, l2_norm=l2_norm,
+                                    lr=lr, use_bias=use_bias)
+        else:
+            raise NotImplementedError
 
     def train_sequence(self, index):
         

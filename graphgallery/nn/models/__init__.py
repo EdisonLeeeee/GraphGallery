@@ -26,7 +26,6 @@ from graphgallery.nn.models.semisupervised.gmnn import GMNN
 from graphgallery.nn.models.semisupervised.dagnn import DAGNN
 
 # experimental model
-from graphgallery.nn.models.semisupervised.experimental.mediansage import MedianSAGE
 from graphgallery.nn.models.semisupervised.experimental.edgeconv import EdgeGCN
 from graphgallery.nn.models.semisupervised.experimental.s_obvat import SimplifiedOBVAT
 from graphgallery.nn.models.semisupervised.experimental.gcn_mix import GCN_MIX

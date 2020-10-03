@@ -1,16 +1,14 @@
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras import Model, Input
-from tensorflow.keras.layers import Dropout
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras import regularizers
-from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tf_layers import MeanAggregator, GCNAggregator
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import SAGEMiniBatchSequence
 from graphgallery.utils.decorators import EqualVarLength
+
+from graphgallery.nn.models.semisupervised.tf_models.graphsage import GraphSAGE as tfGraphSAGE
+
 from graphgallery import transforms as T
+
 
 
 class GraphSAGE(SemiSupervisedModel):
@@ -88,54 +86,20 @@ class GraphSAGE(SemiSupervisedModel):
     # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
     def build(self, hiddens=[32], activations=['relu'], dropout=0.5,
-              l2_norm=5e-4, lr=0.01, use_bias=True, output_normalize=False, aggrator='mean'):
+              l2_norm=5e-4, lr=0.01, use_bias=True, output_normalize=False, aggregator='mean'):
 
-        with tf.device(self.device):
+        if self.kind == "T":
+            with tf.device(self.device):
+                self.model = tfGraphSAGE(self.graph.n_attrs, self.graph.n_classes,
+                                    hiddens=hiddens,
+                                    activations=activations,
+                                    dropout=dropout, l2_norm=l2_norm,
+                                    lr=lr, use_bias=use_bias, aggregator=aggregator,
+                                    output_normalize=output_normalize, 
+                                    n_samples=self.n_samples)
+        else:
+            raise NotImplementedError
 
-            if aggrator == 'mean':
-                Agg = MeanAggregator
-            elif aggrator == 'gcn':
-                Agg = GCNAggregator
-            else:
-                raise ValueError(
-                    f"Invalid value of `aggrator`, allowed values (`'mean'`, `'gcn'`), but got `{aggrator}`.")
-
-            x = Input(batch_shape=[None, self.graph.n_attrs],
-                      dtype=self.floatx, name='attr_matrix')
-            nodes = Input(batch_shape=[None], dtype=self.intx, name='nodes')
-            neighbors = [Input(batch_shape=[None], dtype=self.intx, name=f'neighbors_{hop}')
-                         for hop, n_sample in enumerate(self.n_samples)]
-
-            aggrators = []
-            for hidden, activation in zip(hiddens, activations):
-                # you can use `GCNAggregator` instead
-                aggrators.append(Agg(hidden, concat=True, activation=activation,
-                                     use_bias=use_bias,
-                                     kernel_regularizer=regularizers.l2(l2_norm)))
-
-            aggrators.append(Agg(self.graph.n_classes, use_bias=use_bias))
-
-            h = [tf.nn.embedding_lookup(x, node)
-                 for node in [nodes, *neighbors]]
-            for agg_i, aggrator in enumerate(aggrators):
-                attribute_shape = h[0].shape[-1]
-                for hop in range(len(self.n_samples) - agg_i):
-                    neighbor_shape = [-1, self.n_samples[hop], attribute_shape]
-                    h[hop] = aggrator(
-                        [h[hop], tf.reshape(h[hop + 1], neighbor_shape)])
-                    if hop != len(self.n_samples) - 1:
-                        h[hop] = Dropout(rate=dropout)(h[hop])
-                h.pop()
-
-            h = h[0]
-            if output_normalize:
-                h = tf.nn.l2_normalize(h, axis=1)
-
-            model = Model(inputs=[x, nodes, *neighbors], outputs=h)
-            model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
-                          optimizer=Adam(lr=lr), metrics=['accuracy'])
-
-            self.model = model
 
     def train_sequence(self, index):
         
