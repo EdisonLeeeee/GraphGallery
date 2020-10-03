@@ -81,10 +81,12 @@ In detail, the following methods are currently implemented:
 
 ### Defense models
 + **RobustGCN** from *Dingyuan Zhu et al*, [📝Robust Graph Convolutional Networks Against Adversarial Attacks](https://dl.acm.org/doi/10.1145/3292500.3330851), *KDD'19*. 
-  [[🌋 TF]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_RobustGCN.ipynb)
-+ **SBVAT/OBVAT** from *Zhijie Deng et al*, [📝Batch Virtual Adversarial Training for Graph Convolutional Networks](https://arxiv.org/abs/1902.09192), *ICML'19*. 
- [[🌋 TF]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_SBVAT.ipynb), [[🌋 TF]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_OBVAT.ipynb)
-
+[[🌋 TF]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_RobustGCN.ipynb)
++ **SBVAT** from *Zhijie Deng et al*, [📝Batch Virtual Adversarial Training for Graph Convolutional Networks](https://arxiv.org/abs/1902.09192), *ICML'19*. 
+[[🌋 TF]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_SBVAT.ipynb)
++ **OBVAT** from *Zhijie Deng et al*, [📝Batch Virtual Adversarial Training for Graph Convolutional Networks](https://arxiv.org/abs/1902.09192), *ICML'19*. 
+[[🌋 TF]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_OBVAT.ipynb)
+ 
 ## Unsupervised models
 + **Deepwalk** from *Bryan Perozzi et al*, [📝DeepWalk: Online Learning of Social Representations](https://arxiv.org/abs/1403.6652), *KDD'14*. 
  [[🌋 TF]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_Deepwalk.ipynb)
@@ -142,9 +144,11 @@ model = GCN(graph, attr_transform="normalize_attr", device="CPU", seed=123)
 # build your GCN model with default hyper-parameters
 model.build()
 # train your model. here idx_train and idx_val are numpy arrays
+# verbose takes 0, 1, 2, 3, 4
 his = model.train(idx_train, idx_val, verbose=1, epochs=100)
 # test your model
-loss, accuracy = model.test(idx_test)
+# verbose takes 0, 1
+loss, accuracy = model.test(idx_test, verbose=1)
 print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 ```
 On `Cora` dataset:
@@ -176,11 +180,11 @@ you can use the following statement to build your model
 # train without validation
 >>> his = model.train(idx_train, verbose=1, epochs=100)
 ```
-here `his` is tensorflow `History` (like) instance.
+here `his` is a tensorflow `History` instance.
 
 + Test you model
 ```python
->>> loss, accuracy = model.test(idx_test)
+>>> loss, accuracy = model.test(idx_test, verbose=1)
 Testing...
 1/1 [==============================] - 0s 62ms/step - test_loss: 1.4123 - test_acc: 0.8120 - time: 0.0620
 >>> print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
@@ -196,16 +200,20 @@ with plt.style.context(['science', 'no-latex']):
     fig, axes = plt.subplots(1, 2, figsize=(15, 5))
     axes[0].plot(his.history['acc'], label='Train accuracy')
     axes[0].plot(his.history['val_acc'], label='Val accuracy')
-    axes[0].set_xlabel('Epochs')
     axes[0].legend()
+    axes[0].set_title('Accuracy')
+    axes[0].set_xlabel('Epochs')
+    axes[0].set_ylabel('Accuracy')
 
     axes[1].plot(his.history['loss'], label='Training loss')
     axes[1].plot(his.history['val_loss'], label='Validation loss')
-    axes[1].set_xlabel('Epochs')
     axes[1].legend()
+    axes[1].set_title('Loss')
+    axes[1].set_xlabel('Epochs')
+    axes[1].set_ylabel('Loss')
     
     plt.autoscale(tight=True)
-    plt.show()    
+    plt.show()        
 ```
 ![visualization](https://github.com/EdisonLeeeee/GraphGallery/blob/master/imgs/history.png)
 
@@ -228,7 +236,7 @@ GCN using PyTorch backend
 >>> his = model.train(idx_train, idx_val, verbose=1, epochs=100)
 Training...
 100/100 [==============================] - 0s 5ms/step - loss: 0.6813 - acc: 0.9214 - val_loss: 1.0506 - val_acc: 0.7820 - time: 0.4734
->>> loss, accuracy = model.test(idx_test)
+>>> loss, accuracy = model.test(idx_test, verbose=1)
 Testing...
 1/1 [==============================] - 0s 1ms/step - test_loss: 1.0131 - test_acc: 0.8220 - time: 0.0013
 >>> print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
