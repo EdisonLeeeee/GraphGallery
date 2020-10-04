@@ -22,15 +22,17 @@ def train_val_test_split_tabular(N,
                                                        train_size + val_size),
                                                    test_size=test_size,
                                                    stratify=stratify)
-    if stratify is not None:
-        stratify = stratify[idx_train_and_val]
-        idx_train, idx_val = train_test_split(idx_train_and_val,
-                                              random_state=random_state,
-                                              train_size=(
-                                                  train_size / (train_size + val_size)),
-                                              test_size=(
-                                                  val_size / (train_size + val_size)),
-                                              stratify=stratify)
+    if stratify is None:
+        return idx_train_and_val, idx_test
+
+    stratify = stratify[idx_train_and_val]
+    idx_train, idx_val = train_test_split(idx_train_and_val,
+                                          random_state=random_state,
+                                          train_size=(
+                                              train_size / (train_size + val_size)),
+                                          test_size=(
+                                              val_size / (train_size + val_size)),
+                                          stratify=stratify)
 
     return idx_train, idx_val, idx_test
 
