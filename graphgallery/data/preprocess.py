@@ -22,8 +22,6 @@ def train_val_test_split_tabular(N,
                                                        train_size + val_size),
                                                    test_size=test_size,
                                                    stratify=stratify)
-    if stratify is None:
-        return idx_train_and_val, idx_test
 
     stratify = stratify[idx_train_and_val]
     idx_train, idx_val = train_test_split(idx_train_and_val,
@@ -234,7 +232,7 @@ def process_planetoid_datasets(name, paths):
     attributes = sp.vstack((allx, tx)).tolil()
     attributes[test_idx_reorder, :] = attributes[test_idx_range, :]
 
-    adj = nx.adjacency_matrix(nx.from_dict_of_lists(
+    adj_matrix = nx.adjacency_matrix(nx.from_dict_of_lists(
         graph, create_using=nx.DiGraph()))
 
     labels = np.vstack((ally, ty))
@@ -246,7 +244,7 @@ def process_planetoid_datasets(name, paths):
 
     labels = labels.argmax(1)
 
-    adj = adj.astype('float32')
+    adj_matrix = adj_matrix.astype('float32')
     attributes = attributes.astype('float32')
 
-    return adj, attributes, labels, idx_train, idx_val, idx_test
+    return adj_matrix, attributes, labels, idx_train, idx_val, idx_test
