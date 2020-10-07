@@ -135,6 +135,76 @@ currently the supported datasets are:
  'polblogs', 'pubmed', 'flickr', 'blogcatalog')
 ```
 
+## Tensor
++ Strided (dense) Tensor 
+```python
+>>> backend()
+TensorFlow 2.1.2 Backend
+
+>>> from graphgallery import transforms as T
+>>> arr = [1, 2, 3]
+>>> T.astensor(arr)
+<tf.Tensor: shape=(3,), dtype=int32, numpy=array([1, 2, 3], dtype=int32)>
+
+```
+
++ Sparse Tensor
+
+```python
+>>> import scipy.sparse as sp
+>>> sp_matrix = sp.eye(3)
+>>> T.astensor(sp_matrix)
+<tensorflow.python.framework.sparse_tensor.SparseTensor at 0x7f1bbc205dd8>
+```
+
++ also works for PyTorch, just like
+
+```python
+>>> from graphgallery import set_backend
+>>> set_backend('torch') # torch, pytorch or th
+PyTorch 1.6.0+cu101 Backend
+
+>>> T.astensor(arr)
+tensor([1, 2, 3])
+
+>>> T.astensor(sp_matrix)
+tensor(indices=tensor([[0, 1, 2],
+                       [0, 1, 2]]),
+       values=tensor([1., 1., 1.]),
+       size=(3, 3), nnz=3, layout=torch.sparse_coo)
+```
+
++ To Numpy or Scipy sparse matrix
+```python
+>>> tensor = T.astensor(arr)
+>>> T.tensoras(tensor)
+array([1, 2, 3])
+
+>>> sp_tensor = T.astensor(sp_matrix)
+>>> T.tensoras(sp_tensor)
+<3x3 sparse matrix of type '<class 'numpy.float32'>'
+    with 3 stored elements in Compressed Sparse Row format>
+```
+
++ Or even convert one Tensor to another one
+```python
+>>> tensor = T.astensor(arr, kind="T")
+>>> tensor
+<tf.Tensor: shape=(3,), dtype=int64, numpy=array([1, 2, 3])>
+>>> T.tensor2tensor(tensor)
+tensor([1, 2, 3])
+
+>>> sp_tensor = T.astensor(sp_matrix, kind="T") # set kind="T" to convert to tensorflow tensor
+>>> sp_tensor
+<tensorflow.python.framework.sparse_tensor.SparseTensor at 0x7efb6836a898>
+>>> T.tensor2tensor(sp_tensor)
+tensor(indices=tensor([[0, 1, 2],
+                       [0, 1, 2]]),
+       values=tensor([1., 1., 1.]),
+       size=(3, 3), nnz=3, layout=torch.sparse_coo)
+
+```
+
 ## Example of GCN model
 ```python
 from graphgallery.nn.models import GCN
