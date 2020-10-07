@@ -18,7 +18,7 @@ __all__ = ["astensor", "astensors", "tensoras", "tensor2tensor",
            "normalize_edge_tensor"]
 
     
-def astensor(x, dtype=None, device=None, kind=None):
+def astensor(x, *, dtype=None, device=None, kind=None):
     """Convert input matrices to Tensor or SparseTensor.
 
     Parameters:
@@ -92,7 +92,7 @@ def astensors(*xs, device=None, kind=None):
         return T.th_tensor.astensors(*xs, device=device)
     
     
-def tensor2tensor(tensor, device=None):
+def tensor2tensor(tensor, *, device=None):
     """Convert a TensorFLow tensor to PyTorch Tensor,
     or vice versa
     """
@@ -114,6 +114,8 @@ def tensoras(tensor):
         m = sparse_tensor_to_sparse_adj(tensor, kind="T")
     elif type_check.is_strided_tensor(tensor, kind="P"):
         m = tensor.detach().cpu().numpy()
+        if m.ndim == 0:
+            m = m.item()
     elif type_check.is_sparse_tensor(tensor, kind="P"):
         m = sparse_tensor_to_sparse_adj(tensor, kind="P")
     elif isinstance(tensor, np.ndarray) or sp.isspmatrix(tensor):
@@ -149,7 +151,7 @@ def sparse_adj_to_sparse_tensor(x, kind=None):
     else:
         return T.th_tensor.sparse_adj_to_sparse_tensor(x)
 
-def sparse_tensor_to_sparse_adj(x, kind=None):
+def sparse_tensor_to_sparse_adj(x, *, kind=None):
     """Converts a SparseTensor to a Scipy sparse matrix (CSR matrix)."""
     if kind is None:
         kind = backend().kind

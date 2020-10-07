@@ -21,7 +21,7 @@ __all__ = ["astensor", "astensors",
 
 
 
-def astensor(x, dtype=None, device=None):
+def astensor(x, *, dtype=None, device=None):
     """Convert input matrices to Tensor or SparseTensor.
 
     Parameters:
