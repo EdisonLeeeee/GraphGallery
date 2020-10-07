@@ -30,13 +30,14 @@
 
 
 # GraphGallery
-GraphGallery is a gallery of state-of-the-arts graph neural networks for [TensorFlow 2.x](https://github.com/tensorflow/tensorflow) and [PyTorch](https://github.com/pytorch/pytorch). GraphGallery 0.4.0 is a total re-write from previous versions, and some things have changed. 
-<!-- 
-This repo aims to achieve 4 goals:
-+ Similar or higher performance
-+ Faster training and testing
-+ Simple and convenient to use, high scalability
-+ Easy to read source codes -->
+GraphGallery is a gallery of state-of-the-arts graph neural networks for [TensorFlow 2.x](https://github.com/tensorflow/tensorflow) and [PyTorch](https://github.com/pytorch/pytorch). GraphGallery 0.4.x is a total re-write from previous versions, and some things have changed. 
+
+# What's important
+Difference between GraphGallery and [pytorch geometric (PyG)](https://github.com/rusty1s/pytorch_geometric), [deep graph library (DGL)](https://github.com/dmlc/dgl), etc...
++ PyG, DGL are just like **TensorFlow**, but GraphGallery is more like **Keras**
++ GraphGallery is more friendly to use
++ GraphGallery is more efficiient
+
 
 # Installation
 + Build from source (latest version)
@@ -119,8 +120,8 @@ currently the supported datasets are:
 more scalable datasets (stored with `.npz`)
 ```python
 from graphgallery.data import NPZDataset;
-# set `verbose=False` to avoid additional outputs 
-data = NPZDataset('cora', verbose=False)
+# set `verbose=False` to avoid additional outputs
+data = NPZDataset('cora', verbose=False, standardize=False)
 graph = data.graph
 idx_train, idx_val, idx_test = data.split(random_state=42)
 >>> graph
