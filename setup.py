@@ -20,6 +20,9 @@ install_requires = [
     'scikit_learn>=0.22',
 ]
 
+setup_requires = ['pytest-runner']
+tests_require = ['pytest', 'pytest-cov']
+
 setup(
     name='graphgallery',
     version=VERSION,
@@ -39,6 +42,9 @@ setup(
     python_requires='>=3.7',
     license="MIT LICENSE",
     install_requires=install_requires,
+    setup_requires=setup_requires,
+    tests_require=tests_require,
+    extras_require={'test': tests_require},
     packages=find_packages(exclude=("examples", "imgs", "scripts")),
     classifiers=[
         "Programming Language :: Python :: 3",
