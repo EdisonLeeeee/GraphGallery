@@ -33,8 +33,8 @@
 GraphGallery is a gallery of state-of-the-arts graph neural networks for [TensorFlow 2.x](https://github.com/tensorflow/tensorflow) and [PyTorch](https://github.com/pytorch/pytorch). GraphGallery 0.4.x is a total re-write from previous versions, and some things have changed. 
 
 # 👀 What's important
-Difference between GraphGallery and [pytorch geometric (PyG)](https://github.com/rusty1s/pytorch_geometric), [deep graph library (DGL)](https://github.com/dmlc/dgl), etc...
-+ PyG and DGL are just like **TensorFlow**, but GraphGallery is more like **Keras**
+Difference between GraphGallery and [Pytorch Geometric (PyG)](https://github.com/rusty1s/pytorch_geometric), [Deep Graph Library (DGL)](https://github.com/dmlc/dgl), etc...
++ PyG and DGL are just like **TensorFlow** while GraphGallery is more like **Keras**
 + GraphGallery is more friendly to use
 + GraphGallery is more efficiient
 
@@ -50,7 +50,7 @@ python setup.py install
 ```bash
 pip install -U graphgallery
 ```
-# :octocat: Implementations
+# 🤖 Implementations
 In detail, the following methods are currently implemented:
 
 ## Semi-supervised models
@@ -216,7 +216,7 @@ model.build()
 # verbose takes 0, 1, 2, 3, 4
 his = model.train(idx_train, idx_val, verbose=1, epochs=100)
 # test your model
-# verbose takes 0, 1
+# verbose takes 0, 1, 2
 loss, accuracy = model.test(idx_test, verbose=1)
 print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
 ```
@@ -313,7 +313,7 @@ Test loss 1.0131, Test accuracy 82.20%
 
 ```
 
-# ❓ How to add your custom datasets
+# ❓ How to add your datasets
 This is motivated by [gnn-benchmark](https://github.com/shchur/gnn-benchmark/)
 ```python
 from graphgallery.data import Graph
@@ -330,13 +330,13 @@ mydataset.to_npz('path/to/mydataset.npz')
 mydataset = Graph.from_npz('path/to/mydataset.npz')
 ```
 
-# ❓ How to define your custom models
+# ❓ How to define your models
 TODO
 
 # 😎 More Examples
 Please refer to the [examples](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples) directory.
 
-# ⭐ TODO Lists
+# ⭐ TODO List
 - [x] Add PyTorch models support
 - [ ] Add more GNN models (TF and Torch backend)
 - [ ] Support for more tasks, e.g., `graph Classification` and `link prediction`
