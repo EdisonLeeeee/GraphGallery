@@ -5,7 +5,8 @@ import scipy.sparse as sp
 from graphgallery import floatx, intx
 from graphgallery.utils.type_check import (is_list_like,
                                            is_interger_scalar,
-                                           is_tensor,                                        is_scalar_like,
+                                           is_tensor,                                        
+                                           is_scalar_like,
                                            infer_type)
 
 from graphgallery.utils.decorators import MultiInputs
