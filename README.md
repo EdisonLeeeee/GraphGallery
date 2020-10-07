@@ -32,14 +32,14 @@
 # GraphGallery
 GraphGallery is a gallery of state-of-the-arts graph neural networks for [TensorFlow 2.x](https://github.com/tensorflow/tensorflow) and [PyTorch](https://github.com/pytorch/pytorch). GraphGallery 0.4.x is a total re-write from previous versions, and some things have changed. 
 
-# What's important
+# 👀 What's important
 Difference between GraphGallery and [pytorch geometric (PyG)](https://github.com/rusty1s/pytorch_geometric), [deep graph library (DGL)](https://github.com/dmlc/dgl), etc...
-+ PyG, DGL are just like **TensorFlow**, but GraphGallery is more like **Keras**
++ PyG and DGL are just like **TensorFlow**, but GraphGallery is more like **Keras**
 + GraphGallery is more friendly to use
 + GraphGallery is more efficiient
 
 
-# Installation
+# 🚀 Installation
 + Build from source (latest version)
 ```bash
 git clone https://github.com/EdisonLeeeee/GraphGallery.git
@@ -50,7 +50,7 @@ python setup.py install
 ```bash
 pip install -U graphgallery
 ```
-# Implementations
+# :octocat: Implementations
 In detail, the following methods are currently implemented:
 
 ## Semi-supervised models
@@ -94,7 +94,7 @@ In detail, the following methods are currently implemented:
 + **Node2vec** from *Aditya Grover et al*, [📝node2vec: Scalable Feature Learning for Networks](https://arxiv.org/abs/1607.00653), *KDD'16*. 
 [[🌋 TF]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_Node2vec.ipynb)
 
-# Quick Start
+# ⚡ Quick Start
 ## Datasets
 more details please refer to [GraphData](https://github.com/EdisonLeeeee/GraphData).
 ### Planetoid
@@ -313,7 +313,7 @@ Test loss 1.0131, Test accuracy 82.20%
 
 ```
 
-# How to add your custom datasets
+# ❓ How to add your custom datasets
 This is motivated by [gnn-benchmark](https://github.com/shchur/gnn-benchmark/)
 ```python
 from graphgallery.data import Graph
@@ -330,13 +330,13 @@ mydataset.to_npz('path/to/mydataset.npz')
 mydataset = Graph.from_npz('path/to/mydataset.npz')
 ```
 
-# How to define your custom models
+# ❓ How to define your custom models
 TODO
 
-# More Examples
+# 😎 More Examples
 Please refer to the [examples](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples) directory.
 
-# TODO Lists
+# ⭐ TODO Lists
 - [x] Add PyTorch models support
 - [ ] Add more GNN models (TF and Torch backend)
 - [ ] Support for more tasks, e.g., `graph Classification` and `link prediction`
@@ -344,6 +344,6 @@ Please refer to the [examples](https://github.com/EdisonLeeeee/GraphGallery/blob
 - [ ] Add Docstrings and Documentation (Building)
 
 
-# Acknowledgement
+# 😘 Acknowledgement
 This project is motivated by [Pytorch Geometric](https://github.com/rusty1s/pytorch_geometric), [Tensorflow Geometric](https://github.com/CrawlScript/tf_geometric) and [Stellargraph](https://github.com/stellargraph/stellargraph), and the original implementations of the authors, thanks for their excellent works!
 
