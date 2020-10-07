@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 # coding: utf-8
 from setuptools import setup, find_packages
-from graphgallery import __version__
 
-VERSION = __version__
+VERSION = "0.4.1"
 url = 'https://github.com/EdisonLeeeee/GraphGallery'
 
 install_requires = [
     'torch',
-    'tensorflow>=2.1.0',
+    'tensorflow>=2.1.2',
     'networkx==2.3',
     'metis==0.2a4',
     'scipy>=1.4.1',

@@ -33,6 +33,7 @@ from graphgallery.transforms.attr_transform.augment_attr import augment_attr
 
 # tensor transform
 from graphgallery.transforms.tensor_transform.tensor import *
+from graphgallery.transforms.tensor_transform import tf_tensor, th_tensor
 
 
 # other transform
