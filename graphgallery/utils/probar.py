@@ -1,3 +1,5 @@
+"""probar function, it has been replaced by tensorflow.python.keras.utils.generic_utils.Progbar"""
+
 import time
 import sys
 import os

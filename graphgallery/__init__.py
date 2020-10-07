@@ -30,7 +30,7 @@ from graphgallery import backend
 from graphgallery import transforms
 
 
-__version__ = '0.4.0'
+__version__ = '0.4.1'
 
 __all__ = ['graphgallery', 'nn', 'utils', 'sequence', 'data',
            'backend', 'transforms', '__version__']

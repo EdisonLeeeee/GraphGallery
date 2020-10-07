@@ -59,7 +59,7 @@ class SemiSupervisedModel(BaseModel):
         ----------
         graph: An instance of `graphgallery.data.Graph` or a tuple (list) of inputs.
             A sparse, attributed, labeled graph.
-        kwargs: other customized keyword Parameters.
+        kwargs: other customized keyword parameters.
 
         """
         if len(graph) > 0:

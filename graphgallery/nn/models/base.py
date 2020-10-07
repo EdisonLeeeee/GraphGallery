@@ -69,7 +69,7 @@ class Base(ABC):
                 across multiple calls.
             name: string. optional
                 Specified name for the model. (default: :str: `class.__name__`)
-            kwargs: other customized keyword Parameters.
+            kwargs: other customized keyword parameters.
 
         """
         graph = parse_graph_inputs(*graph)

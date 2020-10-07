@@ -9,7 +9,7 @@ from graphgallery.data.graph import Graph, load_dataset
 
 
 _DATASETS = ('citeseer', 'citeseer_full', 'cora', 'cora_ml', 'cora_full', 'amazon_cs', 'amazon_photo',
-             'coauthor_cs', 'coauthor_phy', 'polblogs', 'pubmed', 'flickr', 'blogcatalog')
+             'coauthor_cs', 'coauthor_phy', 'polblogs', 'pubmed', 'flickr', 'blogcatalog', 'dblp')
 
 
 class NPZDataset(Dataset):

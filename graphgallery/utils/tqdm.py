@@ -7,8 +7,14 @@ def tqdm_clear(*args, **kwargs):
 
 
 def tqdm(*args, **kwargs):
+    """decorator of tqdm, to avoid some errors if tqdm 
+    terminated unexpectedly
 
-    #     get_ipython().events.register('post_execute', tqdm_clear)
+    Returns
+    -------
+    an decorated `tqdm` class
+    """
+
     if hasattr(tqdm_base, '_instances'):
         for instance in list(tqdm_base._instances):
             tqdm_base._decr_instances(instance)

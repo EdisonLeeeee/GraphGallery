@@ -5,8 +5,8 @@ import scipy.sparse as sp
 from graphgallery import floatx, intx
 from graphgallery.utils.type_check import (is_list_like,
                                            is_interger_scalar,
-                                           is_tf_tensor,
-                                           is_scalar_like)
+                                           is_tensor,                                        is_scalar_like,
+                                           infer_type)
 
 from graphgallery.utils.decorators import MultiInputs
 from graphgallery import transforms as T
@@ -20,59 +20,16 @@ __all__ = ["astensor", "astensors",
            "normalize_edge_tensor"]
 
 
-def infer_type(x)->str:
-    """Infer type of the input `x`.
-
-     Parameters:
-    ----------
-    x: tf.Tensor, tf.Variable, Scipy sparse matrix,
-        Numpy array-like, etc.
-
-    Returns:
-    ----------
-    dtype: string, the converted type of `x`:
-        1. `graphgallery.floatx()` if `x` is floating
-        2. `graphgallery.intx()` if `x` is integer
-        3. `'bool'` if `x` is bool.
-
-    """
-
-    # For tensor or variable
-    if is_tf_tensor(x):
-        if x.dtype.is_floating:
-            return floatx()
-        elif x.dtype.is_integer or x.dtype.is_unsigned:
-            return intx()
-        elif x.dtype.is_bool:
-            return 'bool'
-        else:
-            raise RuntimeError(f'Invalid input of `{type(x)}`')
-
-    if not hasattr(x, 'dtype'):
-        x = np.asarray(x)
-
-    if x.dtype.kind in {'f', 'c'}:
-        return floatx()
-    elif x.dtype.kind in {'i', 'u'}:
-        return intx()
-    elif x.dtype.kind == 'b':
-        return 'bool'
-    elif x.dtype.kind == 'O':
-        raise RuntimeError(f'Invalid inputs of `{x}`.')
-    else:
-        raise RuntimeError(f'Invalid input of `{type(x)}`')
-
 
 def astensor(x, dtype=None, device=None):
     """Convert input matrices to Tensor or SparseTensor.
 
     Parameters:
     ----------
-    x: tf.Tensor, tf.Variable, Scipy sparse matrix, 
-        Numpy array-like, etc.
+    x: any python object
 
     dtype: The type of Tensor `x`, if not specified,
-        it will automatically using appropriate data type.
+        it will automatically use appropriate data type.
         See `graphgallery.infer_type`.
         
     device (:class:`tf.device`, optional): the desired device of returned tensor.
@@ -80,7 +37,7 @@ def astensor(x, dtype=None, device=None):
 
     Returns:
     ----------      
-    Tensor or SparseTensor with dtype:       
+    Tensor(s) or SparseTensor(s) with dtype, if dtype is `None`:       
         1. `graphgallery.floatx()` if `x` is floating
         2. `graphgallery.intx() ` if `x` is integer
         3. `'bool'` if `x` is bool.
@@ -101,7 +58,7 @@ def astensor(x, dtype=None, device=None):
             f"argument 'dtype' must be tensorflow.dtypes.DType or str, not {type(dtype).__name__}.")
 
     with tf.device(device):
-        if is_tf_tensor(x):
+        if is_tensor(x, kind="T"):
             if x.dtype != dtype:
                 x = tf.cast(x, dtype=dtype)
             return x
@@ -118,16 +75,18 @@ astensors = MultiInputs(type_check=False)(astensor)
 astensors.__doc__ = """Convert input matrices to Tensor(s) or SparseTensor(s).
     Parameters:
     ----------
-    xs: tf.Tensor, tf.Variable, Scipy sparse matrix, 
-        Numpy array-like, or a list of them, etc.
+    xs: one or a list python object(s)
         
-    dtype: The type of Tensor for all tensors in `xs`, if not specified,
-        it will automatically using appropriate data type.
+    dtype: The type of Tensor for all objects in `xs`, if not specified,
+        it will automatically use appropriate data type.
         See `graphgallery.infer_type`.
+        
+    device (:class:`tf.device`, optional): the desired device of returned tensor.
+        Default: if ``None``, uses the current device for the default tensor type.        
         
     Returns:
     ----------      
-    Tensor(s) or SparseTensor(s) with dtype:       
+    Tensor(s) or SparseTensor(s) with dtype, if dtype is `None`:    
         1. `graphgallery.floatx()` if `x` in `xs` is floating
         2. `graphgallery.intx() ` if `x` in `xs` is integer
         3. `'bool'` if `x` in 'xs' is bool.

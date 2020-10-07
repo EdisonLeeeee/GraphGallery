@@ -1,3 +1,6 @@
+"""This is modified from tensorflow, but haven't been used"""
+
+
 import sys
 import functools
 import collections

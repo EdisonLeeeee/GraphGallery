@@ -1,3 +1,6 @@
+"""
+util functions for 'Batch Virtual Adversarial Training' (BVAT)
+"""
 import tensorflow as tf
 
 

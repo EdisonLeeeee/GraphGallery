@@ -44,6 +44,7 @@ class MultiInputs:
 
 
 def assert_same_type(*inputs):
+    """ Assert the types of inputs are the same"""
     first, *others = inputs
     # only one inputs
     if not others:
@@ -54,13 +55,12 @@ def assert_same_type(*inputs):
         if not isinstance(obj, _class):
             raise TypeError(f"Input types don't agree. "
                             f"Type of the first input: {type(first)}, "
-                            f"{ix+1}th input: {type(obj)}")
+                            f"{ix+1}-th input: {type(obj)}")
 
     return True
 
 
 _BASE_VARS = ['hiddens', 'activations']
-
 
 class EqualVarLength:
     """
@@ -79,7 +79,7 @@ class EqualVarLength:
             the customized variable names except for 
             'hiddens', 'activations', by default []
         exclude : list, optional
-            the exclued variable names, by default []
+            the excluded variable names, by default []
         length_as : str, optional
             the variable name whose length is used for all variables,
             by default ['hiddens']

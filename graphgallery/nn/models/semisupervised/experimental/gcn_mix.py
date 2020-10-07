@@ -57,7 +57,7 @@ class GCN_MIX(FastGCN):
             multiple calls. (default :obj: `None`, i.e., using random seed)
         name: string. optional
             Specified name for the model. (default: :str: `class.__name__`)
-        kwargs: other customized keyword Parameters.
+        kwargs: other customized keyword parameters.
         """
         super().__init__(*graph,
                          adj_transform=adj_transform, attr_transform=attr_transform,

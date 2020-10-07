@@ -2,9 +2,6 @@ try:
     import texttable
 except ImportError:
     texttable = None
-import numpy as np
-import tensorflow as tf
-import scipy.sparse as sp
 
 
 def print_table(paras):

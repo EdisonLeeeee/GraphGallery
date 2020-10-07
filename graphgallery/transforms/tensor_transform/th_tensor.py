@@ -5,8 +5,9 @@ import scipy.sparse as sp
 from graphgallery import floatx, intx
 from graphgallery.utils.type_check import (is_list_like,
                                            is_interger_scalar,
-                                           is_th_tensor,
-                                           is_scalar_like)
+                                           is_tensor,
+                                           is_scalar_like,
+                                           infer_type)
 
 
 from graphgallery.utils.decorators import MultiInputs
@@ -16,8 +17,8 @@ __all__ = ["astensor", "astensors",
            "sparse_adj_to_sparse_tensor",
            "sparse_tensor_to_sparse_adj",
            "sparse_edges_to_sparse_tensor",
-           "normalize_adj_tensor", 
-           "add_selfloops_edge", 
+           "normalize_adj_tensor",
+           "add_selfloops_edge",
            "normalize_edge_tensor"]
 
 _DTYPE_TO_CLASS = {'torch.float16': "HalfTensor",
@@ -37,58 +38,15 @@ def dtype_to_tensor_class(dtype):
     return tensor_class
 
 
-def infer_type(x):
-    """Infer type of the input `x`.
-
-     Parameters:
-    ----------
-    x: torch.Tensor, Scipy sparse matrix,
-        Numpy array-like, etc.
-
-    Returns:
-    ----------
-    dtype: string, the converted type of `x`:
-        1. `graphgallery.floatx()` if `x` is floating
-        2. `graphgallery.intx()` if `x` is integer
-        3. `'bool'` if `x` is bool.
-
-    """
-    # For tensor or variable
-    if is_th_tensor(x):
-        if x.dtype.is_floating_point:
-            return floatx()
-        elif x.dtype == torch.bool:
-            return 'bool'
-        elif 'int' in str(x.dtype):
-            return intx()
-        else:
-            raise RuntimeError(f'Invalid input of `{type(x)}`')
-
-    if not hasattr(x, 'dtype'):
-        x = np.asarray(x)
-
-    if x.dtype.kind in {'f', 'c'}:
-        return floatx()
-    elif x.dtype.kind in {'i', 'u'}:
-        return intx()
-    elif x.dtype.kind == 'b':
-        return 'bool'
-    elif x.dtype.kind == 'O':
-        raise RuntimeError(f'Invalid inputs of `{x}`.')
-    else:
-        raise RuntimeError(f'Invalid input of `{type(x)}`')
-
-
 def astensor(x, dtype=None, device=None):
     """Convert input matrices to Tensor or SparseTensor.
 
     Parameters:
     ----------
-    x: tf.Tensor, tf.Variable, Scipy sparse matrix, 
-        Numpy array-like, etc.
+    x: any python object.
 
     dtype: The type of Tensor `x`, if not specified,
-        it will automatically using appropriate data type.
+        it will automatically use appropriate data type.
         See `graphgallery.infer_type`.
 
     device (:class:`torch.device`, optional): the desired device of returned tensor.
@@ -98,7 +56,7 @@ def astensor(x, dtype=None, device=None):
 
     Returns:
     ----------      
-    Tensor or SparseTensor with dtype:       
+    Tensor(s) or SparseTensor(s) with dtype, if dtype is `None`:        
         1. `graphgallery.floatx()` if `x` is floating
         2. `graphgallery.intx() ` if `x` is integer
         3. `'bool'` if `x` is bool.
@@ -117,7 +75,7 @@ def astensor(x, dtype=None, device=None):
         raise TypeError(
             f"argument 'dtype' must be torch.dtype or str, not {type(dtype).__name__}.")
 
-    if is_th_tensor(x):
+    if is_tensor(x, "P"):
         tensor = x.to(getattr(torch, dtype))
     elif sp.isspmatrix(x):
         tensor = sparse_adj_to_sparse_tensor(x, dtype=dtype)
@@ -135,11 +93,10 @@ astensors.__doc__ = """Convert input matrices to Tensor(s) or SparseTensor(s).
 
     Parameters:
     ----------
-    xs: tf.Tensor, tf.Variable, Scipy sparse matrix, 
-        Numpy array-like, or a list of them, etc.
+    xs: one or a list python object(s)
 
-    dtype: The type of Tensor for all tensors in `xs`, if not specified,
-        it will automatically using appropriate data type.
+    dtype: The type of Tensor for all objects in `xs`, if not specified,
+        it will automatically use appropriate data type.
         See `graphgallery.infer_type`.
         
     device (:class:`torch.device`, optional): the desired device of returned tensor.
@@ -149,34 +106,36 @@ astensors.__doc__ = """Convert input matrices to Tensor(s) or SparseTensor(s).
         
     Returns:
     ----------      
-    Tensor(s) or SparseTensor(s) with dtype:       
+    Tensor(s) or SparseTensor(s) with dtype, if dtype is `None`:    
         1. `graphgallery.floatx()` if `x` in `xs` is floating
         2. `graphgallery.intx() ` if `x` in `xs` is integer
         3. `'bool'` if `x` in 'xs' is bool.
     """
 
-def sparse_edges_to_sparse_tensor(edge_index: np.ndarray, edge_weight: np.ndarray = None, shape: tuple = None)->torch.sparse.Tensor:
+
+def sparse_edges_to_sparse_tensor(edge_index: np.ndarray, edge_weight: np.ndarray = None, shape: tuple = None) -> torch.sparse.Tensor:
     """
     edge_index: shape [2, M]
     edge_weight: shape [M,]
     """
     edge_index = T.edge_transpose(edge_index)
     edge_index = torch.LongTensor(edge_index)
-   
+
     if edge_weight is None:
         edge_weight = torch.ones(edge_index.shape[1], dtype=getattr(torch, floatx()))
     else:
         edge_weight = torch.tensor(edge_weight)
-                                   
+
     if shape is None:
         N = (edge_index).max() + 1
         shape = (N, N)
-        
+
     shape = torch.Size(shape)
     dtype = str(edge_weight.dtype)
     return getattr(torch.sparse, dtype_to_tensor_class(dtype))(edge_index,
                                                                edge_weight,
                                                                shape)
+
 
 def sparse_adj_to_sparse_tensor(x, dtype=None):
     """Converts a Scipy sparse matrix to a tensorflow SparseTensor.
@@ -202,17 +161,18 @@ def sparse_adj_to_sparse_tensor(x, dtype=None):
         dtype = infer_type(x)
 
     edge_index, edge_weight = T.sparse_adj_to_sparse_edges(x)
-    
+
     return sparse_edges_to_sparse_tensor(edge_index, edge_weight.astype(dtype, copy=False), x.shape)
 
 
-def sparse_tensor_to_sparse_adj(x: torch.sparse.Tensor)->sp.csr_matrix:
+def sparse_tensor_to_sparse_adj(x: torch.sparse.Tensor) -> sp.csr_matrix:
     """Converts a SparseTensor to a Scipy sparse matrix (CSR matrix)."""
     x = x.coalesce()
     data = x.values().detach().cpu().numpy()
     indices = x.indices().detach().cpu().numpy()
-    shape = tuple(x.size())    
+    shape = tuple(x.size())
     return sp.csr_matrix((data, indices), shape=shape)
+
 
 def normalize_adj_tensor(adj, rate=-0.5, fill_weight=1.0):
     ...
@@ -226,4 +186,3 @@ def add_selfloops_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0):
 def normalize_edge_tensor(edge_index, edge_weight=None, n_nodes=None, fill_weight=1.0, rate=-0.5):
 
     ...
-

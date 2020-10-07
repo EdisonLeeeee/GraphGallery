@@ -1,6 +1,5 @@
 import tensorflow as tf
 from tensorflow.keras.layers import Layer
-from graphgallery import floatx
 
 
 class SparseConversion(Layer):
@@ -59,7 +58,7 @@ class Sample(Layer):
 
     def call(self, inputs):
         mean, var = inputs
-        sample = tf.random.normal(tf.shape(var), 0, 1, dtype=floatx())
+        sample = tf.random.normal(tf.shape(var), 0, 1, dtype=mean.dtype)
         output = mean + tf.math.sqrt(var + 1e-8) * sample
         return output
 
