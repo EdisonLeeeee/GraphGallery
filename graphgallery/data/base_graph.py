@@ -1,7 +1,7 @@
 from abc import ABC
 from copy import copy as _copy, deepcopy as _deepcopy
 from typing import Union, Tuple
-from graphgallery.typing import SparseMatrix, MultiSparseMatrix, ArrayLike, MultiArrayLike
+from graphgallery.typing import SparseMatrix, MultiSparseMatrix, ArrayLike, MultiArrayLike, GraphType
 
 class BaseGraph(ABC):
 
@@ -64,20 +64,20 @@ class BaseGraph(ABC):
     def is_attributed(self) -> bool:
         return self.attr_matrix is not None
 
-    def copy(self, deepcopy: bool=False):
+    def copy(self, deepcopy: bool=False) -> GraphType:
         cls = self.__class__
         if deepcopy:
             return _deepcopy(self)
         else:
             return _copy(self)
 
-    def __copy__(self):
+    def __copy__(self) -> GraphType:
         cls = self.__class__
         result = cls.__new__(cls)
         result.__dict__.update(self.__dict__)
         return result
 
-    def __deepcopy__(self, memo: dict):
+    def __deepcopy__(self, memo: dict) -> GraphType:
         cls = self.__class__
         result = cls.__new__(cls)
         memo[id(self)] = result

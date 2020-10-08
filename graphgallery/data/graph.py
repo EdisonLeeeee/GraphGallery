@@ -10,7 +10,8 @@ from copy import copy as copy_fn
 
 from typing import Union, Optional, List, Tuple
 from graphgallery.data.base_graph import BaseGraph
-from graphgallery.typing import SparseMatrix, ArrayLike1D, ArrayLike2D, NxGraph
+from graphgallery.typing import SparseMatrix, ArrayLike1D, ArrayLike2D, NxGraph, GraphType
+from graphgallery.data.preprocess import largest_connected_components, create_subgraph
 
 
 def _check_and_convert(adj_matrix: Optional[SparseMatrix]=None, 
@@ -253,7 +254,7 @@ class Graph(BaseGraph):
         if labels is not None:
             return np.eye(self.n_classes)[labels].astype(labels.dtype)
 
-    def neighbors(self, idx):
+    def neighbors(self, idx) -> ArrayLike1D:
         """Get the indices of neighbors of a given node.
 
         Parameters
@@ -263,7 +264,7 @@ class Graph(BaseGraph):
         """
         return self.adj_matrix[idx].indices
 
-    def to_undirected(self):
+    def to_undirected(self) -> GraphType:
         """Convert to an undirected graph (make adjacency matrix symmetric)."""
         if self.is_weighted():
             raise ValueError(
@@ -275,7 +276,7 @@ class Graph(BaseGraph):
             G.adj_matrix = A
         return G
 
-    def to_unweighted(self):
+    def to_unweighted(self) -> GraphType:
         """Convert to an unweighted graph (set all edge weights to 1)."""
         G = self.copy()
         A = G.adj_matrix
@@ -283,7 +284,7 @@ class Graph(BaseGraph):
             (np.ones_like(A.data), A.indices, A.indptr), shape=A.shape)
         return G
 
-    def eliminate_selfloops(self):
+    def eliminate_selfloops(self) -> GraphType:
         """Remove self-loops from the adjacency matrix."""
         G = self.copy()
         A = G.adj_matrix
@@ -292,7 +293,7 @@ class Graph(BaseGraph):
         G.adj_matrix = A
         return G
     
-    def eliminate_classes(self, threshold=0):
+    def eliminate_classes(self, threshold=0) -> GraphType:
         """Remove nodes from graph that correspond to a class of which there are less 
         or equal than 'threshold'. Those classes would otherwise break the training procedure.
         """
@@ -318,7 +319,7 @@ class Graph(BaseGraph):
         else:
             return self
     
-    def add_selfloops(self, value=1.0):
+    def add_selfloops(self, value=1.0) -> GraphType:
         """Set the diagonal."""
         G = self.eliminate_selfloops()
         A = G.adj_matrix
@@ -327,12 +328,10 @@ class Graph(BaseGraph):
         G.adj_matrix = A
         return G
 
-    def standardize(self):
+    def standardize(self) -> GraphType:
         """Select the LCC of the unweighted/undirected/no-self-loop graph.
         All changes are done inplace.
         """
-        # To avoid circular import
-        from graphgallery.data.preprocess import largest_connected_components
         G = self.to_unweighted().to_undirected().eliminate_selfloops()
         G = largest_connected_components(G, 1)
         return G
@@ -345,9 +344,7 @@ class Graph(BaseGraph):
             create_using = nx.Graph
         return nx.from_scipy_sparse_matrix(self.adj_matrix, create_using=create_using)
     
-    def subgraph(self,  *, nodes_to_remove=None, nodes_to_keep=None):
-        # To avoid circular import
-        from graphgallery.data.preprocess import create_subgraph
+    def subgraph(self,  *, nodes_to_remove=None, nodes_to_keep=None) -> GraphType:
         return create_subgraph(self, nodes_to_remove=nodes_to_remove, nodes_to_keep=nodes_to_keep)
 
     def to_npz(self, filepath):
@@ -355,7 +352,7 @@ class Graph(BaseGraph):
         print(f"save to {filepath}.")
 
     @staticmethod
-    def from_npz(filepath):
+    def from_npz(filepath) -> GraphType:
         return load_dataset(filepath)
 
     def is_singleton(self) -> bool:
@@ -393,7 +390,7 @@ class Graph(BaseGraph):
         return f"{self.__class__.__name__}(adj_matrix{A_shape}, attr_matrix{X_shape}, labels{Y_shape})"
 
 
-def load_dataset(data_path: str) -> Graph:
+def load_dataset(data_path: str) -> GraphType:
     """Load a dataset.
 
     Parameters
@@ -416,7 +413,7 @@ def load_dataset(data_path: str) -> Graph:
         raise ValueError(f"{data_path} doesn't exist.")
 
 
-def load_npz_to_graph(filename: str) -> Graph:
+def load_npz_to_graph(filename: str) -> GraphType:
     """Load a Graph from a Numpy binary file.
 
     Parameters
@@ -463,7 +460,7 @@ def load_npz_to_graph(filename: str) -> Graph:
     return Graph(adj_matrix, attr_matrix, labels, node_names, attr_names, class_names, metadata)
 
 
-def save_graph_to_npz(filepath: str, graph: Graph):
+def save_graph_to_npz(filepath: str, graph: GraphType):
     """Save a Graph to a Numpy binary file.
 
     Parameters

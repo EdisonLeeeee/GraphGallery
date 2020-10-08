@@ -1,6 +1,6 @@
 """Types for typing functions signatures."""
 
-from typing import Union, Callable, List, Tuple, Optional
+from typing import Union, Callable, List, Tuple, Optional, TypeVar, Generic
 
 import torch
 import numpy as np
@@ -9,7 +9,8 @@ import tensorflow as tf
 import scipy.sparse as sp
 from tensorflow.python.eager.context import _EagerDeviceContext
 
-from graphgallery.transforms import Transform
+TransformType= TypeVar('TransformType')
+GraphType = TypeVar('GraphType')
 
 IntNumber = Union[
     int,
@@ -54,7 +55,8 @@ MultiArrayLike = Union[List[ArrayLike], Tuple[ArrayLike]]
 Edge = Union[List[List], ArrayLike2D]
 
 
-AcceptableTransform = Optional[Union[Transform, str, Callable]]
+AcceptableTransform = Optional[Union[TransformType, str, Callable]]
+# AcceptableTransform = Optional[Union[TransformType, str, Callable]]
 
 ListLike = Union[List, Tuple]
 

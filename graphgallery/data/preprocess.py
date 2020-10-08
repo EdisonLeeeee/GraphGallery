@@ -7,9 +7,7 @@ from typing import Optional, List, Tuple
 from collections import Counter
 from sklearn.preprocessing import MultiLabelBinarizer, LabelBinarizer, normalize
 from sklearn.model_selection import train_test_split
-
-from graphgallery.typing import MultiArrayLike, ArrayLike1D
-from graphgallery.data.graph import Graph
+from graphgallery.typing import MultiArrayLike, ArrayLike1D, GraphType
 
 def train_val_test_split_tabular(N: int,
                                  train_size: float=0.1,
@@ -38,18 +36,18 @@ def train_val_test_split_tabular(N: int,
     return idx_train, idx_val, idx_test
 
 
-def largest_connected_components(graph: Graph, n_components: int=1) -> Graph:
+def largest_connected_components(graph: GraphType, n_components: int=1) -> GraphType:
     """Select the largest connected components in the graph.
 
     Parameters
     ----------
-    graph : Graph
+    graph : GraphType
         Input graph.
     n_components : int, default 1
         Number of largest connected components to keep.
     Returns
     -------
-    graph : Graph
+    graph : GraphType
         Subgraph of the input graph where only the nodes in largest n_components are kept.
     """
     _, component_indices = sp.csgraph.connected_components(
@@ -63,16 +61,16 @@ def largest_connected_components(graph: Graph, n_components: int=1) -> Graph:
     return create_subgraph(graph, nodes_to_keep=nodes_to_keep)
 
 
-def create_subgraph(graph: Graph, *, 
+def create_subgraph(graph: GraphType, *, 
                     nodes_to_remove: Optional[ArrayLike1D]=None, 
-                    nodes_to_keep: Optional[ArrayLike1D]=None) -> Graph:
+                    nodes_to_keep: Optional[ArrayLike1D]=None) -> GraphType:
     """Create a graph with the specified subset of nodes.
     Exactly one of (nodes_to_remove, nodes_to_keep) should be provided, while the other stays None.
     Note that to avoid confusion, it is required to pass node indices as named Parameters to this function.
 
     Parameters
     ----------
-    graph : Graph
+    graph : GraphType
         Input graph.
     nodes_to_remove : array-like of int
         Indices of nodes that have to removed.
@@ -80,8 +78,8 @@ def create_subgraph(graph: Graph, *,
         Indices of nodes that have to be kept.
     Returns
     -------
-    graph : Graph
-        Graph with specified nodes removed.
+    graph : GraphType
+        GraphType with specified nodes removed.
     """
     # Check that Parameters are passed correctly
     if nodes_to_remove is None and nodes_to_keep is None:
@@ -181,7 +179,7 @@ def get_train_val_test_split(stratify: ArrayLike1D,
 
 def sample_per_class(stratify: ArrayLike1D, n_examples_per_class: int,
                      forbidden_indices: Optional[ArrayLike1D]=None, 
-                     random_state: Optional[int]=None):
+                     random_state: Optional[int]=None) -> ArrayLike1D:
 
     n_classes = stratify.max() + 1
     n_samples = stratify.shape[0]
