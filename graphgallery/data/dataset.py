@@ -6,12 +6,12 @@ import numpy as np
 import os.path as osp
 
 from abc import ABC
-from graphgallery.data.preprocess import (train_val_test_split_tabular,
-                                          get_train_val_test_split)
 
+from typing import Union, Optional, List
+from graphgallery.typing import MultiArrayLike
 
 class Dataset(ABC):
-    def __init__(self, name, root=None, verbose=True):
+    def __init__(self, name: str, root: Optional[str]=None, verbose: bool=True):
         if root is None:
             root = 'dataset'
 
@@ -20,34 +20,36 @@ class Dataset(ABC):
 
         root = osp.abspath(root)
         self.root = root
-        self.name = name.lower()
+        self.name = str(name).lower()
         self.verbose = verbose
         self.download_dir = None
         self.processed_dir = None
         self.graph = None
 
     @property
-    def urls(self):
+    def urls(self) -> List[str]:
         return [self.url]
 
     @property
-    def url(self):
-        None
-
-    def download(self):
+    def url(self) -> str:
         raise NotImplementedError
 
-    def process(self):
+    def download(self) -> None:
+        raise NotImplementedError
+
+    def process(self) -> None:
         raise NotImplementedError
 
     def split(self, train_size=0.1, val_size=0.1, test_size=0.8,
-              random_state=None):
+              random_state=None) -> MultiArrayLike:
 
         assert all((train_size, val_size))
         if test_size is None:
             test_size = 1.0 - train_size - val_size
         assert train_size+val_size+test_size<=1.0
-        
+        # To avoid circular import
+        from graphgallery.data.preprocess import train_val_test_split_tabular
+
         labels = self.graph.labels
         idx_train, idx_val, idx_test = train_val_test_split_tabular(labels.shape[0],
                                                                     train_size,
@@ -61,10 +63,12 @@ class Dataset(ABC):
     def split_by_sample(self, train_examples_per_class,
                         val_examples_per_class,
                         test_examples_per_class,
-                        random_state=None):
+                        random_state=None) -> MultiArrayLike:
 
         self.graph = self.graph.eliminate_classes(train_examples_per_class+val_examples_per_class).standardize()
             
+        # To avoid circular import
+        from graphgallery.data.preprocess import get_train_val_test_split
         labels = self.graph.labels
         idx_train, idx_val, idx_test = get_train_val_test_split(labels,
                                                                 train_examples_per_class,
@@ -74,7 +78,7 @@ class Dataset(ABC):
         return idx_train, idx_val, idx_test
 
     @staticmethod
-    def print_files(filepaths):
+    def print_files(filepaths) -> None:
         if not texttable:
             print(filepaths)
         else:

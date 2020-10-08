@@ -19,7 +19,7 @@ from graphgallery.nn.models import BaseModel
 from graphgallery.nn.models import training
 from graphgallery.nn.functions import softmax
 from graphgallery.data.io import makedirs_from_path
-from graphgallery.data import Basegraph
+from graphgallery.data import BaseGraph
 from graphgallery.transforms import asintarr
 from graphgallery.utils.raise_error import raise_if_kwargs
 from graphgallery import POSTFIX, intx
@@ -59,13 +59,13 @@ class SemiSupervisedModel(BaseModel):
         ----------
         graph: An instance of `graphgallery.data.Graph` or a tuple (list) of inputs.
             A sparse, attributed, labeled graph.
-        kwargs: other customized keyword parameters.
+        kwargs: other custom keyword parameters.
 
         """
         if len(graph) > 0:
             if len(graph) == 1:
                 graph, = graph
-                if isinstance(graph, Basegraph):
+                if isinstance(graph, BaseGraph):
                     self.graph = graph
                 elif isinstance(graph, dict):
                     self.graph.set_inputs(**graph)
@@ -78,7 +78,7 @@ class SemiSupervisedModel(BaseModel):
         raise NotImplementedError
 
     def build(self):
-        """Build the model using customized hyperparameters.
+        """Build the model using custom hyperparameters.
 
         Note:
         ----------
@@ -109,7 +109,7 @@ class SemiSupervisedModel(BaseModel):
         raise NotImplementedError
 
     def build_from_model(self, model):
-        """Build the model using customized model.
+        """Build the model using custom model.
 
         Note:
         ----------
@@ -168,7 +168,7 @@ class SemiSupervisedModel(BaseModel):
             `./log/{self.name}_weights`)
         as_model: bool
             Whether to save the whole model or weights only, if `True`, the `self.custom_objects`
-            must be speficied if you are using customized `layer` or `loss` and so on.
+            must be speficied if you are using custom `layer` or `loss` and so on.
         monitor: String
             One of (val_loss, val_acc, loss, acc), it determines which metric will be
             used for `save_best`. (default :obj: `val_acc`)
@@ -350,7 +350,7 @@ class SemiSupervisedModel(BaseModel):
     def train_step(self, sequence):
         """
         Forward propagation for the input `sequence`. This method will be called
-        in `train`. If you want to specify your customized data during training/testing/predicting,
+        in `train`. If you want to specify your custom data during training/testing/predicting,
         you can implement a subclass of `graphgallery.Sequence`, which is iterable
         and yields `inputs` and `labels` in each iteration.
 
@@ -378,7 +378,7 @@ class SemiSupervisedModel(BaseModel):
     def test_step(self, sequence):
         """
         Forward propagation for the input `sequence`. This method will be called
-        in `test`. If you want to specify your customized data during training/testing/predicting,
+        in `test`. If you want to specify your custom data during training/testing/predicting,
         you can implement a subclass of `graphgallery.Sequence`, which is iterable
         and yields `inputs` and `labels` in each iteration.
 

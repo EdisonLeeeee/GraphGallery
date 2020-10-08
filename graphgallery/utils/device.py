@@ -1,10 +1,11 @@
 import torch
 import tensorflow as tf
+from typing import Union
 from graphgallery import backend
 from graphgallery.utils.raise_error import assert_kind
 
 
-def parse_device(device: str = None, kind: str = None) -> str:
+def parse_device(device: Union[str, torch.device] = None, kind: str = None) -> Union[str, torch.device]:
     """
     Specifies the device for corresponding kind 
 
@@ -32,13 +33,13 @@ def parse_device(device: str = None, kind: str = None) -> str:
         if kind == "T":
             return 'CPU:0'
         else:
-            return torch.device('cpu')
+            return torch.device('cpu:0')
 
     # existing tensorflow device
-    if (hasattr(device, '_device_name') and kind == "T"):
+    if hasattr(device, '_device_name') and kind == "T":
         return device._device_name
     # existing pytorch device
-    if (isinstance(device, torch.device) and kind == "P"):
+    if isinstance(device, torch.device) and kind == "P":
         return device
 
     if hasattr(device, '_device_name'):
@@ -52,7 +53,7 @@ def parse_device(device: str = None, kind: str = None) -> str:
         if not any(
             (_device.startswith("cpu"), _device.startswith("cuda"), _device.startswith("gpu"))):
             raise RuntimeError(
-                f" Expected one of cpu (CPU), cuda (CUDA), gpu (GPU) at the start of device string, bot got {device}."
+                f" Expected one of cpu (CPU), cuda (CUDA), gpu (GPU) at the start of device string, but got {device}."
             )
 
     # modify _device name

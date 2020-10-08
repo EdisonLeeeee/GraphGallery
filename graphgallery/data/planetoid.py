@@ -3,11 +3,13 @@ import os.path as osp
 import numpy as np
 import pickle as pkl
 
+from typing import Optional, List
 
 from graphgallery.data import Dataset
 from graphgallery.data.io import makedirs, files_exist, download_file
 from graphgallery.data.preprocess import process_planetoid_datasets
 from graphgallery.data.graph import Graph
+from graphgallery.typing import MultiArrayLike
 
 
 _DATASETS = {'citeseer', 'cora', 'pubmed'}
@@ -26,8 +28,8 @@ class Planetoid(Dataset):
     github_url = "https://raw.githubusercontent.com/EdisonLeeeee/GraphData/master/datasets/planetoid"
     supported_datasets = _DATASETS
 
-    def __init__(self, name, root=None, verbose=True):
-        name = name.lower()
+    def __init__(self, name: str, root: Optional[str]=None, verbose: bool=True):
+        name = str(name).lower()
 
         if not name in self.supported_datasets:
             raise ValueError(
@@ -42,7 +44,7 @@ class Planetoid(Dataset):
         self.download()
         self.process()
 
-    def download(self):
+    def download(self) -> None:
 
         if files_exist(self.raw_paths):
             if self.verbose:
@@ -57,7 +59,7 @@ class Planetoid(Dataset):
             self.print_files(self.raw_paths)
             print("Downloading completed.")
 
-    def process(self):
+    def process(self) -> None:
 
         if self.verbose:
             print("Processing...")
@@ -71,21 +73,21 @@ class Planetoid(Dataset):
             print("Processing completed.")
 
     def split(self, train_size=None, val_size=None, test_size=None,
-              random_state=None):
+              random_state=None) -> MultiArrayLike:
         if not all((train_size, val_size, test_size)):
             return self.idx_train, self.idx_val, self.idx_test
         else:
             return super().split(train_size, val_size, test_size, random_state)
 
     @property
-    def urls(self):
-        return [f"{osp.join(self.github_url, raw_file_name)}" for raw_file_name in self.raw_file_names]
+    def urls(self) -> List[str]:
+        return [f"{osp.join(self.github_url, raw_filename)}" for raw_filename in self.raw_filenames]
 
     @property
-    def raw_file_names(self):
+    def raw_filenames(self) -> List[str]:
         names = ['x', 'tx', 'allx', 'y', 'ty', 'ally', 'graph', 'test.index']
         return ['ind.{}.{}'.format(self.name.lower(), name) for name in names]
 
     @property
-    def raw_paths(self):
-        return [f"{osp.join(self.download_dir, raw_file_name)}" for raw_file_name in self.raw_file_names]
+    def raw_paths(self) -> List[str]:
+        return [f"{osp.join(self.download_dir, raw_filename)}" for raw_filename in self.raw_filenames]

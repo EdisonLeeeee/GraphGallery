@@ -3,17 +3,20 @@ import networkx as nx
 import scipy.sparse as sp
 import pickle as pkl
 
+from typing import Optional, List, Tuple
 from collections import Counter
 from sklearn.preprocessing import MultiLabelBinarizer, LabelBinarizer, normalize
 from sklearn.model_selection import train_test_split
 
+from graphgallery.typing import MultiArrayLike, ArrayLike1D
+from graphgallery.data.graph import Graph
 
-def train_val_test_split_tabular(N,
-                                 train_size=0.1,
-                                 val_size=0.1,
-                                 test_size=0.8,
-                                 stratify=None,
-                                 random_state=None):
+def train_val_test_split_tabular(N: int,
+                                 train_size: float=0.1,
+                                 val_size: float=0.1,
+                                 test_size: float=0.8,
+                                 stratify: Optional[ArrayLike1D]=None,
+                                 random_state: Optional[int]=None) -> MultiArrayLike:
 
     idx = np.arange(N)
     idx_train_and_val, idx_test = train_test_split(idx,
@@ -35,7 +38,7 @@ def train_val_test_split_tabular(N,
     return idx_train, idx_val, idx_test
 
 
-def largest_connected_components(graph, n_components=1):
+def largest_connected_components(graph: Graph, n_components: int=1) -> Graph:
     """Select the largest connected components in the graph.
 
     Parameters
@@ -60,7 +63,9 @@ def largest_connected_components(graph, n_components=1):
     return create_subgraph(graph, nodes_to_keep=nodes_to_keep)
 
 
-def create_subgraph(graph, *, nodes_to_remove=None, nodes_to_keep=None):
+def create_subgraph(graph: Graph, *, 
+                    nodes_to_remove: Optional[ArrayLike1D]=None, 
+                    nodes_to_keep: Optional[ArrayLike1D]=None) -> Graph:
     """Create a graph with the specified subset of nodes.
     Exactly one of (nodes_to_remove, nodes_to_keep) should be provided, while the other stays None.
     Note that to avoid confusion, it is required to pass node indices as named Parameters to this function.
@@ -106,7 +111,7 @@ def create_subgraph(graph, *, nodes_to_remove=None, nodes_to_keep=None):
     return graph
 
 
-def binarize_labels(labels, sparse_output=False, return_classes=False):
+def binarize_labels(labels: ArrayLike1D, sparse_output: bool=False, return_classes: bool=False):
     """Convert labels vector to a binary label matrix.
     In the default single-label case, labels look like
     labels = [y1, y2, y3, ...].
@@ -138,11 +143,11 @@ def binarize_labels(labels, sparse_output=False, return_classes=False):
     return (label_matrix, binarizer.classes_) if return_classes else label_matrix
 
 
-def get_train_val_test_split(stratify,
-                             train_examples_per_class,
-                             val_examples_per_class,
-                             test_examples_per_class=None,
-                             random_state=None):
+def get_train_val_test_split(stratify: ArrayLike1D,
+                             train_examples_per_class: int,
+                             val_examples_per_class: int,
+                             test_examples_per_class: Optional[None]=None,
+                             random_state: Optional[None]=None) -> MultiArrayLike:
 
     random_state = np.random.RandomState(random_state)
     remaining_indices = list(range(stratify.shape[0]))
@@ -174,8 +179,9 @@ def get_train_val_test_split(stratify,
     return idx_train, idx_val, idx_test
 
 
-def sample_per_class(stratify, n_examples_per_class,
-                     forbidden_indices=None, random_state=None):
+def sample_per_class(stratify: ArrayLike1D, n_examples_per_class: int,
+                     forbidden_indices: Optional[ArrayLike1D]=None, 
+                     random_state: Optional[int]=None):
 
     n_classes = stratify.max() + 1
     n_samples = stratify.shape[0]
@@ -195,7 +201,7 @@ def sample_per_class(stratify, n_examples_per_class,
          ])
 
 
-def parse_index_file(filename):
+def parse_index_file(filename: str) -> List:
     """Parse index file."""
     index = []
     for line in open(filename):
@@ -203,7 +209,7 @@ def parse_index_file(filename):
     return index
 
 
-def process_planetoid_datasets(name, paths):
+def process_planetoid_datasets(name: str, paths: List[str]) -> Tuple:
     objs = []
     for fname in paths:
         with open(fname, 'rb') as f:
@@ -229,8 +235,8 @@ def process_planetoid_datasets(name, paths):
         ty_extended[test_idx_range - min(test_idx_range), :] = ty
         ty = ty_extended
 
-    attributes = sp.vstack((allx, tx)).tolil()
-    attributes[test_idx_reorder, :] = attributes[test_idx_range, :]
+    attr_matrix = sp.vstack((allx, tx)).tolil()
+    attr_matrix[test_idx_reorder, :] = attr_matrix[test_idx_range, :]
 
     adj_matrix = nx.adjacency_matrix(nx.from_dict_of_lists(
         graph, create_using=nx.DiGraph()))
@@ -245,6 +251,6 @@ def process_planetoid_datasets(name, paths):
     labels = labels.argmax(1)
 
     adj_matrix = adj_matrix.astype('float32')
-    attributes = attributes.astype('float32')
+    attr_matrix = attr_matrix.astype('float32')
 
-    return adj_matrix, attributes, labels, idx_train, idx_val, idx_test
+    return adj_matrix, attr_matrix, labels, idx_train, idx_val, idx_test

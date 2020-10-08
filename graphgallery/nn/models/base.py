@@ -8,7 +8,7 @@ import scipy.sparse as sp
 from abc import ABC
 
 from graphgallery import intx, floatx, backend, set_backend, is_list_like
-from graphgallery.data import Basegraph, Graph
+from graphgallery.data import BaseGraph, Graph
 from graphgallery.utils.raise_error import raise_if_kwargs
 from graphgallery.utils.device import parse_device
 
@@ -28,7 +28,7 @@ def parse_graph_inputs(*graph):
         graph = None
     elif len(graph) == 1:
         graph, = graph
-        if isinstance(graph, Basegraph):
+        if isinstance(graph, BaseGraph):
             ...
         elif sp.isspmatrix(graph):
             graph = Graph(graph)
@@ -69,7 +69,7 @@ class Base(ABC):
                 across multiple calls.
             name: string. optional
                 Specified name for the model. (default: :str: `class.__name__`)
-            kwargs: other customized keyword parameters.
+            kwargs: other custom keyword parameters.
 
         """
         graph = parse_graph_inputs(*graph)

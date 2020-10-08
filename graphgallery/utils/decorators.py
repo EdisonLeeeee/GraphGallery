@@ -66,7 +66,7 @@ class EqualVarLength:
     """
     A decorator class which makes the values of the variables 
     equal in max-length. variables consist of 'hiddens', 'activations'
-    and other customized ones in `include`.
+    and other custom ones in `include`.
 
     """
 
@@ -76,7 +76,7 @@ class EqualVarLength:
         Parameters
         ----------
         include : list, optional
-            the customized variable names except for 
+            the custom variable names except for 
             'hiddens', 'activations', by default []
         exclude : list, optional
             the excluded variable names, by default []

@@ -5,14 +5,15 @@ import os.path as osp
 from tensorflow.keras.utils import get_file
 
 from graphgallery import is_list_like
+from typing import List, Tuple, Union
 
-
-def download_file(raw_paths, urls):
+def download_file(raw_paths: Union[List[str], Tuple[str]], 
+                  urls: Union[List[str], Tuple[str]]):
 
     last_except = None
-    for file_name, url in zip(raw_paths, urls):
+    for filename, url in zip(raw_paths, urls):
         try:
-            get_file(file_name, origin=url)
+            get_file(filename, origin=url)
         except Exception as e:
             last_except = e
 
@@ -20,14 +21,14 @@ def download_file(raw_paths, urls):
         raise last_except
 
 
-def files_exist(files):
+def files_exist(files: Union[List[str], Tuple[str]]):
     if is_list_like(files):
         return len(files) != 0 and all([osp.exists(f) for f in files])
     else:
         return osp.exists(files)
 
 
-def makedirs(path):
+def makedirs(path: str):
     try:
         os.makedirs(osp.expanduser(osp.normpath(path)))
     except OSError as e:
@@ -35,7 +36,7 @@ def makedirs(path):
             raise e
 
 
-def makedirs_from_path(path, verbose=True):
+def makedirs_from_path(path: str, verbose: bool=True):
     file_dir = osp.split(osp.realpath(path))[0]
     if not osp.exists(file_dir):
         makedirs(file_dir)

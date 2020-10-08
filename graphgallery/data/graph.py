@@ -8,11 +8,14 @@ from functools import lru_cache
 from collections import Counter
 from copy import copy as copy_fn
 
-from graphgallery.data.preprocess import largest_connected_components, create_subgraph
-from graphgallery.data.base_graph import Basegraph
+from typing import Union, Optional, List, Tuple
+from graphgallery.data.base_graph import BaseGraph
+from graphgallery.typing import SparseMatrix, ArrayLike1D, ArrayLike2D, NxGraph
 
 
-def _check_and_convert(adj_matrix, attr_matrix, labels, copy=True):
+def _check_and_convert(adj_matrix: Optional[SparseMatrix]=None, 
+                       attr_matrix: Optional[ArrayLike2D]=None, 
+                       labels: Optional[ArrayLike1D]=None, copy: bool=True):
     # Make sure that the dimensions of matrices / arrays all agree
     if adj_matrix is not None:
         if sp.isspmatrix(adj_matrix):
@@ -47,14 +50,20 @@ def _check_and_convert(adj_matrix, attr_matrix, labels, copy=True):
     return adj_matrix, attr_matrix, labels
 
 
-class Graph(Basegraph):
+class Graph(BaseGraph):
     """Attributed labeled graph stored in sparse matrix form."""
 
     # By default, the attr_matrix is dense format, i.e., Numpy array
     _sparse_attr = False
 
-    def __init__(self, adj_matrix=None, attr_matrix=None, labels=None,
-                 node_names=None, attr_names=None, class_names=None, metadata=None, copy=False):
+    def __init__(self, adj_matrix: Optional[SparseMatrix]=None, 
+                       attr_matrix: Optional[Union[SparseMatrix, ArrayLike2D]]=None, 
+                       labels: Optional[ArrayLike1D]=None,
+                       node_names: List[str]=None, 
+                       attr_names: List[str]=None, 
+                       class_names: List[str]=None, 
+                       metadata: str=None, 
+                       copy: bool=True):
         """Create an (un)dirtected (attributed and labeled) graph.
 
         Parameters
@@ -104,9 +113,15 @@ class Graph(Basegraph):
             self.class_names = class_names
             self.metadata = metadata
 
-    def set_inputs(self, adj_matrix, attr_matrix=None, labels=None,
-                   node_names=None, attr_names=None, class_names=None, 
-                   metadata=None, copy=False):
+    def set_inputs(self, adj_matrix: Optional[SparseMatrix]=None, 
+                       attr_matrix: Optional[Union[SparseMatrix, ArrayLike2D]]=None, 
+                       labels: Optional[ArrayLike1D]=None,
+                       node_names: List[str]=None, 
+                       attr_names: List[str]=None, 
+                       class_names: List[str]=None, 
+                       metadata: str=None, 
+                       copy: bool=False):
+        
         adj_matrix, attr_matrix, labels = _check_and_convert(adj_matrix, attr_matrix,
                                                              labels, copy=copy)
 
@@ -141,7 +156,7 @@ class Graph(Basegraph):
                 self.metadata = metadata
 
     @property
-    def sparse_attr(self):
+    def sparse_attr(self) -> bool:
         return self._sparse_attr
 
     @sparse_attr.setter
@@ -151,7 +166,7 @@ class Graph(Basegraph):
         self.get_attr_matrix.cache_clear()
 
     @lru_cache(maxsize=1)
-    def get_attr_matrix(self):
+    def get_attr_matrix(self) -> Union[SparseMatrix, ArrayLike2D]:
         if self._attr_matrix is None:
             return None
         is_sparse = sp.isspmatrix(self._attr_matrix)
@@ -162,7 +177,7 @@ class Graph(Basegraph):
         return self._attr_matrix
 
     @property
-    def adj_matrix(self):
+    def adj_matrix(self) -> SparseMatrix:
         return self._adj_matrix
 
     @adj_matrix.setter
@@ -170,7 +185,7 @@ class Graph(Basegraph):
         self._adj_matrix = x
 
     @property
-    def attr_matrix(self):
+    def attr_matrix(self) -> Union[SparseMatrix, ArrayLike2D]:
         return self.get_attr_matrix()
 
     @attr_matrix.setter
@@ -180,7 +195,7 @@ class Graph(Basegraph):
         self._attr_matrix = x
 
     @property
-    def labels(self):
+    def labels(self) -> ArrayLike1D:
         return self._labels
 
     @labels.setter
@@ -188,7 +203,7 @@ class Graph(Basegraph):
         self._labels = x
 
     @property
-    def degrees(self):
+    def degrees(self) -> Union[Tuple[ArrayLike1D, ArrayLike1D], ArrayLike1D]:
         if not self.is_directed():
             return self.adj_matrix.sum(1).A1
         else:
@@ -196,12 +211,12 @@ class Graph(Basegraph):
             return self.adj_matrix.sum(0).A1, self.adj_matrix.sum(1).A1
 
     @property
-    def n_nodes(self):
+    def n_nodes(self) -> int:
         """Get the number of nodes in the graph."""
         return self.adj_matrix.shape[0]
 
     @property
-    def n_edges(self):
+    def n_edges(self) -> int:
         """Get the number of edges in the graph.
         For undirected graphs, (i, j) and (j, i) are counted as single edge.
         """
@@ -211,12 +226,12 @@ class Graph(Basegraph):
             return int(self.adj_matrix.nnz / 2)
 
     @property
-    def n_graphs(self):
+    def n_graphs(self) -> int:
         """Get the number of graphs."""
         return 1
 
     @property
-    def n_classes(self):
+    def n_classes(self) -> int:
         """Get the number of classes labels of the nodes."""
         if self.labels is not None:
             return self.labels.max() + 1
@@ -224,7 +239,7 @@ class Graph(Basegraph):
             return None
 
     @property
-    def n_attrs(self):
+    def n_attrs(self) -> int:
         """Get the number of attribute dimensions of the nodes."""
         if self.attr_matrix is not None:
             return self.attr_matrix.shape[1]
@@ -232,7 +247,7 @@ class Graph(Basegraph):
             return None
 
     @property
-    def labels_onehot(self):
+    def labels_onehot(self) -> ArrayLike2D:
         """Get the one-hot like labels of nodes."""
         labels = self.labels
         if labels is not None:
@@ -316,11 +331,13 @@ class Graph(Basegraph):
         """Select the LCC of the unweighted/undirected/no-self-loop graph.
         All changes are done inplace.
         """
+        # To avoid circular import
+        from graphgallery.data.preprocess import largest_connected_components
         G = self.to_unweighted().to_undirected().eliminate_selfloops()
         G = largest_connected_components(G, 1)
         return G
 
-    def nxgraph(self, directed=True):
+    def nxgraph(self, directed: bool=True) -> NxGraph:
         """Get the network graph from adj_matrix."""
         if directed:
             create_using = nx.DiGraph
@@ -329,6 +346,8 @@ class Graph(Basegraph):
         return nx.from_scipy_sparse_matrix(self.adj_matrix, create_using=create_using)
     
     def subgraph(self,  *, nodes_to_remove=None, nodes_to_keep=None):
+        # To avoid circular import
+        from graphgallery.data.preprocess import create_subgraph
         return create_subgraph(self, nodes_to_remove=nodes_to_remove, nodes_to_keep=nodes_to_keep)
 
     def to_npz(self, filepath):
@@ -339,29 +358,29 @@ class Graph(Basegraph):
     def from_npz(filepath):
         return load_dataset(filepath)
 
-    def is_singleton(self):
+    def is_singleton(self) -> bool:
         """Check if the input adjacency matrix has singletons."""
         A = self.adj_matrix
         out_deg = A.sum(1).A1
         in_deg = A.sum(0).A1
         return np.where(np.logical_and(in_deg == 0, out_deg == 0))[0].size != 0
 
-    def is_selfloops(self):
+    def is_selfloops(self) -> bool:
         '''Check if the input Scipy sparse adjacency matrix has self loops.'''
         return self.adj_matrix.diagonal().sum() != 0
 
-    def is_binary(self):
+    def is_binary(self) -> bool:
         '''Check if the attribute matrix has binary attributes.'''
         if self.sparse_attr:
             return np.all(self.attr_matrix.data == 1)
         else:
             return np.all(np.unique(self.attr_matrix) == (0, 1))
 
-    def is_weighted(self):
+    def is_weighted(self) -> bool:
         """Check if the graph is weighted (edge weights other than 1)."""
         return np.any(self.adj_matrix.data != 1)
 
-    def is_directed(self):
+    def is_directed(self) -> bool:
         """Check if the graph is directed (adjacency matrix is not symmetric)."""
         return (self.adj_matrix != self.adj_matrix.T).sum() != 0
 
@@ -374,7 +393,7 @@ class Graph(Basegraph):
         return f"{self.__class__.__name__}(adj_matrix{A_shape}, attr_matrix{X_shape}, labels{Y_shape})"
 
 
-def load_dataset(data_path):
+def load_dataset(data_path: str) -> Graph:
     """Load a dataset.
 
     Parameters
@@ -397,12 +416,12 @@ def load_dataset(data_path):
         raise ValueError(f"{data_path} doesn't exist.")
 
 
-def load_npz_to_graph(file_name):
+def load_npz_to_graph(filename: str) -> Graph:
     """Load a Graph from a Numpy binary file.
 
     Parameters
     ----------
-    file_name : str
+    filename : str
         Name of the file to load.
 
     Returns
@@ -411,7 +430,7 @@ def load_npz_to_graph(file_name):
         Graph in sparse matrix format.
     """
 
-    with np.load(file_name, allow_pickle=True) as loader:
+    with np.load(filename, allow_pickle=True) as loader:
         loader = dict(loader)
         adj_matrix = sp.csr_matrix((loader['adj_data'], loader['adj_indices'], loader['adj_indptr']),
                                    shape=loader['adj_shape'])
@@ -444,7 +463,7 @@ def load_npz_to_graph(file_name):
     return Graph(adj_matrix, attr_matrix, labels, node_names, attr_names, class_names, metadata)
 
 
-def save_graph_to_npz(filepath, graph):
+def save_graph_to_npz(filepath: str, graph: Graph):
     """Save a Graph to a Numpy binary file.
 
     Parameters

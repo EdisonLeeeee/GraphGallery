@@ -59,7 +59,7 @@ class GMNN(SemiSupervisedModel):
             multiple calls. (default :obj: `None`, i.e., using random seed)
         name: string. optional
             Specified name for the model. (default: :str: `class.__name__`)
-        kwargs: other customized keyword parameters.
+        kwargs: other custom keyword parameters.
 
         """
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)

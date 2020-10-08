@@ -4,7 +4,7 @@ from numba import njit
 from gensim.models import Word2Vec
 
 from graphgallery.nn.models import UnsupervisedModel
-from graphgallery import Bunch
+from graphgallery.utils import Bunch
 
 
 class Deepwalk(UnsupervisedModel):

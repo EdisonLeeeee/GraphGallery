@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 
-def set_memory_growth():
+def set_memory_growth() -> None:
     """Set if memory growth should be enabled for ALL `PhysicalDevice`.
 
     If memory growth is enabled for ALL `PhysicalDevice`, the runtime initialization

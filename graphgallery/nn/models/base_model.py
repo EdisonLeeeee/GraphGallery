@@ -32,7 +32,7 @@ class BaseModel(Base):
                 across multiple calls.
             name: string. optional
                 Specified name for the model. (default: :str: `class.__name__`)
-            kwargs: other customized keyword parameters.
+            kwargs: other custom keyword parameters.
 
         """
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)

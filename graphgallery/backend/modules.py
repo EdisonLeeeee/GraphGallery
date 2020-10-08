@@ -10,21 +10,21 @@ class BackendModule(ABC):
         ...
 
     @property
-    def version(self):
+    def version(self) -> str:
         ...
 
     @property
-    def name(self):
+    def name(self) -> str:
         ...
 
     @property
-    def kind(self):
+    def kind(self) -> str:
         ...
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.name} {self.version} Backend"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.name} {self.version} Backend"
 
 
@@ -33,15 +33,15 @@ class TensorFlowBackend(BackendModule):
         ...
 
     @property
-    def version(self):
+    def version(self) -> str:
         return tf.__version__
 
     @property
-    def name(self):
+    def name(self) -> str:
         return "TensorFlow"
 
     @property
-    def kind(self):
+    def kind(self) -> str:
         return "T"
 
 
@@ -50,13 +50,13 @@ class PyTorchBackend(BackendModule):
         ...
 
     @property
-    def version(self):
+    def version(self) -> str:
         return torch.__version__
 
     @property
-    def name(self):
+    def name(self) -> str:
         return "PyTorch"
 
     @property
-    def kind(self):
+    def kind(self) -> str:
         return "P"
