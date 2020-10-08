@@ -2,7 +2,7 @@
 # coding: utf-8
 from setuptools import setup, find_packages
 
-VERSION = "0.4.1"
+VERSION = "0.4.2"
 url = 'https://github.com/EdisonLeeeee/GraphGallery'
 
 install_requires = [
