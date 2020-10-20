@@ -18,7 +18,7 @@ _DATASETS = ('citeseer', 'citeseer_full', 'cora', 'cora_ml',
 
 class NPZDataset(Dataset):
 
-    github_url = "https://raw.githubusercontent.com/EdisonLeeeee/GraphData/master/datasets/npz/{}.npz"
+    github_url = "https://raw.githubusercontent.com/EdisonLeeeee/GraphData/master/datasets/{}.npz"
     supported_datasets = _DATASETS
 
     def __init__(self, name: str, 
