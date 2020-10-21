@@ -48,8 +48,8 @@ class BaseModel(Base):
         # log path
         # add random integer to avoid duplication
         _id = np.random.RandomState(None).randint(100)
-        self.weight_path = osp.join(osp.expanduser(osp.normpath("/tmp/weight")),
-                                    f"{self.name}_{_id}_weights{POSTFIX}")
+        self.weight_path = osp.join(osp.expanduser(osp.normpath("./")),
+                                    f"{self.name}_weights_id_{_id}{POSTFIX}")
 
     def save(self, path=None, as_model=False, overwrite=True, save_format=None, **kwargs):
 
