@@ -3,6 +3,7 @@ import numpy as np
 import tensorflow as tf
 import tensorflow.keras.backend as K
 from collections import Iterable
+from typing import Any, Optional
 
 from graphgallery import backend, intx, floatx
 from graphgallery.utils.raise_error import assert_kind
@@ -17,12 +18,12 @@ __all__ = ['is_iterable',
            'is_sparse_tensor',
            ]
 
-def is_iterable(obj):
+def is_iterable(obj: Any) -> bool:
     """check whether `x` is an iterable object but not string"""
     return isinstance(obj, Iterable) and not isinstance(obj, str)
 
 
-def is_list_like(x):
+def is_list_like(x: Any) -> bool:
     """Check whether `x` is list like, e.g., Tuple or List.
 
     Parameters:
@@ -36,7 +37,7 @@ def is_list_like(x):
     return isinstance(x, (list, tuple))
 
 
-def is_scalar_like(x):
+def is_scalar_like(x: Any) -> bool:
     """Check whether `x` is a scalar, an array scalar, or a 0-dim array.
 
     Parameters:
@@ -50,7 +51,7 @@ def is_scalar_like(x):
     return np.isscalar(x) or (isinstance(x, np.ndarray) and x.ndim == 0)
 
 
-def is_interger_scalar(x):
+def is_interger_scalar(x: Any) -> bool:
     """Check whether `x` is an Integer scalar.
 
     Parameters:
@@ -72,7 +73,7 @@ def is_interger_scalar(x):
                           ))
  
 
-def infer_type(x):
+def infer_type(x: Any) -> bool:
     """Infer type of the input `x`.
 
     Parameters:
@@ -122,7 +123,8 @@ def infer_type(x):
     else:
         raise RuntimeError(f'Invalid input of `{type(x)}`')
     
-def is_sparse_tensor(x, kind=None):
+
+def is_sparse_tensor(x: Any, kind: Optional[str] = None) -> bool:
     """Check whether `x` is a sparse Tensor.
     
     Parameters:
@@ -149,7 +151,7 @@ def is_sparse_tensor(x, kind=None):
         return is_th_sparse_tensor(x)
 
 
-def is_strided_tensor(x, kind=None):
+def is_strided_tensor(x: Any, kind: Optional[str] = None) -> bool:
     """Check whether `x` is a strided (dense) Tensor.
     
     Parameters:
@@ -177,7 +179,7 @@ def is_strided_tensor(x, kind=None):
         return is_th_strided_tensor(x)
     
 
-def is_tensor(x, kind=None):
+def is_tensor(x: Any, kind: Optional[str]=None) -> bool:
     """Check whether `x` is 
         tf.Tensor,
         tf.Variable,
@@ -210,24 +212,25 @@ def is_tensor(x, kind=None):
         return is_th_tensor(x)
 
 
-def is_tf_sparse_tensor(x):
+def is_tf_sparse_tensor(x: Any) -> bool:
     return K.is_sparse(x)
 
 
-def is_th_sparse_tensor(x):
+def is_th_sparse_tensor(x: Any) -> bool:
     return is_th_tensor(x) and not is_th_strided_tensor(x)
 
 
-def is_tf_strided_tensor(x):
+def is_tf_strided_tensor(x: Any) -> bool:
     return any((isinstance(x, tf.Tensor),
                 isinstance(x, tf.Variable),
                 isinstance(x, tf.RaggedTensor)))
 
-def is_th_strided_tensor(x):
+
+def is_th_strided_tensor(x: Any) -> bool:
     return is_th_tensor(x) and x.layout == torch.strided
                
-def is_tf_tensor(x):
+def is_tf_tensor(x: Any) -> bool:
     return is_tf_strided_tensor(x) or is_tf_sparse_tensor(x)
 
-def is_th_tensor(x):
+def is_th_tensor(x: Any) -> bool:
     return torch.is_tensor(x)

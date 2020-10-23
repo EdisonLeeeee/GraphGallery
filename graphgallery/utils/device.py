@@ -1,13 +1,14 @@
 import torch
 import tensorflow as tf
-from typing import Union
+from typing import Optional
 from graphgallery import backend
 from graphgallery.utils.raise_error import assert_kind
+from graphgallery.typing import Device
 
 
-def parse_device(device: Union[str, torch.device] = None, kind: str = None) -> Union[str, torch.device]:
+def parse_device(device: Device = None, kind: Optional[str] = None) -> Device:
     """
-    Specifies the device for corresponding kind 
+    Specify the device for corresponding kind 
 
     Parameters
     ----------

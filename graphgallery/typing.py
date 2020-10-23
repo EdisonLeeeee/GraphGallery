@@ -9,7 +9,7 @@ import tensorflow as tf
 import scipy.sparse as sp
 from tensorflow.python.eager.context import _EagerDeviceContext
 
-TransformType= TypeVar('TransformType')
+TransformType = TypeVar('TransformType')
 GraphType = TypeVar('GraphType')
 
 IntNumber = Union[
@@ -52,8 +52,7 @@ ArrayLike1D = Union[List, np.ndarray, np.matrix]
 ArrayLike = Union[ArrayLike1D, ArrayLike2D]
 MultiArrayLike = Union[List[ArrayLike], Tuple[ArrayLike]]
 
-Edge = Union[List[List], ArrayLike2D]
-
+Edge = Union[List[List], ArrayLike2D, Tuple[ArrayLike1D, ArrayLike1D]]
 
 AcceptableTransform = Optional[Union[TransformType, str, Callable]]
 # AcceptableTransform = Optional[Union[TransformType, str, Callable]]

@@ -51,12 +51,9 @@ def parse_graph_inputs(*graph):
     return graph
 
 
-
 class Base(ABC):
-    """Base model for all class."""
-
     def __init__(self, *graph, device="cpu:0", seed=None, name=None, **kwargs):
-        """Create an Base model for semi-supervised learning and unsupervised learning.
+        """
 
         Parameters:
         ----------
@@ -73,8 +70,9 @@ class Base(ABC):
 
         """
         graph = parse_graph_inputs(*graph)
-        self.backend = backend()
-        self.kind = self.backend.kind
+        _backend = backend()
+        self.backend = _backend
+        self.kind = _backend.kind
 
         raise_if_kwargs(kwargs)
 
@@ -91,12 +89,11 @@ class Base(ABC):
         if name is None:
             name = self.__class__.__name__
 
-        self.graph = graph.copy()
         self.seed = seed
         self.name = name
+        self.graph = graph.copy()
         self.device = parse_device(device, self.kind)
 
         # data types, default: `float32` and `int32`
         self.floatx = floatx()
         self.intx = intx()
-

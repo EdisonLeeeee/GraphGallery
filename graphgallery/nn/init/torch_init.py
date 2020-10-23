@@ -2,6 +2,8 @@ import math
 
 import torch
 
+from graphgallery.typing import TorchTensor
+
 __all__ = ['uniform', 'kaiming_uniform',
            'xavier_uniform',
            'glorot_uniform',
@@ -16,8 +18,7 @@ uniform = torch.nn.init.uniform_
 normal = torch.nn.init.normal_
 
 
-
-def uniform(tensor):
+def uniform(tensor) -> TorchTensor:
     if tensor is not None:
         bound = 1.0 / math.sqrt(tensor.size(-1))
         tensor.data.uniform_(-bound, bound)
@@ -29,30 +30,30 @@ def uniform(tensor):
 #         tensor.data.uniform_(-bound, bound)
 
 
-def glorot_uniform(tensor, scale=6.0):
+def glorot_uniform(tensor, scale=6.0) -> TorchTensor:
     if tensor is not None:
         stdv = math.sqrt(scale / (tensor.size(-2) + tensor.size(-1)))
         tensor.data.uniform_(-stdv, stdv)
 
 
-def glorot_orthogonal(tensor, scale):
+def glorot_orthogonal(tensor, scale) -> TorchTensor:
     if tensor is not None:
         torch.nn.init.orthogonal_(tensor.data)
         scale /= ((tensor.size(-2) + tensor.size(-1)) * tensor.var())
         tensor.data *= scale.sqrt()
 
 
-def zeros(tensor):
+def zeros(tensor) -> TorchTensor:
     if tensor is not None:
         tensor.data.fill_(0)
 
 
-def ones(tensor):
+def ones(tensor) -> TorchTensor:
     if tensor is not None:
         tensor.data.fill_(1)
 
 
-def normal(tensor, mean, std):
+def normal(tensor, mean, std) -> TorchTensor:
     if tensor is not None:
         tensor.data.normal_(mean, std)
 

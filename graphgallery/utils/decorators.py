@@ -5,8 +5,11 @@ from graphgallery.utils.type_check import is_list_like, is_scalar_like
 from graphgallery.utils.shape import get_length
 from graphgallery.utils.shape import repeat
 
+from typing import Callable, Any, List, Dict
 
-def cal_outpus(func, args, kwargs, type_check=True):
+
+def cal_outpus(func: Callable, args: List, kwargs: Dict,
+               type_check: bool = True):
 
     if is_list_like(args) and not is_scalar_like(args[0]):
         if type_check:
@@ -17,20 +20,21 @@ def cal_outpus(func, args, kwargs, type_check=True):
 
 
 class MultiInputs:
-    
+
     wrapper_doc = """NOTE: This method is decorated by 
     'graphgallery.utils.decorators.MultiInputs',
     which takes multi inputs and yields multi outputs.
     """
-    def __init__(self, *, type_check=True):
+
+    def __init__(self, *, type_check: bool = True):
         self.type_check = type_check
 
-    def __call__(self, func):
+    def __call__(self, func: Callable) -> Callable:
         doc = func.__doc__ if func.__doc__ else ""
         func.__doc__ = doc + self.wrapper_doc
-        
+
         @functools.wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args, **kwargs) -> Any:
             if len(args) == 1 and is_list_like(args[0]):
                 args, = args
 
@@ -43,7 +47,7 @@ class MultiInputs:
         return wrapper
 
 
-def assert_same_type(*inputs):
+def assert_same_type(*inputs) -> bool:
     """ Assert the types of inputs are the same"""
     first, *others = inputs
     # only one inputs
@@ -62,6 +66,7 @@ def assert_same_type(*inputs):
 
 _BASE_VARS = ['hiddens', 'activations']
 
+
 class EqualVarLength:
     """
     A decorator class which makes the values of the variables 
@@ -70,9 +75,9 @@ class EqualVarLength:
 
     """
 
-    def __init__(self, *, include: list=[], exclude: list=[], length_as: str='hiddens'):
+    def __init__(self, *, include: list = [], exclude: list = [],
+                 length_as: str = 'hiddens'):
         """
-
         Parameters
         ----------
         include : list, optional
@@ -90,10 +95,10 @@ class EqualVarLength:
         self.vars = vars
         self.length_as = length_as
 
-    def __call__(self, func):
+    def __call__(self, func: Callable) -> Callable:
 
         @functools.wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args, **kwargs) -> Any:
             ArgSpec = inspect.getfullargspec(func)
 
             if not ArgSpec.defaults or len(ArgSpec.args) != len(ArgSpec.defaults) + 1:
@@ -118,6 +123,5 @@ class EqualVarLength:
         return wrapper
 
     @staticmethod
-    def base_vars():
+    def base_vars() -> List[str]:
         return _BASE_VARS
-

@@ -10,9 +10,9 @@ def mixing_matrix(edges, in_deg, out_deg, mapping):
     n_degrees = len(mapping)
     M = np.zeros((n_degrees, n_degrees))
 
-    for i in range(edges.shape[0]):
-        u = edges[i][0]
-        v = edges[i][1]
+    for i in range(edges.shape[1]):
+        u = edges[0][i]
+        v = edges[1][i]
         du = out_deg[u]
         dv = in_deg[v]
         x = mapping[du]
@@ -34,7 +34,7 @@ def degree_mixing_matrix(adj_matrix, normalize=True):
     for x, y in enumerate(deg_set):
         mapping[y] = x
 
-    edges = np.transpose(adj_matrix.nonzero()).astype('int64')
+    edges = np.asarray(adj_matrix.nonzero())
 
     M = mixing_matrix(edges, in_deg, out_deg, mapping)
 

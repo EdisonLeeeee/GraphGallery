@@ -18,7 +18,7 @@ from tensorflow.python.keras.utils.generic_utils import Progbar
 from graphgallery.nn.models import BaseModel
 from graphgallery.nn.models import training
 from graphgallery.nn.functions import softmax
-from graphgallery.data.io import makedirs_from_path
+from graphgallery.data.io import makedirs_from_filename
 from graphgallery.data import BaseGraph
 from graphgallery.transforms import asintarr
 from graphgallery.utils.raise_error import raise_if_kwargs
@@ -238,7 +238,7 @@ class SemiSupervisedModel(BaseModel):
             else:
                 self.weight_path = weight_path
 
-            makedirs_from_path(weight_path)
+            makedirs_from_filename(weight_path)
 
             if not weight_path.endswith(POSTFIX):
                 weight_path = weight_path + POSTFIX

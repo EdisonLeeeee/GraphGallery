@@ -10,7 +10,7 @@ import scipy.sparse as sp
 from tensorflow.keras import backend as K
 
 from graphgallery.nn.models import Base
-from graphgallery.data.io import makedirs_from_path
+from graphgallery.data.io import makedirs_from_filename
 from graphgallery.utils import save
 from graphgallery import POSTFIX
 
@@ -19,7 +19,7 @@ class BaseModel(Base):
     """Base model for semi-supervised learning and unsupervised learning."""
 
     def __init__(self, *graph, device="cpu:0", seed=None, name=None, **kwargs):
-        """Create an Base model for semi-supervised learning and unsupervised learning.
+        """Create a Base model for semi-supervised learning and unsupervised learning.
 
         Parameters:
         ----------
@@ -36,7 +36,7 @@ class BaseModel(Base):
 
         """
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
-        
+
         self.idx_train = None
         self.idx_val = None
         self.idx_test = None
@@ -56,7 +56,7 @@ class BaseModel(Base):
         if not path:
             path = self.weight_path
 
-        makedirs_from_path(path)
+        makedirs_from_filename(path)
 
         if as_model:
             if self.kind == "T":
@@ -104,7 +104,7 @@ class BaseModel(Base):
         # Back up
         if isinstance(m, tf.keras.Model) and m.weights:
             self.backup = tf.identity_n(m.weights)
-        # assert m is None or isinstance(m, tf.keras.Model) or torch.nn.Module
+        # TODO assert m is None or isinstance(m, tf.keras.Model) or torch.nn.Module
         self._model = m
 
     @property
@@ -116,7 +116,6 @@ class BaseModel(Base):
         assert isinstance(value, dict)
         self._custom_objects = value
 
-    @property
     def close(self):
         """Close the session of model and set `built` to False."""
         K.clear_session()

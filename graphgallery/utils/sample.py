@@ -1,9 +1,14 @@
-from numba import njit
 import numpy as np
+
+from numba import njit
+from typing import List
+
+from graphgallery.typing import ArrayLike1D, SparseMatrix
 
 
 @njit
-def neighbors_mask(indices, indptr, mask, nbrs, radius):
+def neighbors_mask(indices: ArrayLike1D, indptr: ArrayLike1D,
+                   mask: ArrayLike1D, nbrs: ArrayLike1D, radius: int) -> ArrayLike1D:
     mask[nbrs] = True
     if radius <= 1:
         return mask
@@ -15,7 +20,8 @@ def neighbors_mask(indices, indptr, mask, nbrs, radius):
 
 
 @njit
-def _find_4o_nbrs(indices, indptr, firstlevel, radius=4):
+def _find_4o_nbrs(indices: ArrayLike1D, indptr: ArrayLike1D,
+                  firstlevel: ArrayLike1D, radius: int = 4) -> List[ArrayLike1D]:
     N = len(indptr) - 1
     nodes = np.arange(N)
     for n in firstlevel:
@@ -25,7 +31,9 @@ def _find_4o_nbrs(indices, indptr, firstlevel, radius=4):
         yield nodes[mask]
 
 
-def find_4o_nbrs(adj_matrix, candidates=None, radius=4):
+def find_4o_nbrs(adj_matrix: SparseMatrix,
+                 candidates: ArrayLike1D = None,
+                 radius: int = 4) -> List[ArrayLike1D]:
     if candidates is None:
         candidates = np.arange(adj_matrix.shape[0])
     return list(_find_4o_nbrs(adj_matrix.indices, adj_matrix.indptr, candidates, radius=radius))
