@@ -62,7 +62,8 @@ class GraphAttention(Module):
 
     def forward(self, inputs):
         x, adj = inputs
-
+        dense_adj = adj.to_dense()
+        
         outputs = []
         for head in range(self.attn_heads):
             W, a1, a2 = self.kernels[head], self.attn_kernel_self[head], self.attn_kernel_neighs[head]
@@ -74,7 +75,7 @@ class GraphAttention(Module):
             e = self.leakyrelu(f_1 + f_2.transpose(0, 1))
 
             zero_vec = -9e15*torch.ones_like(e)
-            attention = torch.where(adj.to_dense() > 0, e, zero_vec)
+            attention = torch.where(dense_adj > 0, e, zero_vec)
             attention = F.softmax(attention, dim=1)
             attention = F.dropout(attention, self.dropout, training=self.training)
             h_prime = torch.matmul(attention, Wh) 
@@ -188,10 +189,11 @@ class SparseGraphAttention(Module):
         N = x.size()[0]        
         edge = adj._indices()
 
+        
         outputs = []
         for head in range(self.attn_heads):
             W, a = self.kernels[head], self.att_kernels[head]
-            h = torch.spmm(x, W)
+            h = x @ W
 
             # Self-attention on the nodes - Shared attention mechanism
             edge_h = torch.cat((h[edge[0, :], :], h[edge[1, :], :]), dim=1).t()
@@ -203,7 +205,7 @@ class SparseGraphAttention(Module):
             edge_e = self.dropout(edge_e)
             h_prime = self.special_spmm(edge, edge_e, torch.Size([N, N]), h)
             h_prime = h_prime.div(e_rowsum)
-            h_prime[torch.isnan(h_prime)] = 0.
+#             h_prime[torch.isnan(h_prime)] = 0.
         
             if self.use_bias:
                 h_prime += self.biases[head]

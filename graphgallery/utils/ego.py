@@ -4,7 +4,7 @@ from numba import njit
 from numba import types
 from numba.typed import Dict
 
-from typing import Union
+from typing import Union, Tuple
 from graphgallery.typing import Edge, ArrayLike1D, SparseMatrix
 
 

@@ -1,20 +1,19 @@
 import numpy as np
-from graphgallery.typing import ArrayLike1D
 
 
-def softmax(x: ArrayLike1D, axis: int = -1) -> ArrayLike1D:
+def softmax(x: np.ndarray, axis: int = -1) -> np.ndarray:
     """Numpy version of Softmax activation function
 
     Parameters
     ----------
-    x : ArrayLike1D
+    x : np.ndarray
         Elements to softmax.
     axis : int, optional
         Axis or axes along which a softmax is performed, by default -1.
 
     Returns
     -------
-    softmax_along_axis: ArrayLike1D
+    softmax_along_axis: np.ndarray
         An array with the same shape as `x`.
     """
     exp_x = np.exp(x - np.max(x))
