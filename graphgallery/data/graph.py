@@ -510,5 +510,5 @@ def save_graph_to_npz(filepath: str, graph: GraphType):
         filepath = filepath + '.npz'
 
     filepath = osp.abspath(osp.expanduser(osp.normpath(filepath)))
-    np.savez(filepath, **data_dict)
+    np.savez_compressed(filepath, **data_dict)
     return filepath

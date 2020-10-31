@@ -73,7 +73,7 @@ def is_interger_scalar(x: Any) -> bool:
                           ))
  
 
-def infer_type(x: Any) -> bool:
+def infer_type(x: Any) -> str:
     """Infer type of the input `x`.
 
     Parameters:
