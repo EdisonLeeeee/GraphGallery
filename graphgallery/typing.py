@@ -47,8 +47,8 @@ Optimizer = Union[tf.keras.optimizers.Optimizer, str]
 
 SparseMatrix = Union[sp.csr_matrix, sp.csc_matrix, sp.coo_matrix]
 MultiSparseMatrix = Union[List[SparseMatrix], Tuple[SparseMatrix]]
-ArrayLike2D = Union[List[List], np.ndarray, np.matrix]
-ArrayLike1D = Union[List, np.ndarray, np.matrix]
+ArrayLike2D = Union[List[List], np.ndarray]
+ArrayLike1D = Union[List, np.ndarray]
 ArrayLike = Union[ArrayLike1D, ArrayLike2D]
 MultiArrayLike = Union[List[ArrayLike], Tuple[ArrayLike]]
 
@@ -78,4 +78,4 @@ TensorLike = Union[List[Union[Number, list]],
 NxGraph = Union[nx.Graph, nx.DiGraph]
 
 FloatTensorLike = Union[tf.Tensor, float, np.float16, np.float32, np.float64]
-AcceptableDTypes = Union[tf.DType, np.dtype, type, int, str, None]
+AcceptableDTypes = Optional[tf.DType, np.dtype, type, int, str]

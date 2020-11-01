@@ -1,6 +1,7 @@
 import random
 import logging
 import torch
+import os
 
 import numpy as np
 import tensorflow as tf
@@ -48,8 +49,7 @@ class BaseModel(Base):
         # log path
         # add random integer to avoid duplication
         _id = np.random.RandomState(None).randint(100)
-        self.weight_path = osp.join(osp.expanduser(osp.normpath("./")),
-                                    f"{self.name}_weights_id_{_id}{POSTFIX}")
+        self.weight_path = osp.join(os.getcwd(), f"{self.name}_weights_id_{_id}{POSTFIX}")
 
     def save(self, path=None, as_model=False, overwrite=True, save_format=None, **kwargs):
 
@@ -86,7 +86,7 @@ class BaseModel(Base):
                 save.load_torch_weights(self.model, path)
 
     def __getattr__(self, attr):
-        ##### TODO: This may cause ERROR ######
+        ##### FIXME: This may cause ERROR ######
         try:
             return self.__dict__[attr]
         except KeyError:

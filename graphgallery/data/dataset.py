@@ -7,8 +7,7 @@ import os.path as osp
 
 from abc import ABC
 
-from typing import Union, Optional, List
-from graphgallery.typing import MultiArrayLike
+from typing import Union, Optional, List, Tuple
 from graphgallery.data.preprocess import train_val_test_split_tabular, get_train_val_test_split
 
 class Dataset(ABC):
@@ -41,8 +40,8 @@ class Dataset(ABC):
     def process(self) -> None:
         raise NotImplementedError
 
-    def split(self, train_size=0.1, val_size=0.1, test_size=0.8,
-              random_state=None) -> MultiArrayLike:
+    def split(self, train_size: float = 0.1, val_size: float = 0.1, test_size: float = 0.8,
+              random_state: Optional[int]=None) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
 
         assert all((train_size, val_size))
         if test_size is None:
@@ -59,10 +58,10 @@ class Dataset(ABC):
 
         return idx_train, idx_val, idx_test
 
-    def split_by_sample(self, train_examples_per_class,
-                        val_examples_per_class,
-                        test_examples_per_class,
-                        random_state=None) -> MultiArrayLike:
+    def split_by_sample(self, train_examples_per_class: int,
+                        val_examples_per_class: int,
+                        test_examples_per_class: int,
+                        random_state: Optional[int]=None)  -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
 
         self.graph = self.graph.eliminate_classes(train_examples_per_class+val_examples_per_class).standardize()
             
@@ -75,7 +74,7 @@ class Dataset(ABC):
         return idx_train, idx_val, idx_test
 
     @staticmethod
-    def print_files(filepaths) -> None:
+    def print_files(filepaths: List[str]) -> None:
         if not texttable:
             print(filepaths)
         else:

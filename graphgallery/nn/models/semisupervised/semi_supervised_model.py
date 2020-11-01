@@ -261,44 +261,46 @@ class SemiSupervisedModel(BaseModel):
             print("Training...")
 
         begin_time = time.perf_counter()
-        for epoch in range(epochs):
-            if verbose > 2:
-                progbar = Progbar(target=len(train_data), verbose=verbose - 2, stateful_metrics=stateful_metrics)
-
-            callbacks.on_epoch_begin(epoch)
-            callbacks.on_train_batch_begin(0)
-            loss, accuracy = self.train_step(train_data)
-
-            training_logs = {'loss': loss, 'acc': accuracy}
-            if validation:
-                val_loss, val_accuracy = self.test_step(val_data)
-                training_logs.update(
-                    {'val_loss': val_loss, 'val_acc': val_accuracy})
-                val_data.on_epoch_end()
-                
-            callbacks.on_train_batch_end(len(train_data), training_logs)
-            callbacks.on_epoch_end(epoch, training_logs)
-
-            train_data.on_epoch_end()
-            
-            if verbose:
-                time_passed = time.perf_counter() - begin_time
-                training_logs.update({'time': time_passed})                
+        try:
+            for epoch in range(epochs):
                 if verbose > 2:
-                    print(f"Epoch {epoch+1}/{epochs}")
-                    progbar.update(len(train_data), training_logs.items())
-                else:
-                    progbar.update(epoch + 1, training_logs.items())
-                
-                
-            if model.stop_training:
-                break
+                    progbar = Progbar(target=len(train_data), verbose=verbose - 2, stateful_metrics=stateful_metrics)
 
-        callbacks.on_train_end()
+                callbacks.on_epoch_begin(epoch)
+                callbacks.on_train_batch_begin(0)
+                loss, accuracy = self.train_step(train_data)
 
-        if save_best:
-            self.load(weight_path, as_model=as_model)
-            self.remove_weights()
+                training_logs = {'loss': loss, 'acc': accuracy}
+                if validation:
+                    val_loss, val_accuracy = self.test_step(val_data)
+                    training_logs.update(
+                        {'val_loss': val_loss, 'val_acc': val_accuracy})
+                    val_data.on_epoch_end()
+
+                callbacks.on_train_batch_end(len(train_data), training_logs)
+                callbacks.on_epoch_end(epoch, training_logs)
+
+                train_data.on_epoch_end()
+
+                if verbose:
+                    time_passed = time.perf_counter() - begin_time
+                    training_logs.update({'time': time_passed})                
+                    if verbose > 2:
+                        print(f"Epoch {epoch+1}/{epochs}")
+                        progbar.update(len(train_data), training_logs.items())
+                    else:
+                        progbar.update(epoch + 1, training_logs.items())
+
+
+                if model.stop_training:
+                    break
+                    
+        finally:
+            callbacks.on_train_end()
+            # to avoid unexpected termination of the model
+            if save_best:
+                self.load(weight_path, as_model=as_model)
+                self.remove_weights()
 
         return history
 
