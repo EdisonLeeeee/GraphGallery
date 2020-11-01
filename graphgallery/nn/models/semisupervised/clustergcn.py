@@ -96,10 +96,8 @@ class ClusterGCN(SemiSupervisedModel):
     def build(self, hiddens=[32], activations=['relu'], dropout=0.5,
               l2_norm=0., lr=0.01, use_bias=False):
 
-#         if self.kind == "P":
-#             raise RuntimeError(f"Currently {self.name} only support for tensorflow backend.")
             
-        if self.kind == "T":
+        if self.backend == "tensorflow":
             with tf.device(self.device):
                 self.model = tfGCN(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
                                 activations=activations, dropout=dropout, l2_norm=l2_norm,
@@ -157,16 +155,16 @@ class ClusterGCN(SemiSupervisedModel):
         batch_data = T.astensors(batch_data, device=self.device)
 
         model = self.model
-        if self.kind == "P":
+        if self.backend == "tensorflow":
+            with tf.device(self.device):
+                for order, inputs in zip(orders, batch_data):
+                    output = model.predict_on_batch(inputs)
+                    logit[order] = output
+        else:
             model.eval()
             with torch.no_grad():
                 for order, inputs in zip(orders, batch_data):
                     output = model(inputs).detach().cpu().numpy()
                     logit[order] = output 
-        else:
-            with tf.device(self.device):
-                for order, inputs in zip(orders, batch_data):
-                    output = model.predict_on_batch(inputs)
-                    logit[order] = output
 
         return logit

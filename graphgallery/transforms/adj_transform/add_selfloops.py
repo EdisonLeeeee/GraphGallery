@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.sparse as sp
+import graphgallery as gg
 from graphgallery.transforms import Transform
-from graphgallery.utils.type_check import is_list_like
 from graphgallery.utils.shape import repeat
 from graphgallery.utils.decorators import MultiInputs
 
@@ -73,7 +73,7 @@ def add_selfloops(adj_matrix, fill_weight: float = 1.0):
         else:
             return adj.copy()
 
-    if is_list_like(fill_weight):
+    if gg.is_listlike(fill_weight):
         return tuple(_add_selfloops(adj_matrix, w) for w in fill_weight)
     else:
         return _add_selfloops(adj_matrix, fill_weight)

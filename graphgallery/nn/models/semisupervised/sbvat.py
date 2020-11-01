@@ -87,7 +87,7 @@ class SBVAT(SemiSupervisedModel):
               n_power_iterations=1, epsilon=0.03, xi=1e-6):
 
 
-        if self.kind == "T":
+        if self.backend == "tensorflow":
             with tf.device(self.device):
                 self.model = tfGCN(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
                                 activations=activations, dropout=dropout, l2_norm=l2_norm,

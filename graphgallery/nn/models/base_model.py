@@ -13,7 +13,7 @@ from tensorflow.keras import backend as K
 from graphgallery.nn.models import Base
 from graphgallery.data.io import makedirs_from_filename
 from graphgallery.utils import save
-from graphgallery import POSTFIX
+from graphgallery import file_postfix
 
 
 class BaseModel(Base):
@@ -49,7 +49,7 @@ class BaseModel(Base):
         # log path
         # add random integer to avoid duplication
         _id = np.random.RandomState(None).randint(100)
-        self.weight_path = osp.join(os.getcwd(), f"{self.name}_weights_id_{_id}{POSTFIX}")
+        self.weight_path = osp.join(os.getcwd(), f"{self.name}_weights_id_{_id}{file_postfix()}")
 
     def save(self, path=None, as_model=False, overwrite=True, save_format=None, **kwargs):
 
@@ -59,12 +59,12 @@ class BaseModel(Base):
         makedirs_from_filename(path)
 
         if as_model:
-            if self.kind == "T":
+            if self.backend == "tensorflow":
                 save.save_tf_model(self.model, path, overwrite=overwrite, save_format=save_format, **kwargs)
             else:
                 save.save_torch_model(self.model, path, overwrite=overwrite, save_format=save_format, **kwargs)
         else:
-            if self.kind == "T":
+            if self.backend == "tensorflow":
                 save.save_tf_weights(self.model, path, overwrite=overwrite, save_format=save_format)
             else:
                 save.save_torch_weights(self.model, path, overwrite=overwrite, save_format=save_format)
@@ -74,13 +74,13 @@ class BaseModel(Base):
             path = self.weight_path
 
         if as_model:
-            if self.kind == "T":
+            if self.backend == "tensorflow":
                 self.model = save.load_tf_model(
                     path, custom_objects=self.custom_objects)
             else:
                 self.model = save.load_torch_model(path)
         else:
-            if self.kind == "T":
+            if self.backend == "tensorflow":
                 save.load_tf_weights(self.model, path)
             else:
                 save.load_torch_weights(self.model, path)

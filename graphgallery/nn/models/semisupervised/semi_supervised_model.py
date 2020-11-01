@@ -15,6 +15,7 @@ from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from tensorflow.keras.callbacks import History
 from tensorflow.python.keras.utils.generic_utils import Progbar
 
+import graphgallery as gg
 from graphgallery.nn.models import BaseModel
 from graphgallery.nn.models import training
 from graphgallery.nn.functions import softmax
@@ -22,7 +23,6 @@ from graphgallery.data.io import makedirs_from_filename
 from graphgallery.data import BaseGraph
 from graphgallery.transforms import asintarr
 from graphgallery.utils.raise_error import raise_if_kwargs
-from graphgallery import POSTFIX, intx
 
 
 
@@ -36,7 +36,7 @@ class SemiSupervisedModel(BaseModel):
     def __init__(self, *graph, device='cpu:0', seed=None, name=None, **kwargs):
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
     
-        if self.kind == "T":
+        if self.backend == "tensorflow":
             self.train_step_fn = partial(training.train_step_tf, device=self.device)
             self.test_step_fn = partial(training.test_step_tf, device=self.device)
             self.predict_step_fn = partial(training.predict_step_tf, device=self.device)
@@ -123,7 +123,7 @@ class SemiSupervisedModel(BaseModel):
 
         """
         # TODO: check for the input model
-        if self.kind == "T":
+        if self.backend == "tensorflow":
             with tf.device(self.device):
                 self.model = model
         else:
@@ -240,8 +240,8 @@ class SemiSupervisedModel(BaseModel):
 
             makedirs_from_filename(weight_path)
 
-            if not weight_path.endswith(POSTFIX):
-                weight_path = weight_path + POSTFIX
+            if not weight_path.endswith(gg.file_postfix()):
+                weight_path = weight_path + gg.file_postfix()
 
             mc_callback = ModelCheckpoint(weight_path,
                                           monitor=monitor,
@@ -436,7 +436,7 @@ class SemiSupervisedModel(BaseModel):
                 'You must compile your model before training/testing/predicting. Use `model.build()`.')
 
         if index is None:
-            index = np.arange(self.graph.n_nodes, dtype=intx())
+            index = np.arange(self.graph.n_nodes, dtype=gg.intx())
         else:
             index = asintarr(index)
         sequence = self.predict_sequence(index)
@@ -538,8 +538,8 @@ class SemiSupervisedModel(BaseModel):
 
     def remove_weights(self):
         filepath = self.weight_path
-        if not filepath.endswith(POSTFIX):
-            filepath = filepath + POSTFIX
+        if not filepath.endswith(gg.file_postfix()):
+            filepath = filepath + gg.file_postfix()
 
         if osp.exists(filepath):
             os.remove(filepath)

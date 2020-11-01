@@ -4,7 +4,7 @@ import errno
 import os.path as osp
 from tensorflow.keras.utils import get_file
 
-from graphgallery import is_list_like
+from graphgallery import is_listlike
 from typing import List, Tuple, Union
 
 def download_file(raw_paths: Union[List[str], Tuple[str]], 
@@ -22,7 +22,7 @@ def download_file(raw_paths: Union[List[str], Tuple[str]],
 
 
 def files_exist(files: Union[List[str], Tuple[str]]) -> bool:
-    if is_list_like(files):
+    if is_listlike(files):
         return len(files) != 0 and all([osp.exists(f) for f in files])
     else:
         return osp.exists(files)

@@ -1,7 +1,6 @@
 import numpy as np
 import scipy.sparse as sp
 from graphgallery.transforms import Transform
-from graphgallery.utils.type_check import is_list_like
 from graphgallery.utils.shape import repeat
 from graphgallery.utils.decorators import MultiInputs
 

@@ -1,8 +1,7 @@
 import itertools
+import graphgallery as gg
 from numbers import Number
 from typing import Any
-from graphgallery.utils.type_check import is_iterable
-
 
 def repeat(src: Any, length: int) -> Any:
     if src is None:
@@ -19,7 +18,7 @@ def repeat(src: Any, length: int) -> Any:
 
 
 def get_length(obj: Any) -> int:
-    if is_iterable(obj):
+    if gg.is_iterable(obj):
         length = len(obj)
     else:
         length = 1

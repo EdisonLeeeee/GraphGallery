@@ -1,5 +1,5 @@
 from graphgallery.backend import *
-from graphgallery.utils.type_check import *
+from graphgallery.data_type import *
 
 # modules
 from graphgallery import nn

@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.sparse as sp
+import graphgallery as gg
 from graphgallery.transforms import Transform
-from graphgallery.utils.type_check import is_list_like
 from graphgallery.utils.shape import repeat
 from graphgallery.utils.decorators import MultiInputs
 
@@ -100,7 +100,7 @@ def normalize_adj(adj_matrix, rate=-0.5, fill_weight=1.0):
             adj = adj.A
         return adj
 
-    if is_list_like(rate):
+    if gg.is_listlike(rate):
         return tuple(_normalize_adj(adj_matrix, r) for r in rate)
     else:
         return _normalize_adj(adj_matrix, rate)

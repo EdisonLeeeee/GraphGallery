@@ -3,11 +3,11 @@ import six
 import os.path as osp
 import tensorflow as tf
 
-from graphgallery import POSTFIX
+import graphgallery as gg
 
 def save_tf_model(model, filepath, overwrite=True, save_format=None, **kwargs):
 
-    postfix = POSTFIX
+    postfix = gg.file_postfix()
     filepath_withPOSTFIX = filepath
     if not filepath_withPOSTFIX.endswith(postfix):
         filepath_withPOSTFIX = filepath_withPOSTFIX + postfix
@@ -16,7 +16,7 @@ def save_tf_model(model, filepath, overwrite=True, save_format=None, **kwargs):
 
 
 def save_torch_model(model, filepath, overwrite=True, save_format=None, **kwargs):
-    postfix = POSTFIX
+    postfix = gg.file_postfix()
 
     filepath_withPOSTFIX = filepath
     if not filepath_withPOSTFIX.endswith(postfix):
@@ -31,7 +31,7 @@ def save_torch_model(model, filepath, overwrite=True, save_format=None, **kwargs
 
 
 def save_tf_weights(model, filepath, overwrite=True, save_format=None):
-    postfix = POSTFIX
+    postfix = gg.file_postfix()
 
     filepath_withPOSTFIX = filepath
     if not filepath_withPOSTFIX.endswith(postfix):
@@ -43,7 +43,7 @@ def save_tf_weights(model, filepath, overwrite=True, save_format=None):
 
 
 def save_torch_weights(model, filepath, overwrite=True, save_format=None):
-    postfix = POSTFIX
+    postfix = gg.file_postfix()
 
     filepath_withPOSTFIX = filepath
     if not filepath_withPOSTFIX.endswith(postfix):
@@ -58,7 +58,7 @@ def save_torch_weights(model, filepath, overwrite=True, save_format=None):
 
 
 def load_tf_weights(model, filepath):
-    postfix = POSTFIX
+    postfix = gg.file_postfix()
 
     filepath_withPOSTFIX = filepath
     if not filepath_withPOSTFIX.endswith(postfix):
@@ -70,7 +70,7 @@ def load_tf_weights(model, filepath):
 
 
 def load_torch_weights(model, filepath):
-    postfix = POSTFIX
+    postfix = gg.file_postfix()
 
     filepath_withPOSTFIX = filepath
     if not filepath_withPOSTFIX.endswith(postfix):
@@ -81,7 +81,7 @@ def load_torch_weights(model, filepath):
 
 
 def load_tf_model(filepath, custom_objects=None, **kwargs):
-    postfix = POSTFIX
+    postfix = gg.file_postfix()
 
     filepath_withPOSTFIX = filepath
     if not filepath_withPOSTFIX.endswith(postfix):
@@ -92,7 +92,7 @@ def load_tf_model(filepath, custom_objects=None, **kwargs):
 
 
 def load_torch_model(filepath):
-    postfix = POSTFIX
+    postfix = gg.file_postfix()
 
     filepath_withPOSTFIX = filepath
     if not filepath_withPOSTFIX.endswith(postfix):

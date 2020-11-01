@@ -4,22 +4,10 @@ import torch
 import numpy as np
 import tensorflow as tf
 import scipy.sparse as sp
+import graphgallery as gg
 
 from abc import ABC
 
-from graphgallery import intx, floatx, backend, set_backend, is_list_like
-from graphgallery.data import BaseGraph, Graph
-from graphgallery.utils.raise_error import raise_if_kwargs
-from graphgallery.utils.device import parse_device
-
-
-# def _check_cur_module(module, kind):
-#     modules = module.split('.')[-4:]
-#     if any(("tf_models" in modules and kind == "P",
-#             "th_models" in modules and kind == "T")):
-#         cur_module = "Tensorflow models" if kind == "P" else "PyTorch models"
-#         raise RuntimeError(f"You are currently using models in '{cur_module}' but with backend '{backend()}'."
-#                            "Please use `set_backend()` to change the current backend.")
 
 
 def parse_graph_inputs(*graph):
@@ -28,21 +16,21 @@ def parse_graph_inputs(*graph):
         graph = None
     elif len(graph) == 1:
         graph, = graph
-        if isinstance(graph, BaseGraph):
+        if isinstance(graph, gg.data.BaseGraph):
             ...
         elif sp.isspmatrix(graph):
-            graph = Graph(graph)
+            graph = gg.Graph(graph)
         elif isinstance(graph, dict):
-            return Graph(**graph)
-        elif is_list_like(graph):
+            return gg.Graph(**graph)
+        elif gg.is_listlike(graph):
             # TODO: multi graph
             ...
         else:
             raise ValueError(f"Unrecognized inputs {graph}.")
     else:
         if sp.isspmatrix(graph[0]):
-            graph = Graph(*graph)
-        elif is_list_like(graph[0]):
+            graph = gg.Graph(*graph)
+        elif gg.is_listlike(graph[0]):
             # TODO: multi graph
             ...
         else:
@@ -70,16 +58,14 @@ class Base(ABC):
 
         """
         graph = parse_graph_inputs(*graph)
-        _backend = backend()
-        self.backend = _backend
-        self.kind = _backend.kind
+        _backend = gg.backend()
 
-        raise_if_kwargs(kwargs)
+        gg.utils.raise_error.raise_if_kwargs(kwargs)
 
         if seed is not None:
             np.random.seed(seed)
             random.seed(seed)
-            if self.kind == "P":
+            if _backend == "torch":
                 torch.manual_seed(seed)
                 torch.cuda.manual_seed(seed)
                 # torch.cuda.manual_seed_all(seed)
@@ -92,8 +78,10 @@ class Base(ABC):
         self.seed = seed
         self.name = name
         self.graph = graph.copy()
-        self.device = parse_device(device, self.kind)
+        self.device = gg.utils.device.parse_device(device, _backend)
+        self.backend = _backend
 
-        # data types, default: `float32` and `int32`
-        self.floatx = floatx()
-        self.intx = intx()
+        # data types, default: `float32`,`int32` and `bool`
+        self.floatx = gg.floatx()
+        self.intx = gg.intx()
+        self.boolx = gg.boolx()

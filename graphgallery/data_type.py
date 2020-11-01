@@ -1,29 +1,30 @@
 import torch
 import numpy as np
 import tensorflow as tf
+import graphgallery as gg
 import tensorflow.keras.backend as K
+
 from collections import Iterable
 from typing import Any, Optional
 
-from graphgallery import backend, intx, floatx
-from graphgallery.utils.raise_error import assert_kind
 
 __all__ = ['is_iterable',
-           'is_list_like',
-           'is_scalar_like',
-           'is_interger_scalar',
+           'is_listlike',
+           'is_scalar',
+           'is_intscalar',
            'infer_type',
            'is_tensor',
            'is_strided_tensor',
            'is_sparse_tensor',
            ]
 
+
 def is_iterable(obj: Any) -> bool:
-    """check whether `x` is an iterable object but not string"""
+    """Check whether `x` is an iterable object except for string."""
     return isinstance(obj, Iterable) and not isinstance(obj, str)
 
 
-def is_list_like(x: Any) -> bool:
+def is_listlike(x: Any) -> bool:
     """Check whether `x` is list like, e.g., Tuple or List.
 
     Parameters:
@@ -37,7 +38,8 @@ def is_list_like(x: Any) -> bool:
     return isinstance(x, (list, tuple))
 
 
-def is_scalar_like(x: Any) -> bool:
+
+def is_scalar(x: Any) -> bool:
     """Check whether `x` is a scalar, an array scalar, or a 0-dim array.
 
     Parameters:
@@ -50,9 +52,8 @@ def is_scalar_like(x: Any) -> bool:
     """
     return np.isscalar(x) or (isinstance(x, np.ndarray) and x.ndim == 0)
 
-
-def is_interger_scalar(x: Any) -> bool:
-    """Check whether `x` is an Integer scalar.
+def is_intscalar(x: Any) -> bool:
+    """Check whether `x` is an integer scalar.
 
     Parameters:
     ----------
@@ -60,7 +61,7 @@ def is_interger_scalar(x: Any) -> bool:
 
     Returns:
     ----------
-    `True` iff `x` is a Integer scalar (built-in or Numpy integer).
+    `True` iff `x` is an integer scalar (built-in or Numpy integer).
     """
     return isinstance(x, (int, np.int8,
                           np.int16,
@@ -71,7 +72,25 @@ def is_interger_scalar(x: Any) -> bool:
                           np.uint32,
                           np.uint64,
                           ))
- 
+
+
+def is_floatscalar(x: Any) -> bool:
+    """Check whether `x` is a float scalar.
+
+    Parameters:
+    ----------
+    x: A python object to check.
+
+    Returns:
+    ----------
+    `True` iff `x` is a float scalar (built-in or Numpy float).
+    """
+    return isinstance(x, (float,
+                          np.float16,
+                          np.float32,
+                          np.float64,
+                          ))
+    
 
 def infer_type(x: Any) -> str:
     """Infer type of the input `x`.
@@ -82,30 +101,30 @@ def infer_type(x: Any) -> str:
 
     Returns:
     ----------
-    dtype: string, the converted type of `x`:
-        1. `graphgallery.floatx()` if `x` is floating
-        2. `graphgallery.intx()` if `x` is integer
-        3. `'bool'` if `x` is bool.
+    dtype: string, the proper data type of `x`:
+        1. `graphgallery.floatx()` if `x` is floating,
+        2. `graphgallery.intx()` if `x` is integer,
+        3. `graphgallery.boolx()` if `x` is boolean.
 
     """
     # For tensor or variable
     if is_th_tensor(x):
         if x.dtype.is_floating_point:
-            return floatx()
+            return gg.floatx()
         elif x.dtype == torch.bool:
-            return 'bool'
+            return gg.boolx()
         elif 'int' in str(x.dtype):
-            return intx()
+            return gg.intx()
         else:
             raise RuntimeError(f'Invalid input of `{type(x)}`')
         
     elif is_tf_tensor(x):
         if x.dtype.is_floating:
-            return floatx()
+            return gg.floatx()
         elif x.dtype.is_integer or x.dtype.is_unsigned:
-            return intx()
+            return gg.intx()
         elif x.dtype.is_bool:
-            return 'bool'
+            return gg.boolx()
         else:
             raise RuntimeError(f'Invalid input of `{type(x)}`')
 
@@ -113,73 +132,65 @@ def infer_type(x: Any) -> str:
         x = np.asarray(x)
 
     if x.dtype.kind in {'f', 'c'}:
-        return floatx()
+        return gg.floatx()
     elif x.dtype.kind in {'i', 'u'}:
-        return intx()
+        return gg.intx()
     elif x.dtype.kind == 'b':
-        return 'bool'
+        return gg.boolx()
     elif x.dtype.kind == 'O':
         raise RuntimeError(f'Invalid inputs of `{x}`.')
     else:
         raise RuntimeError(f'Invalid input of `{type(x)}`')
     
 
-def is_sparse_tensor(x: Any, kind: Optional[str] = None) -> bool:
+def is_sparse_tensor(x: Any, backend: Optional[str] = None) -> bool:
     """Check whether `x` is a sparse Tensor.
     
     Parameters:
     ----------
     x: A python object to check.
     
-    kind: str, optional.
-        "T" for TensorFlow
-        "P" for PyTorch
-        if not specified, using `backend().kind` instead.    
+    backend: String or 'BackendModule', optional.    
+     `'tensorflow'`, `'torch'`, TensorFlowBackend, PyTorchBackend, etc.    
+     if not specified, return the current default backend module. 
 
     Returns:
     ----------
     `True` iff `x` is a (tf or torch) sparse-tensor.
     """
-    if kind is None:
-        kind = backend().kind
-    else:
-        assert_kind(kind)
-        
-    if kind == "T":
+    backend = gg.backend(backend)
+
+    if backend == 'tensorflow':
         return is_tf_sparse_tensor(x)
     else:
         return is_th_sparse_tensor(x)
 
 
-def is_strided_tensor(x: Any, kind: Optional[str] = None) -> bool:
+def is_strided_tensor(x: Any, backend: Optional[str] = None) -> bool:
     """Check whether `x` is a strided (dense) Tensor.
     
     Parameters:
     ----------
     x: A python object to check.
     
-    kind: str, optional.
-        "T" for TensorFlow
-        "P" for PyTorch
-        if not specified, using `backend().kind` instead.    
-
+    backend: String or 'BackendModule', optional.    
+     `'tensorflow'`, `'torch'`, TensorFlowBackend, PyTorchBackend, etc.    
+     if not specified, return the current default backend module. 
+     
     Returns:
     ----------
     `True` iff `x` is a (tf or torch) strided (dense) Tensor.
     """
     
-    if kind is None:
-        kind = backend().kind
-    else:
-        assert_kind(kind)
-        
-    if kind == "T":
+    backend = gg.backend(backend)
+
+    if backend == 'tensorflow':
         return is_tf_strided_tensor(x)
     else:
         return is_th_strided_tensor(x)
     
 
-def is_tensor(x: Any, kind: Optional[str]=None) -> bool:
+def is_tensor(x: Any, backend: Optional[str]=None) -> bool:
     """Check whether `x` is 
         tf.Tensor,
         tf.Variable,
@@ -192,21 +203,17 @@ def is_tensor(x: Any, kind: Optional[str]=None) -> bool:
     ----------
     x: A python object to check.
     
-    kind: str, optional.
-        "T" for TensorFlow
-        "P" for PyTorch
-        if not specified, using `backend().kind` instead.    
+    backend: String or 'BackendModule', optional.    
+     `'tensorflow'`, `'torch'`, TensorFlowBackend, PyTorchBackend, etc.    
+     if not specified, return the current default backend module.    
 
     Returns:
     ----------
     `True` iff `x` is a (tf or torch) (sparse-)tensor.
     """
-    if kind is None:
-        kind = backend().kind
-    else:
-        assert_kind(kind)
-        
-    if kind == "T":
+    backend = gg.backend(backend)
+
+    if backend == 'tensorflow':
         return is_tf_tensor(x)
     else:
         return is_th_tensor(x)

@@ -83,7 +83,7 @@ class GAT(SemiSupervisedModel):
               dropout=0.6, l2_norm=5e-4,
               lr=0.01, use_bias=True):
 
-        if self.kind == "T":
+        if self.backend == "tensorflow":
             with tf.device(self.device):
                 self.model = tfGAT(self.graph.n_attrs, self.graph.n_classes, 
                                    hiddens=hiddens, n_heads=n_heads,

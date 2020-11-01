@@ -1,32 +1,81 @@
 """Inspired by Keras backend config API. https://tensorflow.google.com """
 
 from tensorflow.keras import backend as K
-from typing import Union
+from typing import Union, Tuple, Optional
 
-from graphgallery.backend import TensorFlowBackend, PyTorchBackend
+from .modules import BackendModule, TensorFlowBackend, PyTorchBackend
 
-# used to store the model or weights for tf and torch
-POSTFIX  = ".h5"
+__all__ = ['allowed_backends', 'backend_dict',
+           'backend', 'set_backend', 'boolx',
+           'intx', 'set_intx',
+           'floatx', 'set_floatx',
+           'epsilon', 'set_epsilon',
+           'file_postfix', 'set_file_postfix']
+
+
+# used to store the models or weights for `TensorFlow` and `PyTorch`
+_POSTFIX = ".h5"
+
+##### Backends ######
+_TF = 'tensorflow'
+_TORCH = 'torch'
+_MXNET = 'mxnet'
+_CUPY = 'cupy'
+_NUMPY = 'numpy'
 
 _BACKEND = TensorFlowBackend()
-_MODULE_KIND = {"tf": "T", "tensorflow": "T", "T": "T",
-                "th": "P", "torch": "P", "pytorch": "P", "P": "P"}
 
-_ALLOWED_NAME = set(list(_MODULE_KIND.keys()))
+_ALL_BACKENDS = {TensorFlowBackend, PyTorchBackend}
+_BACKEND_DICT = {}
 
-_MODULE = {"T": TensorFlowBackend,
-           "P": PyTorchBackend}
+BACKEND_TYPE = Union[TensorFlowBackend, PyTorchBackend]
 
-_INT_TYPES = {'int16', 'int32', 'int64'}
+
+def allowed_backends() -> Tuple[str]:
+    return tuple(backend_dict().keys())
+
+
+def backend_dict() -> dict:
+    return _BACKEND_DICT
+
+
+def set_backend_dict():
+    global _BACKEND_DICT
+    _BACKEND_DICT = {}
+    for bkd in _ALL_BACKENDS:
+        for act in bkd.acceptable_names:
+            _BACKEND_DICT[act] = bkd
+
+
+##### Types ######
+_INT_TYPES = {'uint8', 'int8', 'int16', 'int32', 'int64'}
 _FLOAT_TYPES = {'float16', 'float32', 'float64'}
 
-# The type of integer to use throughout a session.
+# The type of integer to use throughout a network
 _INTX = 'int32'
-# The type of float to use throughout a session.
+# The type of float to use throughout a network
 _FLOATX = 'float32'
+# The type of bool to use throughout a network
+_BOOLX = 'bool'
 
 epsilon = K.epsilon
 set_epsilon = K.set_epsilon
+
+
+def boolx() -> str:
+    """Returns the default bool type, as a string,
+        i.e., bool
+
+    Returns:
+    --------
+    String, the current default bool type.
+
+    Example:
+    --------
+    >>> graphgallery.boolx()
+    'bool'
+    """
+    return _BOOLX
 
 
 def floatx() -> str:
@@ -75,7 +124,8 @@ def set_floatx(dtype: str) -> str:
 def intx() -> str:
     """Returns the default integer type, as a string.
 
-    E.g. `'int16'`, `'int32'`, `'int64'`.
+    E.g. `'uint8'`, `'int8'`, `'int16'`, 
+        `'int32'`, `'int64'`.
 
     Returns:
     --------
@@ -99,7 +149,8 @@ def set_intx(dtype: str) -> str:
 
     Parameters:
     --------
-    dtype: String; `'int16'`, `'int32'`, or `'int64'`.
+    dtype: String. `'uint8'`, `'int8'`, `'int16'`, 
+        `'int32'`, `'int64'`.
 
     Example:
     --------
@@ -111,57 +162,73 @@ def set_intx(dtype: str) -> str:
     Raises:
     --------
     ValueError: In case of invalid value.
-    RuntimeError: PyTorch backend using other integer types.
+    RuntimeError: PyTorch backend using other integer types except for 'int64.
     """
 
     if dtype not in _INT_TYPES:
-        raise ValueError(f"Unknown floatx type: '{str(dtype)}', expected one of {_INT_TYPES}.")
+        raise ValueError(f"Unknown integer type: '{str(dtype)}', expected one of {_INT_TYPES}.")
     global _INTX
 
-    if _BACKEND.kind == "P" and dtype != 'int64':
+    if _BACKEND == _TORCH and dtype != 'int64':
         raise RuntimeError(
-            f"For {_BACKEND}, tensors used as integer must be long (int64), not '{str(dtype)}'.")
+            f"For {_BACKEND}, tensors used as integer must be 'long' ('int64'), not '{str(dtype)}'.")
 
     _INTX = str(dtype)
     return _INTX
 
 
-def backend() -> Union[TensorFlowBackend, PyTorchBackend]:
+def backend(module_name: Optional[Union[str, BackendModule]] = None) -> BACKEND_TYPE:
     """Publicly accessible method
     for determining the current backend.
 
-    Returns
+    Parameters:
     --------
-    String, the backend that GraphGallery is currently using.
+    module_name: String or 'BackendModule', optional.
+     `'tensorflow'`, `'torch'`, TensorFlowBackend, PyTorchBackend, etc.
+     if not specified, return the current default backend module. 
+
+    Returns:
+    --------
+    The backend module.
 
     E.g. `'TensorFlow 2.1.2 Backend'`,
       `'PyTorch 1.6.0+cpu Backend'`.
 
-    Returns:
-    --------
-    String, the current default backend module.
-
     Example:
     --------
     >>> graphgallery.backend()
     'TensorFlow 2.1.2 Backend'
+    >>> graphgallery.backend('torch)
+    'PyTorch 1.6.0+cpu Backend'    
     """
-    return _BACKEND
+    if module_name is None:
+        return _BACKEND
+    elif isinstance(module_name, BackendModule):
+        return module_name
+    else:
+        module_name = str(module_name)
+        module = _BACKEND_DICT.get(module_name.lower(), None)
+
+        if module is None:
+            raise ValueError(
+                f"Unsupported backend module name: '{module_name}', expected one of {allowed_backends()}.")
+        return module()
 
 
-def set_backend(module_name: str) -> Union[TensorFlowBackend, PyTorchBackend]:
-    """Sets the default backend module.
+def set_backend(module_name: Optional[Union[str, BackendModule]] = None) -> BACKEND_TYPE:
+    """Set the default backend module.
 
     Parameters:
     --------
-    module_name: String; `'tf'`, `'tensorflow'`,
-             `'th'`, `'torch'`, 'pytorch'`.
+    module_name: String or 'BackendModule', optional.
+        `'tf'`, `'tensorflow'`,
+        `'th'`, `'torch'`, `'pytorch'`.
 
     Example:
     --------
     >>> graphgallery.backend()
     'TensorFlow 2.1.2 Backend'
-    
+
     >>> graphgallery.set_backend('torch')
     'PyTorch 1.6.0+cpu Backend'
 
@@ -169,20 +236,31 @@ def set_backend(module_name: str) -> Union[TensorFlowBackend, PyTorchBackend]:
     --------
     ValueError: In case of invalid value.
     """
-    if module_name not in _ALLOWED_NAME:
-        raise ValueError(
-            f"Unknown module name: '{str(module_name)}', expected one of {_ALLOWED_NAME}.")
-    global _BACKEND
-    kind = _MODULE_KIND.get(module_name)
-    if kind != _BACKEND.kind:
-        # TODO: improve
-        _BACKEND = _MODULE.get(kind)()
 
-        if kind == "P":
-            # PyTorch backend uses Long integer as default.
+    _backend = backend(module_name)
+
+    global _BACKEND
+
+    if _backend != _BACKEND:
+        _BACKEND = _backend
+        if _backend == _TORCH:
+            # PyTorch backend uses `int64` as default
             set_intx('int64')
         else:
-            # Using int32 is more efficient
+            # Using `int32` is more efficient
             set_intx('int32')
 
     return _BACKEND
+
+
+def file_postfix():
+    return _POSTFIX
+
+
+def set_file_postfix(postfix):
+    global _POSTFIX
+    _POSTFIX = postfix
+    return _POSTFIX
+
+
+set_backend_dict()

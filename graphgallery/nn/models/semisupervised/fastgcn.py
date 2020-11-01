@@ -86,7 +86,7 @@ class FastGCN(SemiSupervisedModel):
     def build(self, hiddens=[32], activations=['relu'], dropout=0.5,
               l2_norm=5e-4, lr=0.01, use_bias=False):
 
-        if self.kind == "T":
+        if self.backend == "tensorflow":
             with tf.device(self.device):
                 self.model = tfFastGCN(self.graph.n_attrs, self.graph.n_classes,
                                         hiddens=hiddens,

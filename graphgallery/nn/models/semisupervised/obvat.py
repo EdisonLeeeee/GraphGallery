@@ -81,7 +81,7 @@ class OBVAT(SemiSupervisedModel):
     def build(self, hiddens=[16], activations=['relu'], dropout=0.5,
               l2_norm=5e-4, use_bias=False, lr=0.01, p1=1.4, p2=0.7):
 
-        if self.kind == "P":
+        if self.backend == "torch":
             raise RuntimeError(f"Currently {self.name} only supports for tensorflow backend.")        
 
         with tf.device(self.device):

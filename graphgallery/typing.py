@@ -78,4 +78,4 @@ TensorLike = Union[List[Union[Number, list]],
 NxGraph = Union[nx.Graph, nx.DiGraph]
 
 FloatTensorLike = Union[tf.Tensor, float, np.float16, np.float32, np.float64]
-AcceptableDTypes = Optional[tf.DType, np.dtype, type, int, str]
+AcceptableDTypes = Optional[Union[tf.DType, np.dtype, type, int, str]]

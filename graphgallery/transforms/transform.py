@@ -6,10 +6,7 @@ import scipy.sparse as sp
 from abc import ABC
 from typing import Any
 
-from graphgallery import floatx, intx, backend
-from graphgallery import (is_list_like,
-                          is_interger_scalar,
-                          is_tensor)
+import graphgallery as gg
 
 
 
@@ -47,20 +44,20 @@ def asintarr(x, dtype: str = None):
 
     """
     if dtype is None:
-        dtype = intx()
+        dtype = gg.intx()
 
-    if is_tensor(x):
+    if gg.is_tensor(x):
         if x.dtype != dtype:
-            kind = backend().kind
-            if kind == "T":
+            backend = gg.backend()
+            if backend == "tensorflow":
                 x = tf.cast(x, dtype=dtype)
             else:
                 x = x.to(getattr(torch, dtype))
         return x
 
-    if is_interger_scalar(x):
+    if gg.is_intscalar(x):
         x = np.asarray([x], dtype=dtype)
-    elif is_list_like(x) or isinstance(x, (np.ndarray, np.matrix)):
+    elif gg.is_listlike(x) or isinstance(x, (np.ndarray, np.matrix)):
         x = np.asarray(x, dtype=dtype)
     else:
         raise ValueError(

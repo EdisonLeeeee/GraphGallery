@@ -4,7 +4,7 @@ import scipy.sparse as sp
 from typing import Union
 from graphgallery.utils.shape import get_length
 from graphgallery.transforms import edge_transpose
-from graphgallery import is_interger_scalar
+from graphgallery import is_intscalar
 
 def augment_edge(edge_index: np.ndarray, nodes: Union[list, int, np.ndarray], 
                  edge_weight: np.ndarray=None, *,
@@ -53,7 +53,7 @@ def augment_edge(edge_index: np.ndarray, nodes: Union[list, int, np.ndarray],
         
     n_nodes = edge_index.max() + 1
     
-    if is_interger_scalar(nodes):
+    if is_intscalar(nodes):
         # int, add nodes to the graph
         nodes = np.arange(n_nodes, n_nodes + nodes, dtype=edge_index.dtype)
     else:

@@ -1,6 +1,5 @@
 import numpy as np
 from typing import Union
-from graphgallery.utils.type_check import is_scalar_like
 
 def augment_attr(attr_matrix: np.ndarray, N: int, 
                  fill_weight: Union[float, list, np.ndarray] =0.):
@@ -24,7 +23,7 @@ def augment_attr(attr_matrix: np.ndarray, N: int,
         
         
     """
-    if is_scalar_like(fill_weight):
+    if is_scalar(fill_weight):
         M = np.zeros([N, attr_matrix.shape[1]], dtype=attr_matrix.dtype) + fill_weight
     elif isinstance(fill_weight, (list, np.ndarray)):
         fill_weight = fill_weight.astype(attr_matrix.dtype, copy=False)

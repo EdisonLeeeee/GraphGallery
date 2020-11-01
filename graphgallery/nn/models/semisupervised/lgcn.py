@@ -73,7 +73,7 @@ class LGCN(SemiSupervisedModel):
     def build(self, hiddens=[32], n_filters=[8, 8], activations=[None, None], dropout=0.8,
               l2_norm=5e-4, lr=0.1, use_bias=False, K=8):
 
-        if self.kind == "T":
+        if self.backend == "tensorflow":
             with tf.device(self.device):
                 self.model = tfLGCN(self.graph.n_attrs, self.graph.n_classes,
                                      hiddens=hiddens,
