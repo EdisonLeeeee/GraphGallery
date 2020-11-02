@@ -3,11 +3,11 @@ import numpy as np
 
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
-from graphgallery.utils.decorators import EqualVarLength
+
 
 from graphgallery.nn.models.semisupervised.tf_models.lgcn import LGCN as tfLGCN
 
-from graphgallery import transforms as T
+from graphgallery import functional as F
 
 
 class LGCN(SemiSupervisedModel):
@@ -39,11 +39,11 @@ class LGCN(SemiSupervisedModel):
         graph: An instance of `graphgallery.data.Graph` or a tuple (list) of inputs.
             A sparse, attributed, labeled graph.
         adj_transform: string, `transform`, or None. optional
-            How to transform the adjacency matrix. See `graphgallery.transforms`
+            How to transform the adjacency matrix. See `graphgallery.functional`
             (default: :obj:`'normalize_adj'` with normalize rate `-0.5`.
             i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
         attr_transform: string, `transform`, or None. optional
-            How to transform the node attribute matrix. See `graphgallery.transforms`
+            How to transform the node attribute matrix. See `graphgallery.functional`
             (default :obj: `None`)
         device: string. optional 
             The device where the model is running on. You can specified `CPU` or `GPU` 
@@ -58,8 +58,8 @@ class LGCN(SemiSupervisedModel):
         """
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
-        self.adj_transform = T.get(adj_transform)
-        self.attr_transform = T.get(attr_transform)
+        self.adj_transform = F.get(adj_transform)
+        self.attr_transform = F.get(attr_transform)
         self.process()
 
     def process_step(self):
@@ -69,25 +69,25 @@ class LGCN(SemiSupervisedModel):
 
         self.feature_inputs, self.structure_inputs = attr_matrix, adj_matrix
 
-    # @EqualVarLength()
+    # @F.EqualVarLength()
     def build(self, hiddens=[32], n_filters=[8, 8], activations=[None, None], dropout=0.8,
               l2_norm=5e-4, lr=0.1, use_bias=False, K=8):
 
         if self.backend == "tensorflow":
             with tf.device(self.device):
                 self.model = tfLGCN(self.graph.n_attrs, self.graph.n_classes,
-                                     hiddens=hiddens,
-                                     activations=activations,
-                                     dropout=dropout, l2_norm=l2_norm,
-                                     lr=lr, use_bias=use_bias, K=K)
+                                    hiddens=hiddens,
+                                    activations=activations,
+                                    dropout=dropout, l2_norm=l2_norm,
+                                    lr=lr, use_bias=use_bias, K=K)
         else:
             raise NotImplementedError
 
         self.K = K
 
     def train_sequence(self, index, batch_size=np.inf):
-        
-        mask = T.indices2mask(index, self.graph.n_nodes)
+
+        mask = F.indices2mask(index, self.graph.n_nodes)
         index = get_indice_graph(self.structure_inputs, index, batch_size)
         while index.size < self.K:
             index = get_indice_graph(self.structure_inputs, index)

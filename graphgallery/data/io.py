@@ -3,13 +3,13 @@ import logging
 import errno
 import os.path as osp
 from tensorflow.keras.utils import get_file
+from typing import List
 
 from graphgallery import is_listlike
-from typing import List, Tuple, Union
 
 
-def download_file(raw_paths: Union[List[str], Tuple[str]],
-                  urls: Union[List[str], Tuple[str]]) -> None:
+def download_file(raw_paths: List[str],
+                  urls: List[str]) -> None:
 
     last_except = None
     for filename, url in zip(raw_paths, urls):
@@ -22,7 +22,7 @@ def download_file(raw_paths: Union[List[str], Tuple[str]],
         raise last_except
 
 
-def files_exist(files: Union[List[str], Tuple[str]]) -> bool:
+def files_exist(files: List[str]) -> bool:
     if is_listlike(files):
         return len(files) != 0 and all([osp.exists(f) for f in files])
     else:

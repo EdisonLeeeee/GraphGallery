@@ -3,11 +3,10 @@ import tensorflow as tf
 
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import SAGEMiniBatchSequence
-from graphgallery.utils.decorators import EqualVarLength
+
 
 from graphgallery.nn.models.semisupervised.tf_models.graphsage import GraphSAGE as tfGraphSAGE
 
-from graphgallery import transforms as T
 from graphgallery import functional as F
 
 
@@ -45,10 +44,10 @@ class GraphSAGE(SemiSupervisedModel):
             (default :obj: `(15, 5)`, i.e., sample `15` first-order neighbors and 
             `5` sencond-order neighbors, and the radius for `GraphSAGE` is `2`)
         adj_transform: string, `transform`, or None. optional
-            How to transform the adjacency matrix. See `graphgallery.transforms`
+            How to transform the adjacency matrix. See `graphgallery.functional`
             (default: :obj:`'neighbor_sampler'`) 
         attr_transform: string, `transform`, or None. optional
-            How to transform the node attribute matrix. See `graphgallery.transforms`
+            How to transform the node attribute matrix. See `graphgallery.functional`
             (default :obj: `None`)
         device: string. optional 
             The device where the model is running on. You can specified `CPU` or `GPU` 
@@ -66,8 +65,8 @@ class GraphSAGE(SemiSupervisedModel):
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
         self.n_samples = n_samples
-        self.adj_transform = T.get(adj_transform)
-        self.attr_transform = T.get(attr_transform)
+        self.adj_transform = F.get(adj_transform)
+        self.attr_transform = F.get(attr_transform)
         self.process()
 
     def process_step(self):
@@ -84,7 +83,7 @@ class GraphSAGE(SemiSupervisedModel):
             attr_matrix, device=self.device), adj_matrix
 
     # use decorator to make sure all list arguments have the same length
-    @EqualVarLength()
+    @F.EqualVarLength()
     def build(self, hiddens=[32], activations=['relu'], dropout=0.5,
               l2_norm=5e-4, lr=0.01, use_bias=True, output_normalize=False, aggregator='mean'):
 

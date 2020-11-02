@@ -5,11 +5,10 @@ import tensorflow as tf
 
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import MiniBatchSequence
-from graphgallery.utils.decorators import EqualVarLength
+
 
 from graphgallery.nn.models.semisupervised.th_models.gcn import GCN as pyGCN
 from graphgallery.nn.models.semisupervised.tf_models.gcn import GCN as tfGCN
-from graphgallery import transforms as T
 from graphgallery import functional as F
 
 
@@ -53,11 +52,11 @@ class ClusterGCN(SemiSupervisedModel):
             if not specified (`None`), it will be set to the number 
             of classes automatically. (default :obj: `None`).            
         adj_transform: string, `transform`, or None. optional
-            How to transform the adjacency matrix. See `graphgallery.transforms`
+            How to transform the adjacency matrix. See `graphgallery.functional`
             (default: :obj:`'normalize_adj'` with normalize rate `-0.5`.
             i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
         attr_transform: string, `transform`, or None. optional
-            How to transform the node attribute matrix. See `graphgallery.transforms`
+            How to transform the node attribute matrix. See `graphgallery.functional`
             (default :obj: `None`)
         device: string. optional 
             The device where the model is running on. You can specified `CPU` or `GPU` 
@@ -76,15 +75,15 @@ class ClusterGCN(SemiSupervisedModel):
             n_clusters = self.graph.n_classes
 
         self.n_clusters = n_clusters
-        self.adj_transform = T.get(adj_transform)
-        self.attr_transform = T.get(attr_transform)
+        self.adj_transform = F.get(adj_transform)
+        self.attr_transform = F.get(attr_transform)
         self.process()
 
     def process_step(self):
         graph = self.graph
         attr_matrix = self.attr_transform(graph.attr_matrix)
 
-        batch_adj, batch_x, self.cluster_member = T.graph_partition(graph.adj_matrix,
+        batch_adj, batch_x, self.cluster_member = F.graph_partition(graph.adj_matrix,
                                                                     attr_matrix,
                                                                     n_clusters=self.n_clusters)
 
@@ -93,7 +92,7 @@ class ClusterGCN(SemiSupervisedModel):
         (self.batch_adj, self.batch_x) = F.astensors(batch_adj, batch_x, device=self.device)
 
     # use decorator to make sure all list arguments have the same length
-    @EqualVarLength()
+    @F.EqualVarLength()
     def build(self, hiddens=[32], activations=['relu'], dropout=0.5,
               l2_norm=0., lr=0.01, use_bias=False):
 
@@ -109,7 +108,7 @@ class ClusterGCN(SemiSupervisedModel):
 
     def train_sequence(self, index):
 
-        mask = T.indices2mask(index, self.graph.n_nodes)
+        mask = F.indices2mask(index, self.graph.n_nodes)
         labels = self.graph.labels
 
         batch_idx, batch_labels = [], []
@@ -132,7 +131,7 @@ class ClusterGCN(SemiSupervisedModel):
 
     def predict(self, index):
 
-        mask = T.indices2mask(index, self.graph.n_nodes)
+        mask = F.indices2mask(index, self.graph.n_nodes)
 
         orders_dict = {idx: order for order, idx in enumerate(index)}
         batch_idx, orders = [], []

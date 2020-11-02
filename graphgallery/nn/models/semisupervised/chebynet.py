@@ -3,11 +3,9 @@ import tensorflow as tf
 
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
-from graphgallery.utils.decorators import EqualVarLength
 
 from graphgallery.nn.models.semisupervised.tf_models.chebynet import ChebyNet as tfChebyNet
 
-from graphgallery import transforms as T
 from graphgallery import functional as F
 
 
@@ -40,10 +38,10 @@ class ChebyNet(SemiSupervisedModel):
         graph: An instance of `graphgallery.data.Graph` or a tuple (list) of inputs.
             A sparse, attributed, labeled graph.
         adj_transform: string, `transform`, or None. optional
-            How to transform the adjacency matrix. See `graphgallery.transforms`
+            How to transform the adjacency matrix. See `graphgallery.functional`
             (default: :obj:`'cheby_basis'`) 
         attr_transform: string, `transform`, or None. optional
-            How to transform the node attribute matrix. See `graphgallery.transforms`
+            How to transform the node attribute matrix. See `graphgallery.functional`
             (default :obj: `None`)
         device: string. optional
             The device where the model is running on. You can specified `CPU` or `GPU`
@@ -59,8 +57,8 @@ class ChebyNet(SemiSupervisedModel):
         """
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
-        self.adj_transform = T.get(adj_transform)
-        self.attr_transform = T.get(attr_transform)
+        self.adj_transform = F.get(adj_transform)
+        self.attr_transform = F.get(attr_transform)
         self.process()
 
     def process_step(self):
@@ -72,7 +70,7 @@ class ChebyNet(SemiSupervisedModel):
             attr_matrix, adj_matrix, device=self.device)
 
     # use decorator to make sure all list arguments have the same length
-    @EqualVarLength()
+    @F.EqualVarLength()
     def build(self, hiddens=[16], activations=['relu'], dropout=0.5, l2_norm=5e-4, lr=0.01,
               use_bias=False):
 

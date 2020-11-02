@@ -12,7 +12,7 @@ from tensorflow.keras import backend as K
 
 from graphgallery.nn.models import Base
 from graphgallery.data.io import makedirs_from_filename
-from graphgallery.utils import save
+from graphgallery.utils import saver
 from graphgallery import file_postfix
 
 
@@ -60,14 +60,14 @@ class BaseModel(Base):
 
         if as_model:
             if self.backend == "tensorflow":
-                save.save_tf_model(self.model, path, overwrite=overwrite, save_format=save_format, **kwargs)
+                saver.save_tf_model(self.model, path, overwrite=overwrite, save_format=save_format, **kwargs)
             else:
-                save.save_torch_model(self.model, path, overwrite=overwrite, save_format=save_format, **kwargs)
+                saver.save_torch_model(self.model, path, overwrite=overwrite, save_format=save_format, **kwargs)
         else:
             if self.backend == "tensorflow":
-                save.save_tf_weights(self.model, path, overwrite=overwrite, save_format=save_format)
+                saver.save_tf_weights(self.model, path, overwrite=overwrite, save_format=save_format)
             else:
-                save.save_torch_weights(self.model, path, overwrite=overwrite, save_format=save_format)
+                saver.save_torch_weights(self.model, path, overwrite=overwrite, save_format=save_format)
 
     def load(self, path=None, as_model=False):
         if not path:
@@ -75,15 +75,15 @@ class BaseModel(Base):
 
         if as_model:
             if self.backend == "tensorflow":
-                self.model = save.load_tf_model(
+                self.model = saver.load_tf_model(
                     path, custom_objects=self.custom_objects)
             else:
-                self.model = save.load_torch_model(path)
+                self.model = saver.load_torch_model(path)
         else:
             if self.backend == "tensorflow":
-                save.load_tf_weights(self.model, path)
+                saver.load_tf_weights(self.model, path)
             else:
-                save.load_torch_weights(self.model, path)
+                saver.load_torch_weights(self.model, path)
 
     def __getattr__(self, attr):
         ##### FIXME: This may cause ERROR ######

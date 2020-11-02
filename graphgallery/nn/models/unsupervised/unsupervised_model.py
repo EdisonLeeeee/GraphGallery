@@ -13,7 +13,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 
 from graphgallery.nn.models import BaseModel
-from graphgallery.transforms import asintarr
+from graphgallery.functional import asintarr
 
 
 class UnsupervisedModel(BaseModel):

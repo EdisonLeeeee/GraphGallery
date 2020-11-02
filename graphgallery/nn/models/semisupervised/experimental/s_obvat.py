@@ -9,7 +9,7 @@ from graphgallery.nn.layers.tf_layers import GraphConvolution, Gather
 from graphgallery.nn.models import OBVAT
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.bvat_utils import kl_divergence_with_logit, entropy_y_x, get_normalized_vector
-from graphgallery.utils.decorators import EqualVarLength
+from graphgallery import functional as F
 
 
 class SimplifiedOBVAT(OBVAT):
@@ -41,11 +41,11 @@ class SimplifiedOBVAT(OBVAT):
         graph: An instance of `graphgallery.data.Graph` or a tuple(list) of inputs.
             A sparse, attributed, labeled graph.
         adj_transform: string, `transform`, or None. optional
-            How to transform the adjacency matrix. See `graphgallery.transforms`
+            How to transform the adjacency matrix. See `graphgallery.functional`
             (default: : obj: `'normalize_adj'` with normalize rate `- 0.5`.
             i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}})
         attr_transform: string, `transform`, or None. optional
-            How to transform the node attribute matrix. See `graphgallery.transforms`
+            How to transform the node attribute matrix. See `graphgallery.functional`
             (default: obj: `None`)
         device: string. optional
             The device where the model is running on. You can specified `CPU` or `GPU`
@@ -67,7 +67,7 @@ class SimplifiedOBVAT(OBVAT):
                          device=device, seed=seed, name=name, **kwargs)
 
     # use decorator to make sure all list arguments have the same length
-    @EqualVarLength()
+    @F.EqualVarLength()
     def build(self, hiddens=[16], activations=['relu'], dropout=0.,
               lr=0.01, l2_norm=5e-4, p1=1.4, p2=0.7, use_bias=False,
               epsilon=0.01):
@@ -89,7 +89,7 @@ class SimplifiedOBVAT(OBVAT):
                                                    kernel_regularizer=regularizers.l2(l2_norm)))
 
             GCN_layers.append(GraphConvolution(self.graph.n_classes, use_bias=use_bias))
-            
+
             self.GCN_layers = GCN_layers
             self.dropout = Dropout(rate=dropout)
 
@@ -103,7 +103,7 @@ class SimplifiedOBVAT(OBVAT):
             entropy_loss = entropy_y_x(logit)
             vat_loss = self.virtual_adversarial_loss(x, adj, logit, epsilon)
             model.add_loss(p1 * vat_loss + p2 * entropy_loss)
-        
+
             self.model = model
 
     def train_step(self, sequence):

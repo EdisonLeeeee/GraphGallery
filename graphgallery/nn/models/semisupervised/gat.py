@@ -9,12 +9,11 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy
 from graphgallery.nn.layers.tf_layers import GraphAttention, Gather
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
-from graphgallery.utils.decorators import EqualVarLength
+
 
 from graphgallery.nn.models.semisupervised.th_models.gat import GAT as pyGAT
 from graphgallery.nn.models.semisupervised.tf_models.gat import GAT as tfGAT
 from graphgallery import functional as F
-from graphgallery import transforms as T
 
 
 class GAT(SemiSupervisedModel):
@@ -51,7 +50,7 @@ class GAT(SemiSupervisedModel):
             with normalize rate `-0.5`.
             i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
         attr_transform: string, `transform`, or None. optional
-            How to transform the node attribute matrix. See `graphgallery.transforms`
+            How to transform the node attribute matrix. See `graphgallery.functional`
             (default :obj: `None`)
         device: string. optional
             The device where the model is running on. You can specified `CPU` or `GPU`
@@ -67,8 +66,8 @@ class GAT(SemiSupervisedModel):
         """
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
-        self.adj_transform = T.get(adj_transform)
-        self.attr_transform = T.get(attr_transform)
+        self.adj_transform = F.get(adj_transform)
+        self.attr_transform = F.get(attr_transform)
         self.process()
 
     def process_step(self):
@@ -79,7 +78,7 @@ class GAT(SemiSupervisedModel):
         self.feature_inputs, self.structure_inputs = F.astensors(
             attr_matrix, adj_matrix, device=self.device)
 
-    @EqualVarLength(include=["n_heads"])
+    @F.EqualVarLength(include=["n_heads"])
     def build(self, hiddens=[8], n_heads=[8], activations=['elu'],
               dropout=0.6, l2_norm=5e-4,
               lr=0.01, use_bias=True):

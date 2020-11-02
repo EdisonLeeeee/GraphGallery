@@ -7,11 +7,10 @@ from graphgallery import utils
 from graphgallery import sequence
 from graphgallery import data
 from graphgallery import backend
-from graphgallery import transforms
 from graphgallery import functional
 
 
 __version__ = '0.5.0'
 
 __all__ = ['graphgallery', 'nn', 'utils', 'sequence', 'data',
-           'backend', 'transforms', 'functional', '__version__']
+           'backend', 'functional', '__version__']

@@ -3,11 +3,10 @@ import tensorflow as tf
 
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
-from graphgallery.utils.decorators import EqualVarLength
+
 
 from graphgallery.nn.models.semisupervised.tf_models.dagnn import DAGNN as tfDAGNN
 
-from graphgallery import transforms as T
 from graphgallery import functional as F
 
 
@@ -42,11 +41,11 @@ class DAGNN(SemiSupervisedModel):
             propagation steps of adjacency matrix.
             (default :obj: `10`)
         adj_transform: string, `transform`, or None. optional
-            How to transform the adjacency matrix. See `graphgallery.transforms`
+            How to transform the adjacency matrix. See `graphgallery.functional`
             (default: :obj:`'normalize_adj'` with normalize rate `-0.5`.
             i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
         attr_transform: string, `transform`, or None. optional
-            How to transform the node attribute matrix. See `graphgallery.transforms`
+            How to transform the node attribute matrix. See `graphgallery.functional`
             (default :obj: `None`)
         device: string. optional 
             The device where the model is running on. You can specified `CPU` or `GPU` 
@@ -63,8 +62,8 @@ class DAGNN(SemiSupervisedModel):
         super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
 
         self.K = K
-        self.adj_transform = T.get(adj_transform)
-        self.attr_transform = T.get(attr_transform)
+        self.adj_transform = F.get(adj_transform)
+        self.attr_transform = F.get(attr_transform)
         self.process()
 
     def process_step(self):
@@ -76,7 +75,7 @@ class DAGNN(SemiSupervisedModel):
             attr_matrix, adj_matrix, device=self.device)
 
     # use decorator to make sure all list arguments have the same length
-    @EqualVarLength()
+    @F.EqualVarLength()
     def build(self, hiddens=[64], activations=['relu'], dropout=0.5, l2_norm=5e-3,
               lr=0.01, use_bias=False):
 

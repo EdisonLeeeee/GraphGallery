@@ -3,10 +3,8 @@ import tensorflow as tf
 
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import SBVATSampleSequence, FullBatchNodeSequence
-from graphgallery.utils.sample import find_4o_nbrs
 from graphgallery.utils.bvat_utils import get_normalized_vector, kl_divergence_with_logit, entropy_y_x
-from graphgallery.utils.decorators import EqualVarLength
-from graphgallery import transforms as T
+
 from graphgallery import functional as F
 
 from graphgallery.nn.models.semisupervised.tf_models.gcn import GCN as tfGCN
@@ -49,11 +47,11 @@ class SBVAT(SemiSupervisedModel):
             The number of sampled subset nodes in the graph where the length of the
             shortest path between them is at least `4`. (default :obj: `50`)
         adj_transform: string, `transform`, or None. optional
-            How to transform the adjacency matrix. See `graphgallery.transforms`
+            How to transform the adjacency matrix. See `graphgallery.functional`
             (default: :obj:`'normalize_adj'` with normalize rate `-0.5`.
             i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}})
         attr_transform: string, `transform`, or None. optional
-            How to transform the node attribute matrix. See `graphgallery.transforms`
+            How to transform the node attribute matrix. See `graphgallery.functional`
             (default :obj: `None`)
         device: string. optional
             The device where the model is running on. You can specified `CPU` or `GPU`
@@ -68,8 +66,8 @@ class SBVAT(SemiSupervisedModel):
         """
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
-        self.adj_transform = T.get(adj_transform)
-        self.attr_transform = T.get(attr_transform)
+        self.adj_transform = F.get(adj_transform)
+        self.attr_transform = F.get(attr_transform)
         self.n_samples = n_samples
         self.process()
 
@@ -77,13 +75,13 @@ class SBVAT(SemiSupervisedModel):
         graph = self.graph
         adj_matrix = self.adj_transform(graph.adj_matrix)
         attr_matrix = self.attr_transform(graph.attr_matrix)
-        self.neighbors = find_4o_nbrs(adj_matrix)
+        self.neighbors = F.find_4o_nbrs(adj_matrix)
 
         self.feature_inputs, self.structure_inputs = F.astensors(
             attr_matrix, adj_matrix, device=self.device)
 
     # use decorator to make sure all list arguments have the same length
-    @EqualVarLength()
+    @F.EqualVarLength()
     def build(self, hiddens=[16], activations=['relu'], dropout=0.5,
               lr=0.01, l2_norm=5e-4, use_bias=False, p1=1., p2=1.,
               n_power_iterations=1, epsilon=0.03, xi=1e-6):

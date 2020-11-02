@@ -42,11 +42,11 @@ class GCN_MIX(FastGCN):
         graph: An instance of `graphgallery.data.Graph` or a tuple (list) of inputs.
             A sparse, attributed, labeled graph.
         adj_transform: string, `transform`, or None. optional
-            How to transform the adjacency matrix. See `graphgallery.transforms`
+            How to transform the adjacency matrix. See `graphgallery.functional`
             (default: :obj:`'normalize_adj'` with normalize rate `-0.5`.
             i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
         attr_transform: string, `transform`, or None. optional
-            How to transform the node attribute matrix. See `graphgallery.transforms`
+            How to transform the node attribute matrix. See `graphgallery.functional`
             (default :obj: `None`)
         device: string. optional 
             The device where the model is running on. You can specified `CPU` or `GPU` 

@@ -17,13 +17,12 @@ from tensorflow.python.keras.utils.generic_utils import Progbar
 
 import graphgallery as gg
 from graphgallery.nn.models import BaseModel
-from graphgallery.nn.models import training
 from graphgallery.nn.functions import softmax
 from graphgallery.data.io import makedirs_from_filename
 from graphgallery.data import BaseGraph
-from graphgallery.transforms import asintarr
+from graphgallery.functional import asintarr
 from graphgallery.utils.raise_error import raise_if_kwargs
-
+from graphgallery.utils import trainer
 
 
 # Ignora warnings:
@@ -31,20 +30,21 @@ from graphgallery.utils.raise_error import raise_if_kwargs
 #     This is caused by `tf.gather` and it will be solved in future tensorflow version.
 warnings.filterwarnings(
     'ignore', '.*Converting sparse IndexedSlices to a dense Tensor of unknown shape.*')
-    
+
+
 class SemiSupervisedModel(BaseModel):
     def __init__(self, *graph, device='cpu:0', seed=None, name=None, **kwargs):
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
-    
+
         if self.backend == "tensorflow":
-            self.train_step_fn = partial(training.train_step_tf, device=self.device)
-            self.test_step_fn = partial(training.test_step_tf, device=self.device)
-            self.predict_step_fn = partial(training.predict_step_tf, device=self.device)
+            self.train_step_fn = partial(trainer.train_step_tf, device=self.device)
+            self.test_step_fn = partial(trainer.test_step_tf, device=self.device)
+            self.predict_step_fn = partial(trainer.predict_step_tf, device=self.device)
         else:
-            self.train_step_fn = training.train_step_torch
-            self.test_step_fn = training.test_step_torch
-            self.predict_step_fn = training.predict_step_torch
-        
+            self.train_step_fn = trainer.train_step_torch
+            self.test_step_fn = trainer.test_step_torch
+            self.predict_step_fn = trainer.predict_step_torch
+
     def process(self, *graph, **kwargs):
         """pre-process for the input graph, including manipulations
         on adjacency matrix and attribute matrix, and finally convert
@@ -71,7 +71,7 @@ class SemiSupervisedModel(BaseModel):
                     self.graph.set_inputs(**graph)
             else:
                 self.graph.set_inputs(*graph)
-                
+
         return self.process_step()
 
     def process_step(self):
@@ -187,7 +187,7 @@ class SemiSupervisedModel(BaseModel):
 
         """
         raise_if_kwargs(kwargs)
-        if not (isinstance(verbose, int) and 0<=verbose<=4):
+        if not (isinstance(verbose, int) and 0 <= verbose <= 4):
             raise ValueError("'verbose=0': not verbose"
                              "'verbose=1': Progbar(one line, detailed), "
                              "'verbose=2': Progbar(one line, omitted), "
@@ -224,7 +224,7 @@ class SemiSupervisedModel(BaseModel):
 
         history = History()
         callbacks.append(history)
-        
+
         if early_stopping:
             es_callback = EarlyStopping(monitor=early_stop_metric,
                                         patience=early_stopping,
@@ -249,14 +249,14 @@ class SemiSupervisedModel(BaseModel):
                                           save_weights_only=not as_model,
                                           verbose=0)
             callbacks.append(mc_callback)
-            
+
         callbacks.set_model(model)
         model.stop_training = False
         callbacks.on_train_begin()
 
         if verbose:
             stateful_metrics = {"acc", 'loss', 'val_acc', 'val_loss', 'time'}
-            if verbose <=2:
+            if verbose <= 2:
                 progbar = Progbar(target=epochs, verbose=verbose, stateful_metrics=stateful_metrics)
             print("Training...")
 
@@ -284,17 +284,16 @@ class SemiSupervisedModel(BaseModel):
 
                 if verbose:
                     time_passed = time.perf_counter() - begin_time
-                    training_logs.update({'time': time_passed})                
+                    training_logs.update({'time': time_passed})
                     if verbose > 2:
                         print(f"Epoch {epoch+1}/{epochs}")
                         progbar.update(len(train_data), training_logs.items())
                     else:
                         progbar.update(epoch + 1, training_logs.items())
 
-
                 if model.stop_training:
                     break
-                    
+
         finally:
             callbacks.on_train_end()
             # to avoid unexpected termination of the model
@@ -340,7 +339,7 @@ class SemiSupervisedModel(BaseModel):
 
         if verbose:
             print("Testing...")
-            
+
         stateful_metrics = {"test_acc", 'test_loss', 'time'}
         progbar = Progbar(target=len(test_data), verbose=verbose, stateful_metrics=stateful_metrics)
         begin_time = time.perf_counter()
@@ -403,7 +402,6 @@ class SemiSupervisedModel(BaseModel):
 
         """
         return self.test_step_fn(self.model, sequence)
-
 
     def predict(self, index=None, return_prob=True):
         """
@@ -534,7 +532,6 @@ class SemiSupervisedModel(BaseModel):
         if not hasattr(model, 'optimizer'):
             raise RuntimeError("The model has not attribute `optimizer`!")
         model.optimizer.learning_rate.assign(value)
-
 
     def remove_weights(self):
         filepath = self.weight_path

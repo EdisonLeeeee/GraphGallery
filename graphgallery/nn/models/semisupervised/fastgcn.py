@@ -3,11 +3,10 @@ import tensorflow as tf
 
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FastGCNBatchSequence
-from graphgallery.utils.decorators import EqualVarLength
+
 
 from graphgallery.nn.models.semisupervised.tf_models.fastgcn import FastGCN as tfFastGCN
 
-from graphgallery import transforms as T
 from graphgallery import functional as F
 
 
@@ -47,11 +46,11 @@ class FastGCN(SemiSupervisedModel):
             The selected nodes for each batch nodes, `rank` must be smaller than
             `batch_size`. (default :int: `100`)
         adj_transform: string, `transform`, or None. optional
-            How to transform the adjacency matrix. See `graphgallery.transforms`
+            How to transform the adjacency matrix. See `graphgallery.functional`
             (default: :obj:`'normalize_adj'` with normalize rate `-0.5`.
             i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
         attr_transform: string, `transform`, or None. optional
-            How to transform the node attribute matrix. See `graphgallery.transforms`
+            How to transform the node attribute matrix. See `graphgallery.functional`
             (default :obj: `None`)
         device: string. optional
             The device where the model is running on. You can specified `CPU` or `GPU`
@@ -68,8 +67,8 @@ class FastGCN(SemiSupervisedModel):
 
         self.rank = rank
         self.batch_size = batch_size
-        self.adj_transform = T.get(adj_transform)
-        self.attr_transform = T.get(attr_transform)
+        self.adj_transform = F.get(adj_transform)
+        self.attr_transform = F.get(attr_transform)
         self.process()
 
     def process_step(self):
@@ -83,7 +82,7 @@ class FastGCN(SemiSupervisedModel):
             attr_matrix, device=self.device), adj_matrix
 
     # use decorator to make sure all list arguments have the same length
-    @EqualVarLength()
+    @F.EqualVarLength()
     def build(self, hiddens=[32], activations=['relu'], dropout=0.5,
               l2_norm=5e-4, lr=0.01, use_bias=False):
 
