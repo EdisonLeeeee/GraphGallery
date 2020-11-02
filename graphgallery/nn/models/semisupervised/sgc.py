@@ -11,6 +11,7 @@ from graphgallery.nn.models.semisupervised.th_models.sgc import SGC as pySGC
 from graphgallery.nn.models.semisupervised.tf_models.sgc import SGC as tfSGC
 
 from graphgallery import transforms as T
+from graphgallery import functional as F
 
 
 class SGC(SemiSupervisedModel):
@@ -75,7 +76,7 @@ class SGC(SemiSupervisedModel):
         adj_matrix = self.adj_transform(graph.adj_matrix)
         attr_matrix = self.attr_transform(graph.attr_matrix)
 
-        feature_inputs, structure_inputs = T.astensors(
+        feature_inputs, structure_inputs = F.astensors(
             attr_matrix, adj_matrix, device=self.device)
 
         if self.backend == "tensorflow":
@@ -97,27 +98,25 @@ class SGC(SemiSupervisedModel):
                 [feature_inputs, structure_inputs])
             self.feature_inputs, self.structure_inputs = feature_inputs, structure_inputs
 
-            
-
     # use decorator to make sure all list arguments have the same length
+
     @EqualVarLength()
     def build(self, hiddens=[], activations=[], dropout=0.5, l2_norm=5e-5, lr=0.2, use_bias=True):
 
         if self.backend == "tensorflow":
             with tf.device(self.device):
                 self.model = tfSGC(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
-                              activations=activations, dropout=dropout, l2_norm=l2_norm,
-                              lr=lr, use_bias=use_bias)
+                                   activations=activations, dropout=dropout, l2_norm=l2_norm,
+                                   lr=lr, use_bias=use_bias)
         else:
             self.model = pySGC(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
-                          activations=activations, dropout=dropout, l2_norm=l2_norm,
+                               activations=activations, dropout=dropout, l2_norm=l2_norm,
                                lr=lr, use_bias=use_bias).to(self.device)
 
-
     def train_sequence(self, index):
-        index = T.astensor(index)
+        index = F.astensor(index)
         labels = self.graph.labels[index]
-        
+
         if self.backend == "tensorflow":
             feature_inputs = tf.gather(self.feature_inputs, index)
         else:

@@ -9,6 +9,7 @@ from graphgallery.nn.models.semisupervised.th_models.gcn import GCN as pyGCN
 from graphgallery.nn.models.semisupervised.tf_models.densegcn import DenseGCN as tfGCN
 
 from graphgallery import transforms as T
+from graphgallery import functional as F
 
 
 class DenseGCN(SemiSupervisedModel):
@@ -70,7 +71,7 @@ class DenseGCN(SemiSupervisedModel):
         adj_matrix = self.adj_transform(graph.adj_matrix).toarray()
         attr_matrix = self.attr_transform(graph.attr_matrix)
 
-        self.feature_inputs, self.structure_inputs = T.astensors(
+        self.feature_inputs, self.structure_inputs = F.astensors(
             attr_matrix, adj_matrix, device=self.device)
 
     # use decorator to make sure all list arguments have the same length
@@ -89,7 +90,7 @@ class DenseGCN(SemiSupervisedModel):
                                lr=lr, use_bias=use_bias).to(self.device)
 
     def train_sequence(self, index):
-        
+
         labels = self.graph.labels[index]
         sequence = FullBatchNodeSequence(
             [self.feature_inputs, self.structure_inputs, index], labels, device=self.device)

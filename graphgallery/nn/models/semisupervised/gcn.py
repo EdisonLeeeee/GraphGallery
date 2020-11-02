@@ -9,6 +9,7 @@ from graphgallery.nn.models.semisupervised.th_models.gcn import GCN as pyGCN
 from graphgallery.nn.models.semisupervised.tf_models.gcn import GCN as tfGCN
 
 from graphgallery import transforms as T
+from graphgallery import functional as F
 
 
 class GCN(SemiSupervisedModel):
@@ -71,27 +72,26 @@ class GCN(SemiSupervisedModel):
         adj_matrix = self.adj_transform(graph.adj_matrix)
         attr_matrix = self.attr_transform(graph.attr_matrix)
 
-        self.feature_inputs, self.structure_inputs = T.astensors(
+        self.feature_inputs, self.structure_inputs = F.astensors(
             attr_matrix, adj_matrix, device=self.device)
 
     # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
     def build(self, hiddens=[16], activations=['relu'], dropout=0.5,
               l2_norm=5e-4, lr=0.01, use_bias=False):
-        
+
         if self.backend == "tensorflow":
             with tf.device(self.device):
                 self.model = tfGCN(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
-                                activations=activations, dropout=dropout, l2_norm=l2_norm,
-                                lr=lr, use_bias=use_bias)
+                                   activations=activations, dropout=dropout, l2_norm=l2_norm,
+                                   lr=lr, use_bias=use_bias)
         else:
             self.model = pyGCN(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
-                           activations=activations, dropout=dropout, l2_norm=l2_norm,
+                               activations=activations, dropout=dropout, l2_norm=l2_norm,
                                lr=lr, use_bias=use_bias).to(self.device)
 
-
     def train_sequence(self, index):
-        
+
         labels = self.graph.labels[index]
         sequence = FullBatchNodeSequence(
             [self.feature_inputs, self.structure_inputs, index], labels, device=self.device)

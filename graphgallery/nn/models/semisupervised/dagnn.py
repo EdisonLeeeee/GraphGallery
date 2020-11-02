@@ -8,6 +8,7 @@ from graphgallery.utils.decorators import EqualVarLength
 from graphgallery.nn.models.semisupervised.tf_models.dagnn import DAGNN as tfDAGNN
 
 from graphgallery import transforms as T
+from graphgallery import functional as F
 
 
 class DAGNN(SemiSupervisedModel):
@@ -71,7 +72,7 @@ class DAGNN(SemiSupervisedModel):
         adj_matrix = self.adj_transform(graph.adj_matrix)
         attr_matrix = self.attr_transform(graph.attr_matrix)
 
-        self.feature_inputs, self.structure_inputs = T.astensors(
+        self.feature_inputs, self.structure_inputs = F.astensors(
             attr_matrix, adj_matrix, device=self.device)
 
     # use decorator to make sure all list arguments have the same length
@@ -82,15 +83,15 @@ class DAGNN(SemiSupervisedModel):
         if self.backend == "tensorflow":
             with tf.device(self.device):
                 self.model = tfDAGNN(self.graph.n_attrs, self.graph.n_classes,
-                                        hiddens=hiddens,
-                                        activations=activations,
-                                        dropout=dropout, l2_norm=l2_norm,
-                                        lr=lr, use_bias=use_bias, K=self.K)
+                                     hiddens=hiddens,
+                                     activations=activations,
+                                     dropout=dropout, l2_norm=l2_norm,
+                                     lr=lr, use_bias=use_bias, K=self.K)
         else:
             raise NotImplementedError
 
     def train_sequence(self, index):
-        
+
         labels = self.graph.labels[index]
         sequence = FullBatchNodeSequence(
             [self.feature_inputs, self.structure_inputs, index], labels, device=self.device)

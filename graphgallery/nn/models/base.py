@@ -9,7 +9,6 @@ import graphgallery as gg
 from abc import ABC
 
 
-
 def parse_graph_inputs(*graph):
     # TODO: Maybe I could write it a little more elegantly here?
     if len(graph) == 0:
@@ -78,7 +77,7 @@ class Base(ABC):
         self.seed = seed
         self.name = name
         self.graph = graph.copy()
-        self.device = gg.utils.device.parse_device(device, _backend)
+        self.device = gg.functional.parse_device(device, _backend)
         self.backend = _backend
 
         # data types, default: `float32`,`int32` and `bool`

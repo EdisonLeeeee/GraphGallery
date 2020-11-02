@@ -6,17 +6,17 @@ from tensorflow.keras.utils import Sequence as tf_Sequence
 from torch.nn import Module
 from functools import partial
 
-from graphgallery import transforms as T
+from graphgallery import functional as F
+
 
 class Sequence(tf_Sequence):
 
     def __init__(self, *args, **kwargs):
         device = kwargs.pop('device', 'cpu')
         super().__init__(*args, **kwargs)
-        self.astensor = partial(T.astensor, device=device)
-        self.astensors = partial(T.astensors, device=device)
+        self.astensor = partial(F.astensor, device=device)
+        self.astensors = partial(F.astensors, device=device)
         self.device = device
-        
 
     def __len__(self):
         raise NotImplementedError
@@ -29,4 +29,3 @@ class Sequence(tf_Sequence):
 
     def _shuffle_batches(self):
         ...
-        

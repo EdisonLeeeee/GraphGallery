@@ -7,8 +7,10 @@ from graphgallery.utils.sample import find_4o_nbrs
 from graphgallery.utils.bvat_utils import get_normalized_vector, kl_divergence_with_logit, entropy_y_x
 from graphgallery.utils.decorators import EqualVarLength
 from graphgallery import transforms as T
+from graphgallery import functional as F
 
 from graphgallery.nn.models.semisupervised.tf_models.gcn import GCN as tfGCN
+
 
 class SBVAT(SemiSupervisedModel):
     """
@@ -77,7 +79,7 @@ class SBVAT(SemiSupervisedModel):
         attr_matrix = self.attr_transform(graph.attr_matrix)
         self.neighbors = find_4o_nbrs(adj_matrix)
 
-        self.feature_inputs, self.structure_inputs = T.astensors(
+        self.feature_inputs, self.structure_inputs = F.astensors(
             attr_matrix, adj_matrix, device=self.device)
 
     # use decorator to make sure all list arguments have the same length
@@ -86,12 +88,11 @@ class SBVAT(SemiSupervisedModel):
               lr=0.01, l2_norm=5e-4, use_bias=False, p1=1., p2=1.,
               n_power_iterations=1, epsilon=0.03, xi=1e-6):
 
-
         if self.backend == "tensorflow":
             with tf.device(self.device):
                 self.model = tfGCN(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
-                                activations=activations, dropout=dropout, l2_norm=l2_norm,
-                                lr=lr, use_bias=use_bias)
+                                   activations=activations, dropout=dropout, l2_norm=l2_norm,
+                                   lr=lr, use_bias=use_bias)
                 self.index_all = tf.range(self.graph.n_nodes, dtype=self.intx)
         else:
             raise NotImplementedError
@@ -109,7 +110,7 @@ class SBVAT(SemiSupervisedModel):
         metric = model.metrics[0]
         loss_fn = model.loss
         optimizer = model.optimizer
-        
+
         with tf.device(self.device):
             metric.reset_states()
 
@@ -140,7 +141,7 @@ class SBVAT(SemiSupervisedModel):
             logit_p = logit
             with tf.GradientTape() as tape:
                 tape.watch(d)
-                logit_m = model([x+d, adj, self.index_all], training=True)
+                logit_m = model([x + d, adj, self.index_all], training=True)
                 dist = kl_divergence_with_logit(logit_p, logit_m, adv_mask)
             grad = tape.gradient(dist, d)
             d = tf.stop_gradient(grad)
@@ -152,20 +153,20 @@ class SBVAT(SemiSupervisedModel):
         return loss
 
     def train_sequence(self, index):
-        
+
         labels = self.graph.labels[index]
 
         sequence = SBVATSampleSequence([self.feature_inputs, self.structure_inputs,
                                         index], labels,
-                                        neighbors=self.neighbors,
-                                        n_samples=self.n_samples, device=self.device)
+                                       neighbors=self.neighbors,
+                                       n_samples=self.n_samples, device=self.device)
 
         return sequence
 
     def test_sequence(self, index):
-        
+
         labels = self.graph.labels[index]
         sequence = FullBatchNodeSequence([self.feature_inputs, self.structure_inputs,
-                                        index], labels, device=self.device)
+                                          index], labels, device=self.device)
 
         return sequence

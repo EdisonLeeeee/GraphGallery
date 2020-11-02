@@ -25,8 +25,8 @@ _TRANSFORMER = {"gdc": GDC,
                 "cheby_basis": ChebyBasis,
                 "neighbor_sampler": NeighborSampler,
                 "graph_partition": GraphPartition,
-                "sparse_adj_to_sparse_edges": SparseAdjToSparseEdges,
-                "sparse_edges_to_sparse_adj": SparseEdgesToSparseAdj,
+                "sparse_adj_to_sparse_edge": SparseAdjToSparseEdges,
+                "sparse_edge_to_sparse_adj": SparseEdgesToSparseAdj,
                 "sparse_reshape": SparseReshape}
 
 _ALLOWED = set(list(_TRANSFORMER.keys()))

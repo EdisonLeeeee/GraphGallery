@@ -2,10 +2,15 @@ import torch
 import tensorflow as tf
 import graphgallery as gg
 from typing import Optional
-from graphgallery.typing import Device
+from graphgallery.typing import Device, Backend
+
+from .tensorflow import device as tf_device
+from .torch import device as th_device
+
+__all__ = ['parse_device']
 
 
-def parse_device(device: Device = None, backend: Optional[str] = None) -> Device:
+def parse_device(device: Device = None, backend: Backend = None) -> Device:
     """
     Specify the device for corresponding backend 
 
@@ -28,9 +33,9 @@ def parse_device(device: Device = None, backend: Optional[str] = None) -> Device
     if device is None:
         # by default, return CPU device
         if backend == "tensorflow":
-            return 'CPU:0'
+            return tf_device.cpu()
         else:
-            return torch.device('cpu:0')
+            return th_device.cpu()
 
     # existing tensorflow device
     if hasattr(device, '_device_name') and backend == "tensorflow":
@@ -48,7 +53,7 @@ def parse_device(device: Device = None, backend: Optional[str] = None) -> Device
     else:
         _device = str(device).lower().split('/')[-1]
         if not any(
-            (_device.startswith("cpu"), _device.startswith("cuda"), _device.startswith("gpu"))):
+                (_device.startswith("cpu"), _device.startswith("cuda"), _device.startswith("gpu"))):
             raise RuntimeError(
                 f" Expected one of cpu (CPU), cuda (CUDA), gpu (GPU) at the start of device string, but got {device}."
             )
@@ -58,7 +63,7 @@ def parse_device(device: Device = None, backend: Optional[str] = None) -> Device
         _device = "GPU" + _device[4:]  # tensorflow uses 'GPU' instead of 'cuda'
     elif _device.startswith("gpu") and backend == "torch":
         _device = "cuda" + _device[3:]  # pytorch uses 'cuda' instead of 'GPU'
-    
+
     # pytorch return torch.device
     if backend == "torch":
         if _device.startswith('cuda'):

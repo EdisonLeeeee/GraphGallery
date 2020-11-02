@@ -8,6 +8,7 @@ import networkx as nx
 import tensorflow as tf
 import scipy.sparse as sp
 from tensorflow.python.eager.context import _EagerDeviceContext
+from graphgallery.backend import BackendModule
 
 TransformType = TypeVar('TransformType')
 GraphType = TypeVar('GraphType')
@@ -38,6 +39,7 @@ Number = Union[
 Shape = Optional[Tuple[IntNumber, IntNumber]]
 
 Device = Optional[Union[str, torch.device, _EagerDeviceContext]]
+Backend = Optional[Union[str, BackendModule]]
 
 Initializer = Optional[Union[dict, str, Callable]]
 Regularizer = Optional[Union[dict, str, Callable]]

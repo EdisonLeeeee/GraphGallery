@@ -8,6 +8,7 @@ from graphgallery.utils.decorators import EqualVarLength
 from graphgallery.nn.models.semisupervised.tf_models.edgeconv import EdgeGCN as tfEdgeGCN
 
 from graphgallery import transforms as T
+from graphgallery import functional as F
 
 
 class EdgeGCN(SemiSupervisedModel):
@@ -76,9 +77,9 @@ class EdgeGCN(SemiSupervisedModel):
         graph = self.graph
         adj_matrix = self.adj_transform(graph.adj_matrix)
         attr_matrix = self.attr_transform(graph.attr_matrix)
-        edge_index, edge_weight = T.sparse_adj_to_sparse_edges(adj_matrix)
+        edge_index, edge_weight = T.sparse_adj_to_sparse_edge(adj_matrix)
 
-        self.feature_inputs, self.structure_inputs = T.astensors(
+        self.feature_inputs, self.structure_inputs = F.astensors(
             attr_matrix, (edge_index.T, edge_weight), device=self.device)
 
     # use decorator to make sure all list arguments have the same length
@@ -89,15 +90,15 @@ class EdgeGCN(SemiSupervisedModel):
         if self.backend == "tensorflow":
             with tf.device(self.device):
                 self.model = tfEdgeGCN(self.graph.n_attrs, self.graph.n_classes,
-                                     hiddens=hiddens,
-                                     activations=activations,
-                                     dropout=dropout, l2_norm=l2_norm,
-                                     lr=lr, use_bias=use_bias)
+                                       hiddens=hiddens,
+                                       activations=activations,
+                                       dropout=dropout, l2_norm=l2_norm,
+                                       lr=lr, use_bias=use_bias)
         else:
             raise NotImplementedError
 
     def train_sequence(self, index):
-        
+
         labels = self.graph.labels[index]
         sequence = FullBatchNodeSequence(
             [self.feature_inputs, *self.structure_inputs, index], labels, device=self.device)

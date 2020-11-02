@@ -8,9 +8,10 @@ from graphgallery import sequence
 from graphgallery import data
 from graphgallery import backend
 from graphgallery import transforms
+from graphgallery import functional
 
 
-__version__ = '0.4.2'
+__version__ = '0.5.0'
 
 __all__ = ['graphgallery', 'nn', 'utils', 'sequence', 'data',
-           'backend', 'transforms', '__version__']
+           'backend', 'transforms', 'functional', '__version__']

@@ -10,6 +10,7 @@ from graphgallery.utils.decorators import EqualVarLength
 from graphgallery.nn.models.semisupervised.th_models.gcn import GCN as pyGCN
 from graphgallery.nn.models.semisupervised.tf_models.gcn import GCN as tfGCN
 from graphgallery import transforms as T
+from graphgallery import functional as F
 
 
 class ClusterGCN(SemiSupervisedModel):
@@ -89,27 +90,25 @@ class ClusterGCN(SemiSupervisedModel):
 
         batch_adj = self.adj_transform(*batch_adj)
 
-        (self.batch_adj, self.batch_x) = T.astensors(batch_adj, batch_x, device=self.device)
+        (self.batch_adj, self.batch_x) = F.astensors(batch_adj, batch_x, device=self.device)
 
     # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
     def build(self, hiddens=[32], activations=['relu'], dropout=0.5,
               l2_norm=0., lr=0.01, use_bias=False):
 
-            
         if self.backend == "tensorflow":
             with tf.device(self.device):
                 self.model = tfGCN(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
-                                activations=activations, dropout=dropout, l2_norm=l2_norm,
-                                lr=lr, use_bias=use_bias, experimental_run_tf_function=False)
+                                   activations=activations, dropout=dropout, l2_norm=l2_norm,
+                                   lr=lr, use_bias=use_bias, experimental_run_tf_function=False)
         else:
             self.model = pyGCN(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
-                                activations=activations, dropout=dropout, l2_norm=l2_norm,
+                               activations=activations, dropout=dropout, l2_norm=l2_norm,
                                lr=lr, use_bias=use_bias).to(self.device)
 
-
     def train_sequence(self, index):
-        
+
         mask = T.indices2mask(index, self.graph.n_nodes)
         labels = self.graph.labels
 
@@ -132,7 +131,7 @@ class ClusterGCN(SemiSupervisedModel):
         return sequence
 
     def predict(self, index):
-        
+
         mask = T.indices2mask(index, self.graph.n_nodes)
 
         orders_dict = {idx: order for order, idx in enumerate(index)}
@@ -152,7 +151,7 @@ class ClusterGCN(SemiSupervisedModel):
         batch_data = tuple(zip(batch_x, batch_adj, batch_idx))
 
         logit = np.zeros((index.size, self.graph.n_classes), dtype=self.floatx)
-        batch_data = T.astensors(batch_data, device=self.device)
+        batch_data = F.astensors(batch_data, device=self.device)
 
         model = self.model
         if self.backend == "tensorflow":
@@ -165,6 +164,6 @@ class ClusterGCN(SemiSupervisedModel):
             with torch.no_grad():
                 for order, inputs in zip(orders, batch_data):
                     output = model(inputs).detach().cpu().numpy()
-                    logit[order] = output 
+                    logit[order] = output
 
         return logit

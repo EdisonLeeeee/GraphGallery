@@ -12,6 +12,7 @@ from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.bvat_utils import kl_divergence_with_logit, entropy_y_x
 from graphgallery.utils.decorators import EqualVarLength
 from graphgallery import transforms as T
+from graphgallery import functional as F
 
 
 class OBVAT(SemiSupervisedModel):
@@ -73,7 +74,7 @@ class OBVAT(SemiSupervisedModel):
         adj_matrix = self.adj_transform(graph.adj_matrix)
         attr_matrix = self.attr_transform(graph.attr_matrix)
 
-        self.feature_inputs, self.structure_inputs = T.astensors(
+        self.feature_inputs, self.structure_inputs = F.astensors(
             attr_matrix, adj_matrix, device=self.device)
 
     # use decorator to make sure all list arguments have the same length
@@ -82,7 +83,7 @@ class OBVAT(SemiSupervisedModel):
               l2_norm=5e-4, use_bias=False, lr=0.01, p1=1.4, p2=0.7):
 
         if self.backend == "torch":
-            raise RuntimeError(f"Currently {self.name} only supports for tensorflow backend.")        
+            raise RuntimeError(f"Currently {self.name} only supports for tensorflow backend.")
 
         with tf.device(self.device):
 
@@ -92,7 +93,7 @@ class OBVAT(SemiSupervisedModel):
                         dtype=self.floatx, sparse=True, name='adj_matrix')
             index = Input(batch_shape=[None],
                           dtype=self.intx, name='node_index')
-            
+
             GCN_layers = []
             for hidden, activation in zip(hiddens, activations):
                 GCN_layers.append(GraphConvolution(hidden, activation=activation, use_bias=use_bias,
@@ -109,7 +110,7 @@ class OBVAT(SemiSupervisedModel):
             model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
                           optimizer=Adam(lr=lr), metrics=['accuracy'])
 
-            self.r_vadv = tf.Variable(TruncatedNormal(stddev=0.01)(shape=[self.graph.n_nodes, 
+            self.r_vadv = tf.Variable(TruncatedNormal(stddev=0.01)(shape=[self.graph.n_nodes,
                                                                           self.graph.n_attrs]), name="r_vadv")
             entropy_loss = entropy_y_x(logit)
             vat_loss = self.virtual_adversarial_loss(x, adj, logit)
@@ -117,7 +118,7 @@ class OBVAT(SemiSupervisedModel):
 
             self.model = model
             self.adv_optimizer = Adam(lr=lr / 10)
-            
+
     def virtual_adversarial_loss(self, x, adj, logit):
 
         adv_x = x + self.r_vadv
@@ -125,7 +126,7 @@ class OBVAT(SemiSupervisedModel):
         logit_m = self.forward(adv_x, adj)
         loss = kl_divergence_with_logit(logit_p, logit_m)
         return loss
-    
+
     def forward(self, x, adj):
         h = x
         for layer in self.GCN_layers:
@@ -155,7 +156,7 @@ class OBVAT(SemiSupervisedModel):
         return super().train_step(sequence)
 
     def train_sequence(self, index):
-        
+
         labels = self.graph.labels[index]
         sequence = FullBatchNodeSequence(
             [self.feature_inputs, self.structure_inputs, index], labels, device=self.device)

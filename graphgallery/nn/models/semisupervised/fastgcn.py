@@ -8,6 +8,7 @@ from graphgallery.utils.decorators import EqualVarLength
 from graphgallery.nn.models.semisupervised.tf_models.fastgcn import FastGCN as tfFastGCN
 
 from graphgallery import transforms as T
+from graphgallery import functional as F
 
 
 class FastGCN(SemiSupervisedModel):
@@ -78,7 +79,7 @@ class FastGCN(SemiSupervisedModel):
 
         attr_matrix = adj_matrix @ attr_matrix
 
-        self.feature_inputs, self.structure_inputs = T.astensor(
+        self.feature_inputs, self.structure_inputs = F.astensor(
             attr_matrix, device=self.device), adj_matrix
 
     # use decorator to make sure all list arguments have the same length
@@ -89,15 +90,15 @@ class FastGCN(SemiSupervisedModel):
         if self.backend == "tensorflow":
             with tf.device(self.device):
                 self.model = tfFastGCN(self.graph.n_attrs, self.graph.n_classes,
-                                        hiddens=hiddens,
-                                        activations=activations,
-                                        dropout=dropout, l2_norm=l2_norm,
-                                        lr=lr, use_bias=use_bias)
+                                       hiddens=hiddens,
+                                       activations=activations,
+                                       dropout=dropout, l2_norm=l2_norm,
+                                       lr=lr, use_bias=use_bias)
         else:
             raise NotImplementedError
 
     def train_sequence(self, index):
-        
+
         labels = self.graph.labels[index]
         adj_matrix = self.graph.adj_matrix[index][:, index]
         adj_matrix = self.adj_transform(adj_matrix)
@@ -109,7 +110,7 @@ class FastGCN(SemiSupervisedModel):
         return sequence
 
     def test_sequence(self, index):
-        
+
         labels = self.graph.labels[index]
         structure_inputs = self.structure_inputs[index]
 

@@ -8,6 +8,7 @@ from graphgallery.utils.decorators import EqualVarLength
 from graphgallery.nn.models.semisupervised.tf_models.chebynet import ChebyNet as tfChebyNet
 
 from graphgallery import transforms as T
+from graphgallery import functional as F
 
 
 class ChebyNet(SemiSupervisedModel):
@@ -67,27 +68,27 @@ class ChebyNet(SemiSupervisedModel):
         adj_matrix = self.adj_transform(graph.adj_matrix)
         attr_matrix = self.attr_transform(graph.attr_matrix)
 
-        self.feature_inputs, self.structure_inputs = T.astensors(
+        self.feature_inputs, self.structure_inputs = F.astensors(
             attr_matrix, adj_matrix, device=self.device)
 
     # use decorator to make sure all list arguments have the same length
     @EqualVarLength()
     def build(self, hiddens=[16], activations=['relu'], dropout=0.5, l2_norm=5e-4, lr=0.01,
               use_bias=False):
-        
+
         if self.backend == "tensorflow":
             with tf.device(self.device):
                 self.model = tfChebyNet(self.graph.n_attrs, self.graph.n_classes,
-                                         hiddens=hiddens,
-                                         activations=activations, 
-                                         dropout=dropout, l2_norm=l2_norm,
-                                         order=self.adj_transform.order,
-                                         lr=lr, use_bias=use_bias)
+                                        hiddens=hiddens,
+                                        activations=activations,
+                                        dropout=dropout, l2_norm=l2_norm,
+                                        order=self.adj_transform.order,
+                                        lr=lr, use_bias=use_bias)
         else:
             raise NotImplementedError
 
     def train_sequence(self, index):
-        
+
         labels = self.graph.labels[index]
         sequence = FullBatchNodeSequence(
             [self.feature_inputs, *self.structure_inputs, index], labels, device=self.device)

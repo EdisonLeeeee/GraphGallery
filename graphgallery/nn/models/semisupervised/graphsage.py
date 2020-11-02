@@ -8,7 +8,7 @@ from graphgallery.utils.decorators import EqualVarLength
 from graphgallery.nn.models.semisupervised.tf_models.graphsage import GraphSAGE as tfGraphSAGE
 
 from graphgallery import transforms as T
-
+from graphgallery import functional as F
 
 
 class GraphSAGE(SemiSupervisedModel):
@@ -80,7 +80,7 @@ class GraphSAGE(SemiSupervisedModel):
         attr_matrix = np.vstack(
             [attr_matrix, np.zeros(attr_matrix.shape[1], dtype=self.floatx)])
 
-        self.feature_inputs, self.structure_inputs = T.astensors(
+        self.feature_inputs, self.structure_inputs = F.astensors(
             attr_matrix, device=self.device), adj_matrix
 
     # use decorator to make sure all list arguments have the same length
@@ -91,18 +91,17 @@ class GraphSAGE(SemiSupervisedModel):
         if self.backend == "tensorflow":
             with tf.device(self.device):
                 self.model = tfGraphSAGE(self.graph.n_attrs, self.graph.n_classes,
-                                    hiddens=hiddens,
-                                    activations=activations,
-                                    dropout=dropout, l2_norm=l2_norm,
-                                    lr=lr, use_bias=use_bias, aggregator=aggregator,
-                                    output_normalize=output_normalize, 
-                                    n_samples=self.n_samples)
+                                         hiddens=hiddens,
+                                         activations=activations,
+                                         dropout=dropout, l2_norm=l2_norm,
+                                         lr=lr, use_bias=use_bias, aggregator=aggregator,
+                                         output_normalize=output_normalize,
+                                         n_samples=self.n_samples)
         else:
             raise NotImplementedError
 
-
     def train_sequence(self, index):
-        
+
         labels = self.graph.labels[index]
         sequence = SAGEMiniBatchSequence(
             [self.feature_inputs, self.structure_inputs, index], labels,

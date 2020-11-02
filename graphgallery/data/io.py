@@ -7,7 +7,8 @@ from tensorflow.keras.utils import get_file
 from graphgallery import is_listlike
 from typing import List, Tuple, Union
 
-def download_file(raw_paths: Union[List[str], Tuple[str]], 
+
+def download_file(raw_paths: Union[List[str], Tuple[str]],
                   urls: Union[List[str], Tuple[str]]) -> None:
 
     last_except = None
