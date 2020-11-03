@@ -3,7 +3,7 @@
 from tensorflow.keras import backend as K
 from typing import Union, Tuple, Optional
 
-from .modules import BackendModule, TensorFlowBackend, PyTorchBackend
+from .modules import BackendModule, TensorFlowBackend, PyTorchBackend, PyGBackend, DGLPyTorchBackend, DGLTensorFlowBackend
 
 __all__ = ['allowed_backends', 'backend_dict',
            'backend', 'set_backend', 'boolx',
@@ -25,10 +25,10 @@ _NUMPY = 'numpy'
 
 _BACKEND = TensorFlowBackend()
 
-_ALL_BACKENDS = {TensorFlowBackend, PyTorchBackend}
+_ALL_BACKENDS = {TensorFlowBackend, PyTorchBackend, PyGBackend, DGLPyTorchBackend, DGLTensorFlowBackend}
 _BACKEND_DICT = {}
 
-BACKEND_TYPE = Union[TensorFlowBackend, PyTorchBackend]
+BACKEND_TYPE = Union[TensorFlowBackend, PyTorchBackend, PyGBackend, DGLPyTorchBackend, DGLTensorFlowBackend]
 
 
 def allowed_backends() -> Tuple[str]:
@@ -43,7 +43,7 @@ def set_backend_dict():
     global _BACKEND_DICT
     _BACKEND_DICT = {}
     for bkd in _ALL_BACKENDS:
-        for act in bkd.acceptable_names:
+        for act in bkd.alias:
             _BACKEND_DICT[act] = bkd
 
 

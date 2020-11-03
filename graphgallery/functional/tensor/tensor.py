@@ -7,7 +7,7 @@ import graphgallery as gg
 
 from .device import parse_device
 from .tensorflow import tensor as tf_tensor
-from .torch import tensor as th_tensor
+from .pytorch import tensor as th_tensor
 from ..decorators import MultiInputs
 
 

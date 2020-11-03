@@ -3,16 +3,17 @@ import tensorflow
 import numpy
 
 
-__all__ = ['BackendModule', 'TensorFlowBackend', 'PyTorchBackend']
+__all__ = ['BackendModule', 'TensorFlowBackend',
+           'PyTorchBackend', 'PyGBackend', 'DGLPyTorchBackend', 'DGLTensorFlowBackend']
 
 
 class BackendModule:
     """Base Backend Module Class."""
 
-    acceptable_names = set()
+    alias = {}
 
     def __init__(self):
-        ...
+        self.acceptable_names = self.alias
 
     @property
     def version(self) -> str:
@@ -24,50 +25,27 @@ class BackendModule:
 
     @property
     def abbr(self) -> str:
-        return NotImplementedError
-
-    @property
-    def kind(self) -> str:
         return NotImplementedError
 
     def __eq__(self, value) -> bool:
         return str(value).lower() in self.acceptable_names
 
     def __str__(self) -> str:
-        return f"{self.name} {self.version} Backend"
+        return f"{self.name} {self.extra_repr()} Backend"
 
     def __repr__(self) -> str:
-        return f"{self.name} {self.version} Backend"
+        return self.__str__()
 
-
-class TensorFlowBackend(BackendModule):
-    acceptable_names = {"t", "tf", "tensorflow"}
-
-    def __init__(self):
-        super().__init__()
-
-    @property
-    def version(self) -> str:
-        return tensorflow.__version__
-
-    @property
-    def name(self) -> str:
-        return "TensorFlow"
-
-    @property
-    def abbr(self) -> str:
-        return "tf"
-
-    @property
-    def kind(self) -> str:
-        return "t"
+    def extra_repr(self):
+        return self.version
 
 
 class PyTorchBackend(BackendModule):
-    acceptable_names = {"p", "th", "torch", "pytorch"}
+    alias = {"th", "torch", "pytorch"}
 
     def __init__(self):
         super().__init__()
+        self.acceptable_names = self.acceptable_names.union({"th", "torch", "pytorch"})
 
     @property
     def version(self) -> str:
@@ -81,16 +59,13 @@ class PyTorchBackend(BackendModule):
     def abbr(self) -> str:
         return "th"
 
-    @property
-    def kind(self) -> str:
-        return "p"
-
 
 class TensorFlowBackend(BackendModule):
-    acceptable_names = {"t", "tf", "tensorflow"}
+    alias = {"tf", "tensorflow"}
 
     def __init__(self):
         super().__init__()
+        self.acceptable_names = self.acceptable_names.union({"tf", "tensorflow"})
 
     @property
     def version(self) -> str:
@@ -104,6 +79,75 @@ class TensorFlowBackend(BackendModule):
     def abbr(self) -> str:
         return "tf"
 
+
+class PyGBackend(PyTorchBackend):
+    alias = {"pyg"}
+
+    def __init__(self):
+        super().__init__()
+        self.acceptable_names = self.acceptable_names.union({"pyg"})
+
     @property
-    def kind(self) -> str:
-        return "t"
+    def version(self) -> str:
+        import torch_geometric
+        return torch_geometric.__version__
+
+    @property
+    def name(self) -> str:
+        return "PyTorch Geometric"
+
+    @property
+    def abbr(self) -> str:
+        return "pyg"
+
+    def extra_repr(self):
+        return f"{super().extra_repr()} (PyTorch {torch.__version__})"
+
+
+class DGLTensorFlowBackend(TensorFlowBackend):
+
+    alias = {"dgl_tf"}
+
+    def __init__(self):
+        super().__init__()
+        self.acceptable_names = self.acceptable_names.union({"dgl_tf"})
+
+    @property
+    def version(self) -> str:
+        import dgl
+        return dgl.__version__
+
+    @property
+    def name(self) -> str:
+        return "DGL TensorFlow"
+
+    @property
+    def abbr(self) -> str:
+        return "dgl_tf"
+
+    def extra_repr(self):
+        return f"{super().extra_repr()} (TensorFlow {tensorflow.__version__})"
+
+
+class DGLPyTorchBackend(PyTorchBackend):
+    alias = {"dgl_torch", "dgl_th"}
+
+    def __init__(self):
+        super().__init__()
+        self.acceptable_names = self.acceptable_names.union({"dgl_torch", "dgl_th"})
+
+    @property
+    def version(self) -> str:
+        import dgl
+        return dgl.__version__
+
+    @property
+    def name(self) -> str:
+        return "DGL PyTorch"
+
+    @property
+    def abbr(self) -> str:
+        return "dgl_torch"
+
+    def extra_repr(self):
+        return f"{super().extra_repr()} (PyTorch {torch.__version__})"

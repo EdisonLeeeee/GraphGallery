@@ -5,7 +5,7 @@ from typing import Optional
 from graphgallery.typing import Device, Backend
 
 from .tensorflow import device as tf_device
-from .torch import device as th_device
+from .pytorch import device as th_device
 
 __all__ = ['parse_device']
 
@@ -25,8 +25,8 @@ def parse_device(device: Device = None, backend: Backend = None) -> Device:
 
     Returns
     -------
-    return string for tf backend
-    return torch.device instance for torch backend
+    return 'string' for tensorflow backend,
+    or 'torch.device' instance for pytorch backend
     """
     backend = gg.backend(backend)
 
