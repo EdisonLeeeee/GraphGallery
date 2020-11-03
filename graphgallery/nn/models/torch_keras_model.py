@@ -23,15 +23,17 @@ class TorchKerasModel(Module):
 
     def build(self, inputs):
         # TODO
-        ...
+        pass
 
-    def compile(self):
+    def compile(self, loss=None,
+                optimizer=None,
+                metrics=None):
         # TODO
-        ...
+        pass
 
     def summary(self):
         # TODO
-        ...
+        pass
 
     def save_weights(self, filepath, overwrite=True, save_format=None):
         saver.save_torch_weights(self, filepath, overwrite=overwrite, save_format=save_format)

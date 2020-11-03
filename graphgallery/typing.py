@@ -11,7 +11,7 @@ from tensorflow.python.eager.context import _EagerDeviceContext
 from graphgallery.backend import BackendModule
 
 TransformType = TypeVar('TransformType')
-GraphType = TypeVar('GraphType')
+GalleryGraph = TypeVar('GalleryGraph')
 
 IntNumber = Union[
     int,

@@ -153,11 +153,11 @@ class SemiSupervisedModel(BaseModel):
             The number of early stopping patience during training. (default :obj: `None`,
             i.e., do not use early stopping during training)
         verbose: int in {0, 1, 2, 3, 4}
-                'verbose=0': not verbose; 
-                'verbose=1': Progbar (one line, detailed); 
-                'verbose=2': Progbar (one line, omitted); 
-                'verbose=3': Progbar (multi line, detailed); 
-                'verbose=4': Progbar (multi line, omitted); 
+                'verbose=0': not verbose;
+                'verbose=1': Progbar (one line, detailed);
+                'verbose=2': Progbar (one line, omitted);
+                'verbose=3': Progbar (multi line, detailed);
+                'verbose=4': Progbar (multi line, omitted);
             (default :obj: 0)
         save_best: bool
             Whether to save the best weights (accuracy of loss depend on `monitor`)
