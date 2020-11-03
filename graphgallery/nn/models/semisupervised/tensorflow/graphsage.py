@@ -5,7 +5,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tf_layers import MeanAggregator, GCNAggregator, MedianAggregator, MedianGCNAggregator
+from graphgallery.nn.layers.tensorflow import MeanAggregator, GCNAggregator, MedianAggregator, MedianGCNAggregator
 from graphgallery import floatx, intx
 
 
@@ -13,20 +13,21 @@ _AGG = {'mean': MeanAggregator,
         'gcn': GCNAggregator,
         'median': MedianAggregator,
         'mediangcn': MedianGCNAggregator
-       }
+        }
+
 
 class GraphSAGE(Model):
 
     def __init__(self, in_channels, out_channels,
                  hiddens=[32], activations=['relu'], dropout=0.5,
-                 l2_norm=5e-4, lr=0.01, use_bias=True, 
+                 l2_norm=5e-4, lr=0.01, use_bias=True,
                  aggregator='mean', output_normalize=False, n_samples=[15, 5]):
 
         Agg = _AGG.get(aggregator, None)
         if not Agg:
             raise ValueError(
                 f"Invalid value of 'aggregator', allowed values {tuple(_AGG.keys())}, but got '{aggregator}'.")
-            
+
         _intx = intx()
         x = Input(batch_shape=[None, in_channels],
                   dtype=floatx(), name='attr_matrix')
@@ -34,13 +35,12 @@ class GraphSAGE(Model):
         neighbors = [Input(batch_shape=[None], dtype=_intx, name=f'neighbors_{hop}')
                      for hop, n_sample in enumerate(n_samples)]
 
-
         aggregators = []
         for hidden, activation in zip(hiddens, activations):
             # you can use `GCNAggregator` instead
             aggregators.append(Agg(hidden, concat=True, activation=activation,
-                                 use_bias=use_bias,
-                                 kernel_regularizer=regularizers.l2(l2_norm)))
+                                   use_bias=use_bias,
+                                   kernel_regularizer=regularizers.l2(l2_norm)))
 
         aggregators.append(Agg(out_channels, use_bias=use_bias))
 
@@ -63,4 +63,3 @@ class GraphSAGE(Model):
         super().__init__(inputs=[x, nodes, *neighbors], outputs=h)
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
                      optimizer=Adam(lr=lr), metrics=['accuracy'])
-

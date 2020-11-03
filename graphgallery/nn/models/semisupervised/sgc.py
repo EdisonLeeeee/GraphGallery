@@ -1,14 +1,14 @@
 import tensorflow as tf
 
-from graphgallery.nn.layers.tf_layers import SGConvolution as tfSGConvolution
-from graphgallery.nn.layers.th_layers import SGConvolution as pySGConvolution
+from graphgallery.nn.layers.tensorflow import SGConvolution as tfSGConvolution
+from graphgallery.nn.layers.pytorch import SGConvolution as pySGConvolution
 
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 
 
-from graphgallery.nn.models.semisupervised.th_models.sgc import SGC as pySGC
-from graphgallery.nn.models.semisupervised.tf_models.sgc import SGC as tfSGC
+from graphgallery.nn.models.semisupervised.pytorch.sgc import SGC as pySGC
+from graphgallery.nn.models.semisupervised.tensorflow.sgc import SGC as tfSGC
 
 from graphgallery import functional as F
 

@@ -4,7 +4,7 @@ from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 
 
-from graphgallery.nn.models.semisupervised.tf_models.robustgcn import RobustGCN as tfRobustGCN
+from graphgallery.nn.models.semisupervised.tensorflow.robustgcn import RobustGCN as tfRobustGCN
 from graphgallery import functional as F
 
 

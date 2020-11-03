@@ -5,8 +5,8 @@ from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 
 
-from graphgallery.nn.models.semisupervised.th_models.gcn import GCN as pyGCN
-from graphgallery.nn.models.semisupervised.tf_models.gcn import GCN as tfGCN
+from graphgallery.nn.models.semisupervised.pytorch.gcn import GCN as pyGCN
+from graphgallery.nn.models.semisupervised.tensorflow.gcn import GCN as tfGCN
 
 from graphgallery import functional as F
 

@@ -4,7 +4,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tf_layers import GraphConvolution, Gather
+from graphgallery.nn.layers.tensorflow import GraphConvolution, Gather
 from graphgallery import floatx, intx
 
 
@@ -31,4 +31,3 @@ class FastGCN(Model):
         super().__init__(inputs=[x, adj], outputs=h)
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
                      optimizer=Adam(lr=lr), metrics=['accuracy'])
-

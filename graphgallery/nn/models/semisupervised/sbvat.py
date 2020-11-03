@@ -7,7 +7,7 @@ from graphgallery.utils.bvat_utils import get_normalized_vector, kl_divergence_w
 
 from graphgallery import functional as F
 
-from graphgallery.nn.models.semisupervised.tf_models.gcn import GCN as tfGCN
+from graphgallery.nn.models.semisupervised.tensorflow.gcn import GCN as tfGCN
 
 
 class SBVAT(SemiSupervisedModel):

@@ -5,7 +5,7 @@ from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 
 
-from graphgallery.nn.models.semisupervised.tf_models.dagnn import DAGNN as tfDAGNN
+from graphgallery.nn.models.semisupervised.tensorflow.dagnn import DAGNN as tfDAGNN
 
 from graphgallery import functional as F
 

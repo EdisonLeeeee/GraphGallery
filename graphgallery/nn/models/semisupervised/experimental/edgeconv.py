@@ -5,7 +5,7 @@ from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 
 
-from graphgallery.nn.models.semisupervised.tf_models.edgeconv import EdgeGCN as tfEdgeGCN
+from graphgallery.nn.models.semisupervised.tensorflow.edgeconv import EdgeGCN as tfEdgeGCN
 
 from graphgallery import functional as F
 

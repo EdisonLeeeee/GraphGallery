@@ -6,7 +6,7 @@ from graphgallery.sequence import FullBatchNodeSequence
 
 
 from graphgallery.nn.models import GCN
-from graphgallery.nn.models.semisupervised.tf_models.gcna import GCNA as tfGCNA
+from graphgallery.nn.models.semisupervised.tensorflow.gcna import GCNA as tfGCNA
 
 from graphgallery import functional as F
 

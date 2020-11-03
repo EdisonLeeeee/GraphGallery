@@ -4,14 +4,14 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tf_layers import WaveletConvolution, Gather
+from graphgallery.nn.layers.tensorflow import WaveletConvolution, Gather
 from graphgallery import floatx, intx
 
 
 class GWNN(Model):
 
     def __init__(self, in_channels, out_channels, n_nodes,
-                 hiddens=[16], activations=['relu'], 
+                 hiddens=[16], activations=['relu'],
                  dropout=0.5, l2_norm=5e-4, lr=0.01,
                  use_bias=False):
 
@@ -19,9 +19,9 @@ class GWNN(Model):
         x = Input(batch_shape=[None, in_channels],
                   dtype=_floatx, name='attr_matrix')
         wavelet = Input(batch_shape=[n_nodes, n_nodes],
-                        dtype=_floatx, sparse=True, 
+                        dtype=_floatx, sparse=True,
                         name='wavelet_matrix')
-        inverse_wavelet = Input(batch_shape=[n_nodes, n_nodes], 
+        inverse_wavelet = Input(batch_shape=[n_nodes, n_nodes],
                                 dtype=_floatx, sparse=True,
                                 name='inverse_wavelet_matrix')
         index = Input(batch_shape=[None],
@@ -40,4 +40,3 @@ class GWNN(Model):
         super().__init__(inputs=[x, wavelet, inverse_wavelet, index], outputs=h)
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
                      optimizer=Adam(lr=lr), metrics=['accuracy'])
-

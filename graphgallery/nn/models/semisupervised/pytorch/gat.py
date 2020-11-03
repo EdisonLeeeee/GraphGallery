@@ -5,7 +5,7 @@ from torch.nn import Module, ModuleList, Dropout
 from torch import optim
 
 from graphgallery.nn.models import TorchKerasModel
-from graphgallery.nn.layers.th_layers import GraphAttention, SparseGraphAttention
+from graphgallery.nn.layers.pytorch import GraphAttention, SparseGraphAttention
 
 
 class GAT(TorchKerasModel):
@@ -24,7 +24,7 @@ class GAT(TorchKerasModel):
         inc = in_channels
         pre_head = 1
         for hidden, n_head, activation in zip(hiddens, n_heads, activations):
-            layer = SparseGraphAttention(inc * pre_head, hidden, activation=activation, 
+            layer = SparseGraphAttention(inc * pre_head, hidden, activation=activation,
                                          attn_heads=n_head, reduction='concat', use_bias=use_bias)
             self.layers.append(layer)
             paras.append(dict(params=layer.parameters(), weight_decay=l2_norm))

@@ -6,13 +6,13 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tf_layers import GraphAttention, Gather
+from graphgallery.nn.layers.tensorflow import GraphAttention, Gather
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 
 
-from graphgallery.nn.models.semisupervised.th_models.gat import GAT as pyGAT
-from graphgallery.nn.models.semisupervised.tf_models.gat import GAT as tfGAT
+from graphgallery.nn.models.semisupervised.pytorch.gat import GAT as pyGAT
+from graphgallery.nn.models.semisupervised.tensorflow.gat import GAT as tfGAT
 from graphgallery import functional as F
 
 

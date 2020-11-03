@@ -4,7 +4,7 @@ from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 
 
-from graphgallery.nn.models.semisupervised.tf_models.gwnn import GWNN as tfGWNN
+from graphgallery.nn.models.semisupervised.tensorflow.gwnn import GWNN as tfGWNN
 
 from graphgallery import functional as F
 

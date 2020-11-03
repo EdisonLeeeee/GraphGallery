@@ -5,7 +5,7 @@ from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FastGCNBatchSequence
 
 
-from graphgallery.nn.models.semisupervised.tf_models.fastgcn import FastGCN as tfFastGCN
+from graphgallery.nn.models.semisupervised.tensorflow.fastgcn import FastGCN as tfFastGCN
 
 from graphgallery import functional as F
 

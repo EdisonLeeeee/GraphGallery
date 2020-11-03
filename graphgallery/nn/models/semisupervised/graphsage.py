@@ -5,7 +5,7 @@ from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import SAGEMiniBatchSequence
 
 
-from graphgallery.nn.models.semisupervised.tf_models.graphsage import GraphSAGE as tfGraphSAGE
+from graphgallery.nn.models.semisupervised.tensorflow.graphsage import GraphSAGE as tfGraphSAGE
 
 from graphgallery import functional as F
 

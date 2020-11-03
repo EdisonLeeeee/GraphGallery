@@ -4,7 +4,7 @@ import tensorflow as tf
 from graphgallery.nn.models import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 
-from graphgallery.nn.models.semisupervised.tf_models.chebynet import ChebyNet as tfChebyNet
+from graphgallery.nn.models.semisupervised.tensorflow.chebynet import ChebyNet as tfChebyNet
 
 from graphgallery import functional as F
 
