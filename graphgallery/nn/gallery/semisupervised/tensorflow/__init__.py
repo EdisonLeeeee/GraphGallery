@@ -19,4 +19,5 @@ from .experimental.edgeconv import EdgeGCN
 from .experimental.s_obvat import SimplifiedOBVAT
 from .experimental.gcn_mix import GCN_MIX
 from .experimental.gcna import GCNA
+from .experimental.sat import SAT
 

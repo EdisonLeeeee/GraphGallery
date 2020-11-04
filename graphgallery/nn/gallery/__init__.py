@@ -25,10 +25,12 @@ _SEMI_SUPERVISED_MODELS = {"GCN",
            "SBVAT",
            "GMNN",
            "DAGNN",
+            # Experimental models                           
            "EdgeGCN",
            "SimplifiedOBVAT",
            "GCN_MIX",
            "GCNA",
+           "SAT"
 }
 
 _UNSUPERVISED_MODELS = {

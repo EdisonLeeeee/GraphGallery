@@ -58,7 +58,7 @@ class SemiSupervisedModel(GalleryModel):
         ----------
         graph: An instance of `graphgallery.data.Graph` or a tuple (list) of inputs.
             A sparse, attributed, labeled graph.
-        kwargs: other custom keyword parameters.
+        kwargs: other custom keyword parameters for 'process_step'.
 
         """
         if len(graph) > 0:
@@ -71,7 +71,7 @@ class SemiSupervisedModel(GalleryModel):
             else:
                 self.graph.set_inputs(*graph)
 
-        return self.process_step()
+        return self.process_step(**kwargs)
 
     def process_step(self):
         raise NotImplementedError
