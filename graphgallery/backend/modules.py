@@ -57,7 +57,7 @@ class PyTorchBackend(BackendModule):
 
     @property
     def abbr(self) -> str:
-        return "th"
+        return "pytorch"
 
 
 class TensorFlowBackend(BackendModule):
@@ -77,7 +77,7 @@ class TensorFlowBackend(BackendModule):
 
     @property
     def abbr(self) -> str:
-        return "tf"
+        return "tensorflow"
 
 
 class PyGBackend(PyTorchBackend):

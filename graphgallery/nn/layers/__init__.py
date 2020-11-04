@@ -1,2 +1,3 @@
-from graphgallery.nn.layers import tensorflow
-from graphgallery.nn.layers import pytorch
+from .tensorflow import *
+from .pytorch import *
+

@@ -1,5 +1,6 @@
 """Inspired by Keras backend config API. https://tensorflow.google.com """
 
+import importlib
 from tensorflow.keras import backend as K
 from typing import Union, Tuple, Optional
 
@@ -249,7 +250,9 @@ def set_backend(module_name: Optional[Union[str, BackendModule]] = None) -> BACK
         else:
             # Using `int32` is more efficient
             set_intx('int32')
-
+        from graphgallery.nn import gallery
+        importlib.reload(gallery)
+        
     return _BACKEND
 
 
