@@ -13,10 +13,10 @@ from graphgallery.data.io import makedirs_from_filename
 from graphgallery.utils import saver
 from graphgallery import file_postfix
 
-from .base import Base
+from .model import Model
 
 
-class BaseModel(Base):
+class GalleryModel(Model):
     """Base model for semi-supervised learning and unsupervised learning."""
 
     def __init__(self, *graph, device="cpu:0", seed=None, name=None, **kwargs):

@@ -38,7 +38,7 @@ def parse_graph_inputs(*graph):
     return graph
 
 
-class Base(ABC):
+class Model(ABC):
     def __init__(self, *graph, device="cpu:0", seed=None, name=None, **kwargs):
         """
 

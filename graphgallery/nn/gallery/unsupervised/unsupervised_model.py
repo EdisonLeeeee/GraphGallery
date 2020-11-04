@@ -12,11 +12,11 @@ from sklearn.preprocessing import normalize
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 
-from graphgallery.nn.gallery import BaseModel
+from graphgallery.nn.gallery import GalleryModel
 from graphgallery.functional import asintarr
 
 
-class UnsupervisedModel(BaseModel):
+class UnsupervisedModel(GalleryModel):
     """Base model for unsupervised learning.
 
     """

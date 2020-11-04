@@ -15,7 +15,7 @@ from tensorflow.keras.callbacks import History
 from tensorflow.python.keras.utils.generic_utils import Progbar
 
 import graphgallery as gg
-from graphgallery.nn.gallery import BaseModel
+from graphgallery.nn.gallery import GalleryModel
 from graphgallery.nn.functions import softmax
 from graphgallery.data.io import makedirs_from_filename
 from graphgallery.data import BaseGraph
@@ -31,7 +31,7 @@ warnings.filterwarnings(
     'ignore', '.*Converting sparse IndexedSlices to a dense Tensor of unknown shape.*')
 
 
-class SemiSupervisedModel(BaseModel):
+class SemiSupervisedModel(GalleryModel):
     def __init__(self, *graph, device='cpu:0', seed=None, name=None, **kwargs):
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 

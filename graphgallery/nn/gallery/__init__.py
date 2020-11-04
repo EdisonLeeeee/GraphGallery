@@ -1,5 +1,5 @@
-from .base import Base
-from .base_model import BaseModel
+from .model import Model
+from .gallery_model import GalleryModel
 from .semisupervised.semi_supervised_model import SemiSupervisedModel
 from .unsupervised.unsupervised_model import UnsupervisedModel
 
@@ -8,7 +8,7 @@ import importlib
 from graphgallery import backend
 from typing import Tuple
 
-__all__ = ['is_enabled', 'enabled_models', 'load_models']
+__all__ = ['Model']
 
 _SEMI_SUPERVISED_MODELS = {"GCN",
            "GAT",
