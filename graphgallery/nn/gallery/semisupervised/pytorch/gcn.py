@@ -1,13 +1,7 @@
-import tensorflow as tf
-
-
 from graphgallery.nn.gallery import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 
-
 from graphgallery.nn.models.pytorch import GCN as pyGCN
-from graphgallery.nn.models.tensorflow import GCN as tfGCN
-
 from graphgallery import functional as F
 
 
@@ -79,15 +73,9 @@ class GCN(SemiSupervisedModel):
     def build(self, hiddens=[16], activations=['relu'], dropout=0.5,
               l2_norm=5e-4, lr=0.01, use_bias=False):
 
-        if self.backend == "tensorflow":
-            with tf.device(self.device):
-                self.model = tfGCN(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
-                                   activations=activations, dropout=dropout, l2_norm=l2_norm,
-                                   lr=lr, use_bias=use_bias)
-        else:
-            self.model = pyGCN(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
-                               activations=activations, dropout=dropout, l2_norm=l2_norm,
-                               lr=lr, use_bias=use_bias).to(self.device)
+        self.model = pyGCN(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
+                           activations=activations, dropout=dropout, l2_norm=l2_norm,
+                           lr=lr, use_bias=use_bias).to(self.device)
 
     def train_sequence(self, index):
 

@@ -1,13 +1,9 @@
-import torch
 import numpy as np
-import networkx as nx
 import tensorflow as tf
 
 from graphgallery.nn.gallery import SemiSupervisedModel
 from graphgallery.sequence import MiniBatchSequence
 
-
-from graphgallery.nn.models.pytorch import GCN as pyGCN
 from graphgallery.nn.models.tensorflow import GCN as tfGCN
 from graphgallery import functional as F
 
@@ -96,15 +92,10 @@ class ClusterGCN(SemiSupervisedModel):
     def build(self, hiddens=[32], activations=['relu'], dropout=0.5,
               l2_norm=0., lr=0.01, use_bias=False):
 
-        if self.backend == "tensorflow":
-            with tf.device(self.device):
-                self.model = tfGCN(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
-                                   activations=activations, dropout=dropout, l2_norm=l2_norm,
-                                   lr=lr, use_bias=use_bias, experimental_run_tf_function=False)
-        else:
-            self.model = pyGCN(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
+        with tf.device(self.device):
+            self.model = tfGCN(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
                                activations=activations, dropout=dropout, l2_norm=l2_norm,
-                               lr=lr, use_bias=use_bias).to(self.device)
+                               lr=lr, use_bias=use_bias, experimental_run_tf_function=False)
 
     def train_sequence(self, index):
 
@@ -153,16 +144,9 @@ class ClusterGCN(SemiSupervisedModel):
         batch_data = F.astensors(batch_data, device=self.device)
 
         model = self.model
-        if self.backend == "tensorflow":
-            with tf.device(self.device):
-                for order, inputs in zip(orders, batch_data):
-                    output = model.predict_on_batch(inputs)
-                    logit[order] = output
-        else:
-            model.eval()
-            with torch.no_grad():
-                for order, inputs in zip(orders, batch_data):
-                    output = model(inputs).detach().cpu().numpy()
-                    logit[order] = output
+        with tf.device(self.device):
+            for order, inputs in zip(orders, batch_data):
+                output = model.predict_on_batch(inputs)
+                logit[order] = output
 
         return logit

@@ -53,24 +53,22 @@ def load_models(backend_name=None):
     thismod = sys.modules[__name__]
     
     for model in _SEMI_SUPERVISED_MODELS:
-            
-        if model in mod.__dict__:
+        _model_class = mod.__dict__.get(model, None)
+        
+        if _model_class is not None:
             _enabled_models.add(model)
-            setattr(thismod, model, mod.__dict__[model])
+            setattr(thismod, model, _model_class)
         else:
             setattr(thismod, model, _gen_missing_model(model, _backend))
             
     mod = importlib.import_module(f".unsupervised", __name__)
             
     for model in _UNSUPERVISED_MODELS:
-        if model.startswith("__"):
-            # ignore python builtin attributes
-            continue
-            
-        if model in mod.__dict__:
+        _model_class = mod.__dict__.get(model, None)
+        
+        if _model_class is not None:
             _enabled_models.add(model)
-            
-            setattr(thismod, model, mod.__dict__[model])
+            setattr(thismod, model, _model_class)
         else:
             setattr(thismod, model, _gen_missing_model(model, _backend))            
 
@@ -91,6 +89,13 @@ def is_enabled(model: str) -> bool:
     return model in _enabled_models
 
 def enabled_models() -> Tuple[str]:
+    """Return the models in the gallery enabled by the current backend.
+
+    Returns
+    -------
+    tuple
+        A list of models enabled by the current backend.
+    """    
     return tuple(_enabled_models)
 
 load_models()

@@ -1,6 +1,7 @@
 import random
 import torch
 import os
+import sys
 
 import numpy as np
 import tensorflow as tf
@@ -72,6 +73,10 @@ class GalleryModel(Model):
     def load(self, path=None, as_model=False):
         if not path:
             path = self.weight_path
+
+        if not osp.exists(path):
+            print(f"{path} do not exists.", file=sys.stderr)
+            return 
 
         if as_model:
             if self.backend == "tensorflow":

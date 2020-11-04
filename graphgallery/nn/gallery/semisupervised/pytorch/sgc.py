@@ -1,14 +1,7 @@
-import tensorflow as tf
-
-from graphgallery.nn.layers.tensorflow import SGConvolution as tfSGConvolution
-from graphgallery.nn.layers.pytorch import SGConvolution as pySGConvolution
-
+from graphgallery.nn.layers.pytorch import SGConvolution
+from graphgallery.nn.models.pytorch import SGC as pySGC
 from graphgallery.nn.gallery import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
-
-
-from graphgallery.nn.models.pytorch import SGC as pySGC
-from graphgallery.nn.models.tensorflow import SGC as tfSGC
 
 from graphgallery import functional as F
 
@@ -78,47 +71,23 @@ class SGC(SemiSupervisedModel):
         feature_inputs, structure_inputs = F.astensors(
             attr_matrix, adj_matrix, device=self.device)
 
-        if self.backend == "tensorflow":
-            # To avoid this tensorflow error in large dataset:
-            # InvalidArgumentError: Cannot use GPU when output.shape[1] * nnz(a) > 2^31 [Op:SparseTensorDenseMatMul]
-            if self.graph.n_attrs * adj_matrix.nnz > 2**31:
-                device = "CPU"
-            else:
-                device = self.device
-
-            with tf.device(device):
-                feature_inputs = tfSGConvolution(order=self.order)(
-                    [feature_inputs, structure_inputs])
-
-            with tf.device(self.device):
-                self.feature_inputs, self.structure_inputs = feature_inputs, structure_inputs
-        else:
-            feature_inputs = pySGConvolution(order=self.order)(
-                [feature_inputs, structure_inputs])
-            self.feature_inputs, self.structure_inputs = feature_inputs, structure_inputs
+        feature_inputs = SGConvolution(order=self.order)(
+            [feature_inputs, structure_inputs])
+        self.feature_inputs, self.structure_inputs = feature_inputs, structure_inputs
 
     # use decorator to make sure all list arguments have the same length
 
     @F.EqualVarLength()
     def build(self, hiddens=[], activations=[], dropout=0.5, l2_norm=5e-5, lr=0.2, use_bias=True):
 
-        if self.backend == "tensorflow":
-            with tf.device(self.device):
-                self.model = tfSGC(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
-                                   activations=activations, dropout=dropout, l2_norm=l2_norm,
-                                   lr=lr, use_bias=use_bias)
-        else:
-            self.model = pySGC(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
-                               activations=activations, dropout=dropout, l2_norm=l2_norm,
-                               lr=lr, use_bias=use_bias).to(self.device)
+        self.model = pySGC(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
+                           activations=activations, dropout=dropout, l2_norm=l2_norm,
+                           lr=lr, use_bias=use_bias).to(self.device)
 
     def train_sequence(self, index):
         index = F.astensor(index)
         labels = self.graph.labels[index]
 
-        if self.backend == "tensorflow":
-            feature_inputs = tf.gather(self.feature_inputs, index)
-        else:
-            feature_inputs = self.feature_inputs[index]
+        feature_inputs = self.feature_inputs[index]
         sequence = FullBatchNodeSequence(feature_inputs, labels, device=self.device)
         return sequence

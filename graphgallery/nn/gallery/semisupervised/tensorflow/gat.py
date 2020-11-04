@@ -1,17 +1,9 @@
-import scipy.sparse as sp
 import tensorflow as tf
-from tensorflow.keras import Model, Input
-from tensorflow.keras.layers import Dropout, Softmax
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras import regularizers
-from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 from graphgallery.nn.layers.tensorflow import GraphAttention, Gather
 from graphgallery.nn.gallery import SemiSupervisedModel
 from graphgallery.sequence import FullBatchNodeSequence
 
-
-from graphgallery.nn.models.pytorch import GAT as pyGAT
 from graphgallery.nn.models.tensorflow import GAT as tfGAT
 from graphgallery import functional as F
 
@@ -83,22 +75,13 @@ class GAT(SemiSupervisedModel):
               dropout=0.6, l2_norm=5e-4,
               lr=0.01, use_bias=True):
 
-        if self.backend == "tensorflow":
-            with tf.device(self.device):
-                self.model = tfGAT(self.graph.n_attrs, self.graph.n_classes,
-                                   hiddens=hiddens, n_heads=n_heads,
-                                   activations=activations,
-                                   dropout=dropout,
-                                   l2_norm=l2_norm,
-                                   lr=lr, use_bias=use_bias)
-
-        else:
-            self.model = pyGAT(self.graph.n_attrs, self.graph.n_classes,
+        with tf.device(self.device):
+            self.model = tfGAT(self.graph.n_attrs, self.graph.n_classes,
                                hiddens=hiddens, n_heads=n_heads,
                                activations=activations,
                                dropout=dropout,
                                l2_norm=l2_norm,
-                               lr=lr, use_bias=use_bias).to(self.device)
+                               lr=lr, use_bias=use_bias)
 
     def train_sequence(self, index):
 
