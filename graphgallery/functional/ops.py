@@ -12,6 +12,7 @@ import graphgallery as gg
 
 __all__ = ['asintarr', 'indices2mask', 'repeat', 'get_length', 'Bunch']
 
+
 def asintarr(x: Any, dtype: Optional[str] = None) -> np.ndarray:
     """Convert `x` to interger Numpy array.
 

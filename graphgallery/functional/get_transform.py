@@ -37,7 +37,7 @@ _ALLOWED = set(list(_TRANSFORMS.keys()))
 
 class Compose(Transform):
     def __init__(self, *transforms, **kwargs):
-        self.transforms = tuple(get(transform) for transform in transforms)
+        self.transforms = [get(transform) for transform in transforms]
 
     def __call__(self, inputs):
         for transform in self.transforms:
@@ -47,6 +47,9 @@ class Compose(Transform):
                 inputs = transform(inputs)
 
         return inputs
+    
+    def add(self, transform):
+        self.transforms.append(get(transform))
 
     def __repr__(self):
         format_string = self.__class__.__name__ + '('

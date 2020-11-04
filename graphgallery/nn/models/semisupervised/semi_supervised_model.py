@@ -1,7 +1,6 @@
 import os
 import time
 import copy
-import logging
 import warnings
 import os.path as osp
 import numpy as np
@@ -292,6 +291,7 @@ class SemiSupervisedModel(BaseModel):
                         progbar.update(epoch + 1, training_logs.items())
 
                 if model.stop_training:
+                    print(f"Early Stopping in Epoch {epoch}", file=sys.stderr)
                     break
 
         finally:

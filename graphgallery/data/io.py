@@ -1,5 +1,4 @@
 import os
-import logging
 import errno
 import os.path as osp
 from tensorflow.keras.utils import get_file
@@ -42,5 +41,4 @@ def makedirs_from_filename(filename: str, verbose: bool = True) -> None:
     if not osp.exists(file_dir):
         makedirs(file_dir)
         if verbose:
-            logging.log(logging.WARNING,
-                        f"Creating a folder in {filename}.")
+            print(f"Creating folder in {filename}.", file=sys.stderr)
