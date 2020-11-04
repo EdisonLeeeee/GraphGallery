@@ -7,14 +7,15 @@ from typing import Optional, List, Tuple
 from collections import Counter
 from sklearn.preprocessing import MultiLabelBinarizer, LabelBinarizer, normalize
 from sklearn.model_selection import train_test_split
-from graphgallery.typing import MultiArrayLike, ArrayLike1D, GraphType
+from graphgallery.typing import MultiArrayLike, ArrayLike1D, GalleryGraph
+
 
 def train_val_test_split_tabular(N: int,
-                                 train_size: float=0.1,
-                                 val_size: float=0.1,
-                                 test_size: float=0.8,
-                                 stratify: Optional[ArrayLike1D]=None,
-                                 random_state: Optional[int]=None) -> MultiArrayLike:
+                                 train_size: float = 0.1,
+                                 val_size: float = 0.1,
+                                 test_size: float = 0.8,
+                                 stratify: Optional[ArrayLike1D] = None,
+                                 random_state: Optional[int] = None) -> MultiArrayLike:
 
     idx = np.arange(N)
     idx_train_and_val, idx_test = train_test_split(idx,
@@ -36,18 +37,18 @@ def train_val_test_split_tabular(N: int,
     return idx_train, idx_val, idx_test
 
 
-def largest_connected_components(graph: GraphType, n_components: int=1) -> GraphType:
+def largest_connected_components(graph: GalleryGraph, n_components: int = 1) -> GalleryGraph:
     """Select the largest connected components in the graph.
 
     Parameters
     ----------
-    graph : GraphType
+    graph : GalleryGraph
         Input graph.
     n_components : int, default 1
         Number of largest connected components to keep.
     Returns
     -------
-    graph : GraphType
+    graph : GalleryGraph
         Subgraph of the input graph where only the nodes in largest n_components are kept.
     """
     _, component_indices = sp.csgraph.connected_components(
@@ -61,16 +62,16 @@ def largest_connected_components(graph: GraphType, n_components: int=1) -> Graph
     return create_subgraph(graph, nodes_to_keep=nodes_to_keep)
 
 
-def create_subgraph(graph: GraphType, *, 
-                    nodes_to_remove: Optional[ArrayLike1D]=None, 
-                    nodes_to_keep: Optional[ArrayLike1D]=None) -> GraphType:
+def create_subgraph(graph: GalleryGraph, *,
+                    nodes_to_remove: Optional[ArrayLike1D] = None,
+                    nodes_to_keep: Optional[ArrayLike1D] = None) -> GalleryGraph:
     """Create a graph with the specified subset of nodes.
     Exactly one of (nodes_to_remove, nodes_to_keep) should be provided, while the other stays None.
     Note that to avoid confusion, it is required to pass node indices as named Parameters to this function.
 
     Parameters
     ----------
-    graph : GraphType
+    graph : GalleryGraph
         Input graph.
     nodes_to_remove : array-like of int
         Indices of nodes that have to removed.
@@ -78,8 +79,8 @@ def create_subgraph(graph: GraphType, *,
         Indices of nodes that have to be kept.
     Returns
     -------
-    graph : GraphType
-        GraphType with specified nodes removed.
+    graph : GalleryGraph
+        GalleryGraph with specified nodes removed.
     """
     # Check that Parameters are passed correctly
     if nodes_to_remove is None and nodes_to_keep is None:
@@ -89,7 +90,7 @@ def create_subgraph(graph: GraphType, *,
         raise ValueError(
             "Only one of nodes_to_remove or nodes_to_keep must be provided.")
     elif nodes_to_remove is not None:
-        if len(nodes_to_remove)==0:
+        if len(nodes_to_remove) == 0:
             return graph.copy()
         nodes_to_keep = np.setdiff1d(np.arange(graph.n_nodes), nodes_to_remove)
     elif nodes_to_keep is not None:
@@ -109,7 +110,7 @@ def create_subgraph(graph: GraphType, *,
     return graph
 
 
-def binarize_labels(labels: ArrayLike1D, sparse_output: bool=False, return_classes: bool=False):
+def binarize_labels(labels: ArrayLike1D, sparse_output: bool = False, return_classes: bool = False):
     """Convert labels vector to a binary label matrix.
     In the default single-label case, labels look like
     labels = [y1, y2, y3, ...].
@@ -144,8 +145,8 @@ def binarize_labels(labels: ArrayLike1D, sparse_output: bool=False, return_class
 def get_train_val_test_split(stratify: ArrayLike1D,
                              train_examples_per_class: int,
                              val_examples_per_class: int,
-                             test_examples_per_class: Optional[None]=None,
-                             random_state: Optional[None]=None) -> MultiArrayLike:
+                             test_examples_per_class: Optional[None] = None,
+                             random_state: Optional[None] = None) -> MultiArrayLike:
 
     random_state = np.random.RandomState(random_state)
     remaining_indices = list(range(stratify.shape[0]))
@@ -178,8 +179,8 @@ def get_train_val_test_split(stratify: ArrayLike1D,
 
 
 def sample_per_class(stratify: ArrayLike1D, n_examples_per_class: int,
-                     forbidden_indices: Optional[ArrayLike1D]=None, 
-                     random_state: Optional[int]=None) -> ArrayLike1D:
+                     forbidden_indices: Optional[ArrayLike1D] = None,
+                     random_state: Optional[int] = None) -> ArrayLike1D:
 
     n_classes = stratify.max() + 1
     n_samples = stratify.shape[0]

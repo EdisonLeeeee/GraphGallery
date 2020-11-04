@@ -1,4 +1,7 @@
+import torch
 import tensorflow as tf
+
+__all__ = ['set_memory_growth', 'empty_cache']
 
 
 def set_memory_growth() -> None:
@@ -20,3 +23,8 @@ def set_memory_growth() -> None:
         except RuntimeError as e:
             # Memory growth must be set before GPUs have been initialized
             print(e)
+
+
+def empty_cache() -> None:
+    torch.cuda.empty_cache()
+    tf.keras.backend.clear_session()

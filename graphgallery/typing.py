@@ -8,9 +8,10 @@ import networkx as nx
 import tensorflow as tf
 import scipy.sparse as sp
 from tensorflow.python.eager.context import _EagerDeviceContext
+from graphgallery.backend import BackendModule
 
 TransformType = TypeVar('TransformType')
-GraphType = TypeVar('GraphType')
+GalleryGraph = TypeVar('GalleryGraph')
 
 IntNumber = Union[
     int,
@@ -38,6 +39,7 @@ Number = Union[
 Shape = Optional[Tuple[IntNumber, IntNumber]]
 
 Device = Optional[Union[str, torch.device, _EagerDeviceContext]]
+Backend = Optional[Union[str, BackendModule]]
 
 Initializer = Optional[Union[dict, str, Callable]]
 Regularizer = Optional[Union[dict, str, Callable]]
@@ -78,4 +80,4 @@ TensorLike = Union[List[Union[Number, list]],
 NxGraph = Union[nx.Graph, nx.DiGraph]
 
 FloatTensorLike = Union[tf.Tensor, float, np.float16, np.float32, np.float64]
-AcceptableDTypes = Optional[tf.DType, np.dtype, type, int, str]
+AcceptableDTypes = Optional[Union[tf.DType, np.dtype, type, int, str]]

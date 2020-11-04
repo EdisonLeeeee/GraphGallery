@@ -1,7 +1,8 @@
 from abc import ABC
 from copy import copy as _copy, deepcopy as _deepcopy
 from typing import Union, Tuple
-from graphgallery.typing import SparseMatrix, MultiSparseMatrix, ArrayLike, MultiArrayLike, GraphType
+from graphgallery.typing import SparseMatrix, MultiSparseMatrix, ArrayLike, MultiArrayLike, GalleryGraph
+
 
 class BaseGraph(ABC):
 
@@ -53,7 +54,7 @@ class BaseGraph(ABC):
 
     def unpack(self) -> tuple:
         return self.A, self.X, self.Y
-    
+
     def raw(self) -> tuple:
         """Return the raw (A, X, Y) triplet."""
         return self._adj_matrix, self._attr_matrix, self._labels
@@ -64,20 +65,20 @@ class BaseGraph(ABC):
     def is_attributed(self) -> bool:
         return self.attr_matrix is not None
 
-    def copy(self, deepcopy: bool=False) -> GraphType:
+    def copy(self, deepcopy: bool = False) -> GalleryGraph:
         cls = self.__class__
         if deepcopy:
             return _deepcopy(self)
         else:
             return _copy(self)
 
-    def __copy__(self) -> GraphType:
+    def __copy__(self) -> GalleryGraph:
         cls = self.__class__
         result = cls.__new__(cls)
         result.__dict__.update(self.__dict__)
         return result
 
-    def __deepcopy__(self, memo: dict) -> GraphType:
+    def __deepcopy__(self, memo: dict) -> GalleryGraph:
         cls = self.__class__
         result = cls.__new__(cls)
         memo[id(self)] = result
