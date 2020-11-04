@@ -30,13 +30,13 @@
 
 
 # GraphGallery
-GraphGallery is a gallery of state-of-the-arts graph neural networks for [TensorFlow 2.x](https://github.com/tensorflow/tensorflow) and [PyTorch](https://github.com/pytorch/pytorch). GraphGallery 0.4.x is a total re-write from previous versions, and some things have changed. 
+GraphGallery is a gallery for benchmark graph neural networks with [TensorFlow 2.x](https://github.com/tensorflow/tensorflow) and [PyTorch](https://github.com/pytorch/pytorch) backend. GraphGallery 0.5.x is a total re-write from previous versions, and some things have changed. 
 
 # 👀 What's important
 Difference between GraphGallery and [Pytorch Geometric (PyG)](https://github.com/rusty1s/pytorch_geometric), [Deep Graph Library (DGL)](https://github.com/dmlc/dgl), etc...
 + PyG and DGL are just like **TensorFlow** while GraphGallery is more like **Keras**
-+ GraphGallery is more friendly to use
-+ GraphGallery is more efficiient
++ GraphGallery is more extensible and user-friendly
++ GraphGallery has high scalaribility for researchers to use
 
 
 # 🚀 Installation
@@ -56,43 +56,187 @@ In detail, the following methods are currently implemented:
 ## Semi-supervised models
 ### General models
 
-+ **ChebyNet** from *Michaël Defferrard et al*, [📝Convolutional Neural Networks on Graphs with Fast Localized Spectral Filtering](https://arxiv.org/abs/1606.09375), *NIPS'16*. 
- [[🌋 TF]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_ChebyNet.ipynb)
-+ **GCN** from *Thomas N. Kipf et al*, [📝Semi-Supervised Classification with Graph Convolutional Networks](https://arxiv.org/abs/1609.02907), *ICLR'17*. 
- [[🌋 TF]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_GCN.ipynb), [[🔥 Torch]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyTorch/test_GCN.ipynb)
-+ **GraphSAGE** from *William L. Hamilton et al*, [📝Inductive Representation Learning on Large Graphs](https://arxiv.org/abs/1706.02216), *NIPS'17*. 
- [[🌋 TF]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_GraphSAGE.ipynb)
-+ **FastGCN** from *Jie Chen et al*, [FastGCN: Fast Learning with Graph Convolutional Networks via Importance Sampling](https://arxiv.org/abs/1801.10247), *ICLR'18*. 
- [[🌋 TF]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_FastGCN.ipynb)
-+ **LGCN** from  *Hongyang Gao et al*, [📝Large-Scale Learnable Graph Convolutional Networks](https://arxiv.org/abs/1808.03965), *KDD'18*. 
- [[🌋 TF]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_LGCN.ipynb)
-+ **GAT** from *Petar Veličković et al*, [📝Graph Attention Networks](https://arxiv.org/abs/1710.10903), *ICLR'18*. 
- ), [[🌋 TF]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_GAT.ipynb), [[🔥 Torch]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyTorch/test_GAT.ipynb)
-+ **SGC** from *Felix Wu et al*, [📝Simplifying Graph Convolutional Networks](https://arxiv.org/abs/1902.07153), *ICML'19*. 
- [[🌋 TF]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_SGC.ipynb),  [[🔥 Torch]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyTorch/test_SGC.ipynb)
-+ **GWNN** from *Bingbing Xu et al*, [📝Graph Wavelet Neural Network](https://arxiv.org/abs/1904.07785), *ICLR'19*. 
- [[🌋 TF]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_GWNN.ipynb)
-+ **GMNN** from *Meng Qu et al*, [📝Graph Markov Neural Networks](https://arxiv.org/abs/1905.06214), *ICML'19*. 
- [[🌋 TF]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_GMNN.ipynb)
-+ **ClusterGCN** from *Wei-Lin Chiang et al*, [📝Cluster-GCN: An Efficient Algorithm for Training Deep and Large Graph Convolutional Networks](https://arxiv.org/abs/1905.07953), *KDD'19*. 
-[[🌋 TF]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_ClusterGCN.ipynb), [[🔥 Torch]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyTorch/test_ClusterGCN.ipynb)
-+ **DAGNN** from *Meng Liu et al*, [📝Towards Deeper Graph Neural Networks](https://arxiv.org/abs/2007.09296), *KDD'20*. 
- [[🌋 TF]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_DAGNN.ipynb)
+<!-- 1 -->
+<details>
+<summary>
+<b>ChebyNet</b> from <i>Michaël Defferrard et al</i>,
+<a href="https://arxiv.org/abs/1606.09375"> 📝<i>Convolutional Neural Networks on Graphs with Fast Localized Spectral Filtering (NIPS'16)</i> </a>
+</summary>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_ChebyNet.ipynb"> :octocat:TensorFLow Example</a>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyTorch/test_ChebyNet.ipynb"> [:octocat:PyTorch Example]</a>,
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyG/test_ChebyNet.ipynb"> [:octocat:PyG Example] </a>
 
+</details>
+
+<!-- 2 -->
+
+<details>
+<summary>
+<b>GCN</b> from <i>Thomas N. Kipf et al</i>,
+<a href="https://arxiv.org/abs/1609.02907"> 📝<i>Semi-Supervised Classification with Graph Convolutional Networks (ICLR'17)</i> </a>
+</summary>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_GCN.ipynb"> [:octocat:TensorFLow Example]</a>,
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyTorch/test_GCN.ipynb"> [:octocat:PyTorch Example]</a>,
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyG/test_GCN.ipynb"> [:octocat:PyG Example] </a>
+</details>
+
+<!-- 3 -->
+<details>
+<summary>
+<b>GraphSAGE</b> from <i>William L. Hamilton et al</i>,
+<a href="https://arxiv.org/abs/1706.02216"> 📝<i>Inductive Representation Learning on Large Graphs (NIPS'17)</i> </a>
+</summary>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_GraphSAGE.ipynb"> [:octocat:TensorFLow Example]</a>,
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyTorch/test_GraphSAGE.ipynb"> [:octocat:PyTorch Example]</a>,
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyG/test_GraphSAGE.ipynb"> [:octocat:PyG Example] </a>
+</details>
+
+<!-- 4 -->
+<details>
+<summary>
+<b>FastGCN</b> from <i>Jie Chen et al</i>,
+<a href="https://arxiv.org/abs/1801.10247"> 📝<i>FastGCN: Fast Learning with Graph Convolutional Networks via Importance Sampling (ICLR'18)</i> </a>
+</summary>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_FastGCN.ipynb"> [:octocat:TensorFLow Example]</a>,
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyTorch/test_FastGCN.ipynb"> [:octocat:PyTorch Example]</a>,
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyG/test_FastGCN.ipynb"> [:octocat:PyG Example] </a>
+</details>
+
+<!-- 5 -->
+<details>
+<summary>
+<b>LGCN</b> from <i>Hongyang Gao et al</i>,
+<a href="https://arxiv.org/abs/1808.03965"> 📝<i>Large-Scale Learnable Graph Convolutional Networks (KDD'18)</i> </a>
+</summary>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_LGCN.ipynb"> [:octocat:TensorFLow Example]</a>,
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyTorch/test_LGCN.ipynb"> [:octocat:PyTorch Example]</a>,
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyG/test_LGCN.ipynb"> [:octocat:PyG Example] </a>
+</details>
+
+<!-- 6 -->
+<details>
+<summary>
+<b>GAT</b> from <i>Petar Veličković et al</i>,
+<a href="https://arxiv.org/abs/1710.10903"> 📝<i>Graph Attention Networks (ICLR'18)</i> </a>
+</summary>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_GAT.ipynb"> [:octocat:TensorFLow Example]</a>,
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyTorch/test_GAT.ipynb"> [:octocat:PyTorch Example]</a>,
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyG/test_GAT.ipynb"> [:octocat:PyG Example] </a>
+</details>
+
+<!-- 7 -->
+<details>
+<summary>
+<b>SGC</b> from <i>Felix Wu et al</i>,
+<a href="https://arxiv.org/abs/1902.07153"> 📝<i>Simplifying Graph Convolutional Networks (ICLR'19)</i> </a>
+</summary>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_SGC.ipynb"> [:octocat:TensorFLow Example]</a>,
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyTorch/test_SGC.ipynb"> [:octocat:PyTorch Example]</a>,
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyG/test_SGC.ipynb"> [:octocat:PyG Example] </a>
+</details>
+
+<!-- 8 -->
+<details>
+<summary>
+<b>GWNN</b> from <i>Bingbing Xu et al</i>,
+<a href="https://arxiv.org/abs/1904.07785"> 📝<i>Graph Wavelet Neural Network (ICLR'19)</i> </a>
+</summary>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_GWNN.ipynb"> [:octocat:TensorFLow Example]</a>,
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyTorch/test_GWNN.ipynb"> [:octocat:PyTorch Example]</a>,
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyG/test_GWNN.ipynb"> [:octocat:PyG Example] </a>
+</details>
+
+<!-- 69 -->
+<details>
+<summary>
+<b>GMNN</b> from <i>Meng Qu et al</i>,
+<a href="https://arxiv.org/abs/1905.06214"> 📝<i>Graph Attention Networks (ICLR'19)</i> </a>
+</summary>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_GMNN.ipynb"> [:octocat:TensorFLow Example]</a>,
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyTorch/test_GMNN.ipynb"> [:octocat:PyTorch Example]</a>,
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyG/test_GMNN.ipynb"> [:octocat:PyG Example] </a>
+</details>
+
+<!-- 10 -->
+<details>
+<summary>
+<b>ClusterGCN</b> from <i>Wei-Lin Chiang et al</i>,
+<a href="https://arxiv.org/abs/1905.07953"> 📝<i>Cluster-GCN: An Efficient Algorithm for Training Deep and Large Graph Convolutional Networks (KDD'19)</i> </a>
+</summary>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_ClusterGCN.ipynb"> [:octocat:TensorFLow Example]</a>,
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyTorch/test_ClusterGCN.ipynb"> [:octocat:PyTorch Example]</a>,
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyG/test_ClusterGCN.ipynb"> [:octocat:PyG Example] </a>
+</details>
+
+<!-- 11 -->
+<details>
+<summary>
+<b>DAGNN</b> from <i>Meng Liu et al</i>,
+<a href="https://arxiv.org/abs/2007.09296"> 📝<i>Towards Deeper Graph Neural Networks (KDD'20)</i> </a>
+</summary>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_DAGNN.ipynb"> [:octocat:TensorFLow Example]</a>,
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyTorch/test_DAGNN.ipynb"> [:octocat:PyTorch Example]</a>,
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyG/test_DAGNN.ipynb"> [:octocat:PyG Example] </a>
+</details>
 
 ### Defense models
-+ **RobustGCN** from *Dingyuan Zhu et al*, [📝Robust Graph Convolutional Networks Against Adversarial Attacks](https://dl.acm.org/doi/10.1145/3292500.3330851), *KDD'19*. 
-[[🌋 TF]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_RobustGCN.ipynb)
-+ **SBVAT** from *Zhijie Deng et al*, [📝Batch Virtual Adversarial Training for Graph Convolutional Networks](https://arxiv.org/abs/1902.09192), *ICML'19*. 
-[[🌋 TF]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_SBVAT.ipynb)
-+ **OBVAT** from *Zhijie Deng et al*, [📝Batch Virtual Adversarial Training for Graph Convolutional Networks](https://arxiv.org/abs/1902.09192), *ICML'19*. 
-[[🌋 TF]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_OBVAT.ipynb)
- 
+
+<!-- 1 -->
+<details>
+<summary>
+<b>RobustGCN</b> from <i>Petar Veličković et al</i>,
+<a href="https://dl.acm.org/doi/10.1145/3292500.3330851"> 📝<i>Robust Graph Convolutional Networks Against Adversarial Attacks (KDD'19)</i> </a>
+</summary>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_RobustGCN.ipynb"> [:octocat:TensorFLow Example]</a>,
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyTorch/test_RobustGCN.ipynb"> [:octocat:PyTorch Example]</a>,
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyG/test_RobustGCN.ipynb"> [:octocat:PyG Example] </a>
+</details>
+
+<!-- 2 -->
+<details>
+<summary>
+<b>SBVAT</b> from <i>Zhijie Deng et al</i>,
+<a href="https://arxiv.org/abs/1902.09192"> 📝<i>Batch Virtual Adversarial Training for Graph Convolutional Networks (ICML'19)</i> </a>
+</summary>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_SBVAT.ipynb"> [:octocat:TensorFLow Example]</a>,
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyTorch/test_SBVAT.ipynb"> [:octocat:PyTorch Example]</a>,
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyG/test_SBVAT.ipynb"> [:octocat:PyG Example] </a>
+</details>
+
+<!-- 3 -->
+<details>
+<summary>
+<b>OBVAT</b> from <i>Zhijie Deng et al</i>,
+<a href="https://arxiv.org/abs/1902.09192"> 📝<i>Batch Virtual Adversarial Training for Graph Convolutional Networks (ICML'19)</i> </a>
+</summary>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_OBVAT.ipynb"> [:octocat:TensorFLow Example]</a>,
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyTorch/test_OBVAT.ipynb"> [:octocat:PyTorch Example]</a>,
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyG/test_OBVAT.ipynb"> [:octocat:PyG Example] </a>
+</details>
+
 ## Unsupervised models
-+ **Deepwalk** from *Bryan Perozzi et al*, [📝DeepWalk: Online Learning of Social Representations](https://arxiv.org/abs/1403.6652), *KDD'14*. 
- [[🌋 TF]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_Deepwalk.ipynb)
-+ **Node2vec** from *Aditya Grover et al*, [📝node2vec: Scalable Feature Learning for Networks](https://arxiv.org/abs/1607.00653), *KDD'16*. 
-[[🌋 TF]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_Node2vec.ipynb)
+
+<!-- 1 -->
+<details>
+<summary>
+<b>Deepwalk</b> from <i>Zhijie Deng et al</i>,
+<a href="https://arxiv.org/abs/1403.6652"> 📝<i>DeepWalk: Online Learning of Social Representations (KDD'14)</i> </a>
+</summary>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_Deepwalk.ipynb"> [:octocat:TensorFLow Example]</a>,
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyTorch/test_Deepwalk.ipynb"> [:octocat:PyTorch Example]</a>,
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyG/test_Deepwalk.ipynb"> [:octocat:PyG Example] </a>
+</details>
+
+<!-- 2 -->
+<details>
+<summary>
+<b>Node2vec</b> from <i>Zhijie Deng et al</i>,
+<a href="https://arxiv.org/abs/1607.00653"> 📝<i>node2vec: Scalable Feature Learning for Networks (KDD'16)</i> </a>
+</summary>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/test_Node2vec.ipynb"> [:octocat:TensorFLow Example]</a>,
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyTorch/test_Node2vec.ipynb"> [:octocat:PyTorch Example]</a>,
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyG/test_Node2vec.ipynb"> [:octocat:PyG Example] </a>
+</details>
 
 # ⚡ Quick Start
 ## Datasets
@@ -130,9 +274,9 @@ Graph(adj_matrix(2708, 2708), attr_matrix(2708, 2708), labels(2708,))
 currently the supported datasets are:
 ```python
 >>> data.supported_datasets
-('citeseer', 'citeseer_full', 'cora', 'cora_ml', 'cora_full', 
- 'amazon_cs', 'amazon_photo', 'coauthor_cs', 'coauthor_phy', 
- 'polblogs', 'pubmed', 'flickr', 'blogcatalog')
+('citeseer','citeseer_full','cora','cora_ml','cora_full',
+ 'amazon_cs','amazon_photo','coauthor_cs','coauthor_phy', 
+ 'polblogs', 'pubmed', 'flickr','blogcatalog','dblp')
 ```
 
 ## Tensor
@@ -141,9 +285,9 @@ currently the supported datasets are:
 >>> backend()
 TensorFlow 2.1.2 Backend
 
->>> from graphgallery import transforms as T
+>>> from graphgallery import functional as F
 >>> arr = [1, 2, 3]
->>> T.astensor(arr)
+>>> F.astensor(arr)
 <tf.Tensor: shape=(3,), dtype=int32, numpy=array([1, 2, 3], dtype=int32)>
 
 ```
@@ -153,7 +297,7 @@ TensorFlow 2.1.2 Backend
 ```python
 >>> import scipy.sparse as sp
 >>> sp_matrix = sp.eye(3)
->>> T.astensor(sp_matrix)
+>>> F.astensor(sp_matrix)
 <tensorflow.python.framework.sparse_tensor.SparseTensor at 0x7f1bbc205dd8>
 ```
 
@@ -164,10 +308,10 @@ TensorFlow 2.1.2 Backend
 >>> set_backend('torch') # torch, pytorch or th
 PyTorch 1.6.0+cu101 Backend
 
->>> T.astensor(arr)
+>>> F.astensor(arr)
 tensor([1, 2, 3])
 
->>> T.astensor(sp_matrix)
+>>> F.astensor(sp_matrix)
 tensor(indices=tensor([[0, 1, 2],
                        [0, 1, 2]]),
        values=tensor([1., 1., 1.]),
@@ -176,28 +320,28 @@ tensor(indices=tensor([[0, 1, 2],
 
 + To Numpy or Scipy sparse matrix
 ```python
->>> tensor = T.astensor(arr)
->>> T.tensoras(tensor)
+>>> tensor = F.astensor(arr)
+>>> F.tensoras(tensor)
 array([1, 2, 3])
 
->>> sp_tensor = T.astensor(sp_matrix)
->>> T.tensoras(sp_tensor)
+>>> sp_tensor = F.astensor(sp_matrix)
+>>> F.tensoras(sp_tensor)
 <3x3 sparse matrix of type '<class 'numpy.float32'>'
     with 3 stored elements in Compressed Sparse Row format>
 ```
 
 + Or even convert one Tensor to another one
 ```python
->>> tensor = T.astensor(arr, kind="T")
+>>> tensor = F.astensor(arr, backend="tensorflow") # or "tf" in short
 >>> tensor
 <tf.Tensor: shape=(3,), dtype=int64, numpy=array([1, 2, 3])>
->>> T.tensor2tensor(tensor)
+>>> F.tensor2tensor(tensor)
 tensor([1, 2, 3])
 
->>> sp_tensor = T.astensor(sp_matrix, kind="T") # set kind="T" to convert to tensorflow tensor
+>>> sp_tensor = F.astensor(sp_matrix, backend="tensorflow") # set backend="tensorflow" to convert to tensorflow tensor
 >>> sp_tensor
 <tensorflow.python.framework.sparse_tensor.SparseTensor at 0x7efb6836a898>
->>> T.tensor2tensor(sp_tensor)
+>>> F.tensor2tensor(sp_tensor)
 tensor(indices=tensor([[0, 1, 2],
                        [0, 1, 2]]),
        values=tensor([1., 1., 1.]),
@@ -207,7 +351,7 @@ tensor(indices=tensor([[0, 1, 2],
 
 ## Example of GCN model
 ```python
-from graphgallery.nn.models import GCN
+from graphgallery.nn.gallery import GCN
 
 model = GCN(graph, attr_transform="normalize_attr", device="CPU", seed=123)
 # build your GCN model with default hyper-parameters
@@ -295,11 +439,12 @@ TensorFlow 2.1.0 Backend
 >>> graphgallery.set_backend("pytorch")
 PyTorch 1.6.0+cu101 Backend
 ```
-GCN using PyTorch backend
+###  GCN using PyTorch backend
+
 ```python
 
 # The following codes are the same with TensorFlow Backend
->>> from graphgallery.nn.models import GCN
+>>> from graphgallery.nn.gallery import GCN
 >>> model = GCN(graph, attr_transform="normalize_attr", device="GPU", seed=123);
 >>> model.build()
 >>> his = model.train(idx_train, idx_val, verbose=1, epochs=100)
@@ -331,13 +476,47 @@ mydataset = Graph.from_npz('path/to/mydataset.npz')
 ```
 
 # ❓ How to define your models
-TODO
+
+You can follow the codes in the folder `graphgallery.nn.gallery` and write you models based on:
+
++ TensorFlow
++ PyTorch
++ PyTorch Geometric (PyG)
++ Deep Graph Library (DGL)
+
+### NOTE: [PyG](https://github.com/rusty1s/pytorch_geometric) backend and [DGL](https://github.com/dmlc/dgl) backend now are supported in GraphGallery!
+
+```python
+>>> import graphgallery
+>>> graphgallery.set_backend("pyg")
+PyTorch Geometric 1.6.1 (PyTorch 1.6.0+cu101) Backend
+```
+
+### GCN using PyG backend
+
+```python
+# The following codes are the same with TensorFlow or PyTorch Backend
+>>> from graphgallery.nn.gallery import GCN
+>>> model = GCN(graph, attr_transform="normalize_attr", device="GPU", seed=123);
+>>> model.build()
+>>> his = model.train(idx_train, idx_val, verbose=1, epochs=100)
+Training...
+100/100 [==============================] - 0s 3ms/step - loss: 0.5325 - acc: 0.9643 - val_loss: 1.0034 - val_acc: 0.7980 - time: 0.3101
+>>> loss, accuracy = model.test(idx_test, verbose=1)
+Testing...
+1/1 [==============================] - 0s 834us/step - test_loss: 0.9733 - test_acc: 0.8130 - time: 8.2737e-04
+>>> print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
+Test loss 0.97332, Test accuracy 81.30%
+```
+
+
 
 # 😎 More Examples
 Please refer to the [examples](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples) directory.
 
 # ⭐ TODO List
 - [x] Add PyTorch models support
+- [x] Add other frameworks (PyG and DGL) support
 - [ ] Add more GNN models (TF and Torch backend)
 - [ ] Support for more tasks, e.g., `graph Classification` and `link prediction`
 - [ ] Support for more types of graphs, e.g., Heterogeneous graph
@@ -345,5 +524,4 @@ Please refer to the [examples](https://github.com/EdisonLeeeee/GraphGallery/blob
 
 
 # 😘 Acknowledgement
-This project is motivated by [Pytorch Geometric](https://github.com/rusty1s/pytorch_geometric), [Tensorflow Geometric](https://github.com/CrawlScript/tf_geometric) and [Stellargraph](https://github.com/stellargraph/stellargraph), and the original implementations of the authors, thanks for their excellent works!
-
+This project is motivated by [Pytorch Geometric](https://github.com/rusty1s/pytorch_geometric), [Tensorflow Geometric](https://github.com/CrawlScript/tf_geometric) and [Stellargraph](https://github.com/stellargraph/stellargraph), [DGL](https://github.com/dmlc/dgl), etc., and the original implementations of the authors, thanks for their excellent works!

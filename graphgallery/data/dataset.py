@@ -41,7 +41,7 @@ class Dataset(ABC):
         raise NotImplementedError
 
     def split(self, train_size: float = 0.1, val_size: float = 0.1, test_size: float = 0.8,
-              random_state: Optional[int]=None) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+              random_state: Optional[int]=None) -> Tuple[np.ndarray]:
 
         assert all((train_size, val_size))
         if test_size is None:
@@ -61,7 +61,7 @@ class Dataset(ABC):
     def split_by_sample(self, train_examples_per_class: int,
                         val_examples_per_class: int,
                         test_examples_per_class: int,
-                        random_state: Optional[int]=None)  -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+                        random_state: Optional[int]=None)  -> Tuple[np.ndarray]:
 
         self.graph = self.graph.eliminate_classes(train_examples_per_class+val_examples_per_class).standardize()
             

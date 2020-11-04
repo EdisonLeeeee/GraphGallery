@@ -1,1 +1,1 @@
-from graphgallery.nn.functions.activations import softmax
+from .activations import softmax
