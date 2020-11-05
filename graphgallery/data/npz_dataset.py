@@ -1,4 +1,5 @@
 import os
+import sys
 import zipfile
 import os.path as osp
 import numpy as np
@@ -28,7 +29,7 @@ class NPZDataset(Dataset):
         
         name = str(name)
         if not name.lower() in self.supported_datasets:
-            print(f"Dataset not Found. Using custom dataset: {name}.")
+            print(f"Dataset not found in supported datasets. Using custom dataset: {name}.", file=sys.stderr)
             custom = True
         else:
             custom = False
