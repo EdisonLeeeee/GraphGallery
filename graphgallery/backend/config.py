@@ -1,14 +1,15 @@
 """Inspired by Keras backend config API. https://tensorflow.google.com """
 
 import importlib
+import sys
 from tensorflow.keras import backend as K
 from typing import Union, Tuple, Optional
 
 from .modules import BackendModule, TensorFlowBackend, PyTorchBackend, PyGBackend, DGLPyTorchBackend, DGLTensorFlowBackend
 
 __all__ = ['allowed_backends', 'backend_dict',
-           'backend', 'set_backend', 'boolx',
-           'intx', 'set_intx',
+           'backend', 'set_backend', 'set_to_default_backend',
+           'boolx', 'intx', 'set_intx',
            'floatx', 'set_floatx',
            'epsilon', 'set_epsilon',
            'file_postfix', 'set_file_postfix']
@@ -24,7 +25,8 @@ _MXNET = 'mxnet'
 _CUPY = 'cupy'
 _NUMPY = 'numpy'
 
-_BACKEND = TensorFlowBackend()
+_DEFAULT_BACKEND = TensorFlowBackend()
+_BACKEND = _DEFAULT_BACKEND
 
 _ALL_BACKENDS = {TensorFlowBackend, PyTorchBackend, PyGBackend, DGLPyTorchBackend, DGLTensorFlowBackend}
 _BACKEND_DICT = {}
@@ -209,13 +211,19 @@ def backend(module_name: Optional[Union[str, BackendModule]] = None) -> BACKEND_
     else:
         module_name = str(module_name)
         module = _BACKEND_DICT.get(module_name.lower(), None)
-
+        
         if module is None:
             raise ValueError(
                 f"Unsupported backend module name: '{module_name}', expected one of {allowed_backends()}.")
         return module()
 
-
+def set_to_default_backend():
+    global _BACKEND
+    _BACKEND = _DEFAULT_BACKEND
+    # Using `int32` is more efficient
+    set_intx('int32')    
+    return _BACKEND
+    
 def set_backend(module_name: Optional[Union[str, BackendModule]] = None) -> BACKEND_TYPE:
     """Set the default backend module.
 
@@ -240,6 +248,7 @@ def set_backend(module_name: Optional[Union[str, BackendModule]] = None) -> BACK
 
     _backend = backend(module_name)
 
+
     global _BACKEND
 
     if _backend != _BACKEND:
@@ -250,8 +259,13 @@ def set_backend(module_name: Optional[Union[str, BackendModule]] = None) -> BACK
         else:
             # Using `int32` is more efficient
             set_intx('int32')
-        from graphgallery.nn import gallery
-        importlib.reload(gallery)
+        try:
+            from graphgallery.nn import gallery
+            importlib.reload(gallery)
+        except Exception as e:
+            print(f"Something went wrong. Set to Default Backend {_DEFAULT_BACKEND}.", file=sys.stderr)
+            set_to_default_backend()
+            raise e        
         
     return _BACKEND
 

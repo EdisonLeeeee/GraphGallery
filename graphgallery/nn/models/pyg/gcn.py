@@ -3,12 +3,12 @@ import torch.nn.functional as F
 from torch import optim
 from torch.nn import Module, ModuleList, Dropout
 
-from graphgallery.nn.models import TorchKerasModel
+from graphgallery.nn.models import TorchKeras
 from graphgallery.nn.layers.pytorch.get_activation import get_activation
 
 from torch_geometric.nn import GCNConv
 
-class GCN(TorchKerasModel):
+class GCN(TorchKeras):
     def __init__(self, in_channels, out_channels,
                  hiddens=[16],
                  activations=['relu'],
@@ -25,13 +25,13 @@ class GCN(TorchKerasModel):
         # use ModuleList to create layers with different size
         inc = in_channels
         for hidden, activation in zip(hiddens, activations):
-            layer = GCNConv(inc, hidden, cached=True, bias=use_bias)
+            layer = GCNConv(inc, hidden, cached=True, bias=use_bias, normalize=False)
             layers.append(layer)
             paras.append(dict(params=layer.parameters(), weight_decay=l2_norm))
             acts.append(get_activation(activation))
             inc = hidden
 
-        layer = GCNConv(inc, out_channels, cached=True, bias=use_bias)
+        layer = GCNConv(inc, out_channels, cached=True, bias=use_bias, normalize=False)
         layers.append(layer)
         # do not use weight_decay in the final layer
         paras.append(dict(params=layer.parameters(), weight_decay=0.))

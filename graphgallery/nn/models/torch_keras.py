@@ -10,7 +10,7 @@ from collections import OrderedDict
 from graphgallery.utils import saver
 
 
-class TorchKerasModel(Module):
+class TorchKeras(Module):
     """Keras like PyTorch Model."""
 
     def __init__(self, *args, **kwargs):

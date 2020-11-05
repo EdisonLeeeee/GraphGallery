@@ -4,10 +4,10 @@ import torch.nn.functional as F
 from torch.nn import Module, ModuleList, Dropout, Linear
 from torch import optim
 
-from graphgallery.nn.models import TorchKerasModel
+from graphgallery.nn.models import TorchKeras
 
 
-class SGC(TorchKerasModel):
+class SGC(TorchKeras):
 
     def __init__(self, in_channels,
                  out_channels, 

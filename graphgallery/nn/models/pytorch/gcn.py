@@ -4,11 +4,11 @@ import torch.nn.functional as F
 from torch.nn import Module, ModuleList, Dropout
 from torch import optim
 
-from graphgallery.nn.models import TorchKerasModel
+from graphgallery.nn.models import TorchKeras
 from graphgallery.nn.layers.pytorch import GraphConvolution
 
 
-class GCN(TorchKerasModel):
+class GCN(TorchKeras):
 
     def __init__(self, in_channels, out_channels,
                  hiddens=[16],

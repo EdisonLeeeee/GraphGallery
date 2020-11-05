@@ -3,19 +3,20 @@ import torch.nn.functional as F
 from torch import optim
 from torch.nn import Module, ModuleList, Dropout
 
-from graphgallery.nn.models import TorchKerasModel
+from graphgallery.nn.models import TorchKeras
 from graphgallery.nn.layers.pytorch.get_activation import get_activation
 
 from dgl.nn.pytorch import GraphConv
 
-class GCN(TorchKerasModel):
+class GCN(TorchKeras):
     def __init__(self, g, in_channels, out_channels,
                  hiddens=[16],
                  activations=['relu'],
                  dropout=0.5,
                  l2_norm=5e-4,
                  lr=0.01, use_bias=True):
-        super(GCN, self).__init__()
+        
+        super().__init__()
 
         self.g = g
         self.layers = ModuleList()

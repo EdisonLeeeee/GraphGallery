@@ -1,7 +1,7 @@
 from graphgallery.functional import parse_device
 from graphgallery import functional as F
 from graphgallery.nn.gallery import SemiSupervisedModel
-from graphgallery.nn.models.dgl_pytorch import GCN as dglGCN
+from graphgallery.nn.models.dgl_torch import GCN as dglGCN
 from graphgallery.sequence import FullBatchNodeSequence
 
 from dgl import from_scipy

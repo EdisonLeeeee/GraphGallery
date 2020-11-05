@@ -5,7 +5,7 @@ from graphgallery import functional as F
 
 class GCN(SemiSupervisedModel):
 
-    def __init__(self, *graph, adj_transform=None, attr_transform=None,
+    def __init__(self, *graph, adj_transform="normalize_adj", attr_transform=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
