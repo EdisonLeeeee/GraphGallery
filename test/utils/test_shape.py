@@ -1,4 +1,4 @@
-from graphgallery.utils.shape import repeat
+from graphgallery.functional import repeat
 
 
 def test_repeat():
