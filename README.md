@@ -525,4 +525,4 @@ Please refer to the [examples](https://github.com/EdisonLeeeee/GraphGallery/blob
 
 
 # 😘 Acknowledgement
-This project is motivated by [Pytorch Geometric](https://github.com/rusty1s/pytorch_geometric), [Tensorflow Geometric](https://github.com/CrawlScript/tf_geometric) and [Stellargraph](https://github.com/stellargraph/stellargraph), [DGL](https://github.com/dmlc/dgl), etc., and the original implementations of the authors, thanks for their excellent works!
+This project is motivated by [Pytorch Geometric](https://github.com/rusty1s/pytorch_geometric), [Tensorflow Geometric](https://github.com/CrawlScript/tf_geometric), [Stellargraph](https://github.com/stellargraph/stellargraph) and [DGL](https://github.com/dmlc/dgl), etc., and the original implementations of the authors, thanks for their excellent works!
