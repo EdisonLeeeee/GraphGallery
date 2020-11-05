@@ -1,4 +1,3 @@
-from graphgallery.functional import parse_device
 from graphgallery import functional as F
 from graphgallery.nn.gallery import SemiSupervisedModel
 from graphgallery.nn.models.dgl_torch import GCN as dglGCN
@@ -17,19 +16,16 @@ class GCN(SemiSupervisedModel):
 
     def process_step(self):
         graph = self.graph
-        attr_matrix = self.attr_transform(graph.attr_matrix)
         adj_matrix = self.adj_transform(graph.adj_matrix)
+        attr_matrix = self.attr_transform(graph.attr_matrix)
 
-        self.structure_inputs = from_scipy(adj_matrix).int().to(
-            parse_device(self.device)
-        )
-
-        self.feature_inputs = F.astensors(attr_matrix, device=self.device)
+        self.feature_inputs, self.structure_inputs = F.astensors(attr_matrix, adj_matrix, device=self.device)
 
     @F.EqualVarLength()
     def build(self, hiddens=[16], activations=['relu'], dropout=0.5,
               l2_norm=5e-4, lr=0.01, use_bias=False):
-        self.model = dglGCN(self.structure_inputs, self.graph.n_attrs, self.graph.n_classes,
+        
+        self.model = dglGCN(self.graph.n_attrs, self.graph.n_classes,
                             hiddens=hiddens, activations=activations, dropout=dropout,
                             l2_norm=l2_norm, lr=lr, use_bias=use_bias
                             ).to(self.device)
@@ -38,5 +34,6 @@ class GCN(SemiSupervisedModel):
 
         labels = self.graph.labels[index]
         sequence = FullBatchNodeSequence(
-            [self.feature_inputs, index], labels, device=self.device)
+            [self.feature_inputs, self.structure_inputs, index], labels, 
+            device=self.device, escape=type(self.structure_inputs))
         return sequence

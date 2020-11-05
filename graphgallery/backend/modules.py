@@ -130,11 +130,11 @@ class DGLTensorFlowBackend(TensorFlowBackend):
 
 
 class DGLPyTorchBackend(PyTorchBackend):
-    alias = {"dgl_torch", "dgl_th"}
+    alias = {"dgl_torch", "dgl_th", "dgl"}
 
     def __init__(self):
         super().__init__()
-        self.acceptable_names = self.acceptable_names.union({"dgl_torch", "dgl_th"})
+        self.acceptable_names = self.acceptable_names.union({"dgl_torch", "dgl_th", "dgl"})
 
     @property
     def version(self) -> str:

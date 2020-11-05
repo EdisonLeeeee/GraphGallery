@@ -4,6 +4,8 @@ import scipy.sparse as sp
 import graphgallery as gg
 from typing import Any
 
+
+    
 from graphgallery import functional as F
 
 __all__ = ["astensor", "data_type_dict",
@@ -47,9 +49,12 @@ def dtype_to_tensor_class(dtype):
 
 
 def astensor(x, *, dtype=None, device=None, escape=None):
+    
     if x is None:
         return x
-
+    if escape is not None and isinstance(x, escape):
+        return x
+    
     if dtype is None:
         dtype = gg.infer_type(x)
     elif isinstance(dtype, str):
@@ -60,14 +65,19 @@ def astensor(x, *, dtype=None, device=None, escape=None):
     else:
         raise TypeError(
             f"argument 'dtype' must be torch.dtype or str, not {type(dtype).__name__}.")
-
+        
     if gg.is_tensor(x, backend='torch'):
         tensor = x.to(getattr(torch, dtype))
     elif gg.is_tensor(x, backend='tensorflow'):
         from ..tensor import tensoras
         return astensor(tensoras(x), dtype=dtype, device=device, escape=escape)
     elif sp.isspmatrix(x):
-        tensor = sparse_adj_to_sparse_tensor(x, dtype=dtype)
+        if gg.backend() == "dgl_torch":
+            try:
+                import dgl
+                tensor = dgl.from_scipy(x, idtype=getattr(torch, gg.intx()))
+            except ImportError:
+                tensor = sparse_adj_to_sparse_tensor(x, dtype=dtype)
     elif isinstance(x, (np.ndarray, np.matrix)) or gg.is_listlike(x) or gg.is_scalar(x):
         tensor = torch.tensor(x, dtype=getattr(torch, dtype), device=device)
     else:

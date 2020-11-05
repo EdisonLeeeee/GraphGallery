@@ -30,13 +30,13 @@ def astensor(x, *, dtype=None, device=None, backend=None, escape=None):
     dtype: The type of Tensor `x`, if not specified,
         it will automatically use appropriate data type.
         See `graphgallery.infer_type`.
-
     device: tf.device, optional. the desired device of returned tensor.
         Default: if `None`, uses the CPU device for the default tensor type.
-
     backend: String or 'BackendModule', optional.
-     `'tensorflow'`, `'torch'`, TensorFlowBackend, PyTorchBackend, etc.
-     if not specified, return the current default backend module. 
+         `'tensorflow'`, `'torch'`, TensorFlowBackend, PyTorchBackend, etc.
+         if not specified, return the current default backend module. 
+    escape: a Class or a tuple of Classes,  `astensor` will disabled if
+         `isinstance(x, escape)`.
 
     Returns:
     ----------      
@@ -48,7 +48,6 @@ def astensor(x, *, dtype=None, device=None, backend=None, escape=None):
     """
     backend = gg.backend(backend)
     device = parse_device(device, backend)
-
     if backend == "tensorflow":
         return tf_tensor.astensor(x, dtype=dtype, device=device, escape=escape)
     else:
@@ -64,18 +63,16 @@ def astensors(*xs, dtype=None, device=None, backend=None, escape=None):
     Parameters:
     ----------
     xs: one or a list of python object(s)
-
     dtype: The type of Tensor `x`, if not specified,
         it will automatically use appropriate data type.
         See `graphgallery.infer_type`.
-
     device: tf.device, optional. the desired device of returned tensor.
         Default: if `None`, uses the CPU device for the default tensor type.     
-
     backend: String or 'BackendModule', optional.
-     `'tensorflow'`, `'torch'`, TensorFlowBackend, PyTorchBackend, etc.
-     if not specified, return the current default backend module.    
-
+         `'tensorflow'`, `'torch'`, TensorFlowBackend, PyTorchBackend, etc.
+         if not specified, return the current default backend module.    
+    escape: a Class or a tuple of Classes,  `astensor` will disabled if
+         `isinstance(x, escape)`.
     Returns:
     ----------      
     Tensor(s) or SparseTensor(s) with dtype. If dtype is `None`, 
@@ -87,7 +84,7 @@ def astensors(*xs, dtype=None, device=None, backend=None, escape=None):
     backend = gg.backend(backend)
     device = parse_device(device, backend)
     # escape
-    return _astensors_fn(*xs, dtype=dtype, device=device, backend=backend)
+    return _astensors_fn(*xs, dtype=dtype, device=device, backend=backend, escape=escape)
 
 
 def tensor2tensor(tensor, *, device=None):

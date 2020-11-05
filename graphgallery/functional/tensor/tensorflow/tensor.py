@@ -34,7 +34,10 @@ def astensor(x, *, dtype=None, device=None, escape=None):
 
     if x is None:
         return x
-
+    
+    if escape is not None and isinstance(x, escape):
+        return x
+    
     if dtype is None:
         dtype = gg.infer_type(x)
     elif isinstance(dtype, str):

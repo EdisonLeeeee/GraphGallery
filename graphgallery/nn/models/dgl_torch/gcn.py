@@ -9,7 +9,7 @@ from graphgallery.nn.layers.pytorch.get_activation import get_activation
 from dgl.nn.pytorch import GraphConv
 
 class GCN(TorchKeras):
-    def __init__(self, g, in_channels, out_channels,
+    def __init__(self, in_channels, out_channels,
                  hiddens=[16],
                  activations=['relu'],
                  dropout=0.5,
@@ -18,7 +18,6 @@ class GCN(TorchKeras):
         
         super().__init__()
 
-        self.g = g
         self.layers = ModuleList()
 
         inc = in_channels
@@ -36,12 +35,12 @@ class GCN(TorchKeras):
                                           weight_decay=l2_norm)
 
     def forward(self, inputs):
-        x, indx = inputs
+        x, g, indx = inputs
 
         for i, layer in enumerate(self.layers):
             if i != 0:
                 x = self.dropout(x)
-            x = layer(self.g, x)
+            x = layer(g, x)
 
         return x[indx]
 

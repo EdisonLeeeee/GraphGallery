@@ -13,9 +13,10 @@ class Sequence(tf_Sequence):
 
     def __init__(self, *args, **kwargs):
         device = kwargs.pop('device', 'cpu')
+        escape = kwargs.pop('escape', None)
         super().__init__(*args, **kwargs)
-        self.astensor = partial(F.astensor, device=device)
-        self.astensors = partial(F.astensors, device=device)
+        self.astensor = partial(F.astensor, device=device, escape=escape)
+        self.astensors = partial(F.astensors, device=device, escape=escape)
         self.device = device
 
     def __len__(self):
