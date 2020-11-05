@@ -72,6 +72,12 @@ class SBVAT(SemiSupervisedModel):
         self.process()
 
     def process_step(self):
+        """
+        Process the adjacency matrix.
+
+        Args:
+            self: (todo): write your description
+        """
         graph = self.graph
         adj_matrix = self.adj_transform(graph.adj_matrix)
         attr_matrix = self.attr_transform(graph.attr_matrix)
@@ -85,6 +91,23 @@ class SBVAT(SemiSupervisedModel):
     def build(self, hiddens=[16], activations=['relu'], dropout=0.5,
               lr=0.01, l2_norm=5e-4, use_bias=False, p1=1., p2=1.,
               n_power_iterations=1, epsilon=0.03, xi=1e-6):
+        """
+        Builds the graph.
+
+        Args:
+            self: (todo): write your description
+            hiddens: (int): write your description
+            activations: (todo): write your description
+            dropout: (bool): write your description
+            lr: (todo): write your description
+            l2_norm: (todo): write your description
+            use_bias: (bool): write your description
+            p1: (todo): write your description
+            p2: (todo): write your description
+            n_power_iterations: (int): write your description
+            epsilon: (float): write your description
+            xi: (todo): write your description
+        """
 
         if self.backend == "tensorflow":
             with tf.device(self.device):
@@ -104,6 +127,13 @@ class SBVAT(SemiSupervisedModel):
 
     @tf.function
     def train_step(self, sequence):
+        """
+        Perform a single optimization step.
+
+        Args:
+            self: (todo): write your description
+            sequence: (todo): write your description
+        """
         model = self.model
         metric = model.metrics[0]
         loss_fn = model.loss
@@ -132,6 +162,16 @@ class SBVAT(SemiSupervisedModel):
             return loss, metric.result()
 
     def virtual_adversarial_loss(self, x, adj, logit, adv_mask):
+        """
+        Advance loss.
+
+        Args:
+            self: (todo): write your description
+            x: (todo): write your description
+            adj: (todo): write your description
+            logit: (todo): write your description
+            adv_mask: (todo): write your description
+        """
         d = tf.random.normal(shape=tf.shape(x), dtype=self.floatx)
         model = self.model
         for _ in range(self.n_power_iterations):
@@ -151,6 +191,13 @@ class SBVAT(SemiSupervisedModel):
         return loss
 
     def train_sequence(self, index):
+        """
+        Train the model.
+
+        Args:
+            self: (todo): write your description
+            index: (int): write your description
+        """
 
         labels = self.graph.labels[index]
 
@@ -162,6 +209,13 @@ class SBVAT(SemiSupervisedModel):
         return sequence
 
     def test_sequence(self, index):
+        """
+        Convert a single feature.
+
+        Args:
+            self: (todo): write your description
+            index: (int): write your description
+        """
 
         labels = self.graph.labels[index]
         sequence = FullBatchNodeSequence([self.feature_inputs, self.structure_inputs,

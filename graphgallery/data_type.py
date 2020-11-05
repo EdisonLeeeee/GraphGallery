@@ -206,26 +206,62 @@ def is_tensor(x: Any, backend: Optional[str] = None) -> bool:
 
 
 def is_tf_sparse_tensor(x: Any) -> bool:
+    """
+    Returns true if x is a tf.
+
+    Args:
+        x: (todo): write your description
+    """
     return K.is_sparse(x)
 
 
 def is_th_sparse_tensor(x: Any) -> bool:
+    """
+    Check if x is a tensor.
+
+    Args:
+        x: (todo): write your description
+    """
     return is_th_tensor(x) and not is_th_strided_tensor(x)
 
 
 def is_tf_strided_tensor(x: Any) -> bool:
+    """
+    Returns true if x is a tensor.
+
+    Args:
+        x: (todo): write your description
+    """
     return any((isinstance(x, tf.Tensor),
                 isinstance(x, tf.Variable),
                 isinstance(x, tf.RaggedTensor)))
 
 
 def is_th_strided_tensor(x: Any) -> bool:
+    """
+    Return true if x is a tensor.
+
+    Args:
+        x: (todo): write your description
+    """
     return is_th_tensor(x) and x.layout == torch.strided
 
 
 def is_tf_tensor(x: Any) -> bool:
+    """
+    Returns true if x is a tensor.
+
+    Args:
+        x: (todo): write your description
+    """
     return is_tf_strided_tensor(x) or is_tf_sparse_tensor(x)
 
 
 def is_th_tensor(x: Any) -> bool:
+    """
+    Return true if x is a tensor.
+
+    Args:
+        x: (todo): write your description
+    """
     return torch.is_tensor(x)

@@ -103,6 +103,12 @@ def tensor2tensor(tensor, *, device=None):
 
 
 def tensoras(tensor):
+    """
+    R numpy tensor.
+
+    Args:
+        tensor: (todo): write your description
+    """
     if gg.is_strided_tensor(tensor, backend="tensorflow"):
         m = tensor.numpy()
     elif gg.is_sparse(tensor, backend="tensorflow"):
@@ -156,6 +162,19 @@ def sparse_tensor_to_sparse_adj(x, *, backend=None):
 
 
 def sparse_edge_to_sparse_tensor(edge_index: np.ndarray, edge_weight: np.ndarray = None, shape: tuple = None, backend=None):
+    """
+    Converts a sparse tensor.
+
+    Args:
+        edge_index: (int): write your description
+        np: (todo): write your description
+        ndarray: (array): write your description
+        edge_weight: (todo): write your description
+        np: (todo): write your description
+        ndarray: (array): write your description
+        shape: (tuple): write your description
+        backend: (str): write your description
+    """
 
     backend = gg.backend(backend)
     if backend == "tensorflow":
@@ -167,6 +186,15 @@ def sparse_edge_to_sparse_tensor(edge_index: np.ndarray, edge_weight: np.ndarray
 #### only works for tensorflow backend now #####################################
 
 def normalize_adj_tensor(adj, rate=-0.5, fill_weight=1.0, backend=None):
+    """
+    Normalize tensor.
+
+    Args:
+        adj: (todo): write your description
+        rate: (array): write your description
+        fill_weight: (str): write your description
+        backend: (str): write your description
+    """
     backend = gg.backend(backend)
     if backend == "tensorflow":
         return tf_tensor.normalize_adj_tensor(adj, rate=rate, fill_weight=fill_weight)
@@ -176,6 +204,16 @@ def normalize_adj_tensor(adj, rate=-0.5, fill_weight=1.0, backend=None):
 
 
 def add_selfloops_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0, backend=None):
+    """
+    Adds an edge to the edge_index.
+
+    Args:
+        edge_index: (int): write your description
+        edge_weight: (todo): write your description
+        n_nodes: (int): write your description
+        fill_weight: (todo): write your description
+        backend: (str): write your description
+    """
     backend = gg.backend(backend)
     if backend == "tensorflow":
         return tf_tensor.normalize_adj_tensor(edge_index, edge_weight, n_nodes=n_nodes, fill_weight=fill_weight)
@@ -185,6 +223,17 @@ def add_selfloops_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0, b
 
 
 def normalize_edge_tensor(edge_index, edge_weight=None, n_nodes=None, fill_weight=1.0, rate=-0.5, backend=None):
+    """
+    Normalize the tensor.
+
+    Args:
+        edge_index: (int): write your description
+        edge_weight: (todo): write your description
+        n_nodes: (int): write your description
+        fill_weight: (todo): write your description
+        rate: (todo): write your description
+        backend: (str): write your description
+    """
     backend = gg.backend(backend)
     if backend == "tensorflow":
         return tf_tensor.normalize_adj_tensor(edge_index, edge_weight=edge_weight, n_nodes=n_nodes, fill_weight=fill_weight, rate=rate)

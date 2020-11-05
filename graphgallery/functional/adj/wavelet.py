@@ -85,6 +85,16 @@ from ..decorators import MultiInputs
 
 class WaveletBasis(Transform):
     def __init__(self, order=3, wavelet_s=1.2, threshold=1e-4, wavelet_normalize=True):
+        """
+        Initialize wavelet wavelet.
+
+        Args:
+            self: (todo): write your description
+            order: (int): write your description
+            wavelet_s: (str): write your description
+            threshold: (float): write your description
+            wavelet_normalize: (bool): write your description
+        """
         super().__init__()
         self.order = order
         self.wavelet_s = wavelet_s
@@ -92,10 +102,23 @@ class WaveletBasis(Transform):
         self.wavelet_normalize = wavelet_normalize
 
     def __call__(self, adj_matrix):
+        """
+        Return the wavelet wavelet wavelet.
+
+        Args:
+            self: (todo): write your description
+            adj_matrix: (array): write your description
+        """
         return wavelet_basis(adj_matrix, order=self.order, wavelet_s=self.wavelet_s,
                              threshold=self.threshold, wavelet_normalize=self.wavelet_normalize)
 
     def __repr__(self):
+        """
+        Return a repr representation of a repr__.
+
+        Args:
+            self: (todo): write your description
+        """
         return f"{self.__class__.__name__}(order={self.order}, wavelet_s={self.wavelet_s}, threshold={self.threshold}, wavelet_normalize={self.wavelet_normalize})"
 
 
@@ -117,6 +140,13 @@ def laplacian(adj_matrix, normalized=True):
 
 
 def compute_cheb_coeff_basis(scale, order):
+    """
+    Compute the coefficients coefficients.
+
+    Args:
+        scale: (float): write your description
+        order: (int): write your description
+    """
     xx = np.array([np.cos((2. * i - 1.) / (2. * order) * np.pi)
                    for i in range(1, order + 1)])
     basis = [np.ones((1, order)), xx]
@@ -132,6 +162,16 @@ def compute_cheb_coeff_basis(scale, order):
 
 @MultiInputs()
 def wavelet_basis(adj_matrix, order=3, wavelet_s=1.0, threshold=1e-4, wavelet_normalize=False):
+    """
+    R compute wavelet basis.
+
+    Args:
+        adj_matrix: (todo): write your description
+        order: (int): write your description
+        wavelet_s: (str): write your description
+        threshold: (float): write your description
+        wavelet_normalize: (bool): write your description
+    """
     lap = laplacian(adj_matrix)
     N = adj_matrix.shape[0]
     I = sp.eye(N)
@@ -142,6 +182,12 @@ def wavelet_basis(adj_matrix, order=3, wavelet_s=1.0, threshold=1e-4, wavelet_no
         monome[k] = 2 * L @ monome[k - 1] - monome[k - 2]
 
     def compute_walelet(tau):
+        """
+        Computes the coefficient matrix.
+
+        Args:
+            tau: (todo): write your description
+        """
         coeffs = compute_cheb_coeff_basis(tau, order)
         w = np.sum([coeffs[k] * monome[k] for k in range(order + 1)])
         w.data = thres(w.data)

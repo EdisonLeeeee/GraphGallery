@@ -12,6 +12,16 @@ from graphgallery.typing import Edge, ArrayLike1D, SparseMatrix
 def extra_edges(indices: ArrayLike1D, indptr: ArrayLike1D,
                 last_level: ArrayLike1D, seen: ArrayLike1D,
                 hops: int) -> Edge:
+    """
+    Return the edges of edges.
+
+    Args:
+        indices: (array): write your description
+        indptr: (todo): write your description
+        last_level: (todo): write your description
+        seen: (todo): write your description
+        hops: (todo): write your description
+    """
     edges = []
     mapping = Dict.empty(
         key_type=types.int64,

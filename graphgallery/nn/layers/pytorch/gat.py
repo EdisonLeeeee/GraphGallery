@@ -11,6 +11,20 @@ class GraphAttention(Module):
     def __init__(self, in_channels, out_channels, activation=None,
                  attn_heads=8, alpha=0.2, reduction='concat', 
                  dropout=0.6, use_bias=False):
+        """
+        Initialize the network.
+
+        Args:
+            self: (todo): write your description
+            in_channels: (int): write your description
+            out_channels: (int): write your description
+            activation: (str): write your description
+            attn_heads: (todo): write your description
+            alpha: (float): write your description
+            reduction: (todo): write your description
+            dropout: (str): write your description
+            use_bias: (bool): write your description
+        """
         super().__init__()
 
         if reduction not in {'concat', 'average'}:
@@ -51,6 +65,12 @@ class GraphAttention(Module):
         self.reset_parameters()
 
     def reset_parameters(self):
+        """
+        Reset kernel parameters.
+
+        Args:
+            self: (todo): write your description
+        """
         for head in range(self.attn_heads):
             W, a1, a2 = self.kernels[head], self.attn_kernel_self[head], self.attn_kernel_neighs[head]
             glorot_uniform(W)
@@ -61,6 +81,13 @@ class GraphAttention(Module):
                 zeros(self.biases[head])
 
     def forward(self, inputs):
+        """
+        Forward computation.
+
+        Args:
+            self: (todo): write your description
+            inputs: (todo): write your description
+        """
         x, adj = inputs
         dense_adj = adj.to_dense()
         
@@ -93,6 +120,12 @@ class GraphAttention(Module):
         return self.activation(output)
     
     def __repr__(self):
+        """
+        Return a representation of this channel.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.__class__.__name__ + ' (' \
             + str(self.in_channels) + ' -> ' \
             + str(self.out_channels) + ')'
@@ -105,6 +138,16 @@ class SpecialSpmmFunction(torch.autograd.Function):
     """Special function for only sparse region backpropataion layer."""
     @staticmethod
     def forward(ctx, indices, values, shape, b):
+        """
+        Forward computation.
+
+        Args:
+            ctx: (todo): write your description
+            indices: (array): write your description
+            values: (str): write your description
+            shape: (int): write your description
+            b: (todo): write your description
+        """
         assert indices.requires_grad == False
         a = torch.sparse.FloatTensor(indices, values, shape)
         ctx.save_for_backward(a, b)
@@ -113,6 +156,13 @@ class SpecialSpmmFunction(torch.autograd.Function):
 
     @staticmethod
     def backward(ctx, grad_output):
+        """
+        Perform backward backward backward backward backward.
+
+        Args:
+            ctx: (todo): write your description
+            grad_output: (bool): write your description
+        """
         a, b = ctx.saved_tensors
         grad_values = grad_b = None
         if ctx.needs_input_grad[1]:
@@ -126,6 +176,16 @@ class SpecialSpmmFunction(torch.autograd.Function):
 
 class SpecialSpmm(Module):
     def forward(self, indices, values, shape, b):
+        """
+        Forward computation.
+
+        Args:
+            self: (todo): write your description
+            indices: (array): write your description
+            values: (str): write your description
+            shape: (int): write your description
+            b: (todo): write your description
+        """
         return SpecialSpmmFunction.apply(indices, values, shape, b)
 
     
@@ -137,6 +197,20 @@ class SparseGraphAttention(Module):
     def __init__(self, in_channels, out_channels, activation=None,
                  attn_heads=8, alpha=0.2, reduction='concat', 
                  dropout=0.6, use_bias=False):
+        """
+        Initialize the network.
+
+        Args:
+            self: (todo): write your description
+            in_channels: (int): write your description
+            out_channels: (int): write your description
+            activation: (str): write your description
+            attn_heads: (todo): write your description
+            alpha: (float): write your description
+            reduction: (todo): write your description
+            dropout: (str): write your description
+            use_bias: (bool): write your description
+        """
         super().__init__()
 
         if reduction not in {'concat', 'average'}:
@@ -175,6 +249,12 @@ class SparseGraphAttention(Module):
 
         
     def reset_parameters(self):
+        """
+        Reset the kernel parameters.
+
+        Args:
+            self: (todo): write your description
+        """
         for head in range(self.attn_heads):
             glorot_uniform(self.kernels[head])
             glorot_uniform(self.att_kernels[head])
@@ -183,6 +263,13 @@ class SparseGraphAttention(Module):
                 zeros(self.biases[head])        
 
     def forward(self, inputs):
+        """
+        Perform forward computation.
+
+        Args:
+            self: (todo): write your description
+            inputs: (todo): write your description
+        """
         x, adj = inputs
             
         dv = x.device
@@ -220,4 +307,10 @@ class SparseGraphAttention(Module):
         return self.activation(output)
     
     def __repr__(self):
+        """
+        Return a representation of this channel.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.__class__.__name__ + ' (' + str(self.in_channels) + ' -> ' + str(self.out_channels) + ')'    

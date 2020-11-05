@@ -37,9 +37,23 @@ _ALLOWED = set(list(_TRANSFORMS.keys()))
 
 class Compose(Transform):
     def __init__(self, *transforms, **kwargs):
+        """
+        Initialize the transform
+
+        Args:
+            self: (todo): write your description
+            transforms: (str): write your description
+        """
         self.transforms = [get(transform) for transform in transforms]
 
     def __call__(self, inputs):
+        """
+        Return a copy of the module.
+
+        Args:
+            self: (todo): write your description
+            inputs: (dict): write your description
+        """
         for transform in self.transforms:
             if isinstance(inputs, tuple):
                 inputs = transform(*inputs)
@@ -49,9 +63,22 @@ class Compose(Transform):
         return inputs
     
     def add(self, transform):
+        """
+        Add a transformation to the given transformation.
+
+        Args:
+            self: (todo): write your description
+            transform: (todo): write your description
+        """
         self.transforms.append(get(transform))
 
     def __repr__(self):
+        """
+        Return a human - readable representation of this object.
+
+        Args:
+            self: (todo): write your description
+        """
         format_string = self.__class__.__name__ + '('
         for t in self.transforms:
             format_string += '\n'
@@ -61,6 +88,12 @@ class Compose(Transform):
 
 
 def get(transform: Union[str, Transform, None, List, Tuple, Compose]) -> Transform:
+    """
+    Get a transformation from the given transformation.
+
+    Args:
+        transform: (bool): write your description
+    """
     if gg.is_listlike(transform):
         return Compose(*transform)
 

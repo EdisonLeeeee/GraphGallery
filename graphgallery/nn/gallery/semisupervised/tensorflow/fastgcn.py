@@ -72,6 +72,12 @@ class FastGCN(SemiSupervisedModel):
         self.process()
 
     def process_step(self):
+        """
+        Process the adjacian.
+
+        Args:
+            self: (todo): write your description
+        """
         graph = self.graph
         adj_matrix = self.adj_transform(graph.adj_matrix)
         attr_matrix = self.attr_transform(graph.attr_matrix)
@@ -85,6 +91,18 @@ class FastGCN(SemiSupervisedModel):
     @F.EqualVarLength()
     def build(self, hiddens=[32], activations=['relu'], dropout=0.5,
               l2_norm=5e-4, lr=0.01, use_bias=False):
+        """
+        Builds the graph.
+
+        Args:
+            self: (todo): write your description
+            hiddens: (int): write your description
+            activations: (todo): write your description
+            dropout: (bool): write your description
+            l2_norm: (todo): write your description
+            lr: (todo): write your description
+            use_bias: (bool): write your description
+        """
 
         if self.backend == "tensorflow":
             with tf.device(self.device):
@@ -97,6 +115,13 @@ class FastGCN(SemiSupervisedModel):
             raise NotImplementedError
 
     def train_sequence(self, index):
+        """
+        Assigns the model.
+
+        Args:
+            self: (todo): write your description
+            index: (int): write your description
+        """
 
         labels = self.graph.labels[index]
         adj_matrix = self.graph.adj_matrix[index][:, index]
@@ -109,6 +134,13 @@ class FastGCN(SemiSupervisedModel):
         return sequence
 
     def test_sequence(self, index):
+        """
+        Takes a batch of the target sequence.
+
+        Args:
+            self: (todo): write your description
+            index: (int): write your description
+        """
 
         labels = self.graph.labels[index]
         structure_inputs = self.structure_inputs[index]

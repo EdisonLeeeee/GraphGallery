@@ -29,6 +29,15 @@ class Planetoid(Dataset):
     supported_datasets = _DATASETS
 
     def __init__(self, name: str, root: Optional[str]=None, verbose: bool=True):
+        """
+        Initialize the dataset.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            root: (str): write your description
+            verbose: (bool): write your description
+        """
         name = str(name).lower()
 
         if not name in self.supported_datasets:
@@ -45,6 +54,12 @@ class Planetoid(Dataset):
         self.process()
 
     def download(self) -> None:
+        """
+        Download the raw_path.
+
+        Args:
+            self: (todo): write your description
+        """
 
         if files_exist(self.raw_paths):
             if self.verbose:
@@ -60,6 +75,12 @@ class Planetoid(Dataset):
             print("Downloading completed.")
 
     def process(self) -> None:
+        """
+        Process the dataset.
+
+        Args:
+            self: (todo): write your description
+        """
 
         if self.verbose:
             print("Processing...")
@@ -74,6 +95,16 @@ class Planetoid(Dataset):
 
     def split(self, train_size=None, val_size=None, test_size=None,
               random_state=None) -> MultiArrayLike:
+        """
+        Return a list of the dataset.
+
+        Args:
+            self: (todo): write your description
+            train_size: (int): write your description
+            val_size: (int): write your description
+            test_size: (int): write your description
+            random_state: (int): write your description
+        """
         if not all((train_size, val_size, test_size)):
             return self.idx_train, self.idx_val, self.idx_test
         else:
@@ -81,13 +112,31 @@ class Planetoid(Dataset):
 
     @property
     def urls(self) -> List[str]:
+        """
+        A list of filenames.
+
+        Args:
+            self: (todo): write your description
+        """
         return [f"{osp.join(self.github_url, raw_filename)}" for raw_filename in self.raw_filenames]
 
     @property
     def raw_filenames(self) -> List[str]:
+        """
+        A list of filenames.
+
+        Args:
+            self: (todo): write your description
+        """
         names = ['x', 'tx', 'allx', 'y', 'ty', 'ally', 'graph', 'test.index']
         return ['ind.{}.{}'.format(self.name.lower(), name) for name in names]
 
     @property
     def raw_paths(self) -> List[str]:
+        """
+        Return a list of filenames.
+
+        Args:
+            self: (todo): write your description
+        """
         return [f"{osp.join(self.download_dir, raw_filename)}" for raw_filename in self.raw_filenames]

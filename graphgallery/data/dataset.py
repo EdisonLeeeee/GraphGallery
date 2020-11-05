@@ -12,6 +12,15 @@ from graphgallery.data.preprocess import train_val_test_split_tabular, get_train
 
 class Dataset(ABC):
     def __init__(self, name: str, root: Optional[str]=None, verbose: bool=True):
+        """
+        Initialize the graph.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            root: (str): write your description
+            verbose: (bool): write your description
+        """
         if root is None:
             root = 'dataset'
 
@@ -28,20 +37,54 @@ class Dataset(ABC):
 
     @property
     def urls(self) -> List[str]:
+        """
+        A list of urls.
+
+        Args:
+            self: (todo): write your description
+        """
         return [self.url]
 
     @property
     def url(self) -> str:
+        """
+        Returns the url.
+
+        Args:
+            self: (todo): write your description
+        """
         raise NotImplementedError
 
     def download(self) -> None:
+        """
+        Downloads the file.
+
+        Args:
+            self: (todo): write your description
+        """
         raise NotImplementedError
 
     def process(self) -> None:
+        """
+        Process the given process.
+
+        Args:
+            self: (todo): write your description
+        """
         raise NotImplementedError
 
     def split(self, train_size: float = 0.1, val_size: float = 0.1, test_size: float = 0.8,
               random_state: Optional[int]=None) -> Tuple[np.ndarray]:
+        """
+        Return a list of the dataset.
+
+        Args:
+            self: (todo): write your description
+            train_size: (int): write your description
+            val_size: (int): write your description
+            test_size: (int): write your description
+            random_state: (int): write your description
+        """
 
         assert all((train_size, val_size))
         if test_size is None:
@@ -62,6 +105,16 @@ class Dataset(ABC):
                         val_examples_per_class: int,
                         test_examples_per_class: int,
                         random_state: Optional[int]=None)  -> Tuple[np.ndarray]:
+        """
+        Split the dataset according to the given training set.
+
+        Args:
+            self: (todo): write your description
+            train_examples_per_class: (int): write your description
+            val_examples_per_class: (float): write your description
+            test_examples_per_class: (todo): write your description
+            random_state: (int): write your description
+        """
 
         self.graph = self.graph.eliminate_classes(train_examples_per_class+val_examples_per_class).standardize()
             
@@ -75,6 +128,12 @@ class Dataset(ABC):
 
     @staticmethod
     def print_files(filepaths: List[str]) -> None:
+        """
+        Prints a table.
+
+        Args:
+            filepaths: (str): write your description
+        """
         if not texttable:
             print(filepaths)
         else:

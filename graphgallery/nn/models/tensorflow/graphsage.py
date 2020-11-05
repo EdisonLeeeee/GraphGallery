@@ -22,6 +22,23 @@ class GraphSAGE(Model):
                  hiddens=[32], activations=['relu'], dropout=0.5,
                  l2_norm=5e-4, lr=0.01, use_bias=True,
                  aggregator='mean', output_normalize=False, n_samples=[15, 5]):
+        """
+        Initialize the network.
+
+        Args:
+            self: (todo): write your description
+            in_channels: (int): write your description
+            out_channels: (int): write your description
+            hiddens: (todo): write your description
+            activations: (str): write your description
+            dropout: (str): write your description
+            l2_norm: (todo): write your description
+            lr: (float): write your description
+            use_bias: (bool): write your description
+            aggregator: (todo): write your description
+            output_normalize: (bool): write your description
+            n_samples: (int): write your description
+        """
 
         Agg = _AGG.get(aggregator, None)
         if not Agg:

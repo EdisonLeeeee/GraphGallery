@@ -68,6 +68,13 @@ class SAT(SemiSupervisedModel):
         self.process()
 
     def process_step(self, re_decompose=False):
+        """
+        Perform an adjacency matrix.
+
+        Args:
+            self: (todo): write your description
+            re_decompose: (bool): write your description
+        """
         graph = self.graph
         adj_matrix = self.adj_transform(graph.adj_matrix)
         attr_matrix = self.attr_transform(graph.attr_matrix)
@@ -89,6 +96,22 @@ class SAT(SemiSupervisedModel):
     @F.EqualVarLength()        
     def build(self, hiddens=[32], activations=['relu'], dropout=0.5, l2_norm=5e-4,
               lr=0.01, use_bias=False, eps1=0.3, eps2=1.2, lamb1=0.8, lamb2=0.8):
+        """
+        Builds the graph.
+
+        Args:
+            self: (todo): write your description
+            hiddens: (int): write your description
+            activations: (todo): write your description
+            dropout: (bool): write your description
+            l2_norm: (todo): write your description
+            lr: (todo): write your description
+            use_bias: (bool): write your description
+            eps1: (float): write your description
+            eps2: (float): write your description
+            lamb1: (todo): write your description
+            lamb2: (todo): write your description
+        """
 
         with tf.device(self.device):
 
@@ -119,6 +142,13 @@ class SAT(SemiSupervisedModel):
             
     @tf.function
     def train_step(self, sequence):
+        """
+        Train a single model.
+
+        Args:
+            self: (todo): write your description
+            sequence: (todo): write your description
+        """
         (x_norm, A, idx), y = next(iter(sequence))
         
         U, V = self.U, self.V
@@ -158,6 +188,13 @@ class SAT(SemiSupervisedModel):
         return loss, metric.result()
     
     def train_sequence(self, index):
+        """
+        Train a tf.
+
+        Args:
+            self: (todo): write your description
+            index: (int): write your description
+        """
         labels = self.graph.labels[index]
         with tf.device(self.device):
             sequence = FullBatchNodeSequence([self.feature_inputs, 

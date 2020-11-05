@@ -8,9 +8,24 @@ __all__ = ['SparseAdjToEdge', 'sparse_adj_to_edge']
 
 class SparseAdjToEdge(Transform):
     def __call__(self, adj_matrix: sp.csr_matrix) -> Tuple[np.ndarray]:
+        """
+        Return the adjacency matrix.
+
+        Args:
+            self: (todo): write your description
+            adj_matrix: (array): write your description
+            sp: (array): write your description
+            csr_matrix: (array): write your description
+        """
         return sparse_adj_to_edge(adj_matrix)
 
     def __repr__(self) -> str:
+        """
+        Return a repr representation of - repr representation.
+
+        Args:
+            self: (todo): write your description
+        """
         return f"{self.__class__.__name__}()"
 
 

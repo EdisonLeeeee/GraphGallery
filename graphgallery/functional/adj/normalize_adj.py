@@ -48,6 +48,12 @@ class NormalizeAdj(Transform):
                              fill_weight=self.fill_weight)
 
     def __repr__(self):
+        """
+        Return a repr representation of a repr__.
+
+        Args:
+            self: (todo): write your description
+        """
         return f"{self.__class__.__name__}(normalize rate={self.rate}, fill_weight={self.fill_weight})"
 
 
@@ -79,6 +85,13 @@ def normalize_adj(adj_matrix, rate=-0.5, fill_weight=1.0):
 
     """
     def _normalize_adj(adj, r):
+        """
+        Normalize the adjacency matrix.
+
+        Args:
+            adj: (todo): write your description
+            r: (todo): write your description
+        """
 
         # here a new copy of adj is created
         if fill_weight:

@@ -12,6 +12,15 @@ __all__ = ['add_selfloops_edge', 'normalize_edge', 'augment_edge']
 
 
 def add_selfloops_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0):
+    """
+    Add edge edges to edge_index.
+
+    Args:
+        edge_index: (int): write your description
+        edge_weight: (todo): write your description
+        n_nodes: (int): write your description
+        fill_weight: (todo): write your description
+    """
     edge_index = edge_transpose(edge_index)
 
     if n_nodes is None:
@@ -31,6 +40,15 @@ def add_selfloops_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0):
 
 
 def normalize_edge(edge_index, edge_weight=None, rate=-0.5, fill_weight=1.0):
+    """
+    Normalize the edge.
+
+    Args:
+        edge_index: (int): write your description
+        edge_weight: (todo): write your description
+        rate: (todo): write your description
+        fill_weight: (todo): write your description
+    """
     edge_index = edge_transpose(edge_index)
 
     n_nodes = edge_index.max() + 1

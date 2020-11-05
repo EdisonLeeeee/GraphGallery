@@ -2,6 +2,11 @@ from graphgallery.functional import repeat
 
 
 def test_repeat():
+    """
+    Generate a repeat
+
+    Args:
+    """
     assert repeat(None, length=4) == [None, None, None, None]
     assert repeat([], length=4) == []
     assert repeat((), length=4) == []

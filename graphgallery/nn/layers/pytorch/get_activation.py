@@ -2,6 +2,12 @@ import torch.nn.functional as F
 
 
 def get_activation(activation):
+    """
+    Return activation function.
+
+    Args:
+        activation: (str): write your description
+    """
     if callable(activation):
         return activation
     

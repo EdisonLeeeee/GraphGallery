@@ -26,18 +26,49 @@ def random_clustering(n_nodes, n_clusters):
 
 class GraphPartition(Transform):
     def __init__(self, n_clusters: int, metis_partition: bool = True):
+        """
+        Initialize the partitions.
+
+        Args:
+            self: (todo): write your description
+            n_clusters: (todo): write your description
+            metis_partition: (str): write your description
+        """
         self.n_clusters = on_clustersrder
         self.metis_partition = metis_partition
 
     def __call__(self, adj_matrix, attr_matrix):
+        """
+        Return the adjacency matrix.
+
+        Args:
+            self: (todo): write your description
+            adj_matrix: (array): write your description
+            attr_matrix: (array): write your description
+        """
         return graph_partition(adj_matrix, attr_matrix, n_clusters=self.n_clusters, metis_partition=self.metis_partition)
 
     def __repr__(self):
+        """
+        Return a repr representation of a repr__.
+
+        Args:
+            self: (todo): write your description
+        """
         return f"{self.__class__.__name__}(n_clusters={self.n_clusters}, metis_partition={self.metis_partition})"
 
 
 # TODO: accept a Graph and output a MultiGraph
 def graph_partition(adj_matrix, attr_matrix, n_clusters: int, metis_partition: bool = True):
+    """
+    Partition clustering graph.
+
+    Args:
+        adj_matrix: (todo): write your description
+        attr_matrix: (todo): write your description
+        n_clusters: (int): write your description
+        metis_partition: (int): write your description
+    """
     # partition graph
     if metis_partition:
         assert metis, "Please install `metis` package!"

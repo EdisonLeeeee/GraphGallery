@@ -67,6 +67,18 @@ class GCNA(GCN):
     @F.EqualVarLength()
     def build(self, hiddens=[16], activations=['relu'], dropout=0.5,
               l2_norm=5e-4, lr=0.01, use_bias=False):
+        """
+        Builds the graph.
+
+        Args:
+            self: (todo): write your description
+            hiddens: (int): write your description
+            activations: (todo): write your description
+            dropout: (bool): write your description
+            l2_norm: (todo): write your description
+            lr: (todo): write your description
+            use_bias: (bool): write your description
+        """
 
         if self.backend == "tensorflow":
             with tf.device(self.device):

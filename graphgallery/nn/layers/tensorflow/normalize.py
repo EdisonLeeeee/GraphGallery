@@ -12,10 +12,25 @@ class NormalizeLayer(Layer):
     """
 
     def __init__(self, norm_adj, **kwargs):
+        """
+        Initialize the norm_adj.
+
+        Args:
+            self: (todo): write your description
+            norm_adj: (todo): write your description
+        """
         super().__init__(**kwargs)
         self.norm_adj = norm_adj
 
     def call(self, inputs, improved=False):
+        """
+        Compute the graph.
+
+        Args:
+            self: (todo): write your description
+            inputs: (dict): write your description
+            improved: (todo): write your description
+        """
         edge_index, edge_weight = inputs
         n_nodes = tf.reduce_max(edge_index) + 1
         if not edge_weight:
@@ -42,6 +57,15 @@ class NormalizeLayer(Layer):
 
     @staticmethod
     def add_selfloops_edge(edge_index, n_nodes, edge_weight=None, fill_weight=1.0):
+        """
+        Add edge edges to the edge graph.
+
+        Args:
+            edge_index: (int): write your description
+            n_nodes: (int): write your description
+            edge_weight: (todo): write your description
+            fill_weight: (todo): write your description
+        """
         diagnal_edge_index = tf.reshape(
             tf.repeat(tf.range(n_nodes, dtype=intx()), 2), [n_nodes, 2])
 

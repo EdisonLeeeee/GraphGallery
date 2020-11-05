@@ -58,6 +58,21 @@ class Node2vec(UnsupervisedModel):
     def build(self, walk_length=80, walks_per_node=10,
               embedding_dim=64, window_size=5, workers=16,
               iter=1, num_neg_samples=1, p=0.5, q=0.5):
+        """
+        Builds a model using the given walk_length.
+
+        Args:
+            self: (todo): write your description
+            walk_length: (int): write your description
+            walks_per_node: (todo): write your description
+            embedding_dim: (int): write your description
+            window_size: (int): write your description
+            workers: (int): write your description
+            iter: (int): write your description
+            num_neg_samples: (int): write your description
+            p: (todo): write your description
+            q: (todo): write your description
+        """
 
         self.walker = RandomWalker(self.nxgraph, p=p, q=q)
         self.walker.preprocess_transition_probs()
@@ -77,6 +92,16 @@ class Node2vec(UnsupervisedModel):
 
     @staticmethod
     def node2vec_random_walk(G, alias_nodes, alias_edges, walk_length=80, walks_per_node=10):
+        """
+        Yields a random walk.
+
+        Args:
+            G: (todo): write your description
+            alias_nodes: (str): write your description
+            alias_edges: (todo): write your description
+            walk_length: (int): write your description
+            walks_per_node: (int): write your description
+        """
         for _ in range(walks_per_node):
             for n in G.nodes():
                 single_walk = [n]
@@ -97,6 +122,13 @@ class Node2vec(UnsupervisedModel):
                 yield single_walk
 
     def get_embeddings(self, norm=True):
+        """
+        Parameters ---------- norm : np. ndings.
+
+        Args:
+            self: (todo): write your description
+            norm: (todo): write your description
+        """
         embeddings = self.model.wv.vectors[np.fromiter(map(int, self.model.wv.index2word), np.int32).argsort()]
 
         if norm:

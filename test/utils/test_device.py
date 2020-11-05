@@ -3,6 +3,11 @@ import tensorflow as tf
 import torch
 
 def test_device():
+    """
+    Test if the device.
+
+    Args:
+    """
     # how about other backend?
 
     # tf

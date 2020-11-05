@@ -35,14 +35,29 @@ BACKEND_TYPE = Union[TensorFlowBackend, PyTorchBackend, PyGBackend, DGLPyTorchBa
 
 
 def allowed_backends() -> Tuple[str]:
+    """
+    Return tuple of tuple of tuple of tuple of tuple of tuple ( tuple tuple.
+
+    Args:
+    """
     return tuple(backend_dict().keys())
 
 
 def backend_dict() -> dict:
+    """
+    Returns a dictionary of backend_dict.
+
+    Args:
+    """
     return _BACKEND_DICT
 
 
 def set_backend_dict():
+    """
+    Sets the global key / values.
+
+    Args:
+    """
     global _BACKEND_DICT
     _BACKEND_DICT = {}
     for bkd in _ALL_BACKENDS:
@@ -218,6 +233,11 @@ def backend(module_name: Optional[Union[str, BackendModule]] = None) -> BACKEND_
         return module()
 
 def set_to_default_backend():
+    """
+    Sets the default backend.
+
+    Args:
+    """
     global _BACKEND
     _BACKEND = _DEFAULT_BACKEND
     # Using `int32` is more efficient
@@ -271,10 +291,21 @@ def set_backend(module_name: Optional[Union[str, BackendModule]] = None) -> BACK
 
 
 def file_postfix():
+    """
+    Return postfix postfix.
+
+    Args:
+    """
     return _POSTFIX
 
 
 def set_file_postfix(postfix):
+    """
+    Sets the postfix.
+
+    Args:
+        postfix: (str): write your description
+    """
     global _POSTFIX
     _POSTFIX = postfix
     return _POSTFIX

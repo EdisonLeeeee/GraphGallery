@@ -16,6 +16,20 @@ class GCN(TorchKeras):
                  dropout=0.5,
                  l2_norm=5e-4,
                  lr=0.01, use_bias=False):
+        """
+        Initialize the loss.
+
+        Args:
+            self: (todo): write your description
+            in_channels: (int): write your description
+            out_channels: (int): write your description
+            hiddens: (todo): write your description
+            activations: (str): write your description
+            dropout: (str): write your description
+            l2_norm: (todo): write your description
+            lr: (float): write your description
+            use_bias: (bool): write your description
+        """
 
         super().__init__()
 
@@ -40,6 +54,13 @@ class GCN(TorchKeras):
         self.loss_fn = torch.nn.CrossEntropyLoss()
 
     def forward(self, inputs):
+        """
+        Forward computation.
+
+        Args:
+            self: (todo): write your description
+            inputs: (todo): write your description
+        """
         x, adj, idx = inputs
 
         for layer in self.layers:

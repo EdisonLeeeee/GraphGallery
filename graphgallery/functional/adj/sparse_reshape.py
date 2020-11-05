@@ -35,6 +35,12 @@ class SparseReshape(Transform):
         return sparse_reshape(*adj_matrix, shape=self.shape)
 
     def __repr__(self):
+        """
+        Return a repr representation of a repr__.
+
+        Args:
+            self: (todo): write your description
+        """
         return f"{self.__class__.__name__}(shape={self.shape})"
 
 

@@ -18,6 +18,22 @@ class RobustGCN(Model):
                  l2_norm=5e-4,
                  lr=0.01, kl=5e-4, gamma=1.,
                  use_bias=False):
+        """
+        Initialize the network.
+
+        Args:
+            self: (todo): write your description
+            in_channels: (int): write your description
+            out_channels: (int): write your description
+            hiddens: (todo): write your description
+            activations: (str): write your description
+            dropout: (str): write your description
+            l2_norm: (todo): write your description
+            lr: (float): write your description
+            kl: (int): write your description
+            gamma: (float): write your description
+            use_bias: (bool): write your description
+        """
 
         _floatx = floatx()
         x = Input(batch_shape=[None, in_channels],

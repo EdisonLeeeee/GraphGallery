@@ -38,10 +38,21 @@ _TYPE = {'float16': torch.float16,
 
 
 def data_type_dict():
+    """
+    Return a dict type of a dict.
+
+    Args:
+    """
     return _TYPE
 
 
 def dtype_to_tensor_class(dtype):
+    """
+    Convert dtype to tensor.
+
+    Args:
+        dtype: (str): write your description
+    """
     tensor_class = _DTYPE_TO_CLASS.get(str(dtype), None)
     if tensor_class is None:
         raise ValueError(f"Invalid dtype '{dtype}'!")
@@ -49,6 +60,15 @@ def dtype_to_tensor_class(dtype):
 
 
 def astensor(x, *, dtype=None, device=None, escape=None):
+    """
+    Convert x to a tensor.
+
+    Args:
+        x: (todo): write your description
+        dtype: (str): write your description
+        device: (todo): write your description
+        escape: (todo): write your description
+    """
     
     if x is None:
         return x
@@ -149,14 +169,41 @@ def sparse_tensor_to_sparse_adj(x: torch.sparse.Tensor) -> sp.csr_matrix:
 
 
 def normalize_adj_tensor(adj, rate=-0.5, fill_weight=1.0):
+    """
+    Normalize the tensor.
+
+    Args:
+        adj: (todo): write your description
+        rate: (array): write your description
+        fill_weight: (str): write your description
+    """
     ...
 
 
 def add_selfloops_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0):
+    """
+    Adds an edge edge to the graph.
+
+    Args:
+        edge_index: (int): write your description
+        edge_weight: (todo): write your description
+        n_nodes: (int): write your description
+        fill_weight: (todo): write your description
+    """
 
     ...
 
 
 def normalize_edge_tensor(edge_index, edge_weight=None, n_nodes=None, fill_weight=1.0, rate=-0.5):
+    """
+    Normalize the tensor.
+
+    Args:
+        edge_index: (int): write your description
+        edge_weight: (todo): write your description
+        n_nodes: (int): write your description
+        fill_weight: (todo): write your description
+        rate: (todo): write your description
+    """
 
     ...

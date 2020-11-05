@@ -61,6 +61,25 @@ class WaveletConvolution(Layer):
                  bias_constraint=None,
                  filter_constraint=None,
                  **kwargs):
+        """
+        Initialize the network.
+
+        Args:
+            self: (todo): write your description
+            units: (todo): write your description
+            use_bias: (bool): write your description
+            activation: (str): write your description
+            kernel_initializer: (int): write your description
+            bias_initializer: (int): write your description
+            filter_initializer: (todo): write your description
+            kernel_regularizer: (dict): write your description
+            bias_regularizer: (dict): write your description
+            filter_regularizer: (todo): write your description
+            activity_regularizer: (bool): write your description
+            kernel_constraint: (todo): write your description
+            bias_constraint: (str): write your description
+            filter_constraint: (todo): write your description
+        """
 
         super().__init__(**kwargs)
         self.units = units
@@ -79,6 +98,13 @@ class WaveletConvolution(Layer):
         self.filter_constraint = constraints.get(filter_constraint)
 
     def build(self, input_shapes):
+        """
+        Connects the module into the graph.
+
+        Args:
+            self: (todo): write your description
+            input_shapes: (list): write your description
+        """
 
         self.kernel = self.add_weight(shape=(input_shapes[0][-1], self.units),
                                       initializer=self.kernel_initializer,
@@ -106,6 +132,13 @@ class WaveletConvolution(Layer):
         super().build(input_shapes)
 
     def call(self, inputs):
+        """
+        Implements the layer.
+
+        Args:
+            self: (todo): write your description
+            inputs: (dict): write your description
+        """
 
         x, wavelet, inverse_wavelet = inputs
         _filter = tf.sparse.SparseTensor(indices=self.indices,
@@ -123,6 +156,12 @@ class WaveletConvolution(Layer):
         return self.activation(output)
 
     def get_config(self):
+        """
+        Get configurations of the filter.
+
+        Args:
+            self: (str): write your description
+        """
         config = {'units': self.units,
                   'use_bias': self.use_bias,
                   'activation': activations.serialize(self.activation),
@@ -152,6 +191,13 @@ class WaveletConvolution(Layer):
         return {**base_config, **config}
 
     def compute_output_shape(self, input_shapes):
+        """
+        Compute the output shape.
+
+        Args:
+            self: (todo): write your description
+            input_shapes: (list): write your description
+        """
         attributes_shape = input_shapes[0]
         output_shape = (attributes_shape[0], self.units)
         return tf.TensorShape(output_shape)  # (batch_size, output_dim)

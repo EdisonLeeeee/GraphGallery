@@ -62,6 +62,12 @@ class ChebyNet(SemiSupervisedModel):
         self.process()
 
     def process_step(self):
+        """
+        Process the adjaccelerator.
+
+        Args:
+            self: (todo): write your description
+        """
         graph = self.graph
         adj_matrix = self.adj_transform(graph.adj_matrix)
         attr_matrix = self.attr_transform(graph.attr_matrix)
@@ -73,6 +79,18 @@ class ChebyNet(SemiSupervisedModel):
     @F.EqualVarLength()
     def build(self, hiddens=[16], activations=['relu'], dropout=0.5, l2_norm=5e-4, lr=0.01,
               use_bias=False):
+        """
+        Builds the graph.
+
+        Args:
+            self: (todo): write your description
+            hiddens: (int): write your description
+            activations: (todo): write your description
+            dropout: (bool): write your description
+            l2_norm: (todo): write your description
+            lr: (todo): write your description
+            use_bias: (bool): write your description
+        """
 
         if self.backend == "tensorflow":
             with tf.device(self.device):
@@ -86,6 +104,13 @@ class ChebyNet(SemiSupervisedModel):
             raise NotImplementedError
 
     def train_sequence(self, index):
+        """
+        Train a batch of features.
+
+        Args:
+            self: (todo): write your description
+            index: (int): write your description
+        """
 
         labels = self.graph.labels[index]
         sequence = FullBatchNodeSequence(

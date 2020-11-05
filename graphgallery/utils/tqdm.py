@@ -3,6 +3,11 @@ from tqdm import tqdm as tqdm_base
 
 
 def tqdm_clear(*args, **kwargs):
+    """
+    Clears tqdm data.
+
+    Args:
+    """
     getattr(tqdm_base, '_instances', {}).clear()
 
 

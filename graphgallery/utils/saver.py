@@ -7,6 +7,15 @@ import graphgallery as gg
 
 
 def save_tf_model(model, filepath, overwrite=True, save_format=None, **kwargs):
+    """
+    Save the model to disk.
+
+    Args:
+        model: (todo): write your description
+        filepath: (str): write your description
+        overwrite: (bool): write your description
+        save_format: (str): write your description
+    """
 
     postfix = gg.file_postfix()
     if not filepath.endswith(postfix):
@@ -16,6 +25,15 @@ def save_tf_model(model, filepath, overwrite=True, save_format=None, **kwargs):
 
 
 def save_torch_model(model, filepath, overwrite=True, save_format=None, **kwargs):
+    """
+    Save a model to disk.
+
+    Args:
+        model: (todo): write your description
+        filepath: (str): write your description
+        overwrite: (bool): write your description
+        save_format: (str): write your description
+    """
     postfix = gg.file_postfix()
 
     if not filepath.endswith(postfix):
@@ -30,6 +48,15 @@ def save_torch_model(model, filepath, overwrite=True, save_format=None, **kwargs
 
 
 def save_tf_weights(model, filepath, overwrite=True, save_format=None):
+    """
+    Save weights to filepath.
+
+    Args:
+        model: (todo): write your description
+        filepath: (str): write your description
+        overwrite: (bool): write your description
+        save_format: (str): write your description
+    """
     postfix = gg.file_postfix()
 
     if not filepath.endswith(postfix):
@@ -41,6 +68,15 @@ def save_tf_weights(model, filepath, overwrite=True, save_format=None):
 
 
 def save_torch_weights(model, filepath, overwrite=True, save_format=None):
+    """
+    Save the weights to disk.
+
+    Args:
+        model: (todo): write your description
+        filepath: (str): write your description
+        overwrite: (bool): write your description
+        save_format: (array): write your description
+    """
     postfix = gg.file_postfix()
 
     if not filepath.endswith(postfix):
@@ -55,6 +91,13 @@ def save_torch_weights(model, filepath, overwrite=True, save_format=None):
 
 
 def load_tf_weights(model, filepath):
+    """
+    Load weights from a file.
+
+    Args:
+        model: (todo): write your description
+        filepath: (str): write your description
+    """
     postfix = gg.file_postfix()
 
     if not filepath.endswith(postfix):
@@ -66,6 +109,13 @@ def load_tf_weights(model, filepath):
 
 
 def load_torch_weights(model, filepath):
+    """
+    Load model weights from filepath.
+
+    Args:
+        model: (todo): write your description
+        filepath: (str): write your description
+    """
     postfix = gg.file_postfix()
 
     if not filepath.endswith(postfix):
@@ -76,6 +126,13 @@ def load_torch_weights(model, filepath):
 
 
 def load_tf_model(filepath, custom_objects=None, **kwargs):
+    """
+    Load a keras model from filepath.
+
+    Args:
+        filepath: (str): write your description
+        custom_objects: (todo): write your description
+    """
     postfix = gg.file_postfix()
 
     if not filepath.endswith(postfix):
@@ -86,6 +143,12 @@ def load_tf_model(filepath, custom_objects=None, **kwargs):
 
 
 def load_torch_model(filepath):
+    """
+    Load a trained model from a filepath.
+
+    Args:
+        filepath: (str): write your description
+    """
     postfix = gg.file_postfix()
 
     if not filepath.endswith(postfix):

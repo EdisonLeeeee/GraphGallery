@@ -33,6 +33,16 @@ warnings.filterwarnings(
 
 class SemiSupervisedModel(GalleryModel):
     def __init__(self, *graph, device='cpu:0', seed=None, name=None, **kwargs):
+        """
+        Initialize the device.
+
+        Args:
+            self: (todo): write your description
+            graph: (todo): write your description
+            device: (todo): write your description
+            seed: (int): write your description
+            name: (str): write your description
+        """
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
         if self.backend == "tensorflow":
@@ -74,6 +84,12 @@ class SemiSupervisedModel(GalleryModel):
         return self.process_step(**kwargs)
 
     def process_step(self):
+        """
+        Process a single step.
+
+        Args:
+            self: (todo): write your description
+        """
         raise NotImplementedError
 
     def build(self):
@@ -444,6 +460,13 @@ class SemiSupervisedModel(GalleryModel):
         return logit
 
     def predict_step(self, sequence):
+        """
+        Predict a single step.
+
+        Args:
+            self: (todo): write your description
+            sequence: (todo): write your description
+        """
         return self.predict_step_fn(self.model, sequence)
 
     def train_sequence(self, index):
@@ -503,6 +526,13 @@ class SemiSupervisedModel(GalleryModel):
         return self.test_sequence(index)
 
     def _test_predict(self, index):
+        """
+        Predict the test for a test.
+
+        Args:
+            self: (todo): write your description
+            index: (array): write your description
+        """
         logit = self.predict(index)
         predict_class = logit.argmax(1)
         labels = self.graph.labels[index]
@@ -520,6 +550,12 @@ class SemiSupervisedModel(GalleryModel):
             w.assign(wb)
 
     def reset_optimizer(self):
+        """
+        Reset the optimizer.
+
+        Args:
+            self: (todo): write your description
+        """
         # TODO: add torch support
         model = self.model
         if hasattr(model, 'optimizer'):
@@ -527,6 +563,13 @@ class SemiSupervisedModel(GalleryModel):
                 var.assign(tf.zeros_like(var))
 
     def reset_lr(self, value):
+        """
+        Reset learning rate.
+
+        Args:
+            self: (todo): write your description
+            value: (todo): write your description
+        """
         # TODO: add torch support
         model = self.model
         if not hasattr(model, 'optimizer'):
@@ -534,6 +577,12 @@ class SemiSupervisedModel(GalleryModel):
         model.optimizer.learning_rate.assign(value)
 
     def remove_weights(self):
+        """
+        Removes weights from the weights file.
+
+        Args:
+            self: (todo): write your description
+        """
         filepath = self.weight_path
         if not filepath.endswith(gg.file_postfix()):
             filepath = filepath + gg.file_postfix()

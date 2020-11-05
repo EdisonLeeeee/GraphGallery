@@ -43,13 +43,31 @@ _enabled_models = set()
 
 
 def _gen_missing_model(model, backend):
+    """
+    Generate a model.
+
+    Args:
+        model: (todo): write your description
+        backend: (str): write your description
+    """
     def _missing_model(*args, **kwargs):
+        """
+        Checks if any missing missing.
+
+        Args:
+        """
         raise ImportError(f"model {model} is not supported by '{backend}'."
                           " You can switch to other backends by setting"
                           " the 'graphgallery.backend' environment.")
     return _missing_model
 
 def load_models(backend_name=None):
+    """
+    Load all models from a backend.
+
+    Args:
+        backend_name: (str): write your description
+    """
     _backend = backend(backend_name)
     mod = importlib.import_module(f".semisupervised.{_backend.abbr}", __name__)
     thismod = sys.modules[__name__]

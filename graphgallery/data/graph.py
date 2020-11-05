@@ -17,6 +17,15 @@ from graphgallery.data.preprocess import largest_connected_components, create_su
 def _check_and_convert(adj_matrix: Optional[SparseMatrix] = None,
                        attr_matrix: Optional[ArrayLike2D] = None,
                        labels: Optional[ArrayLike1D] = None, copy: bool = True):
+    """
+    Check if matrix is_matrix.
+
+    Args:
+        adj_matrix: (todo): write your description
+        attr_matrix: (array): write your description
+        labels: (list): write your description
+        copy: (bool): write your description
+    """
     # Make sure that the dimensions of matrices / arrays all agree
     if adj_matrix is not None:
         if sp.isspmatrix(adj_matrix):
@@ -122,6 +131,22 @@ class Graph(BaseGraph):
                    class_names: List[str] = None,
                    metadata: str = None,
                    copy: bool = False):
+        """
+        Sets the input matrix.
+
+        Args:
+            self: (todo): write your description
+            adj_matrix: (todo): write your description
+            attr_matrix: (todo): write your description
+            Union: (str): write your description
+            ArrayLike2D: (todo): write your description
+            labels: (todo): write your description
+            node_names: (str): write your description
+            attr_names: (str): write your description
+            class_names: (str): write your description
+            metadata: (todo): write your description
+            copy: (bool): write your description
+        """
 
         adj_matrix, attr_matrix, labels = _check_and_convert(adj_matrix, attr_matrix,
                                                              labels, copy=copy)
@@ -158,16 +183,35 @@ class Graph(BaseGraph):
 
     @property
     def sparse_attr(self) -> bool:
+        """
+        Returns the attribute of this attribute.
+
+        Args:
+            self: (todo): write your description
+        """
         return self._sparse_attr
 
     @sparse_attr.setter
     def sparse_attr(self, value):
+        """
+        Cache the cache attributes.
+
+        Args:
+            self: (todo): write your description
+            value: (todo): write your description
+        """
         self._sparse_attr = value
         # clear LRU cache
         self.get_attr_matrix.cache_clear()
 
     @lru_cache(maxsize=1)
     def get_attr_matrix(self) -> Union[SparseMatrix, ArrayLike2D]:
+        """
+        Returns a sparse matrix of the matrix.
+
+        Args:
+            self: (todo): write your description
+        """
         if self._attr_matrix is None:
             return None
         is_sparse = sp.isspmatrix(self._attr_matrix)
@@ -179,32 +223,77 @@ class Graph(BaseGraph):
 
     @property
     def adj_matrix(self) -> SparseMatrix:
+        """
+        The adjacency matrix.
+
+        Args:
+            self: (todo): write your description
+        """
         return self._adj_matrix
 
     @adj_matrix.setter
     def adj_matrix(self, x):
+        """
+        Advance the adjacency matrix.
+
+        Args:
+            self: (todo): write your description
+            x: (array): write your description
+        """
         self._adj_matrix = x
 
     @property
     def attr_matrix(self) -> Union[SparseMatrix, ArrayLike2D]:
+        """
+        : returns : attr : matrix
+
+        Args:
+            self: (todo): write your description
+        """
         return self.get_attr_matrix()
 
     @attr_matrix.setter
     def attr_matrix(self, x):
+        """
+        Clearses of the matrix.
+
+        Args:
+            self: (todo): write your description
+            x: (todo): write your description
+        """
         # clear LRU cache
         self.get_attr_matrix.cache_clear()
         self._attr_matrix = x
 
     @property
     def labels(self) -> ArrayLike1D:
+        """
+        The number of all labels.
+
+        Args:
+            self: (todo): write your description
+        """
         return self._labels
 
     @labels.setter
     def labels(self, x):
+        """
+        Return the labels.
+
+        Args:
+            self: (todo): write your description
+            x: (array): write your description
+        """
         self._labels = x
 
     @property
     def degrees(self) -> Union[Tuple[ArrayLike1D, ArrayLike1D], ArrayLike1D]:
+        """
+        The adjrees of the adjacency matrix.
+
+        Args:
+            self: (todo): write your description
+        """
         if not self.is_directed():
             return self.adj_matrix.sum(1).A1
         else:
@@ -345,14 +434,35 @@ class Graph(BaseGraph):
         return nx.from_scipy_sparse_matrix(self.adj_matrix, create_using=create_using)
 
     def subgraph(self, *, nodes_to_remove=None, nodes_to_keep=None) -> GalleryGraph:
+        """
+        Returns a subgraph of the given nodes.
+
+        Args:
+            self: (todo): write your description
+            nodes_to_remove: (bool): write your description
+            nodes_to_keep: (bool): write your description
+        """
         return create_subgraph(self, nodes_to_remove=nodes_to_remove, nodes_to_keep=nodes_to_keep)
 
     def to_npz(self, filepath):
+        """
+        Saves the graph as a numpy array.
+
+        Args:
+            self: (todo): write your description
+            filepath: (str): write your description
+        """
         filepath = save_graph_to_npz(filepath, self)
         print(f"save to {filepath}.")
 
     @staticmethod
     def from_npz(filepath) -> GalleryGraph:
+        """
+        Reads a numpy. npy. dataset.
+
+        Args:
+            filepath: (str): write your description
+        """
         return load_dataset(filepath)
 
     def is_singleton(self) -> bool:
@@ -382,6 +492,12 @@ class Graph(BaseGraph):
         return (self.adj_matrix != self.adj_matrix.T).sum() != 0
 
     def __repr__(self):
+        """
+        Return a representation of this matrix.
+
+        Args:
+            self: (todo): write your description
+        """
         A_shape = self.adj_matrix.shape if self.adj_matrix is not None else (
             None, None)
         X_shape = self.adj_matrix.shape if self.adj_matrix is not None else (

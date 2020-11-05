@@ -63,6 +63,12 @@ class LGCN(SemiSupervisedModel):
         self.process()
 
     def process_step(self):
+        """
+        Builds a single graph.
+
+        Args:
+            self: (todo): write your description
+        """
         graph = self.graph
         adj_matrix = self.adj_transform(graph.adj_matrix).toarray()
         attr_matrix = self.attr_transform(graph.attr_matrix)
@@ -72,6 +78,20 @@ class LGCN(SemiSupervisedModel):
     # @F.EqualVarLength()
     def build(self, hiddens=[32], n_filters=[8, 8], activations=[None, None], dropout=0.8,
               l2_norm=5e-4, lr=0.1, use_bias=False, K=8):
+        """
+        Builds the graph.
+
+        Args:
+            self: (todo): write your description
+            hiddens: (int): write your description
+            n_filters: (int): write your description
+            activations: (todo): write your description
+            dropout: (bool): write your description
+            l2_norm: (todo): write your description
+            lr: (todo): write your description
+            use_bias: (bool): write your description
+            K: (todo): write your description
+        """
 
         if self.backend == "tensorflow":
             with tf.device(self.device):
@@ -86,6 +106,16 @@ class LGCN(SemiSupervisedModel):
         self.K = K
 
     def train_sequence(self, index, batch_size=np.inf):
+        """
+        Train a batch.
+
+        Args:
+            self: (todo): write your description
+            index: (int): write your description
+            batch_size: (int): write your description
+            np: (todo): write your description
+            inf: (todo): write your description
+        """
 
         mask = F.indices2mask(index, self.graph.n_nodes)
         index = get_indice_graph(self.structure_inputs, index, batch_size)
@@ -103,6 +133,17 @@ class LGCN(SemiSupervisedModel):
 
 
 def get_indice_graph(adj_matrix, indices, size=np.inf, dropout=0.):
+    """
+    Generate a random graph.
+
+    Args:
+        adj_matrix: (str): write your description
+        indices: (array): write your description
+        size: (int): write your description
+        np: (str): write your description
+        inf: (str): write your description
+        dropout: (str): write your description
+    """
     if dropout > 0.:
         indices = np.random.choice(indices, int(
             indices.size * (1 - dropout)), False)

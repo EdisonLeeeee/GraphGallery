@@ -71,6 +71,21 @@ class SimplifiedOBVAT(OBVAT):
     def build(self, hiddens=[16], activations=['relu'], dropout=0.,
               lr=0.01, l2_norm=5e-4, p1=1.4, p2=0.7, use_bias=False,
               epsilon=0.01):
+        """
+        Builds the graph.
+
+        Args:
+            self: (todo): write your description
+            hiddens: (int): write your description
+            activations: (todo): write your description
+            dropout: (bool): write your description
+            lr: (todo): write your description
+            l2_norm: (todo): write your description
+            p1: (todo): write your description
+            p2: (todo): write your description
+            use_bias: (bool): write your description
+            epsilon: (float): write your description
+        """
 
         with tf.device(self.device):
 
@@ -107,9 +122,26 @@ class SimplifiedOBVAT(OBVAT):
             self.model = model
 
     def train_step(self, sequence):
+        """
+        Train a single step.
+
+        Args:
+            self: (todo): write your description
+            sequence: (todo): write your description
+        """
         return super(OBVAT, self).train_step(sequence)
 
     def virtual_adversarial_loss(self, x, adj, logit, epsilon):
+        """
+        Evaluate the loss.
+
+        Args:
+            self: (todo): write your description
+            x: (todo): write your description
+            adj: (todo): write your description
+            logit: (todo): write your description
+            epsilon: (float): write your description
+        """
         d = tf.random.normal(shape=[self.graph.n_nodes, self.graph.n_attrs], dtype=self.floatx)
 
         r_vadv = get_normalized_vector(d) * epsilon

@@ -21,6 +21,22 @@ class MedianConvolution(Layer):
                  kernel_constraint=None,
                  bias_constraint=None,
                  **kwargs):
+        """
+        Initialize the network.
+
+        Args:
+            self: (todo): write your description
+            units: (todo): write your description
+            use_bias: (bool): write your description
+            activation: (str): write your description
+            kernel_initializer: (int): write your description
+            bias_initializer: (int): write your description
+            kernel_regularizer: (dict): write your description
+            bias_regularizer: (dict): write your description
+            activity_regularizer: (bool): write your description
+            kernel_constraint: (todo): write your description
+            bias_constraint: (str): write your description
+        """
 
         super().__init__(**kwargs)
         self.units = units
@@ -36,6 +52,13 @@ class MedianConvolution(Layer):
         self.bias_constraint = constraints.get(bias_constraint)
 
     def build(self, input_shapes):
+        """
+        Connects the module into the graph.
+
+        Args:
+            self: (todo): write your description
+            input_shapes: (list): write your description
+        """
         self.kernel = self.add_weight(shape=(input_shapes[0][-1], self.units),
                                       initializer=self.kernel_initializer,
                                       name='kernel',
@@ -54,6 +77,13 @@ class MedianConvolution(Layer):
 
     @tf.function
     def call(self, inputs):
+        """
+        Call tf.
+
+        Args:
+            self: (todo): write your description
+            inputs: (dict): write your description
+        """
 
         x, neighbors = inputs
         h = x @ self.kernel
@@ -70,6 +100,12 @@ class MedianConvolution(Layer):
         return self.activation(output)
 
     def get_config(self):
+        """
+        Get the configurations.
+
+        Args:
+            self: (str): write your description
+        """
         config = {'units': self.units,
                   'use_bias': self.use_bias,
                   'activation': activations.serialize(self.activation),
@@ -92,6 +128,13 @@ class MedianConvolution(Layer):
         return {**base_config, **config}
 
     def compute_output_shape(self, input_shapes):
+        """
+        Compute the output shape.
+
+        Args:
+            self: (todo): write your description
+            input_shapes: (list): write your description
+        """
         attributes_shape = input_shapes[0]
         output_shape = (attributes_shape[0], self.units)
         return tf.TensorShape(output_shape)  # (n_nodes, output_dim)

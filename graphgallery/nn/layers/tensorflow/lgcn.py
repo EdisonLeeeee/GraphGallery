@@ -56,6 +56,24 @@ class LGConvolution(Layer):
                  kernel_constraint=None,
                  bias_constraint=None,
                  **kwargs):
+        """
+        Initialize the network.
+
+        Args:
+            self: (todo): write your description
+            filters: (list): write your description
+            kernel_size: (int): write your description
+            use_bias: (bool): write your description
+            dropout: (str): write your description
+            activation: (str): write your description
+            kernel_initializer: (int): write your description
+            bias_initializer: (int): write your description
+            kernel_regularizer: (dict): write your description
+            bias_regularizer: (dict): write your description
+            activity_regularizer: (bool): write your description
+            kernel_constraint: (todo): write your description
+            bias_constraint: (str): write your description
+        """
 
         super().__init__(**kwargs)
         self.filters = filters
@@ -73,6 +91,13 @@ class LGConvolution(Layer):
         self.bias_constraint = constraints.get(bias_constraint)
 
     def build(self, input_shapes):
+        """
+        Builds the graph into the graph.
+
+        Args:
+            self: (todo): write your description
+            input_shapes: (list): write your description
+        """
 
         kernel_size = self.kernel_size
         filters = self.filters
@@ -103,6 +128,13 @@ class LGConvolution(Layer):
         super().build(input_shapes)
 
     def call(self, inputs):
+        """
+        Call this layer.
+
+        Args:
+            self: (todo): write your description
+            inputs: (dict): write your description
+        """
 
         h = inputs
         h = self.dropout(h)
@@ -113,6 +145,12 @@ class LGConvolution(Layer):
         return h
 
     def get_config(self):
+        """
+        Get kernel configuration.
+
+        Args:
+            self: (str): write your description
+        """
         config = {'filters': self.filters,
                   'kernel_size': self.kernel_size,
                   'use_bias': self.use_bias,
@@ -136,5 +174,12 @@ class LGConvolution(Layer):
         return {**base_config, **config}
 
     def compute_output_shape(self, input_shapes):
+        """
+        Compute the output shape for the graph.
+
+        Args:
+            self: (todo): write your description
+            input_shapes: (list): write your description
+        """
         output_shape = (input_shapes[0], self.filters)
         return tf.TensorShape(output_shape)  # (n_nodes, output_dim)

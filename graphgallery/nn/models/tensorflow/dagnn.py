@@ -14,6 +14,21 @@ class DAGNN(Model):
                  hiddens=[64], activations=['relu'],
                  dropout=0.5, l2_norm=5e-3,
                  lr=0.01, use_bias=False, K=10):
+        """
+        Initialize layer.
+
+        Args:
+            self: (todo): write your description
+            in_channels: (int): write your description
+            out_channels: (int): write your description
+            hiddens: (todo): write your description
+            activations: (str): write your description
+            dropout: (str): write your description
+            l2_norm: (todo): write your description
+            lr: (float): write your description
+            use_bias: (bool): write your description
+            K: (int): write your description
+        """
 
         x = Input(batch_shape=[None, in_channels],
                   dtype=floatx(), name='attr_matrix')

@@ -52,6 +52,19 @@ class Deepwalk(UnsupervisedModel):
     def build(self, walk_length=80, walks_per_node=10,
               embedding_dim=64, window_size=5, workers=16,
               iter=1, num_neg_samples=1):
+        """
+        Builds a model.
+
+        Args:
+            self: (todo): write your description
+            walk_length: (int): write your description
+            walks_per_node: (todo): write your description
+            embedding_dim: (int): write your description
+            window_size: (int): write your description
+            workers: (int): write your description
+            iter: (int): write your description
+            num_neg_samples: (int): write your description
+        """
 
         adj_matrix = self.graph.adj_matrix
         walks = self.deepwalk_random_walk(adj_matrix.indices,
@@ -69,6 +82,15 @@ class Deepwalk(UnsupervisedModel):
     @staticmethod
     @njit
     def deepwalk_random_walk(indices, indptr, walk_length=80, walks_per_node=10):
+        """
+        Generate a random walk.
+
+        Args:
+            indices: (array): write your description
+            indptr: (int): write your description
+            walk_length: (int): write your description
+            walks_per_node: (int): write your description
+        """
 
         N = len(indptr) - 1
 
@@ -86,6 +108,13 @@ class Deepwalk(UnsupervisedModel):
                 yield single_walk
 
     def get_embeddings(self, norm=True):
+        """
+        Parameters ---------- norm : np. ndings.
+
+        Args:
+            self: (todo): write your description
+            norm: (todo): write your description
+        """
         embeddings = self.model.wv.vectors[np.fromiter(map(int, self.model.wv.index2word), np.int32).argsort()]
 
         if norm:

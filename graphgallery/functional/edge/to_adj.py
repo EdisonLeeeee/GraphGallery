@@ -8,6 +8,12 @@ __all__ = ['edge_transpose', 'edge_to_sparse_adj']
 
 
 def edge_transpose(edge):
+    """
+    Transpose the transpose of an edge.
+
+    Args:
+        edge: (todo): write your description
+    """
     edge = np.asarray(edge, dtype='int64')
     assert edge.ndim == 2
     M, N = edge.shape

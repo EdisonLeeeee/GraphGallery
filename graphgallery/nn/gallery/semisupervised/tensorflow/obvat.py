@@ -69,6 +69,12 @@ class OBVAT(SemiSupervisedModel):
         self.process()
 
     def process_step(self):
+        """
+        Process the adjaccelerator.
+
+        Args:
+            self: (todo): write your description
+        """
         graph = self.graph
         adj_matrix = self.adj_transform(graph.adj_matrix)
         attr_matrix = self.attr_transform(graph.attr_matrix)
@@ -80,6 +86,20 @@ class OBVAT(SemiSupervisedModel):
     @F.EqualVarLength()
     def build(self, hiddens=[16], activations=['relu'], dropout=0.5,
               l2_norm=5e-4, use_bias=False, lr=0.01, p1=1.4, p2=0.7):
+        """
+        Builds the graph.
+
+        Args:
+            self: (todo): write your description
+            hiddens: (int): write your description
+            activations: (todo): write your description
+            dropout: (bool): write your description
+            l2_norm: (todo): write your description
+            use_bias: (bool): write your description
+            lr: (todo): write your description
+            p1: (todo): write your description
+            p2: (todo): write your description
+        """
 
         if self.backend == "torch":
             raise RuntimeError(f"Currently {self.name} only supports for tensorflow backend.")
@@ -119,6 +139,15 @@ class OBVAT(SemiSupervisedModel):
             self.adv_optimizer = Adam(lr=lr / 10)
 
     def virtual_adversarial_loss(self, x, adj, logit):
+        """
+        Evaluate the loss.
+
+        Args:
+            self: (todo): write your description
+            x: (todo): write your description
+            adj: (todo): write your description
+            logit: (todo): write your description
+        """
 
         adv_x = x + self.r_vadv
         logit_p = tf.stop_gradient(logit)
@@ -127,6 +156,14 @@ class OBVAT(SemiSupervisedModel):
         return loss
 
     def forward(self, x, adj):
+        """
+        Forward computation.
+
+        Args:
+            self: (todo): write your description
+            x: (todo): write your description
+            adj: (todo): write your description
+        """
         h = x
         for layer in self.GCN_layers:
             h = self.dropout(h)
@@ -135,6 +172,13 @@ class OBVAT(SemiSupervisedModel):
 
     @tf.function
     def extra_train(self, epochs=10):
+        """
+        Perform an optimizer.
+
+        Args:
+            self: (todo): write your description
+            epochs: (todo): write your description
+        """
 
         with tf.device(self.device):
             r_vadv = self.r_vadv
@@ -151,10 +195,24 @@ class OBVAT(SemiSupervisedModel):
                 optimizer.apply_gradients(zip([gradient], [r_vadv]))
 
     def train_step(self, sequence):
+        """
+        Train a single step.
+
+        Args:
+            self: (todo): write your description
+            sequence: (todo): write your description
+        """
         self.extra_train()
         return super().train_step(sequence)
 
     def train_sequence(self, index):
+        """
+        Train a batch of features.
+
+        Args:
+            self: (todo): write your description
+            index: (int): write your description
+        """
 
         labels = self.graph.labels[index]
         sequence = FullBatchNodeSequence(

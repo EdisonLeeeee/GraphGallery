@@ -64,6 +64,13 @@ class GCN_MIX(FastGCN):
                          device=device, seed=seed, name=name, **kwargs)
 
     def train_sequence(self, index):
+        """
+        Train the sequence of features.
+
+        Args:
+            self: (todo): write your description
+            index: (int): write your description
+        """
         labels = self.graph.labels[index]
 
         sequence = FullBatchNodeSequence(

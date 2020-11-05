@@ -10,6 +10,12 @@ from abc import ABC
 
 
 def parse_graph_inputs(*graph):
+    """
+    Parse input graph into a graph.
+
+    Args:
+        graph: (todo): write your description
+    """
     # TODO: Maybe I could write it a little more elegantly here?
     if len(graph) == 0:
         graph = None

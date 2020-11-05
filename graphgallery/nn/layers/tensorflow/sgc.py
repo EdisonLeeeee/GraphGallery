@@ -28,10 +28,24 @@ class SGConvolution(Layer):
     """
 
     def __init__(self, order=1, **kwargs):
+        """
+        Initialize the order.
+
+        Args:
+            self: (todo): write your description
+            order: (int): write your description
+        """
         super().__init__(**kwargs)
         self.order = order
 
     def call(self, inputs):
+        """
+        Call tf.
+
+        Args:
+            self: (todo): write your description
+            inputs: (dict): write your description
+        """
         x, adj = inputs
 
         for _ in range(self.order):
@@ -40,11 +54,24 @@ class SGConvolution(Layer):
         return x
 
     def get_config(self):
+        """
+        Returns the configurations of configurations
+
+        Args:
+            self: (str): write your description
+        """
         config = {'order': self.order}
 
         base_config = super().get_config()
         return {**base_config, **config}
 
     def compute_output_shape(self, input_shapes):
+        """
+        Computes the shape.
+
+        Args:
+            self: (todo): write your description
+            input_shapes: (list): write your description
+        """
         attributes_shape = input_shapes[0]
         return tf.TensorShape(attributes_shape)  # (n_nodes, n_attrs)

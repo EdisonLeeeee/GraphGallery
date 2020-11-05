@@ -10,6 +10,13 @@ __all__ = ['MultiInputs', 'EqualVarLength']
 
 def cal_outpus(func: Callable, args: list, kwargs: dict,
                type_check: bool = True):
+    """
+    Calculate outpus of a function.
+
+    Args:
+        func: (todo): write your description
+        type_check: (str): write your description
+    """
 
     if gg.is_listlike(args) and not gg.is_scalar(args[0]):
         if type_check:
@@ -27,14 +34,33 @@ class MultiInputs:
     """
 
     def __init__(self, *, type_check: bool = True):
+        """
+        Initialize a type_check.
+
+        Args:
+            self: (todo): write your description
+            type_check: (todo): write your description
+        """
         self.type_check = type_check
 
     def __call__(self, func: Callable) -> Callable:
+        """
+        Call a decorator that the given callable.
+
+        Args:
+            self: (todo): write your description
+            func: (todo): write your description
+        """
         doc = func.__doc__ if func.__doc__ else ""
         func.__doc__ = doc + self.wrapper_doc
 
         @functools.wraps(func)
         def wrapper(*args, **kwargs) -> Any:
+            """
+            Decorator to check_listlike inputs
+
+            Args:
+            """
             if len(args) == 1 and gg.is_listlike(args[0]):
                 args, = args
 
@@ -96,9 +122,21 @@ class EqualVarLength:
         self.length_as = length_as
 
     def __call__(self, func: Callable) -> Callable:
+        """
+        Creates a function.
+
+        Args:
+            self: (todo): write your description
+            func: (todo): write your description
+        """
 
         @functools.wraps(func)
         def wrapper(*args, **kwargs) -> Any:
+            """
+            Decorator for a function.
+
+            Args:
+            """
             ArgSpec = inspect.getfullargspec(func)
 
             if not ArgSpec.defaults or len(ArgSpec.args) != len(ArgSpec.defaults) + 1:
@@ -124,4 +162,9 @@ class EqualVarLength:
 
     @staticmethod
     def base_vars() -> List[str]:
+        """
+        Returns a list of all vARS.
+
+        Args:
+        """
         return _BASE_VARS

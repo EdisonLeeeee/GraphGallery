@@ -72,6 +72,12 @@ class GMNN(SemiSupervisedModel):
         self.process()
 
     def process_step(self):
+        """
+        Process the adjaccelerator.
+
+        Args:
+            self: (todo): write your description
+        """
         graph = self.graph
         adj_matrix = self.adj_transform(graph.adj_matrix)
         attr_matrix = self.attr_transform(graph.attr_matrix)
@@ -83,6 +89,18 @@ class GMNN(SemiSupervisedModel):
     @F.EqualVarLength()
     def build(self, hiddens=[16], activations=['relu'], dropout=0.6, l2_norm=5e-4,
               lr=0.05, use_bias=False):
+        """
+        Builds the model.
+
+        Args:
+            self: (todo): write your description
+            hiddens: (int): write your description
+            activations: (todo): write your description
+            dropout: (bool): write your description
+            l2_norm: (todo): write your description
+            lr: (todo): write your description
+            use_bias: (bool): write your description
+        """
 
         with tf.device(self.device):
             x_p = Input(batch_shape=[None, self.graph.n_classes],
@@ -95,6 +113,12 @@ class GMNN(SemiSupervisedModel):
                           dtype=self.intx, name='node_index')
 
             def build_GCN(x):
+                """
+                Builds the model
+
+                Args:
+                    x: (todo): write your description
+                """
                 h = x
                 for hidden, activation in zip(hiddens, activations):
                     h = GraphConvolution(hidden, use_bias=use_bias,
@@ -123,6 +147,23 @@ class GMNN(SemiSupervisedModel):
               epochs=100, early_stopping=None, verbose=None, save_best=True,
               weight_path=None, as_model=False,
               monitor='val_acc', early_stop_metric='val_loss'):
+        """
+        Trains the model.
+
+        Args:
+            self: (todo): write your description
+            idx_train: (array): write your description
+            idx_val: (array): write your description
+            pre_train_epochs: (bool): write your description
+            epochs: (array): write your description
+            early_stopping: (str): write your description
+            verbose: (bool): write your description
+            save_best: (bool): write your description
+            weight_path: (str): write your description
+            as_model: (str): write your description
+            monitor: (todo): write your description
+            early_stop_metric: (str): write your description
+        """
 
         histories = []
         index_all = tf.range(self.graph.n_nodes, dtype=self.intx)
@@ -182,6 +223,13 @@ class GMNN(SemiSupervisedModel):
         return histories
 
     def train_sequence(self, index):
+        """
+        Train the model on the given sequence.
+
+        Args:
+            self: (todo): write your description
+            index: (int): write your description
+        """
 
         # if the graph is changed?
         labels = self.labels_onehot[index]

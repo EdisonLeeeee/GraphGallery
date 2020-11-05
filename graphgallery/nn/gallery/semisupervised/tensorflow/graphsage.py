@@ -70,6 +70,12 @@ class GraphSAGE(SemiSupervisedModel):
         self.process()
 
     def process_step(self):
+        """
+        Process the graph.
+
+        Args:
+            self: (todo): write your description
+        """
         graph = self.graph
         # Dense matrix, shape [n_nodes, max_degree]
         adj_matrix = self.adj_transform(graph.adj_matrix)
@@ -86,6 +92,20 @@ class GraphSAGE(SemiSupervisedModel):
     @F.EqualVarLength()
     def build(self, hiddens=[32], activations=['relu'], dropout=0.5,
               l2_norm=5e-4, lr=0.01, use_bias=True, output_normalize=False, aggregator='mean'):
+        """
+        Builds the graph.
+
+        Args:
+            self: (todo): write your description
+            hiddens: (int): write your description
+            activations: (todo): write your description
+            dropout: (bool): write your description
+            l2_norm: (todo): write your description
+            lr: (todo): write your description
+            use_bias: (bool): write your description
+            output_normalize: (bool): write your description
+            aggregator: (todo): write your description
+        """
 
         if self.backend == "tensorflow":
             with tf.device(self.device):
@@ -100,6 +120,13 @@ class GraphSAGE(SemiSupervisedModel):
             raise NotImplementedError
 
     def train_sequence(self, index):
+        """
+        Parameters ---------- index : int : parameterset.
+
+        Args:
+            self: (todo): write your description
+            index: (int): write your description
+        """
 
         labels = self.graph.labels[index]
         sequence = SAGEMiniBatchSequence(

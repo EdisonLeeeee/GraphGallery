@@ -64,6 +64,28 @@ class GraphAttention(Layer):
                  bias_constraint=None,
                  attn_kernel_constraint=None,
                  **kwargs):
+        """
+        Initialize the network.
+
+        Args:
+            self: (todo): write your description
+            units: (todo): write your description
+            attn_heads: (todo): write your description
+            reduction: (todo): write your description
+            dropout: (str): write your description
+            activation: (str): write your description
+            use_bias: (bool): write your description
+            kernel_initializer: (int): write your description
+            bias_initializer: (int): write your description
+            attn_kernel_initializer: (todo): write your description
+            kernel_regularizer: (dict): write your description
+            bias_regularizer: (dict): write your description
+            attn_kernel_regularizer: (todo): write your description
+            activity_regularizer: (bool): write your description
+            kernel_constraint: (todo): write your description
+            bias_constraint: (str): write your description
+            attn_kernel_constraint: (todo): write your description
+        """
 
         super().__init__(**kwargs)
 
@@ -103,6 +125,13 @@ class GraphAttention(Layer):
             self.output_dim = self.units
 
     def build(self, input_shape):
+        """
+        Connects the graph.
+
+        Args:
+            self: (todo): write your description
+            input_shape: (list): write your description
+        """
         input_dim = input_shape[0][-1]
 
         # Initialize weights for each attention head
@@ -204,6 +233,12 @@ class GraphAttention(Layer):
         return self.activation(output)
 
     def get_config(self):
+        """
+        Get the configurations of the experiment.
+
+        Args:
+            self: (str): write your description
+        """
 
         config = {'units': self.units,
                   'attn_heads': self.attn_heads,
@@ -235,5 +270,12 @@ class GraphAttention(Layer):
         return {**base_config, **config}
 
     def compute_output_shape(self, input_shape):
+        """
+        Compute the output shape.
+
+        Args:
+            self: (todo): write your description
+            input_shape: (list): write your description
+        """
         output_shape = input_shape[0][0], self.output_dim
         return tf.TensorShape(output_shape)

@@ -52,11 +52,27 @@ def asintarr(x: Any, dtype: Optional[str] = None) -> np.ndarray:
 
 
 def indices2mask(indices: np.ndarray, shape: tuple) -> np.ndarray:
+    """
+    Convert an array of indices to a boolean array.
+
+    Args:
+        indices: (array): write your description
+        np: (todo): write your description
+        ndarray: (array): write your description
+        shape: (int): write your description
+    """
     mask = np.zeros(shape, dtype=gg.boolx())
     mask[indices] = True
     return mask
 
 def repeat(src: Any, length: int) -> Any:
+    """
+    Returns a list of the given length.
+
+    Args:
+        src: (todo): write your description
+        length: (int): write your description
+    """
     if src is None:
         return [None for _ in range(length)]
     if src == [] or src == ():
@@ -71,6 +87,12 @@ def repeat(src: Any, length: int) -> Any:
 
 
 def get_length(obj: Any) -> int:
+    """
+    Return length of the length.
+
+    Args:
+        obj: (todo): write your description
+    """
     if gg.is_iterable(obj):
         length = len(obj)
     else:
@@ -94,21 +116,55 @@ class Bunch(dict):
     """
 
     def __init__(self, **kwargs):
+        """
+        Initialize the class.
+
+        Args:
+            self: (todo): write your description
+        """
         super().__init__(kwargs)
 
     def __setattr__(self, key, value):
+        """
+        Sets the value of a key.
+
+        Args:
+            self: (todo): write your description
+            key: (str): write your description
+            value: (todo): write your description
+        """
         self[key] = value
 
     def __dir__(self):
+        """
+        Return a list of directories.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.keys()
 
     def __getattr__(self, key):
+        """
+        Returns the value of the given attribute.
+
+        Args:
+            self: (todo): write your description
+            key: (str): write your description
+        """
         try:
             return self[key]
         except KeyError:
             raise AttributeError(key)
 
     def __setstate__(self, state):
+        """
+        Sets the state should be a boolean.
+
+        Args:
+            self: (todo): write your description
+            state: (dict): write your description
+        """
         # Bunch pickles generated with scikit-learn 0.16.* have an non
         # empty __dict__. This causes a surprising behaviour when
         # loading these pickles scikit-learn 0.17: reading bunch.key

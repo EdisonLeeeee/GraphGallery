@@ -8,14 +8,35 @@ from ..decorators import MultiInputs
 
 class ChebyBasis(Transform):
     def __init__(self, order=2, rate=-0.5):
+        """
+        Initialize the order.
+
+        Args:
+            self: (todo): write your description
+            order: (int): write your description
+            rate: (todo): write your description
+        """
         super().__init__()
         self.order = order
         self.rate = rate
 
     def __call__(self, adj_matrix):
+        """
+        Return the adjacency matrix.
+
+        Args:
+            self: (todo): write your description
+            adj_matrix: (array): write your description
+        """
         return cheby_basis(adj_matrix, order=self.order, rate=self.rate)
 
     def __repr__(self):
+        """
+        Return a repr representation of a repr__.
+
+        Args:
+            self: (todo): write your description
+        """
         return f"{self.__class__.__name__}(order={self.order}, rate={self.rate})"
 
 
@@ -36,6 +57,14 @@ def cheby_basis(adj_matrix, order=2, rate=-0.5):
     t_k.append(scaled_laplacian)
 
     def chebyshev_recurrence(t_k_minus_one, t_k_minus_two, scaled_lap):
+        """
+        R calculate the k_recurrence coefficients.
+
+        Args:
+            t_k_minus_one: (float): write your description
+            t_k_minus_two: (float): write your description
+            scaled_lap: (float): write your description
+        """
         return 2 * scaled_lap.dot(t_k_minus_one) - t_k_minus_two
 
     for i in range(2, order + 1):

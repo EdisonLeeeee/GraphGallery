@@ -75,6 +75,12 @@ class ClusterGCN(SemiSupervisedModel):
         self.process()
 
     def process_step(self):
+        """
+        Process the graph step.
+
+        Args:
+            self: (todo): write your description
+        """
         graph = self.graph
         attr_matrix = self.attr_transform(graph.attr_matrix)
 
@@ -90,12 +96,31 @@ class ClusterGCN(SemiSupervisedModel):
     @F.EqualVarLength()
     def build(self, hiddens=[32], activations=['relu'], dropout=0.5,
               l2_norm=0., lr=0.01, use_bias=False):
+        """
+        Constructs the hiddar graph
+
+        Args:
+            self: (todo): write your description
+            hiddens: (int): write your description
+            activations: (todo): write your description
+            dropout: (bool): write your description
+            l2_norm: (todo): write your description
+            lr: (todo): write your description
+            use_bias: (bool): write your description
+        """
 
         self.model = pyGCN(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
                            activations=activations, dropout=dropout, l2_norm=l2_norm,
                            lr=lr, use_bias=use_bias).to(self.device)
 
     def train_sequence(self, index):
+        """
+        Train a batch of sequences.
+
+        Args:
+            self: (todo): write your description
+            index: (int): write your description
+        """
 
         mask = F.indices2mask(index, self.graph.n_nodes)
         labels = self.graph.labels
@@ -119,6 +144,13 @@ class ClusterGCN(SemiSupervisedModel):
         return sequence
 
     def predict(self, index):
+        """
+        Perform a batch of the model.
+
+        Args:
+            self: (array): write your description
+            index: (array): write your description
+        """
 
         mask = F.indices2mask(index, self.graph.n_nodes)
 

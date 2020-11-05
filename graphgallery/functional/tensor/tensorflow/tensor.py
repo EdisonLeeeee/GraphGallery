@@ -27,10 +27,24 @@ _TYPE = {'float16': tf.float16,
 
 
 def data_type_dict():
+    """
+    Return a dict type of a dict.
+
+    Args:
+    """
     return _TYPE
 
 
 def astensor(x, *, dtype=None, device=None, escape=None):
+    """
+    Convert x to a tensor.
+
+    Args:
+        x: (todo): write your description
+        dtype: (str): write your description
+        device: (todo): write your description
+        escape: (todo): write your description
+    """
 
     if x is None:
         return x
@@ -118,6 +132,14 @@ def sparse_tensor_to_sparse_adj(x) -> sp.csr_matrix:
 
 
 def normalize_adj_tensor(adj, rate=-0.5, fill_weight=1.0):
+    """
+    Normalize the adjacency matrix.
+
+    Args:
+        adj: (todo): write your description
+        rate: (array): write your description
+        fill_weight: (str): write your description
+    """
     if fill_weight:
         adj = adj + fill_weight * tf.eye(tf.shape(adj)[0], dtype=adj.dtype)
     d = tf.reduce_sum(adj, axis=1)
@@ -127,6 +149,15 @@ def normalize_adj_tensor(adj, rate=-0.5, fill_weight=1.0):
 
 
 def add_selfloops_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0):
+    """
+    Adds an edge to edge_index.
+
+    Args:
+        edge_index: (int): write your description
+        edge_weight: (todo): write your description
+        n_nodes: (int): write your description
+        fill_weight: (todo): write your description
+    """
 
     if n_nodes is None:
         n_nodes = tf.reduce_max(edge_index) + 1
@@ -145,6 +176,16 @@ def add_selfloops_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0):
 
 
 def normalize_edge_tensor(edge_index, edge_weight=None, n_nodes=None, fill_weight=1.0, rate=-0.5):
+    """
+    Normalize the tensor.
+
+    Args:
+        edge_index: (int): write your description
+        edge_weight: (todo): write your description
+        n_nodes: (int): write your description
+        fill_weight: (todo): write your description
+        rate: (todo): write your description
+    """
 
     if edge_weight is None:
         edge_weight = tf.ones([edge_index.shape[0]], dtype=gg.floatx())

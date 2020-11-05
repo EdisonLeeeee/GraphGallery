@@ -71,6 +71,24 @@ class MeanAggregator(Layer):
                  kernel_constraint=None,
                  bias_constraint=None,
                  **kwargs):
+        """
+        Initialize the network.
+
+        Args:
+            self: (todo): write your description
+            units: (todo): write your description
+            concat: (todo): write your description
+            use_bias: (bool): write your description
+            agg_method: (str): write your description
+            activation: (str): write your description
+            kernel_initializer: (int): write your description
+            bias_initializer: (int): write your description
+            kernel_regularizer: (dict): write your description
+            bias_regularizer: (dict): write your description
+            activity_regularizer: (bool): write your description
+            kernel_constraint: (todo): write your description
+            bias_constraint: (str): write your description
+        """
 
         super().__init__(**kwargs)
         self.units = units
@@ -97,6 +115,13 @@ class MeanAggregator(Layer):
             self.output_dim = units
 
     def build(self, input_shape):
+        """
+        Connects the graph into the graph.
+
+        Args:
+            self: (todo): write your description
+            input_shape: (list): write your description
+        """
         input_dim = input_shape[0][-1]
 
         self.kernel_self = self.add_weight(shape=(input_dim, self.units),
@@ -121,6 +146,13 @@ class MeanAggregator(Layer):
         super().build(input_shape)
 
     def call(self, inputs):
+        """
+        Applies a single layer.
+
+        Args:
+            self: (todo): write your description
+            inputs: (dict): write your description
+        """
         x, neigh_x = inputs
 
         neigh_x = self.aggregator(neigh_x, axis=1)
@@ -139,6 +171,12 @@ class MeanAggregator(Layer):
         return self.activation(output)
 
     def get_config(self):
+        """
+        Get the configurations of this method.
+
+        Args:
+            self: (str): write your description
+        """
 
         config = {'units': self.units,
                   'concat': self.concat,
@@ -164,6 +202,13 @@ class MeanAggregator(Layer):
         return {**base_config, **config}
 
     def compute_output_shape(self, input_shape):
+        """
+        Compute the output shape.
+
+        Args:
+            self: (todo): write your description
+            input_shape: (list): write your description
+        """
         output_shape = input_shape[0][0], self.output_dim
         return output_shape  # (batch_n_nodes, units) or (batch_n_nodes, units * 2)
 
@@ -230,6 +275,23 @@ class GCNAggregator(Layer):
                  kernel_constraint=None,
                  bias_constraint=None,
                  **kwargs):
+        """
+        Initialize the network.
+
+        Args:
+            self: (todo): write your description
+            units: (todo): write your description
+            use_bias: (bool): write your description
+            agg_method: (str): write your description
+            activation: (str): write your description
+            kernel_initializer: (int): write your description
+            bias_initializer: (int): write your description
+            kernel_regularizer: (dict): write your description
+            bias_regularizer: (dict): write your description
+            activity_regularizer: (bool): write your description
+            kernel_constraint: (todo): write your description
+            bias_constraint: (str): write your description
+        """
 
         kwargs.pop('concat', None)  # in order to be compatible with `MeanAggregator`
         super().__init__(**kwargs)
@@ -251,6 +313,13 @@ class GCNAggregator(Layer):
         self.bias_constraint = constraints.get(bias_constraint)
 
     def build(self, input_shape):
+        """
+        Connects the graph into the graph.
+
+        Args:
+            self: (todo): write your description
+            input_shape: (list): write your description
+        """
         input_dim = input_shape[0][-1]
 
         self.kernel = self.add_weight(shape=(input_dim, self.units),
@@ -270,6 +339,13 @@ class GCNAggregator(Layer):
         super().build(input_shape)
 
     def call(self, inputs):
+        """
+        Perform the model.
+
+        Args:
+            self: (todo): write your description
+            inputs: (dict): write your description
+        """
 
         x, neigh_x = inputs
         x = tf.expand_dims(x, axis=1)
@@ -284,6 +360,12 @@ class GCNAggregator(Layer):
         return self.activation(output)
 
     def get_config(self):
+        """
+        Get the mutually exclusive configurations
+
+        Args:
+            self: (str): write your description
+        """
 
         config = {'units': self.units,
                   'use_bias': self.use_bias,
@@ -308,5 +390,12 @@ class GCNAggregator(Layer):
         return {**base_config, **config}
 
     def compute_output_shape(self, input_shape):
+        """
+        Compute the output shape.
+
+        Args:
+            self: (todo): write your description
+            input_shape: (list): write your description
+        """
         output_shape = input_shape[0][0], self.units
         return tf.TensorShape(output_shape)  # (batch_n_nodes, units) or (batch_n_nodes, units * 2)

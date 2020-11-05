@@ -26,5 +26,10 @@ def set_memory_growth() -> None:
 
 
 def empty_cache() -> None:
+    """
+    Initialize the session.
+
+    Args:
+    """
     torch.cuda.empty_cache()
     tf.keras.backend.clear_session()

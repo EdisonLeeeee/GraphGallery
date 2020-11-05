@@ -6,6 +6,15 @@ from numba.typed import Dict
 
 @njit
 def mixing_matrix(edges, in_deg, out_deg, mapping):
+    """
+    Mixing matrix of the homogenous matrix.
+
+    Args:
+        edges: (array): write your description
+        in_deg: (int): write your description
+        out_deg: (str): write your description
+        mapping: (dict): write your description
+    """
 
     n_degrees = len(mapping)
     M = np.zeros((n_degrees, n_degrees))
@@ -23,6 +32,13 @@ def mixing_matrix(edges, in_deg, out_deg, mapping):
 
 
 def degree_mixing_matrix(adj_matrix, normalize=True):
+    """
+    R compute the degree matrix of the adjacency matrix.
+
+    Args:
+        adj_matrix: (todo): write your description
+        normalize: (bool): write your description
+    """
     out_deg = adj_matrix.sum(1).A1.astype('int64')
     in_deg = adj_matrix.sum(0).A1.astype('int64')
     deg_set = np.union1d(out_deg, in_deg)
@@ -45,6 +61,13 @@ def degree_mixing_matrix(adj_matrix, normalize=True):
 
 
 def numeric_ac(M, mapping):
+    """
+    Computes the mumeric - th thacian.
+
+    Args:
+        M: (str): write your description
+        mapping: (dict): write your description
+    """
     # M is a numpy matrix or array
     # numeric assortativity coefficient, pearsonr
     x = y = np.array(list(mapping.keys()), dtype='float')

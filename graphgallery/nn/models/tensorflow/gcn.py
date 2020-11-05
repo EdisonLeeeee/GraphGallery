@@ -17,6 +17,21 @@ class GCN(Model):
                  l2_norm=5e-4,
                  lr=0.01, use_bias=False,
                  experimental_run_tf_function=True):
+        """
+        Initialize the network.
+
+        Args:
+            self: (todo): write your description
+            in_channels: (int): write your description
+            out_channels: (int): write your description
+            hiddens: (todo): write your description
+            activations: (str): write your description
+            dropout: (str): write your description
+            l2_norm: (todo): write your description
+            lr: (float): write your description
+            use_bias: (bool): write your description
+            experimental_run_tf_function: (todo): write your description
+        """
 
         x = Input(batch_shape=[None, in_channels],
                   dtype=floatx(), name='attr_matrix')

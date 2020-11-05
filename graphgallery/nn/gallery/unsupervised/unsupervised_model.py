@@ -48,12 +48,31 @@ class UnsupervisedModel(GalleryModel):
                                              random_state=seed)
 
     def build(self):
+        """
+        Builds the image.
+
+        Args:
+            self: (todo): write your description
+        """
         raise NotImplementedError
 
     def get_embeddings(self):
+        """
+        Get embedded embedded embedded embedded embedded embedded embedded embedded embedded embedded embedded embedded embedded embedded.
+
+        Args:
+            self: (todo): write your description
+        """
         raise NotImplementedError
 
     def train(self, index):
+        """
+        Train the embeddings.
+
+        Args:
+            self: (todo): write your description
+            index: (int): write your description
+        """
         if not self.embeddings:
             self.get_embeddings()
 
@@ -61,11 +80,25 @@ class UnsupervisedModel(GalleryModel):
         self.classifier.fit(self.embeddings[index], self.graph.labels[index])
 
     def predict(self, index):
+        """
+        Predict classifier.
+
+        Args:
+            self: (array): write your description
+            index: (array): write your description
+        """
         index = asintarr(index)
         logit = self.classifier.predict_proba(self.embeddings[index])
         return logit
 
     def test(self, index):
+        """
+        Compute the accuracy.
+
+        Args:
+            self: (todo): write your description
+            index: (int): write your description
+        """
         index = asintarr(index)
         y_true = self.graph.labels[index]
         y_pred = self.classifier.predict(self.embeddings[index])
@@ -74,4 +107,10 @@ class UnsupervisedModel(GalleryModel):
 
     @staticmethod
     def normalize_embedding(embeddings):
+        """
+        Normalize embedding.
+
+        Args:
+            embeddings: (todo): write your description
+        """
         return normalize(embeddings)

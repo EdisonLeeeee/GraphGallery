@@ -84,6 +84,12 @@ class NormalizeAttr(Transform):
         return normalize_attr(attr_matrix, norm=self.norm)
 
     def __repr__(self):
+        """
+        Return a repr representation of a repr__.
+
+        Args:
+            self: (todo): write your description
+        """
         return f"{self.__class__.__name__}(norm={self.norm})"
 
 

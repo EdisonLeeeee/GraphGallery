@@ -67,6 +67,12 @@ class SGC(SemiSupervisedModel):
         self.process()
 
     def process_step(self):
+        """
+        Perform a single step.
+
+        Args:
+            self: (todo): write your description
+        """
         graph = self.graph
         adj_matrix = self.adj_transform(graph.adj_matrix)
         attr_matrix = self.attr_transform(graph.attr_matrix)
@@ -91,6 +97,18 @@ class SGC(SemiSupervisedModel):
     # use decorator to make sure all list arguments have the same length
     @F.EqualVarLength()
     def build(self, hiddens=[], activations=[], dropout=0.5, l2_norm=5e-5, lr=0.2, use_bias=True):
+        """
+        Builds the graph.
+
+        Args:
+            self: (todo): write your description
+            hiddens: (int): write your description
+            activations: (todo): write your description
+            dropout: (bool): write your description
+            l2_norm: (todo): write your description
+            lr: (todo): write your description
+            use_bias: (bool): write your description
+        """
 
         with tf.device(self.device):
             self.model = tfSGC(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
@@ -98,6 +116,13 @@ class SGC(SemiSupervisedModel):
                                lr=lr, use_bias=use_bias)
             
     def train_sequence(self, index):
+        """
+        Args : meth : parameter.
+
+        Args:
+            self: (todo): write your description
+            index: (int): write your description
+        """
         index = F.astensor(index)
         labels = self.graph.labels[index]
 

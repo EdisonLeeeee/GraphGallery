@@ -53,6 +53,16 @@ class GalleryModel(Model):
         self.weight_path = osp.join(os.getcwd(), f"{self.name}_weights_id_{_id}{file_postfix()}")
 
     def save(self, path=None, as_model=False, overwrite=True, save_format=None, **kwargs):
+        """
+        Save the model to disk.
+
+        Args:
+            self: (todo): write your description
+            path: (str): write your description
+            as_model: (str): write your description
+            overwrite: (bool): write your description
+            save_format: (str): write your description
+        """
 
         if not path:
             path = self.weight_path
@@ -71,6 +81,14 @@ class GalleryModel(Model):
                 saver.save_torch_weights(self.model, path, overwrite=overwrite, save_format=save_format)
 
     def load(self, path=None, as_model=False):
+        """
+        Loads the model from disk.
+
+        Args:
+            self: (todo): write your description
+            path: (str): write your description
+            as_model: (todo): write your description
+        """
         if not path:
             path = self.weight_path
 
@@ -91,6 +109,13 @@ class GalleryModel(Model):
                 saver.load_torch_weights(self.model, path)
 
     def __getattr__(self, attr):
+        """
+        Get the value of an attribute.
+
+        Args:
+            self: (todo): write your description
+            attr: (str): write your description
+        """
         ##### FIXME: This may cause ERROR ######
         try:
             return self.__dict__[attr]
@@ -102,10 +127,23 @@ class GalleryModel(Model):
 
     @property
     def model(self):
+        """
+        Return the model instance.
+
+        Args:
+            self: (todo): write your description
+        """
         return self._model
 
     @model.setter
     def model(self, m):
+        """
+        Set the keras model.
+
+        Args:
+            self: (todo): write your description
+            m: (array): write your description
+        """
         # Back up
         if isinstance(m, tf.keras.Model) and m.weights:
             self.backup = tf.identity_n(m.weights)
@@ -114,10 +152,23 @@ class GalleryModel(Model):
 
     @property
     def custom_objects(self):
+        """
+        Returns a list of objects.
+
+        Args:
+            self: (todo): write your description
+        """
         return self._custom_objects
 
     @custom_objects.setter
     def custom_objects(self, value):
+        """
+        Set custom objects.
+
+        Args:
+            self: (todo): write your description
+            value: (todo): write your description
+        """
         assert isinstance(value, dict)
         self._custom_objects = value
 
@@ -127,7 +178,19 @@ class GalleryModel(Model):
         self.model = None
 
     def __call__(self, *args, **kwargs):
+        """
+        Calls the model.
+
+        Args:
+            self: (todo): write your description
+        """
         return self._model(*args, **kwargs)
 
     def __repr__(self):
+        """
+        Return a repr representation of a repr__.
+
+        Args:
+            self: (todo): write your description
+        """
         return f"GraphGallery.nn.{self.name}(device={self.device}, backend={self.backend})"

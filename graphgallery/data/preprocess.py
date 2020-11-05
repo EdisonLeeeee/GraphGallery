@@ -16,6 +16,17 @@ def train_val_test_split_tabular(N: int,
                                  test_size: float = 0.8,
                                  stratify: Optional[ArrayLike1D] = None,
                                  random_state: Optional[int] = None) -> MultiArrayLike:
+    """
+    Train a train_tab_test_tab_test.
+
+    Args:
+        N: (todo): write your description
+        train_size: (int): write your description
+        val_size: (int): write your description
+        test_size: (int): write your description
+        stratify: (str): write your description
+        random_state: (int): write your description
+    """
 
     idx = np.arange(N)
     idx_train_and_val, idx_test = train_test_split(idx,
@@ -147,6 +158,18 @@ def get_train_val_test_split(stratify: ArrayLike1D,
                              val_examples_per_class: int,
                              test_examples_per_class: Optional[None] = None,
                              random_state: Optional[None] = None) -> MultiArrayLike:
+    """
+    Return a set.
+
+    Args:
+        stratify: (todo): write your description
+        train_examples_per_class: (todo): write your description
+        val_examples_per_class: (todo): write your description
+        test_examples_per_class: (todo): write your description
+        Optional: (todo): write your description
+        random_state: (int): write your description
+        Optional: (todo): write your description
+    """
 
     random_state = np.random.RandomState(random_state)
     remaining_indices = list(range(stratify.shape[0]))
@@ -181,6 +204,15 @@ def get_train_val_test_split(stratify: ArrayLike1D,
 def sample_per_class(stratify: ArrayLike1D, n_examples_per_class: int,
                      forbidden_indices: Optional[ArrayLike1D] = None,
                      random_state: Optional[int] = None) -> ArrayLike1D:
+    """
+    Generate samples from the dataset.
+
+    Args:
+        stratify: (todo): write your description
+        n_examples_per_class: (int): write your description
+        forbidden_indices: (todo): write your description
+        random_state: (int): write your description
+    """
 
     n_classes = stratify.max() + 1
     n_samples = stratify.shape[0]
@@ -209,6 +241,13 @@ def parse_index_file(filename: str) -> List:
 
 
 def process_planetoid_datasets(name: str, paths: List[str]) -> Tuple:
+    """
+    Process a list of matrices.
+
+    Args:
+        name: (str): write your description
+        paths: (str): write your description
+    """
     objs = []
     for fname in paths:
         with open(fname, 'rb') as f:

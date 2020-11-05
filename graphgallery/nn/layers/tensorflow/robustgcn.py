@@ -56,6 +56,23 @@ class GaussionConvolution_F(Layer):
                  kernel_constraint=None,
                  bias_constraint=None,
                  **kwargs):
+        """
+        Initialize the network.
+
+        Args:
+            self: (todo): write your description
+            units: (todo): write your description
+            gamma: (float): write your description
+            use_bias: (bool): write your description
+            activation: (str): write your description
+            kernel_initializer: (int): write your description
+            bias_initializer: (int): write your description
+            kernel_regularizer: (dict): write your description
+            bias_regularizer: (dict): write your description
+            activity_regularizer: (bool): write your description
+            kernel_constraint: (todo): write your description
+            bias_constraint: (str): write your description
+        """
         super().__init__(**kwargs)
         self.units = units
         self.gamma = gamma
@@ -71,6 +88,13 @@ class GaussionConvolution_F(Layer):
         self.bias_constraint = constraints.get(bias_constraint)
 
     def build(self, input_shapes):
+        """
+        Connects the module into the graph.
+
+        Args:
+            self: (todo): write your description
+            input_shapes: (list): write your description
+        """
         self.kernel = self.add_weight(shape=(input_shapes[0][1], self.units),
                                       initializer=self.kernel_initializer,
                                       name='kernel',
@@ -88,6 +112,13 @@ class GaussionConvolution_F(Layer):
         super().build(input_shapes)
 
     def call(self, inputs):
+        """
+        Implementation of the network.
+
+        Args:
+            self: (todo): write your description
+            inputs: (dict): write your description
+        """
         x, *adj = inputs
 #         assert len(adj) == 2
 
@@ -107,6 +138,12 @@ class GaussionConvolution_F(Layer):
         return self.activation(mean), self.activation(var)
 
     def get_config(self):
+        """
+        Returns a dict of the kernel.
+
+        Args:
+            self: (str): write your description
+        """
         config = {'units': self.units,
                   'gamma': self.gamma,
                   'use_bias': self.use_bias,
@@ -130,6 +167,13 @@ class GaussionConvolution_F(Layer):
         return {**base_config, **config}
 
     def compute_output_shape(self, input_shapes):
+        """
+        Compute the output shape.
+
+        Args:
+            self: (todo): write your description
+            input_shapes: (list): write your description
+        """
         attributes_shape = input_shapes[0]
         output_shape = (attributes_shape[0], self.units)
         return tf.TensorShape(output_shape), tf.TensorShape(output_shape)
@@ -187,6 +231,23 @@ class GaussionConvolution_D(Layer):
                  kernel_constraint=None,
                  bias_constraint=None,
                  **kwargs):
+        """
+        Initialize the network.
+
+        Args:
+            self: (todo): write your description
+            units: (todo): write your description
+            gamma: (float): write your description
+            use_bias: (bool): write your description
+            activation: (str): write your description
+            kernel_initializer: (int): write your description
+            bias_initializer: (int): write your description
+            kernel_regularizer: (dict): write your description
+            bias_regularizer: (dict): write your description
+            activity_regularizer: (bool): write your description
+            kernel_constraint: (todo): write your description
+            bias_constraint: (str): write your description
+        """
         super().__init__(**kwargs)
         self.units = units
         self.gamma = gamma
@@ -202,6 +263,13 @@ class GaussionConvolution_D(Layer):
         self.bias_constraint = constraints.get(bias_constraint)
 
     def build(self, input_shapes):
+        """
+        Connects the module into the graph.
+
+        Args:
+            self: (todo): write your description
+            input_shapes: (list): write your description
+        """
         attribute_shape_mean, attribute_shape_var = input_shapes[:2]
 
         self.kernel_mean = self.add_weight(shape=(attribute_shape_mean[1], self.units),
@@ -235,6 +303,13 @@ class GaussionConvolution_D(Layer):
         super().build(input_shapes)
 
     def call(self, inputs):
+        """
+        Compute the network.
+
+        Args:
+            self: (todo): write your description
+            inputs: (dict): write your description
+        """
         mean, var, *adj = inputs
 #         assert len(adj) == 2
 
@@ -252,6 +327,12 @@ class GaussionConvolution_D(Layer):
         return self.activation(mean), self.activation(var)
 
     def get_config(self):
+        """
+        Get the configurations of the kernel.
+
+        Args:
+            self: (str): write your description
+        """
         config = {'units': self.units,
                   'gamma': self.gamma,
                   'activation': activations.serialize(self.activation),
@@ -275,6 +356,13 @@ class GaussionConvolution_D(Layer):
         return {**base_config, **config}
 
     def compute_output_shape(self, input_shapes):
+        """
+        Compute the shape shape.
+
+        Args:
+            self: (todo): write your description
+            input_shapes: (list): write your description
+        """
         attribute_shape_mean, attribute_shape_var = input_shapes[:2]
 
         output_shape_mean = (attribute_shape_mean[0], self.units)

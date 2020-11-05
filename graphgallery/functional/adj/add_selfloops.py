@@ -38,6 +38,12 @@ class AddSelfLoops(Transform):
         return add_selfloops(*adj_matrix, fill_weight=self.fill_weight)
 
     def __repr__(self):
+        """
+        Return a repr representation of a repr__.
+
+        Args:
+            self: (todo): write your description
+        """
         return f"{self.__class__.__name__}(fill_weight={self.fill_weight})"
 
 
@@ -67,6 +73,13 @@ def add_selfloops(adj_matrix, fill_weight: float = 1.0):
 
     """
     def _add_selfloops(adj, w):
+        """
+        Return a new adjops object.
+
+        Args:
+            adj: (array): write your description
+            w: (todo): write your description
+        """
 
         # here a new copy of adj is created
         if w:

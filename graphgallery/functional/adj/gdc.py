@@ -10,6 +10,17 @@ from ..decorators import MultiInputs
 
 class GDC(Transform):
     def __init__(self, alpha: float = 0.3, t: float = None, eps: float = None, k: int = 128, which: str = 'PPR'):
+        """
+        Initialize kegg.
+
+        Args:
+            self: (todo): write your description
+            alpha: (float): write your description
+            t: (int): write your description
+            eps: (float): write your description
+            k: (int): write your description
+            which: (str): write your description
+        """
         super().__init__()
         self.alpha = alpha
         self.t = t
@@ -18,14 +29,40 @@ class GDC(Transform):
         self.which = which
 
     def __call__(self, adj_matrix):
+        """
+        Return the adjacency matrix.
+
+        Args:
+            self: (todo): write your description
+            adj_matrix: (array): write your description
+        """
         return gdc(adj_matrix, alpha=self.alpha, t=self.t, eps=self.eps, k=self.k, which=self.which)
 
     def __repr__(self):
+        """
+        Return a repr representation of a repr__.
+
+        Args:
+            self: (todo): write your description
+        """
         return f"{self.__class__.__name__}(alpha={self.alpha}, t={self.t}, eps={self.eps}, k={self.k}, which={self.which})"
 
 
 @MultiInputs()
 def gdc(adj_matrix: sp.csr_matrix, alpha: float = 0.3, t: float = None, eps: float = None, k: int = 128, which: str = 'PPR') -> sp.csr_matrix:
+    """
+    R computes the gdc matrix.
+
+    Args:
+        adj_matrix: (todo): write your description
+        sp: (todo): write your description
+        csr_matrix: (todo): write your description
+        alpha: (float): write your description
+        t: (int): write your description
+        eps: (float): write your description
+        k: (int): write your description
+        which: (todo): write your description
+    """
 
     if not (eps or k):
         raise RuntimeError('Either `eps` or `k` should be specified!')

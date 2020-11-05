@@ -19,6 +19,12 @@ normal = torch.nn.init.normal_
 
 
 def uniform(tensor) -> TorchTensor:
+    """
+    Reverse of the tensor.
+
+    Args:
+        tensor: (todo): write your description
+    """
     if tensor is not None:
         bound = 1.0 / math.sqrt(tensor.size(-1))
         tensor.data.uniform_(-bound, bound)
@@ -31,12 +37,26 @@ def uniform(tensor) -> TorchTensor:
 
 
 def glorot_uniform(tensor, scale=6.0) -> TorchTensor:
+    """
+    Glorototot_uniform.
+
+    Args:
+        tensor: (todo): write your description
+        scale: (float): write your description
+    """
     if tensor is not None:
         stdv = math.sqrt(scale / (tensor.size(-2) + tensor.size(-1)))
         tensor.data.uniform_(-stdv, stdv)
 
 
 def glorot_orthogonal(tensor, scale) -> TorchTensor:
+    """
+    Glorotonal tensor.
+
+    Args:
+        tensor: (todo): write your description
+        scale: (float): write your description
+    """
     if tensor is not None:
         torch.nn.init.orthogonal_(tensor.data)
         scale /= ((tensor.size(-2) + tensor.size(-1)) * tensor.var())
@@ -44,22 +64,54 @@ def glorot_orthogonal(tensor, scale) -> TorchTensor:
 
 
 def zeros(tensor) -> TorchTensor:
+    """
+    Fill tensor with tensor.
+
+    Args:
+        tensor: (todo): write your description
+    """
     if tensor is not None:
         tensor.data.fill_(0)
 
 
 def ones(tensor) -> TorchTensor:
+    """
+    Fill tensor.
+
+    Args:
+        tensor: (todo): write your description
+    """
     if tensor is not None:
         tensor.data.fill_(1)
 
 
 def normal(tensor, mean, std) -> TorchTensor:
+    """
+    Normalize mean.
+
+    Args:
+        tensor: (todo): write your description
+        mean: (todo): write your description
+        std: (str): write your description
+    """
     if tensor is not None:
         tensor.data.normal_(mean, std)
 
 
 def reset(nn):
+    """
+    Reset the item from the queue.
+
+    Args:
+        nn: (float): write your description
+    """
     def _reset(item):
+        """
+        Reset an item.
+
+        Args:
+            item: (todo): write your description
+        """
         if hasattr(item, 'reset_parameters'):
             item.reset_parameters()
 

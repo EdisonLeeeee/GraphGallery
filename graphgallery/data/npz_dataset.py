@@ -25,6 +25,17 @@ class NPZDataset(Dataset):
                  root: Optional[str]=None, 
                  url: Optional[str]=None, 
                  standardize: bool=False, verbose: bool=True):
+        """
+        Initialize the dataset.
+
+        Args:
+            self: (todo): write your description
+            name: (str): write your description
+            root: (str): write your description
+            url: (str): write your description
+            standardize: (int): write your description
+            verbose: (bool): write your description
+        """
         
         name = str(name)
         if not name.lower() in self.supported_datasets:
@@ -48,6 +59,12 @@ class NPZDataset(Dataset):
         self.process()
 
     def download(self) -> None:
+        """
+        Download raw files.
+
+        Args:
+            self: (todo): write your description
+        """
 
         if files_exist(self.raw_paths):
             if self.verbose:
@@ -65,6 +82,12 @@ class NPZDataset(Dataset):
             print("Downloading completed.")
 
     def process(self) -> None:
+        """
+        Process the graph
+
+        Args:
+            self: (todo): write your description
+        """
         if self.verbose:
             print("Processing...")
         graph = load_dataset(
@@ -77,6 +100,12 @@ class NPZDataset(Dataset):
 
     @property
     def url(self) -> str:
+        """
+        Returns the url for the url.
+
+        Args:
+            self: (todo): write your description
+        """
         if isinstance(self._url, str):
             return self._url
         else:
@@ -84,4 +113,10 @@ class NPZDataset(Dataset):
 
     @property
     def raw_paths(self) -> List[str]:
+        """
+        Return a list of paths.
+
+        Args:
+            self: (todo): write your description
+        """
         return [f"{osp.join(self.download_dir, self.name)}.npz"]

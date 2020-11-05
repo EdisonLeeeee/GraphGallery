@@ -4,6 +4,14 @@ import tensorflow as tf
 
 
 def train_step_tf(model, sequence, device):
+    """
+    Train the model on the model.
+
+    Args:
+        model: (todo): write your description
+        sequence: (todo): write your description
+        device: (todo): write your description
+    """
     model.reset_metrics()
 
     with tf.device(device):
@@ -35,6 +43,13 @@ def train_step_tf(model, sequence, device):
 
 
 def train_step_torch(model, sequence):
+    """
+    Train the model
+
+    Args:
+        model: (todo): write your description
+        sequence: (todo): write your description
+    """
     model.train()
     optimizer = model.optimizer
     loss_fn = model.loss_fn
@@ -58,6 +73,14 @@ def train_step_torch(model, sequence):
 
 
 def test_step_tf(model, sequence, device):
+    """
+    Perform a single tf.
+
+    Args:
+        model: (todo): write your description
+        sequence: (todo): write your description
+        device: (todo): write your description
+    """
     model.reset_metrics()
 
     with tf.device(device):
@@ -85,6 +108,13 @@ def test_step_tf(model, sequence, device):
 
 @torch.no_grad()
 def test_step_torch(model, sequence):
+    """
+    Evaluate loss.
+
+    Args:
+        model: (todo): write your description
+        sequence: (todo): write your description
+    """
     model.eval()
     loss_fn = model.loss_fn
     accuracy = 0.
@@ -102,6 +132,14 @@ def test_step_torch(model, sequence):
 
 
 def predict_step_tf(model, sequence, device):
+    """
+    Predict the model on the given model.
+
+    Args:
+        model: (todo): write your description
+        sequence: (todo): write your description
+        device: (todo): write your description
+    """
     logits = []
     with tf.device(device):
         for inputs, *_ in sequence:
@@ -133,6 +171,13 @@ def predict_step_tf(model, sequence, device):
 
 @torch.no_grad()
 def predict_step_torch(model, sequence):
+    """
+    Predict the logits the model.
+
+    Args:
+        model: (todo): write your description
+        sequence: (todo): write your description
+    """
     model.eval()
     logits = []
 

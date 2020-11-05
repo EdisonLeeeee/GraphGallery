@@ -16,6 +16,16 @@ class MiniBatchSequence(Sequence):
         batch_size=1,
         *args, **kwargs
     ):
+        """
+        Initialize batches.
+
+        Args:
+            self: (todo): write your description
+            x: (int): write your description
+            y: (int): write your description
+            shuffle: (bool): write your description
+            batch_size: (int): write your description
+        """
         super().__init__(*args, **kwargs)
         assert batch_size == 1
         self.x, self.y = self.astensors(x, y)
@@ -25,13 +35,32 @@ class MiniBatchSequence(Sequence):
         self.indices = list(range(self.n_batches))
 
     def __len__(self):
+        """
+        Returns the number of rows in the queue.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.n_batches
 
     def __getitem__(self, index):
+        """
+        Return the item at index
+
+        Args:
+            self: (todo): write your description
+            index: (int): write your description
+        """
         idx = self.indices[index]
         return self.x[idx], self.y[idx]
 
     def on_epoch_end(self):
+        """
+        Shuffle the current end of the end of the epoch.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.shuffle:
             self._shuffle_batches()
 
@@ -53,6 +82,17 @@ class SAGEMiniBatchSequence(Sequence):
         batch_size=512,
         *args, **kwargs
     ):
+        """
+        Initialize the graph.
+
+        Args:
+            self: (todo): write your description
+            x: (int): write your description
+            y: (int): write your description
+            n_samples: (int): write your description
+            shuffle: (bool): write your description
+            batch_size: (int): write your description
+        """
         super().__init__(*args, **kwargs)
         self.attr_matrix, self.adj_matrix, self.batch_nodes = x
         self.y = y
@@ -65,9 +105,22 @@ class SAGEMiniBatchSequence(Sequence):
         self.attr_matrix = self.astensor(self.attr_matrix)
 
     def __len__(self):
+        """
+        Returns the number of rows in the queue.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.n_batches
 
     def __getitem__(self, index):
+        """
+        Returns the item at index.
+
+        Args:
+            self: (todo): write your description
+            index: (int): write your description
+        """
         if self.shuffle:
             idx = self.indices[index *
                                self.batch_size:(index + 1) * self.batch_size]
@@ -85,6 +138,12 @@ class SAGEMiniBatchSequence(Sequence):
         return self.astensors([self.attr_matrix, *nodes_input], y)
 
     def on_epoch_end(self):
+        """
+        Shuffle the current end of the end of the epoch.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.shuffle:
             self._shuffle_batches()
 
@@ -96,6 +155,14 @@ class SAGEMiniBatchSequence(Sequence):
 
 
 def sample_neighbors(adj_matrix, nodes, n_neighbors):
+    """
+    Returns a random neighbors of neighbors from the graph with a given adjacency matrix.
+
+    Args:
+        adj_matrix: (array): write your description
+        nodes: (todo): write your description
+        n_neighbors: (int): write your description
+    """
     np.random.shuffle(adj_matrix.T)
     return adj_matrix[nodes, :n_neighbors]
 
@@ -111,6 +178,17 @@ class FastGCNBatchSequence(Sequence):
         rank=None,
         *args, **kwargs
     ):
+        """
+        Initialize the graph.
+
+        Args:
+            self: (todo): write your description
+            x: (int): write your description
+            y: (int): write your description
+            shuffle: (bool): write your description
+            batch_size: (int): write your description
+            rank: (int): write your description
+        """
         super().__init__(*args, **kwargs)
         attr_matrix, adj_matrix = x
         self.y = y
@@ -126,9 +204,22 @@ class FastGCNBatchSequence(Sequence):
         self.attr_matrix, self.adj_matrix = attr_matrix, adj_matrix
 
     def __len__(self):
+        """
+        Returns the number of rows in the queue.
+
+        Args:
+            self: (todo): write your description
+        """
         return self.n_batches
 
     def __getitem__(self, index):
+        """
+        Get a tensor.
+
+        Args:
+            self: (todo): write your description
+            index: (int): write your description
+        """
         if not self.batch_size:
             (attr_matrix, adj_matrix), y = self.full_batch()
         else:
@@ -153,9 +244,22 @@ class FastGCNBatchSequence(Sequence):
         return self.astensors((attr_matrix, adj_matrix), y)
 
     def full_batch(self):
+        """
+        Returns the adjacency matrix.
+
+        Args:
+            self: (todo): write your description
+        """
         return (self.attr_matrix, self.adj_matrix), self.y
 
     def mini_batch(self, index):
+        """
+        Create a batch of the matrix.
+
+        Args:
+            self: (todo): write your description
+            index: (int): write your description
+        """
         if self.shuffle:
             idx = self.indices[index *
                                self.batch_size:(index + 1) * self.batch_size]
@@ -169,6 +273,12 @@ class FastGCNBatchSequence(Sequence):
         return (attr_matrix, adj_matrix), y
 
     def on_epoch_end(self):
+        """
+        Shuffle the current end of the end of the epoch.
+
+        Args:
+            self: (todo): write your description
+        """
         if self.shuffle:
             self._shuffle_batches()
 
@@ -180,6 +290,12 @@ class FastGCNBatchSequence(Sequence):
 
 
 def column_prop(adj):
+    """
+    Return the column properties of the adjac.
+
+    Args:
+        adj: (todo): write your description
+    """
     column_norm = sp.linalg.norm(adj, axis=0)
     norm_sum = column_norm.sum()
     return column_norm / norm_sum

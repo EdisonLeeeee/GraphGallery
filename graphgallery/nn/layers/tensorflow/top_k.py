@@ -25,11 +25,25 @@ class Top_k_features(Layer):
     """
 
     def __init__(self, K, **kwargs):
+        """
+        Initialize kwargs.
+
+        Args:
+            self: (todo): write your description
+            K: (int): write your description
+        """
 
         super().__init__(**kwargs)
         self.K = K
 
     def call(self, inputs):
+        """
+        Implement self.
+
+        Args:
+            self: (todo): write your description
+            inputs: (dict): write your description
+        """
 
         x, adj = inputs
         if K.is_sparse(adj):
@@ -44,12 +58,25 @@ class Top_k_features(Layer):
         return h  # (N, K+1, F)
 
     def get_config(self):
+        """
+        Returns the base collector settings.
+
+        Args:
+            self: (str): write your description
+        """
         config = {'K': self.K}
 
         base_config = super().get_config()
         return {**base_config, **config}
 
     def compute_output_shape(self, input_shapes):
+        """
+        Compute the output shape.
+
+        Args:
+            self: (todo): write your description
+            input_shapes: (list): write your description
+        """
         attributes_shape = input_shapes[0]
         output_shape = (attributes_shape[0], self.K+1, attributes_shape[1])
         return tf.TensorShape(output_shape)
