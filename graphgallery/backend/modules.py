@@ -45,7 +45,7 @@ class PyTorchBackend(BackendModule):
 
     def __init__(self):
         super().__init__()
-        self.acceptable_names = self.acceptable_names.union({"th", "torch", "pytorch"})
+        self.acceptable_names = self.acceptable_names.union({"pth", "th", "torch", "pytorch"})
 
     @property
     def version(self) -> str:

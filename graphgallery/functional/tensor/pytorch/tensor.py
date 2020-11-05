@@ -78,12 +78,14 @@ def astensor(x, *, dtype=None, device=None, escape=None):
                 tensor = dgl.from_scipy(x, idtype=getattr(torch, gg.intx()))
             except ImportError:
                 tensor = sparse_adj_to_sparse_tensor(x, dtype=dtype)
+        else:
+            tensor = sparse_adj_to_sparse_tensor(x, dtype=dtype)
+            
     elif isinstance(x, (np.ndarray, np.matrix)) or gg.is_listlike(x) or gg.is_scalar(x):
         tensor = torch.tensor(x, dtype=getattr(torch, dtype), device=device)
     else:
         raise TypeError(
             f'Invalid type of inputs data. Allowed data type `(Tensor, SparseTensor, Numpy array, Scipy sparse tensor, None)`, but got {type(x)}.')
-
     return tensor.to(device)
 
 
