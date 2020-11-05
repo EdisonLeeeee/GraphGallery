@@ -27,13 +27,36 @@
   </a>       
 </p>
 
-
+- [GraphGallery](#graphgallery)
+- [👀 What's important](#whats-important)
+- [🚀 Installation](#installation)
+- [🤖 Implementations](#implementations)
+  - [Semi-supervised models](#semi-supervised-models)
+    - [General models](#general-models)
+    - [Defense models](#defense-models)
+  - [Unsupervised models](#unsupervised-models)
+- [⚡ Quick Start](#quick-start)
+  - [Datasets](#datasets)
+    - [Planetoid](#planetoid)
+    - [NPZDataset](#npzdataset)
+  - [Tensor](#tensor)
+  - [Example of GCN model](#example-of-gcn-model)
+  - [Customization](#customization)
+  - [Visualization](#visualization)
+  - [Using TensorFlow/PyTorch Backend](#using-tensorflowpytorch-backend)
+    - [GCN using PyTorch backend](#gcn-using-pytorch-backend)
+- [❓ How to add your datasets](#how-to-add-your-datasets)
+- [❓ How to define your models](#how-to-define-your-models)
+    - [GCN using PyG backend](#gcn-using-pyg-backend)
+- [😎 More Examples](#more-examples)
+- [⭐ Road Map](#road-map)
+- [😘 Acknowledgement](#acknowledgement)
 
 # GraphGallery
 GraphGallery is a gallery for benchmark graph neural networks with [TensorFlow 2.x](https://github.com/tensorflow/tensorflow) and [PyTorch](https://github.com/pytorch/pytorch) backend. GraphGallery 0.5.x is a total re-write from previous versions, and some things have changed. 
 
 # 👀 What's important
-Difference between GraphGallery and [Pytorch Geometric (PyG)](https://github.com/rusty1s/pytorch_geometric), [Deep Graph Library (DGL)](https://github.com/dmlc/dgl), etc...
+Differences between GraphGallery and [Pytorch Geometric (PyG)](https://github.com/rusty1s/pytorch_geometric), [Deep Graph Library (DGL)](https://github.com/dmlc/dgl), etc...
 + PyG and DGL are just like **TensorFlow** while GraphGallery is more like **Keras**
 + GraphGallery is more extensible and user-friendly
 + GraphGallery has high scalaribility for researchers to use
@@ -485,7 +508,7 @@ You can follow the codes in the folder `graphgallery.nn.gallery` and write you m
 + PyTorch Geometric (PyG)
 + Deep Graph Library (DGL)
 
-### NOTE: [PyG](https://github.com/rusty1s/pytorch_geometric) backend and [DGL](https://github.com/dmlc/dgl) backend now are supported in GraphGallery!
+NOTE: [PyG](https://github.com/rusty1s/pytorch_geometric) backend and [DGL](https://github.com/dmlc/dgl) backend now are supported in GraphGallery!
 
 ```python
 >>> import graphgallery
@@ -515,7 +538,7 @@ Test loss 0.97332, Test accuracy 81.30%
 # 😎 More Examples
 Please refer to the [examples](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples) directory.
 
-# ⭐ TODO List
+# ⭐ Road Map
 - [x] Add PyTorch models support
 - [x] Add other frameworks (PyG and DGL) support
 - [ ] Add more GNN models (TF and Torch backend)
