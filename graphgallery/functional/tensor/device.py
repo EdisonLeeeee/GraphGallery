@@ -34,7 +34,7 @@ def parse_device(device: Device = None, backend: Backend = None) -> Device:
         # by default, return CPU device
         if backend == "tensorflow":
             return tf_device.cpu()
-        else:
+        elif backend == "torch":
             return th_device.cpu()
 
     # existing tensorflow device
