@@ -77,7 +77,7 @@ class Model(ABC):
         self.seed = seed
         self.name = name
         self.graph = graph.copy()
-        self.device = gg.functional.parse_device(device, _backend)
+        self.device = gg.functional.device(device, _backend)
         self.backend = _backend
 
         # data types, default: `float32`,`int32` and `bool`

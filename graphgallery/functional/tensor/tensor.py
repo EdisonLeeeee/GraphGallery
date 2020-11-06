@@ -4,11 +4,10 @@ import tensorflow as tf
 import scipy.sparse as sp
 
 import graphgallery as gg
+from graphgallery import functional as F
 
-from .device import parse_device
 from .tensorflow import tensor as tf_tensor
 from .pytorch import tensor as th_tensor
-from ..decorators import MultiInputs
 
 
 __all__ = ["astensor", "astensors", "tensoras", "tensor2tensor",
@@ -47,14 +46,14 @@ def astensor(x, *, dtype=None, device=None, backend=None, escape=None):
         3. `graphgallery.boolx()` if `x` is boolean.
     """
     backend = gg.backend(backend)
-    device = parse_device(device, backend)
+    device = F.device(device, backend)
     if backend == "tensorflow":
         return tf_tensor.astensor(x, dtype=dtype, device=device, escape=escape)
     else:
         return th_tensor.astensor(x, dtype=dtype, device=device, escape=escape)
 
 
-_astensors_fn = MultiInputs(type_check=False)(astensor)
+_astensors_fn = F.MultiInputs(type_check=False)(astensor)
 
 
 def astensors(*xs, dtype=None, device=None, backend=None, escape=None):
@@ -82,7 +81,7 @@ def astensors(*xs, dtype=None, device=None, backend=None, escape=None):
         3. `graphgallery.boolx()` if `x` is boolean.
     """
     backend = gg.backend(backend)
-    device = parse_device(device, backend)
+    device = F.device(device, backend)
     # escape
     return _astensors_fn(*xs, dtype=dtype, device=device, backend=backend, escape=escape)
 
@@ -92,11 +91,11 @@ def tensor2tensor(tensor, *, device=None):
     """
     if gg.is_tensor(tensor, backend="tensorflow"):
         m = tensoras(tensor)
-        device = parse_device(device, backend="torch")
+        device = F.device(device, backend="torch")
         return astensor(m, device=device, backend="torch")
     elif gg.is_tensor(tensor, backend="torch"):
         m = tensoras(tensor)
-        device = parse_device(device, backend="tensorflow")
+        device = F.device(device, backend="tensorflow")
         return astensor(m, device=device, backend="tensorflow")
     else:
         raise ValueError(f"The input must be a TensorFlow Tensor or PyTorch Tensor, buf got {type(tensor)}")

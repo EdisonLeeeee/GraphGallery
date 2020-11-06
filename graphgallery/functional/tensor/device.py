@@ -7,10 +7,10 @@ from graphgallery.typing import Device, Backend
 from .tensorflow import device as tf_device
 from .pytorch import device as th_device
 
-__all__ = ['parse_device']
+__all__ = ['device']
 
 
-def parse_device(device: Device = None, backend: Backend = None) -> Device:
+def device(device: Device = None, backend: Backend = None) -> Device:
     """
     Specify the device for corresponding backend 
 
@@ -36,45 +36,47 @@ def parse_device(device: Device = None, backend: Backend = None) -> Device:
             return tf_device.cpu()
         elif backend == "torch":
             return th_device.cpu()
+        else:
+            raise RuntimeError("This may not happen!")
 
     # existing tensorflow device
-    if hasattr(device, '_device_name') and backend == "tensorflow":
-        return device._device_name
-    # existing pytorch device
-    if isinstance(device, torch.device) and backend == "torch":
-        return device
-
     if hasattr(device, '_device_name'):
-        # tensorflow device meets pytorch backend
-        _device = device._device_name.split('/')[-1]
+        _device = device._device_name
+    # existing pytorch device
     elif isinstance(device, torch.device):
-        # pytorch device meets tensorflow backend
         _device = str(device)
-    else:
-        _device = str(device).lower().split('/')[-1]
-        if not any(
-                (_device.startswith("cpu"), _device.startswith("cuda"), _device.startswith("gpu"))):
-            raise RuntimeError(
-                f" Expected one of cpu (CPU), cuda (CUDA), gpu (GPU) at the start of device string, but got {device}."
-            )
 
-    # modify _device name
-    if _device.startswith("cuda") and backend == "tensorflow":
-        _device = "GPU" + _device[4:]  # tensorflow uses 'GPU' instead of 'cuda'
-    elif _device.startswith("gpu") and backend == "torch":
-        _device = "cuda" + _device[3:]  # pytorch uses 'cuda' instead of 'GPU'
+    _device = str(device).lower().split('/')[-1]
+    _device, *_device_id = _device.split(":")
+    _device_id = "".join(_device_id)
+
+    if not _device in {"cpu", "cuda", "gpu"}:
+        raise RuntimeError(
+            f" Expected one of cpu (CPU), cuda (CUDA), gpu (GPU) at the start of device string, but got {device}."
+        )
+    if not _device_id:
+        _device_id = 0
+    else:
+        try:
+            _device_id = int(_device_id)
+        except ValueError as e:
+            raise ValueError(f"Invalid device id in {device}.")
 
     # pytorch return torch.device
     if backend == "torch":
-        if _device.startswith('cuda'):
+        if _device == "cpu":
+            return th_device.cpu(_device_id)
+        else:
             if not torch.cuda.is_available():
-                raise RuntimeError(f"CUDA is unavailable for PyTorch backend.")
+                raise RuntimeError(f"CUDA is unavailable for {backend}.")
             # empty cache to avoid unnecessary memory usage
             # TODO: is this necessary?
             torch.cuda.empty_cache()
-        return torch.device(_device)
+            return th_device.gpu(_device_id)
 
-    # tf return string
-    if _device.startswith('gpu') and not tf.config.list_physical_devices('GPU'):
-        raise RuntimeError(f"GPU is unavailable for TensorFlow backend.")
-    return _device.upper()
+    # tensorflow return string
+    if _device == "cpu":
+        return tf_device.cpu(_device_id)
+    elif not tf.config.list_physical_devices('GPU'):
+        raise RuntimeError(f"GPU is unavailable for {backend}.")
+    return tf_device.gpu(_device_id)

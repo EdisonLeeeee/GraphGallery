@@ -12,7 +12,7 @@ from tensorflow.keras import backend as K
 
 from graphgallery.data.io import makedirs_from_filename
 from graphgallery.utils import saver
-from graphgallery import file_postfix
+import graphgallery as gg
 
 from .model import Model
 
@@ -50,7 +50,7 @@ class GalleryModel(Model):
         # log path
         # add random integer to avoid duplication
         _id = np.random.RandomState(None).randint(100)
-        self.weight_path = osp.join(os.getcwd(), f"{self.name}_weights_id_{_id}{file_postfix()}")
+        self.weight_path = osp.join(os.getcwd(), f"{self.name}_weights_id_{_id}{gg.file_postfix()}")
 
     def save(self, path=None, as_model=False, overwrite=True, save_format=None, **kwargs):
 
@@ -76,7 +76,7 @@ class GalleryModel(Model):
 
         if not osp.exists(path):
             print(f"{path} do not exists.", file=sys.stderr)
-            return 
+            return
 
         if as_model:
             if self.backend == "tensorflow":
@@ -122,12 +122,12 @@ class GalleryModel(Model):
         self._custom_objects = value
 
     def close(self):
-        """Close the session of model and set `built` to False."""
-        K.clear_session()
+        """Close the session of model and empty cache."""
+        gg.empty_cache()
         self.model = None
 
     def __call__(self, *args, **kwargs):
         return self._model(*args, **kwargs)
 
     def __repr__(self):
-        return f"GraphGallery.nn.{self.name}(device={self.device}, backend={self.backend})"
+        return f"GraphGallery.nn.{gallery}.{self.name}(device={self.device}, backend={self.backend})"

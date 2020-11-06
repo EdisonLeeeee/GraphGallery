@@ -536,8 +536,9 @@ class SemiSupervisedModel(GalleryModel):
 
     def remove_weights(self):
         filepath = self.weight_path
-        if not filepath.endswith(gg.file_postfix()):
-            filepath = filepath + gg.file_postfix()
+        postfix = gg.file_postfix()
+        if not filepath.endswith(postfix):
+            filepath = filepath + postfix
 
         if osp.exists(filepath):
             os.remove(filepath)
