@@ -16,7 +16,7 @@ install_requires = [
     'texttable>=1.6.2',
     'numba==0.46.0',
     'llvmlite==0.30',
-    'tqdm>=4.40.2',
+    'tqdm>=4.32.1',
     'scikit_learn>=0.22',
 ]
 
