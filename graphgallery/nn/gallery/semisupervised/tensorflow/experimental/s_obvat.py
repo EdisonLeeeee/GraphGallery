@@ -69,7 +69,7 @@ class SimplifiedOBVAT(OBVAT):
     # use decorator to make sure all list arguments have the same length
     @F.EqualVarLength()
     def build(self, hiddens=[16], activations=['relu'], dropout=0.,
-              lr=0.01, l2_norm=5e-4, p1=1.4, p2=0.7, use_bias=False,
+              lr=0.01, weight_decay=5e-4, p1=1.4, p2=0.7, use_bias=False,
               epsilon=0.01):
 
         with tf.device(self.device):
@@ -86,7 +86,7 @@ class SimplifiedOBVAT(OBVAT):
                 GCN_layers.append(GraphConvolution(hidden,
                                                    activation=activation,
                                                    use_bias=use_bias,
-                                                   kernel_regularizer=regularizers.l2(l2_norm)))
+                                                   kernel_regularizer=regularizers.l2(weight_decay)))
 
             GCN_layers.append(GraphConvolution(self.graph.n_classes, use_bias=use_bias))
 

@@ -14,7 +14,7 @@ class GCNA(Model):
                  hiddens=[16],
                  activations=['relu'],
                  dropout=0.5,
-                 l2_norm=5e-4,
+                 weight_decay=5e-4,
                  lr=0.01, use_bias=False):
 
         x = Input(batch_shape=[None, in_channels],
@@ -27,7 +27,7 @@ class GCNA(Model):
         for hidden, activation in zip(hiddens, activations):
             h = GraphConvAttribute(hidden, use_bias=use_bias,
                                    activation=activation,
-                                   kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
+                                   kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
 
             h = Dropout(rate=dropout)(h)
 

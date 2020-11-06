@@ -71,14 +71,14 @@ class GAT(SemiSupervisedModel):
 
     @F.EqualVarLength(include=["n_heads"])
     def build(self, hiddens=[8], n_heads=[8], activations=['elu'],
-              dropout=0.6, l2_norm=5e-4,
+              dropout=0.6, weight_decay=5e-4,
               lr=0.01, use_bias=True):
 
         self.model = pyGAT(self.graph.n_attrs, self.graph.n_classes,
                            hiddens=hiddens, n_heads=n_heads,
                            activations=activations,
                            dropout=dropout,
-                           l2_norm=l2_norm,
+                           weight_decay=weight_decay,
                            lr=lr, use_bias=use_bias).to(self.device)
 
     def train_sequence(self, index):

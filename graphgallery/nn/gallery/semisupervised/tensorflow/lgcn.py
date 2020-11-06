@@ -71,14 +71,14 @@ class LGCN(SemiSupervisedModel):
 
     # @F.EqualVarLength()
     def build(self, hiddens=[32], n_filters=[8, 8], activations=[None, None], dropout=0.8,
-              l2_norm=5e-4, lr=0.1, use_bias=False, K=8):
+              weight_decay=5e-4, lr=0.1, use_bias=False, K=8):
 
         if self.backend == "tensorflow":
             with tf.device(self.device):
                 self.model = tfLGCN(self.graph.n_attrs, self.graph.n_classes,
                                     hiddens=hiddens,
                                     activations=activations,
-                                    dropout=dropout, l2_norm=l2_norm,
+                                    dropout=dropout, weight_decay=weight_decay,
                                     lr=lr, use_bias=use_bias, K=K)
         else:
             raise NotImplementedError

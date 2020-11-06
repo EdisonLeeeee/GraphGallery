@@ -15,7 +15,7 @@ class RobustGCN(Model):
                  hiddens=[64],
                  activations=['relu'],
                  dropout=0.5,
-                 l2_norm=5e-4,
+                 weight_decay=5e-4,
                  lr=0.01, kl=5e-4, gamma=1.,
                  use_bias=False):
 
@@ -33,7 +33,7 @@ class RobustGCN(Model):
             mean, var = GaussionConvolution_F(hiddens[0], gamma=gamma,
                                               use_bias=use_bias,
                                               activation=activations[0],
-                                              kernel_regularizer=regularizers.l2(l2_norm))([h, *adj])
+                                              kernel_regularizer=regularizers.l2(weight_decay))([h, *adj])
             if kl:
                 KL_divergence = 0.5 * \
                     tf.reduce_mean(tf.math.square(mean) + var -

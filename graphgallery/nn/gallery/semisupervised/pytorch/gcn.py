@@ -71,10 +71,10 @@ class GCN(SemiSupervisedModel):
     # use decorator to make sure all list arguments have the same length
     @F.EqualVarLength()
     def build(self, hiddens=[16], activations=['relu'], dropout=0.5,
-              l2_norm=5e-4, lr=0.01, use_bias=False):
+              weight_decay=5e-4, lr=0.01, use_bias=False):
 
         self.model = pyGCN(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
-                           activations=activations, dropout=dropout, l2_norm=l2_norm,
+                           activations=activations, dropout=dropout, weight_decay=weight_decay,
                            lr=lr, use_bias=use_bias).to(self.device)
 
     def train_sequence(self, index):

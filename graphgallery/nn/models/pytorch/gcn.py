@@ -14,7 +14,7 @@ class GCN(TorchKeras):
                  hiddens=[16],
                  activations=['relu'],
                  dropout=0.5,
-                 l2_norm=5e-4,
+                 weight_decay=5e-4,
                  lr=0.01, use_bias=False):
 
         super().__init__()
@@ -27,7 +27,7 @@ class GCN(TorchKeras):
         for hidden, activation in zip(hiddens, activations):
             layer = GraphConvolution(inc, hidden, activation=activation, use_bias=use_bias)
             self.layers.append(layer)
-            paras.append(dict(params=layer.parameters(), weight_decay=l2_norm))
+            paras.append(dict(params=layer.parameters(), weight_decay=weight_decay))
             inc = hidden
 
         layer = GraphConvolution(inc, out_channels, use_bias=use_bias)

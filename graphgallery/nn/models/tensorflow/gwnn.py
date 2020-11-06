@@ -12,7 +12,7 @@ class GWNN(Model):
 
     def __init__(self, in_channels, out_channels, n_nodes,
                  hiddens=[16], activations=['relu'],
-                 dropout=0.5, l2_norm=5e-4, lr=0.01,
+                 dropout=0.5, weight_decay=5e-4, lr=0.01,
                  use_bias=False):
 
         _floatx = floatx()
@@ -30,7 +30,7 @@ class GWNN(Model):
         h = x
         for hidden, activation in zip(hiddens, activations):
             h = WaveletConvolution(hidden, activation=activation, use_bias=use_bias,
-                                   kernel_regularizer=regularizers.l2(l2_norm))([h, wavelet, inverse_wavelet])
+                                   kernel_regularizer=regularizers.l2(weight_decay))([h, wavelet, inverse_wavelet])
             h = Dropout(rate=dropout)(h)
 
         h = WaveletConvolution(out_channels, use_bias=use_bias)(

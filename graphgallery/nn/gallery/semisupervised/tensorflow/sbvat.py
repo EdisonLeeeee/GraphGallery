@@ -83,13 +83,13 @@ class SBVAT(SemiSupervisedModel):
     # use decorator to make sure all list arguments have the same length
     @F.EqualVarLength()
     def build(self, hiddens=[16], activations=['relu'], dropout=0.5,
-              lr=0.01, l2_norm=5e-4, use_bias=False, p1=1., p2=1.,
+              lr=0.01, weight_decay=5e-4, use_bias=False, p1=1., p2=1.,
               n_power_iterations=1, epsilon=0.03, xi=1e-6):
 
         if self.backend == "tensorflow":
             with tf.device(self.device):
                 self.model = tfGCN(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
-                                   activations=activations, dropout=dropout, l2_norm=l2_norm,
+                                   activations=activations, dropout=dropout, weight_decay=weight_decay,
                                    lr=lr, use_bias=use_bias)
                 self.index_all = tf.range(self.graph.n_nodes, dtype=self.intx)
         else:

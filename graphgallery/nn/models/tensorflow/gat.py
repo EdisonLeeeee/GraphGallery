@@ -13,7 +13,7 @@ class GAT(Model):
     def __init__(self, in_channels,
                  out_channels, hiddens=[16], n_heads=[8],
                  activations=['elu'], dropout=0.6,
-                 l2_norm=5e-4,
+                 weight_decay=5e-4,
                  lr=0.01, use_bias=True):
 
         x = Input(batch_shape=[None, in_channels],
@@ -28,9 +28,9 @@ class GAT(Model):
                                reduction='concat',
                                use_bias=use_bias,
                                activation=activation,
-                               kernel_regularizer=regularizers.l2(l2_norm),
+                               kernel_regularizer=regularizers.l2(weight_decay),
                                attn_kernel_regularizer=regularizers.l2(
-                                   l2_norm),
+                                   weight_decay),
                                )([h, adj])
             h = Dropout(rate=dropout)(h)
 

@@ -98,7 +98,7 @@ class SemiSupervisedModel(GalleryModel):
                 final output.
             dropout: float scalar
                 Dropout rate for the hidden outputs.
-            l2_norm:  float scalar
+            weight_decay:  float scalar
                 L2 normalize parameters for the hidden layers. (only used in the hidden layers)
             lr: float scalar
                 Learning rate for the training model.

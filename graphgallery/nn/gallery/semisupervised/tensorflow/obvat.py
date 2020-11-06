@@ -79,7 +79,7 @@ class OBVAT(SemiSupervisedModel):
     # use decorator to make sure all list arguments have the same length
     @F.EqualVarLength()
     def build(self, hiddens=[16], activations=['relu'], dropout=0.5,
-              l2_norm=5e-4, use_bias=False, lr=0.01, p1=1.4, p2=0.7):
+              weight_decay=5e-4, use_bias=False, lr=0.01, p1=1.4, p2=0.7):
 
         if self.backend == "torch":
             raise RuntimeError(f"Currently {self.name} only supports for tensorflow backend.")
@@ -96,7 +96,7 @@ class OBVAT(SemiSupervisedModel):
             GCN_layers = []
             for hidden, activation in zip(hiddens, activations):
                 GCN_layers.append(GraphConvolution(hidden, activation=activation, use_bias=use_bias,
-                                                   kernel_regularizer=regularizers.l2(l2_norm)))
+                                                   kernel_regularizer=regularizers.l2(weight_decay)))
 
             GCN_layers.append(GraphConvolution(self.graph.n_classes, use_bias=use_bias))
             self.GCN_layers = GCN_layers

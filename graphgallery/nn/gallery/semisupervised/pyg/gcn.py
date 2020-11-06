@@ -3,6 +3,7 @@ from graphgallery.nn.models.pyg import GCN as pygGCN
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery import functional as F
 
+
 class GCN(SemiSupervisedModel):
 
     def __init__(self, *graph, adj_transform="normalize_adj", attr_transform=None,
@@ -25,14 +26,14 @@ class GCN(SemiSupervisedModel):
     # use decorator to make sure all list arguments have the same length
     @F.EqualVarLength()
     def build(self, hiddens=[16], activations=['relu'], dropout=0.5,
-              l2_norm=5e-4, lr=0.01, use_bias=True):
+              weight_decay=5e-4, lr=0.01, use_bias=True):
 
         self.model = pygGCN(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
-                           activations=activations, dropout=dropout, l2_norm=l2_norm,
-                           lr=lr, use_bias=use_bias).to(self.device)
+                            activations=activations, dropout=dropout, weight_decay=weight_decay,
+                            lr=lr, use_bias=use_bias).to(self.device)
 
     def train_sequence(self, index):
-        
+
         labels = self.graph.labels[index]
         sequence = FullBatchNodeSequence(
             [self.feature_inputs, *self.structure_inputs, index], labels, device=self.device)

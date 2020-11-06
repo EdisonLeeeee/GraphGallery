@@ -14,7 +14,7 @@ from graphgallery import functional as F
 
 class SAT(SemiSupervisedModel):
 
-    def __init__(self, *graph, adj_transform="normalize_adj", 
+    def __init__(self, *graph, adj_transform="normalize_adj",
                  attr_transform=None, k=35,
                  device='cpu:0', seed=None, name=None, **kwargs):
         """Create a Graph Convolutional Networks (GCN) model
@@ -58,7 +58,7 @@ class SAT(SemiSupervisedModel):
         name: string. optional
             Specified name for the model. (default: :str: `class.__name__`)
         kwargs: other custom keyword parameters.
-        """        
+        """
 
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
@@ -77,17 +77,17 @@ class SAT(SemiSupervisedModel):
             U, V = U.real, V.real
         else:
             U, V = self.U, self.V
-            
-        adj_matrix = (U*V) @ U.T
+
+        adj_matrix = (U * V) @ U.T
         adj_matrix = self.adj_transform(adj_matrix)
-        
+
         with tf.device(self.device):
             self.feature_inputs, self.structure_inputs, self.U, self.V = F.astensors(
-                attr_matrix, adj_matrix, U, V, device=self.device)            
-          
+                attr_matrix, adj_matrix, U, V, device=self.device)
+
     # use decorator to make sure all list arguments have the same length
-    @F.EqualVarLength()        
-    def build(self, hiddens=[32], activations=['relu'], dropout=0.5, l2_norm=5e-4,
+    @F.EqualVarLength()
+    def build(self, hiddens=[32], activations=['relu'], dropout=0.5, weight_decay=5e-4,
               lr=0.01, use_bias=False, eps1=0.3, eps2=1.2, lamb1=0.8, lamb2=0.8):
 
         with tf.device(self.device):
@@ -100,7 +100,7 @@ class SAT(SemiSupervisedModel):
             for hid, activation in zip(hiddens, activations):
                 h = DenseConvolution(hid, use_bias=use_bias,
                                      activation=activation,
-                                     kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
+                                     kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
 
                 h = Dropout(rate=dropout)(h)
 
@@ -110,57 +110,57 @@ class SAT(SemiSupervisedModel):
             model = Model(inputs=[x, adj, index], outputs=h)
             model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
                           optimizer=Adam(lr=lr), metrics=['accuracy'])
-            
+
             self.eps1 = eps1
             self.eps2 = eps2
             self.lamb1 = lamb1
-            self.lamb2 = lamb2        
+            self.lamb2 = lamb2
             self.model = model
-            
+
     @tf.function
     def train_step(self, sequence):
         (x_norm, A, idx), y = next(iter(sequence))
-        
+
         U, V = self.U, self.V
         model = self.model
         loss_fn = model.loss
         metric = model.metrics[0]
         optimizer = model.optimizer
         model.reset_metrics()
-        
+
         with tf.GradientTape() as tape:
             tape.watch([U, V])
-            A0 = (U*V) @ tf.transpose(U)
+            A0 = (U * V) @ tf.transpose(U)
             output = model([x_norm, A0, idx])
             loss = loss_fn(y, output)
 
         U_grad, V_grad = tape.gradient(loss, [U, V])
-        U_grad = self.eps1*U_grad/tf.norm(U_grad)
-        V_grad = self.eps2*V_grad/tf.norm(V_grad)
-        
+        U_grad = self.eps1 * U_grad / tf.norm(U_grad)
+        V_grad = self.eps2 * V_grad / tf.norm(V_grad)
+
         U_hat = U + U_grad
         V_hat = V + V_grad
 
         with tf.GradientTape() as tape:
-            A1 = (U_hat*V) @ tf.transpose(U_hat)
-            A2 = (U*V_hat) @ tf.transpose(U)
-            
+            A1 = (U_hat * V) @ tf.transpose(U_hat)
+            A2 = (U * V_hat) @ tf.transpose(U)
+
             output0 = model([x_norm, A0, idx])
             output1 = model([x_norm, A1, idx])
             output2 = model([x_norm, A2, idx])
 
             loss = loss_fn(y, output0) + tf.reduce_sum(model.losses)
-            loss += self.lamb1*loss_fn(y, output1) + self.lamb2*loss_fn(y, output2)
+            loss += self.lamb1 * loss_fn(y, output1) + self.lamb2 * loss_fn(y, output2)
             metric.update_state(y, output0)
 
         grads = tape.gradient(loss, model.trainable_variables)
         optimizer.apply_gradients(zip(grads, model.trainable_variables))
         return loss, metric.result()
-    
+
     def train_sequence(self, index):
         labels = self.graph.labels[index]
         with tf.device(self.device):
-            sequence = FullBatchNodeSequence([self.feature_inputs, 
-                                              self.structure_inputs, 
+            sequence = FullBatchNodeSequence([self.feature_inputs,
+                                              self.structure_inputs,
                                               index], labels)
         return sequence

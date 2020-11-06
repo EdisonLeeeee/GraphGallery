@@ -8,14 +8,15 @@ from graphgallery.nn.layers.pytorch.get_activation import get_activation
 
 from dgl.nn.pytorch import GraphConv
 
+
 class GCN(TorchKeras):
     def __init__(self, in_channels, out_channels,
                  hiddens=[16],
                  activations=['relu'],
                  dropout=0.5,
-                 l2_norm=5e-4,
+                 weight_decay=5e-4,
                  lr=0.01, use_bias=True):
-        
+
         super().__init__()
 
         self.layers = ModuleList()
@@ -32,7 +33,7 @@ class GCN(TorchKeras):
         self.dropout = Dropout(p=dropout)
         self.loss_fn = torch.nn.CrossEntropyLoss()
         self.optimizer = optim.Adam(self.parameters(), lr=lr,
-                                          weight_decay=l2_norm)
+                                    weight_decay=weight_decay)
 
     def forward(self, inputs):
         x, g, indx = inputs
@@ -43,4 +44,3 @@ class GCN(TorchKeras):
             x = layer(g, x)
 
         return x[indx]
-

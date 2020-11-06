@@ -5,6 +5,7 @@ from graphgallery.sequence import FullBatchNodeSequence
 
 from dgl import from_scipy
 
+
 class GCN(SemiSupervisedModel):
     def __init__(self, *graph, adj_transform="normalize_adj", attr_transform="normalize_attr",
                  device='cpu:0', seed=None, name=None, **kwargs):
@@ -23,17 +24,17 @@ class GCN(SemiSupervisedModel):
 
     @F.EqualVarLength()
     def build(self, hiddens=[16], activations=['relu'], dropout=0.5,
-              l2_norm=5e-4, lr=0.01, use_bias=False):
-        
+              weight_decay=5e-4, lr=0.01, use_bias=False):
+
         self.model = dglGCN(self.graph.n_attrs, self.graph.n_classes,
                             hiddens=hiddens, activations=activations, dropout=dropout,
-                            l2_norm=l2_norm, lr=lr, use_bias=use_bias
+                            weight_decay=weight_decay, lr=lr, use_bias=use_bias
                             ).to(self.device)
 
     def train_sequence(self, index):
 
         labels = self.graph.labels[index]
         sequence = FullBatchNodeSequence(
-            [self.feature_inputs, self.structure_inputs, index], labels, 
+            [self.feature_inputs, self.structure_inputs, index], labels,
             device=self.device, escape=type(self.structure_inputs))
         return sequence

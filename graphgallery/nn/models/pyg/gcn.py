@@ -8,12 +8,13 @@ from graphgallery.nn.layers.pytorch.get_activation import get_activation
 
 from torch_geometric.nn import GCNConv
 
+
 class GCN(TorchKeras):
     def __init__(self, in_channels, out_channels,
                  hiddens=[16],
                  activations=['relu'],
                  dropout=0.5,
-                 l2_norm=5e-4,
+                 weight_decay=5e-4,
                  lr=0.01, use_bias=True):
 
         super().__init__()
@@ -27,7 +28,7 @@ class GCN(TorchKeras):
         for hidden, activation in zip(hiddens, activations):
             layer = GCNConv(inc, hidden, cached=True, bias=use_bias, normalize=False)
             layers.append(layer)
-            paras.append(dict(params=layer.parameters(), weight_decay=l2_norm))
+            paras.append(dict(params=layer.parameters(), weight_decay=weight_decay))
             acts.append(get_activation(activation))
             inc = hidden
 
@@ -41,13 +42,13 @@ class GCN(TorchKeras):
         self.dropout = Dropout(dropout)
         self.optimizer = optim.Adam(paras, lr=lr)
         self.loss_fn = torch.nn.CrossEntropyLoss()
-        
+
     def forward(self, inputs):
         x, edge_index, edge_weight, idx = inputs
-        
+
         for layer, act in zip(self.layers, self.acts):
             x = act(layer(x, edge_index, edge_weight))
             x = self.dropout(x)
-            
+
         x = self.layers[-1](x, edge_index, edge_weight)
         return x[idx]

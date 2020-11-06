@@ -78,10 +78,10 @@ class SGC(SemiSupervisedModel):
     # use decorator to make sure all list arguments have the same length
 
     @F.EqualVarLength()
-    def build(self, hiddens=[], activations=[], dropout=0.5, l2_norm=5e-5, lr=0.2, use_bias=True):
+    def build(self, hiddens=[], activations=[], dropout=0.5, weight_decay=5e-5, lr=0.2, use_bias=True):
 
         self.model = pySGC(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
-                           activations=activations, dropout=dropout, l2_norm=l2_norm,
+                           activations=activations, dropout=dropout, weight_decay=weight_decay,
                            lr=lr, use_bias=use_bias).to(self.device)
 
     def train_sequence(self, index):

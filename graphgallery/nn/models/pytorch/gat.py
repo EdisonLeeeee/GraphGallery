@@ -13,7 +13,7 @@ class GAT(TorchKeras):
     def __init__(self, in_channels,
                  out_channels, hiddens=[8],
                  n_heads=[8], activations=['elu'],
-                 dropout=0.6, l2_norm=5e-4,
+                 dropout=0.6, weight_decay=5e-4,
                  lr=0.01, use_bias=True):
 
         super().__init__()
@@ -27,7 +27,7 @@ class GAT(TorchKeras):
             layer = SparseGraphAttention(inc * pre_head, hidden, activation=activation,
                                          attn_heads=n_head, reduction='concat', use_bias=use_bias)
             self.layers.append(layer)
-            paras.append(dict(params=layer.parameters(), weight_decay=l2_norm))
+            paras.append(dict(params=layer.parameters(), weight_decay=weight_decay))
             inc = hidden
             pre_head = n_head
 

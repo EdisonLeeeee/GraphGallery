@@ -12,7 +12,7 @@ class FastGCN(Model):
 
     def __init__(self, in_channels, out_channels,
                  hiddens=[32], activations=['relu'], dropout=0.5,
-                 l2_norm=5e-4, lr=0.01, use_bias=False):
+                 weight_decay=5e-4, lr=0.01, use_bias=False):
 
         x = Input(batch_shape=[None, in_channels],
                   dtype=floatx(), name='attr_matrix')
@@ -22,7 +22,7 @@ class FastGCN(Model):
         h = x
         for hidden, activation in zip(hiddens, activations):
             h = Dense(hidden, use_bias=use_bias, activation=activation,
-                      kernel_regularizer=regularizers.l2(l2_norm))(h)
+                      kernel_regularizer=regularizers.l2(weight_decay))(h)
             h = Dropout(rate=dropout)(h)
 
         h = GraphConvolution(out_channels,

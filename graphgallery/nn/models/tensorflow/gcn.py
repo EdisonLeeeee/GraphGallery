@@ -14,7 +14,7 @@ class GCN(Model):
                  hiddens=[16],
                  activations=['relu'],
                  dropout=0.5,
-                 l2_norm=5e-4,
+                 weight_decay=5e-4,
                  lr=0.01, use_bias=False,
                  experimental_run_tf_function=True):
 
@@ -28,7 +28,7 @@ class GCN(Model):
         for hidden, activation in zip(hiddens, activations):
             h = GraphConvolution(hidden, use_bias=use_bias,
                                  activation=activation,
-                                 kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
+                                 kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
 
             h = Dropout(rate=dropout)(h)
 
@@ -44,16 +44,16 @@ class GCN(Model):
 
 #     def __init__(self, hiddens,
 #                  out_channels, activations=['relu'],
-#                  l2_norm=5e-4, dropout=0.5,
+#                  weight_decay=5e-4, dropout=0.5,
 #                  lr=0.01, use_bias=False):
 
 #         super().__init__()
 
 #         self.GNN_layers = []
-#         for hidden, activation, l2_norm in zip(hiddens, activations, l2_norms):
+#         for hidden, activation, weight_decay in zip(hiddens, activations, weight_decay):
 #             layer = GraphConvolution(hidden, use_bias=use_bias,
 #                                          activation=activation,
-#                                          kernel_regularizer=regularizers.l2(l2_norm))
+#                                          kernel_regularizer=regularizers.l2(weight_decay))
 
 #             self.GNN_layers.append(layer)
 

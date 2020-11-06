@@ -20,7 +20,7 @@ class GraphSAGE(Model):
 
     def __init__(self, in_channels, out_channels,
                  hiddens=[32], activations=['relu'], dropout=0.5,
-                 l2_norm=5e-4, lr=0.01, use_bias=True,
+                 weight_decay=5e-4, lr=0.01, use_bias=True,
                  aggregator='mean', output_normalize=False, n_samples=[15, 5]):
 
         Agg = _AGG.get(aggregator, None)
@@ -40,7 +40,7 @@ class GraphSAGE(Model):
             # you can use `GCNAggregator` instead
             aggregators.append(Agg(hidden, concat=True, activation=activation,
                                    use_bias=use_bias,
-                                   kernel_regularizer=regularizers.l2(l2_norm)))
+                                   kernel_regularizer=regularizers.l2(weight_decay)))
 
         aggregators.append(Agg(out_channels, use_bias=use_bias))
 

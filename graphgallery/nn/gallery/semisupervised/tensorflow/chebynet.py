@@ -71,7 +71,7 @@ class ChebyNet(SemiSupervisedModel):
 
     # use decorator to make sure all list arguments have the same length
     @F.EqualVarLength()
-    def build(self, hiddens=[16], activations=['relu'], dropout=0.5, l2_norm=5e-4, lr=0.01,
+    def build(self, hiddens=[16], activations=['relu'], dropout=0.5, weight_decay=5e-4, lr=0.01,
               use_bias=False):
 
         if self.backend == "tensorflow":
@@ -79,7 +79,7 @@ class ChebyNet(SemiSupervisedModel):
                 self.model = tfChebyNet(self.graph.n_attrs, self.graph.n_classes,
                                         hiddens=hiddens,
                                         activations=activations,
-                                        dropout=dropout, l2_norm=l2_norm,
+                                        dropout=dropout, weight_decay=weight_decay,
                                         order=self.adj_transform.order,
                                         lr=lr, use_bias=use_bias)
         else:

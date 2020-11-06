@@ -12,7 +12,7 @@ class EdgeGCN(Model):
 
     def __init__(self, in_channels, out_channels,
                  hiddens=[16], activations=['relu'], dropout=0.5,
-                 l2_norm=5e-4, lr=0.01, use_bias=False):
+                 weight_decay=5e-4, lr=0.01, use_bias=False):
 
         _intx = intx()
         _floatx = floatx()
@@ -29,7 +29,7 @@ class EdgeGCN(Model):
         for hidden, activation in zip(hiddens, activations):
             h = GraphEdgeConvolution(hidden, use_bias=use_bias,
                                      activation=activation,
-                                     kernel_regularizer=regularizers.l2(l2_norm))([h, edge_index, edge_weight])
+                                     kernel_regularizer=regularizers.l2(weight_decay))([h, edge_index, edge_weight])
 
             h = Dropout(rate=dropout)(h)
 

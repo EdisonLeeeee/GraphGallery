@@ -74,7 +74,7 @@ class GWNN(SemiSupervisedModel):
 
     # use decorator to make sure all list arguments have the same length
     @F.EqualVarLength()
-    def build(self, hiddens=[16], activations=['relu'], dropout=0.5, l2_norm=5e-4, lr=0.01,
+    def build(self, hiddens=[16], activations=['relu'], dropout=0.5, weight_decay=5e-4, lr=0.01,
               use_bias=False):
 
         if self.backend == "tensorflow":
@@ -82,7 +82,7 @@ class GWNN(SemiSupervisedModel):
                 self.model = tfGWNN(self.graph.n_attrs, self.graph.n_classes, self.graph.n_nodes,
                                     hiddens=hiddens,
                                     activations=activations,
-                                    dropout=dropout, l2_norm=l2_norm,
+                                    dropout=dropout, weight_decay=weight_decay,
                                     lr=lr, use_bias=use_bias)
         else:
             raise NotImplementedError

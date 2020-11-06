@@ -71,14 +71,14 @@ class RobustGCN(SemiSupervisedModel):
     # use decorator to make sure all list arguments have the same length
     @F.EqualVarLength()
     def build(self, hiddens=[64], activations=['relu'], dropout=0.5,
-              l2_norm=5e-4, lr=0.01, kl=5e-4, gamma=1., use_bias=False):
+              weight_decay=5e-4, lr=0.01, kl=5e-4, gamma=1., use_bias=False):
 
         if self.backend == "tensorflow":
             with tf.device(self.device):
                 self.model = tfRobustGCN(self.graph.n_attrs, self.graph.n_classes,
                                          hiddens=hiddens,
                                          activations=activations,
-                                         dropout=dropout, l2_norm=l2_norm,
+                                         dropout=dropout, weight_decay=weight_decay,
                                          kl=kl, gamma=gamma,
                                          lr=lr, use_bias=use_bias)
         else:

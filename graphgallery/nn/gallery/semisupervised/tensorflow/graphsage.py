@@ -85,14 +85,14 @@ class GraphSAGE(SemiSupervisedModel):
     # use decorator to make sure all list arguments have the same length
     @F.EqualVarLength()
     def build(self, hiddens=[32], activations=['relu'], dropout=0.5,
-              l2_norm=5e-4, lr=0.01, use_bias=True, output_normalize=False, aggregator='mean'):
+              weight_decay=5e-4, lr=0.01, use_bias=True, output_normalize=False, aggregator='mean'):
 
         if self.backend == "tensorflow":
             with tf.device(self.device):
                 self.model = tfGraphSAGE(self.graph.n_attrs, self.graph.n_classes,
                                          hiddens=hiddens,
                                          activations=activations,
-                                         dropout=dropout, l2_norm=l2_norm,
+                                         dropout=dropout, weight_decay=weight_decay,
                                          lr=lr, use_bias=use_bias, aggregator=aggregator,
                                          output_normalize=output_normalize,
                                          n_samples=self.n_samples)

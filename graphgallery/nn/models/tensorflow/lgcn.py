@@ -15,7 +15,7 @@ class LGCN(Model):
                  hiddens=[32], n_filters=[8, 8],
                  activations=[None, None],
                  dropout=0.8,
-                 l2_norm=5e-4, lr=0.1, use_bias=False, K=8):
+                 weight_decay=5e-4, lr=0.1, use_bias=False, K=8):
 
         x = Input(batch_shape=[None, in_channels],
                   dtype=floatx(), name='attr_matrix')
@@ -29,7 +29,7 @@ class LGCN(Model):
             h = DenseConvolution(hidden,
                                  use_bias=use_bias,
                                  activation=activations[idx],
-                                 kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
+                                 kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
 
         for idx, n_filter in enumerate(n_filters):
             top_k_h = Top_k_features(K=K)([h, adj])
@@ -38,7 +38,7 @@ class LGCN(Model):
                                   use_bias=use_bias,
                                   dropout=dropout,
                                   activation=activations[idx],
-                                  kernel_regularizer=regularizers.l2(l2_norm))(top_k_h)
+                                  kernel_regularizer=regularizers.l2(weight_decay))(top_k_h)
             cur_h = BatchNormalization()(cur_h)
             h = Concatenate()([h, cur_h])
 
@@ -46,7 +46,7 @@ class LGCN(Model):
         h = DenseConvolution(out_channels,
                              use_bias=use_bias,
                              activation=activations[-1],
-                             kernel_regularizer=regularizers.l2(l2_norm))([h, adj])
+                             kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
 
         h = Mask()([h, mask])
 
