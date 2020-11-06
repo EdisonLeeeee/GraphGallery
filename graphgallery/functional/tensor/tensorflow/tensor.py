@@ -64,6 +64,8 @@ def astensor(x, *, dtype=None, device=None, escape=None):
                     return dgl.from_scipy(x, idtype=getattr(tf, gg.intx())).to(device)
                 except ImportError:
                     return sparse_adj_to_sparse_tensor(x, dtype=dtype)
+            else:
+                return sparse_adj_to_sparse_tensor(x, dtype=dtype)
         elif isinstance(x, (np.ndarray, np.matrix)) or gg.is_listlike(x) or gg.is_scalar(x):
             return tf.convert_to_tensor(x, dtype=dtype)
         else:
