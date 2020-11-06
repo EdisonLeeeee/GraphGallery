@@ -34,10 +34,10 @@ def astensor(x, *, dtype=None, device=None, escape=None):
 
     if x is None:
         return x
-    
+
     if escape is not None and isinstance(x, escape):
         return x
-    
+
     if dtype is None:
         dtype = gg.infer_type(x)
     elif isinstance(dtype, str):
@@ -58,7 +58,12 @@ def astensor(x, *, dtype=None, device=None, escape=None):
             from ..tensor import tensoras
             return astensor(tensoras(x), dtype=dtype, device=device, escape=escape)
         elif sp.isspmatrix(x):
-            return sparse_adj_to_sparse_tensor(x, dtype=dtype)
+            if gg.backend() == "dgl_tf":
+                try:
+                    import dgl
+                    return dgl.from_scipy(x, idtype=getattr(tf, gg.intx())).to(device)
+                except ImportError:
+                    return sparse_adj_to_sparse_tensor(x, dtype=dtype)
         elif isinstance(x, (np.ndarray, np.matrix)) or gg.is_listlike(x) or gg.is_scalar(x):
             return tf.convert_to_tensor(x, dtype=dtype)
         else:

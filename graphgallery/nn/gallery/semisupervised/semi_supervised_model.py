@@ -536,9 +536,29 @@ class SemiSupervisedModel(GalleryModel):
 
     def remove_weights(self):
         filepath = self.weight_path
+        if self.backend == "tensorflow":
+            remove_extra_tf_files(filepath)
+
         postfix = gg.file_postfix()
         if not filepath.endswith(postfix):
             filepath = filepath + postfix
 
         if osp.exists(filepath):
             os.remove(filepath)
+
+
+def remove_extra_tf_files(filepath):
+    # for tensorflow weights that saved without h5 formate
+    for postfix in (".data-00000-of-00001",
+                    ".data-00000-of-00002",
+                    ".data-00001-of-00002",
+                    ".index"):
+        path = filepath + postfix
+        if osp.exists(path):
+            os.remove(path)
+
+    file_dir = osp.split(osp.realpath(filepath))[0]
+
+    path = osp.join(file_dir, "checkpoint")
+    if osp.exists(path):
+        os.remove(path)

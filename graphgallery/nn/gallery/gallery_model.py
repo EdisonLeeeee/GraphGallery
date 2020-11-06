@@ -74,9 +74,9 @@ class GalleryModel(Model):
         if not path:
             path = self.weight_path
 
-        if not osp.exists(path):
-            print(f"{path} do not exists.", file=sys.stderr)
-            return
+        # if not osp.exists(path):
+        #     print(f"{path} do not exists.", file=sys.stderr)
+        #     return
 
         if as_model:
             if self.backend == "tensorflow":
