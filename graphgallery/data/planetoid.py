@@ -28,7 +28,7 @@ class Planetoid(Dataset):
     github_url = "https://raw.githubusercontent.com/EdisonLeeeee/GraphData/master/datasets/planetoid"
     supported_datasets = _DATASETS
 
-    def __init__(self, name: str, root: Optional[str]=None, verbose: bool=True):
+    def __init__(self, name: str, root: Optional[str] = None, verbose: bool = True):
         name = str(name).lower()
 
         if not name in self.supported_datasets:
@@ -72,12 +72,12 @@ class Planetoid(Dataset):
         if self.verbose:
             print("Processing completed.")
 
-    def split(self, train_size=None, val_size=None, test_size=None,
-              random_state=None) -> MultiArrayLike:
+    def split_nodes(self, train_size=None, val_size=None, test_size=None,
+                    random_state=None) -> MultiArrayLike:
         if not all((train_size, val_size, test_size)):
             return self.idx_train, self.idx_val, self.idx_test
         else:
-            return super().split(train_size, val_size, test_size, random_state)
+            return super().split_nodes(train_size, val_size, test_size, random_state)
 
     @property
     def urls(self) -> List[str]:

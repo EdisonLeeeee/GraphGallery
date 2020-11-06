@@ -273,7 +273,7 @@ from graphgallery.data import Planetoid
 # set `verbose=False` to avoid additional outputs 
 data = Planetoid('cora', verbose=False)
 graph = data.graph
-idx_train, idx_val, idx_test = data.split()
+idx_train, idx_val, idx_test = data.split_nodes()
 # idx_train:  training indices: 1D Numpy array
 # idx_val:  validation indices: 1D Numpy array
 # idx_test:  testing indices: 1D Numpy array
@@ -292,7 +292,7 @@ from graphgallery.data import NPZDataset;
 # set `verbose=False` to avoid additional outputs
 data = NPZDataset('cora', verbose=False, standardize=False)
 graph = data.graph
-idx_train, idx_val, idx_test = data.split(random_state=42)
+idx_train, idx_val, idx_test = data.split_nodes(random_state=42)
 >>> graph
 Graph(adj_matrix(2708, 2708), attr_matrix(2708, 2708), labels(2708,))
 ```
