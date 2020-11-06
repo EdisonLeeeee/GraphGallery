@@ -102,6 +102,7 @@ In detail, the following methods are currently implemented:
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyTorch/test_GCN.ipynb"> [🔥PyTorch Example]</a>,
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyG/test_GCN.ipynb"> [🔥PyG Example] </a>,
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/DGL-PyTorch/test_GCN.ipynb"> [🔥DGL-PyTorch Example] </a>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/DGL-TensorFlow/test_GCN.ipynb"> [:octocat:DGL-TensorFlow Example] </a>
 </details>
 
 <!-- 3 -->
