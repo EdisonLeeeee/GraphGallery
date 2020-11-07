@@ -10,7 +10,7 @@ from graphgallery import backend
 from graphgallery import functional
 
 
-__version__ = '0.5.0'
+from .version import __version__
 
 __all__ = ['graphgallery', 'nn', 'utils', 'sequence', 'data',
            'backend', 'functional', '__version__']

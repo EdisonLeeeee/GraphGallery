@@ -1,10 +1,7 @@
-from graphgallery import functional as F
 from graphgallery.nn.gallery import SemiSupervisedModel
 from graphgallery.nn.models.dgl_torch import GCN as dglGCN
 from graphgallery.sequence import FullBatchNodeSequence
-
-from dgl import from_scipy
-
+from graphgallery import functional as F
 
 class GCN(SemiSupervisedModel):
     def __init__(self, *graph, adj_transform="normalize_adj", attr_transform="normalize_attr",

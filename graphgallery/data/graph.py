@@ -46,7 +46,11 @@ def _check_and_convert(adj_matrix: Optional[SparseMatrix] = None,
     if labels is not None:
         labels = np.array(labels, dtype=np.int32, copy=copy)
         if labels.ndim != 1:
-            labels = labels.argmax(1)
+            assert labels.ndim == 2
+            if labels.shape[1] != 1:
+                labels = labels.argmax(1)
+            else:
+                labels = labels.ravel()
 
     return adj_matrix, attr_matrix, labels
 

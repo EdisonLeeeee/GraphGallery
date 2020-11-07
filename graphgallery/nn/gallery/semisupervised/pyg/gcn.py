@@ -3,7 +3,6 @@ from graphgallery.nn.models.pyg import GCN as pygGCN
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery import functional as F
 
-
 class GCN(SemiSupervisedModel):
 
     def __init__(self, *graph, adj_transform="normalize_adj", attr_transform=None,
