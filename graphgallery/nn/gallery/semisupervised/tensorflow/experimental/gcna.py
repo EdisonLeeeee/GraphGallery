@@ -69,10 +69,7 @@ class GCNA(GCN):
     def build(self, hiddens=[16], activations=['relu'], dropout=0.5,
               weight_decay=5e-4, lr=0.01, use_bias=False):
 
-        if self.backend == "tensorflow":
-            with tf.device(self.device):
-                self.model = tfGCNA(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
-                                    activations=activations, dropout=dropout, weight_decay=weight_decay,
-                                    lr=lr, use_bias=use_bias)
-        else:
-            raise NotImplementedError
+        with tf.device(self.device):
+            self.model = tfGCNA(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
+                                activations=activations, dropout=dropout, weight_decay=weight_decay,
+                                lr=lr, use_bias=use_bias)

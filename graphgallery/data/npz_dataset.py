@@ -14,7 +14,7 @@ from graphgallery.typing import MultiArrayLike
 _DATASETS = ('citeseer', 'citeseer_full', 'cora', 'cora_ml', 
              'cora_full', 'amazon_cs', 'amazon_photo',
              'coauthor_cs', 'coauthor_phy', 'polblogs', 
-             'pubmed', 'flickr', 'blogcatalog', 'dblp')
+             'pubmed', 'flickr', 'blogcatalog', 'dblp', 'acm', 'uai')
 
 
 class NPZDataset(Dataset):
@@ -28,7 +28,7 @@ class NPZDataset(Dataset):
                  standardize: bool=False, verbose: bool=True):
         
         name = str(name)
-        if not name.lower() in self.supported_datasets:
+        if not name in self.supported_datasets:
             print(f"Dataset not found in supported datasets. Using custom dataset: {name}.", file=sys.stderr)
             custom = True
         else:
@@ -69,7 +69,8 @@ class NPZDataset(Dataset):
         if self.verbose:
             print("Processing...")
         graph = load_dataset(
-            self.raw_paths[0]).eliminate_selfloops().to_undirected()
+            self.raw_paths[0]).eliminate_selfloops().to_unweighted().to_undirected()
+        
         if self.standardize:
             graph = graph.standardize()
         self.graph = graph

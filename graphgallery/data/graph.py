@@ -384,7 +384,7 @@ class Graph(BaseGraph):
     def __repr__(self):
         A_shape = self.adj_matrix.shape if self.adj_matrix is not None else (
             None, None)
-        X_shape = self.adj_matrix.shape if self.adj_matrix is not None else (
+        X_shape = self.attr_matrix.shape if self.attr_matrix is not None else (
             None, None)
         Y_shape = self.labels.shape if self.labels is not None else (None,)
         return f"{self.__class__.__name__}(adj_matrix{A_shape}, attr_matrix{X_shape}, labels{Y_shape})"

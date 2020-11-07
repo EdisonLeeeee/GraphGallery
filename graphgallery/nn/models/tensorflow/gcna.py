@@ -26,7 +26,7 @@ class GCNA(Model):
         h = x
         for hidden, activation in zip(hiddens, activations):
             h = GraphConvAttribute(hidden, use_bias=use_bias,
-                                   activation=activation,
+                                   activation=activation, concat=True,
                                    kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
 
             h = Dropout(rate=dropout)(h)

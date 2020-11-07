@@ -29,7 +29,7 @@ class Planetoid(Dataset):
     supported_datasets = _DATASETS
 
     def __init__(self, name: str, root: Optional[str] = None, verbose: bool = True):
-        name = str(name).lower()
+        name = str(name)
 
         if not name in self.supported_datasets:
             raise ValueError(

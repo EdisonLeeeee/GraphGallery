@@ -21,7 +21,7 @@ class Dataset(ABC):
 
         root = osp.abspath(root)
         self.root = root
-        self.name = str(name).lower()
+        self.name = str(name)
         self.verbose = verbose
         self.download_dir = None
         self.processed_dir = None
