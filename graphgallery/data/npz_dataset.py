@@ -13,7 +13,7 @@ from graphgallery.typing import MultiArrayLike
 
 _DATASETS = ('citeseer', 'citeseer_full', 'cora', 'cora_ml', 
              'cora_full', 'amazon_cs', 'amazon_photo',
-             'coauthor_cs', 'coauthor_phy', 'polblogs', 
+             'coauthor_cs', 'coauthor_phy', 'polblogs', 'karate_club',
              'pubmed', 'flickr', 'blogcatalog', 'dblp', 'acm', 'uai')
 
 
