@@ -299,8 +299,11 @@ class SemiSupervisedModel(GalleryModel):
             callbacks.on_train_end()
             # to avoid unexpected termination of the model
             if save_best:
-                self.load(weight_path, as_model=as_model)
-                self.remove_weights()
+                try:
+                    self.load(weight_path, as_model=as_model)
+                    self.remove_weights()
+                except:
+                    pass
 
         return history
 

@@ -228,7 +228,11 @@ class Graph(BaseGraph):
         if self.is_directed():
             return int(self.adj_matrix.nnz)
         else:
-            return int(self.adj_matrix.nnz / 2)
+            A = self.adj_matrix
+            diag = A.diagonal()
+            A = A - sp.diags(diag)    
+            A.eliminate_zeros()
+            return int(A.nnz / 2) + int((diag!=0).sum())
 
     @property
     def n_graphs(self) -> int:

@@ -5,6 +5,7 @@ from torch.nn import Module, ModuleList, Dropout, Linear
 from torch import optim
 
 from graphgallery.nn.models import TorchKeras
+from graphgallery.nn.layers.pytorch.get_activation import get_activation
 
 
 class SGC(TorchKeras):
@@ -22,21 +23,23 @@ class SGC(TorchKeras):
             raise RuntimeError(f"Arguments 'hiddens' and 'activations' should have the same length."
                                " Or you can set both of them to `[]`.")
 
-        self.layers = ModuleList()
-
+        layers = ModuleList()
+        acts = []
         paras = []
         inc = in_channels
         for hidden, activation in zip(hiddens, activations):
             layer = Linear(inc, hidden, bias=use_bias)
             paras.append(dict(params=layer.parameters(), weight_decay=weight_decay))
-            self.layers.append(layer)
+            layers.append(layer)
             inc = hidden
+            acts.append(get_activation(activation))
 
         layer = Linear(inc, out_channels, bias=use_bias)
-        self.layers.append(layer)
-        # do not use weight_decay in the final layer
+        layers.append(layer)
         paras.append(dict(params=layer.parameters(), weight_decay=weight_decay))
 
+        self.layers = layers
+        self.acts = acts
         self.dropout = Dropout(dropout)
         self.optimizer = optim.Adam(paras, lr=lr)
         self.loss_fn = torch.nn.CrossEntropyLoss()
@@ -44,8 +47,9 @@ class SGC(TorchKeras):
     def forward(self, inputs):
         x = inputs
 
-        for layer in self.layers:
+        for layer, act in zip(self.layers, self.acts):
             x = self.dropout(x)
-            x = layer(x)
+            x = act(layer(x))
 
+        x = self.layers[-1](x)
         return x

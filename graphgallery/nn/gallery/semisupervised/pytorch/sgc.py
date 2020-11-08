@@ -76,7 +76,6 @@ class SGC(SemiSupervisedModel):
         self.feature_inputs, self.structure_inputs = feature_inputs, structure_inputs
 
     # use decorator to make sure all list arguments have the same length
-
     @F.EqualVarLength()
     def build(self, hiddens=[], activations=[], dropout=0.5, weight_decay=5e-5, lr=0.2, use_bias=True):
 
