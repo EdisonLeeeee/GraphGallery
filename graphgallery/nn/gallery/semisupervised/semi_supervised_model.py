@@ -294,16 +294,12 @@ class SemiSupervisedModel(GalleryModel):
                 if model.stop_training:
                     print(f"Early Stopping in Epoch {epoch}", file=sys.stderr)
                     break
-
-        finally:
+                    
             callbacks.on_train_end()
+            self.load(weight_path, as_model=as_model)
+        finally:
             # to avoid unexpected termination of the model
-            if save_best:
-                try:
-                    self.load(weight_path, as_model=as_model)
-                    self.remove_weights()
-                except:
-                    pass
+            self.remove_weights()
 
         return history
 
