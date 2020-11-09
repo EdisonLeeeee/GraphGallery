@@ -23,8 +23,9 @@ class GCN(TorchKeras):
 
         inc = in_channels
         for hidden, activation in zip(hiddens, activations):
-            act = get_activation(activation)
-            layer = GraphConv(inc, hidden, activation=act, bias=use_bias)
+            layer = GraphConv(inc, hidden, 
+                              activation=get_activation(activation), 
+                              bias=use_bias)
             self.layers.append(layer)
             inc = hidden
         # output layer
