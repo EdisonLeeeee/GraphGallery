@@ -14,8 +14,8 @@ class AddSelfLoops(Transform):
         """
         Parameters
         ----------
-            fill_weight: float scalar, optional.
-                weight of self loops for the adjacency matrix.
+        fill_weight: float scalar, optional.
+            weight of self loops for the adjacency matrix.
         """
         super().__init__()
         self.fill_weight = fill_weight
@@ -24,16 +24,16 @@ class AddSelfLoops(Transform):
         """
         Parameters
         ----------
-            adj_matrix: Scipy matrix or Numpy array or a list of them 
-                Single or a list of Scipy sparse matrices or Numpy arrays.
+        adj_matrix: Scipy matrix or Numpy array or a list of them 
+            Single or a list of Scipy sparse matrices or Numpy arrays.
 
         Returns
         ----------
-            Single or a list of Scipy sparse matrix or Numpy matrices.
+        Single or a list of Scipy sparse matrix or Numpy matrices.
 
         See also
         ----------
-            graphgallery.functional.add_selfloops
+        graphgallery.functional.add_selfloops
         """
         return add_selfloops(*adj_matrix, fill_weight=self.fill_weight)
 
@@ -42,7 +42,7 @@ class AddSelfLoops(Transform):
 
 
 @MultiInputs()
-def add_selfloops(adj_matrix, fill_weight: float = 1.0):
+def add_selfloops(adj_matrix: sp.csr_matrix, fill_weight: float = 1.0):
     """Normalize adjacency matrix.
 
     >>> add_selfloops(adj, fill_weight=1.0) # return a normalized adjacency matrix
@@ -52,27 +52,31 @@ def add_selfloops(adj_matrix, fill_weight: float = 1.0):
 
     Parameters
     ----------
-        adj_matrix: Scipy matrix or Numpy array or a list of them 
-            Single or a list of Scipy sparse matrices or Numpy arrays.
-        fill_weight: float scalar, optional.
-            weight of self loops for the adjacency matrix.
+    adj_matrix: Scipy matrix or Numpy array or a list of them 
+        Single or a list of Scipy sparse matrices or Numpy arrays.
+    fill_weight: float scalar, optional.
+        weight of self loops for the adjacency matrix.
 
     Returns
     ----------
-        Single or a list of Scipy sparse matrix or Numpy matrices.
+    Single or a list of Scipy sparse matrix or Numpy matrices.
 
     See also
     ----------
-        graphgallery.functional.AddSelfLoops          
+    graphgallery.functional.AddSelfLoops          
 
     """
     def _add_selfloops(adj, w):
+        if sp.issparse(adj):
+            adj = adj - sp.diags(adj.diagonal())
+        else:
+            adj = adj - np.diag(adj)
 
         # here a new copy of adj is created
         if w:
             return adj + w * sp.eye(adj.shape[0], dtype=adj.dtype)
         else:
-            return adj.copy()
+            return adj
 
     if gg.is_listlike(fill_weight):
         return tuple(_add_selfloops(adj_matrix, w) for w in fill_weight)
