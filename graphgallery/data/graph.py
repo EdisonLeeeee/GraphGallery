@@ -44,13 +44,11 @@ def _check_and_convert(adj_matrix: Optional[SparseMatrix] = None,
                 "Dimensions of the adjacency and attribute matrices don't agree!")
 
     if labels is not None:
-        labels = np.array(labels, dtype=np.int32, copy=copy)
+        labels = np.array(labels, dtype=np.int32, copy=copy).squeeze()
         if labels.ndim != 1:
             assert labels.ndim == 2
-            if labels.shape[1] != 1:
+            if (labels.sum(1)==1).all():
                 labels = labels.argmax(1)
-            else:
-                labels = labels.ravel()
 
     return adj_matrix, attr_matrix, labels
 
