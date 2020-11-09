@@ -17,7 +17,7 @@ class GCN(SemiSupervisedModel):
 
     """
 
-    def __init__(self, *graph, adj_transform="normalize_adj", attr_transform=None,
+    def __init__(self, *graph, adj_transform="add_selfloops", attr_transform=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
         """Create a Graph Convolutional Networks (GCN) model.
 
@@ -40,8 +40,7 @@ class GCN(SemiSupervisedModel):
             A sparse, attributed, labeled graph.
         adj_transform: string, `transform`, or None. optional
             How to transform the adjacency matrix. See `graphgallery.functional`
-            (default: :obj:`'normalize_adj'` with normalize rate `-0.5`.
-            i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
+            (default: :obj:`'add_selfloops'`, i.e., A = A + I) 
         attr_transform: string, `transform`, or None. optional
             How to transform the node attribute matrix. See `graphgallery.functional`
             (default :obj: `None`)

@@ -1,30 +1,30 @@
+from graphgallery.nn.models.dgl_torch import SGC as dglSGC
 from graphgallery.nn.gallery import SemiSupervisedModel
-from graphgallery.nn.models.dgl_torch import GCN as dglGCN
 from graphgallery.sequence import FullBatchNodeSequence
+
 from graphgallery import functional as F
 
-class GCN(SemiSupervisedModel):
+
+class SGC(SemiSupervisedModel):
     """
-        Implementation of Graph Convolutional Networks (GCN). 
-        `Semi-Supervised Classification with Graph Convolutional Networks 
-        <https://arxiv.org/abs/1609.02907>`
-        Tensorflow 1.x implementation: <https://github.com/tkipf/gcn>
-        Pytorch implementation: <https://github.com/tkipf/pygcn>
+        Implementation of Simplifying Graph Convolutional Networks (SGC). 
+        `Simplifying Graph Convolutional Networks <https://arxiv.org/abs/1902.07153>`
+        Pytorch implementation: <https://github.com/Tiiiger/SGC>
 
     """
 
-    def __init__(self, *graph, adj_transform="add_selfloops", attr_transform=None,
+    def __init__(self, *graph, order=2, adj_transform="add_selfloops", attr_transform=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
-        """Create a Graph Convolutional Networks (GCN) model.
+        """Create a Simplifying Graph Convolutional Networks (SGC) model.
 
 
         This can be instantiated in several ways:
 
-            model = GCN(graph)
+            model = SGC(graph)
                 with a `graphgallery.data.Graph` instance representing
                 A sparse, attributed, labeled graph.
 
-            model = GCN(adj_matrix, attr_matrix, labels)
+            model = SGC(adj_matrix, attr_matrix, labels)
                 where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
                  `attr_matrix` is a 2D Numpy array-like matrix denoting the node 
                  attributes, `labels` is a 1D Numpy array denoting the node labels.
@@ -34,6 +34,9 @@ class GCN(SemiSupervisedModel):
         ----------
         graph: An instance of `graphgallery.data.Graph` or a tuple (list) of inputs.
             A sparse, attributed, labeled graph.
+        order: positive integer. optional 
+            The power (order) of adjacency matrix. (default :obj: `2`, i.e., 
+            math:: A^{2})            
         adj_transform: string, `transform`, or None. optional
             How to transform the adjacency matrix. See `graphgallery.functional`
             (default: :obj:`'add_selfloops'`, i.e., A = A + I) 
@@ -53,6 +56,7 @@ class GCN(SemiSupervisedModel):
         """
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
+        self.order = order
         self.adj_transform = F.get(adj_transform)
         self.attr_transform = F.get(attr_transform)
         self.process()
@@ -64,14 +68,13 @@ class GCN(SemiSupervisedModel):
 
         self.feature_inputs, self.structure_inputs = F.astensors(attr_matrix, adj_matrix, device=self.device)
 
+    # use decorator to make sure all list arguments have the same length
     @F.EqualVarLength()
-    def build(self, hiddens=[16], activations=['relu'], dropout=0.5,
-              weight_decay=5e-4, lr=0.01, use_bias=False):
+    def build(self, hiddens=[], activations=[], dropout=0.5, weight_decay=5e-5, lr=0.2, use_bias=True):
 
-        self.model = dglGCN(self.graph.n_attrs, self.graph.n_classes,
-                            hiddens=hiddens, activations=activations, dropout=dropout,
-                            weight_decay=weight_decay, lr=lr, use_bias=use_bias
-                            ).to(self.device)
+        self.model = dglSGC(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens, K=self.order,
+                           activations=activations, dropout=dropout, weight_decay=weight_decay,
+                           lr=lr, use_bias=use_bias).to(self.device)
 
     def train_sequence(self, index):
 
@@ -80,3 +83,4 @@ class GCN(SemiSupervisedModel):
             [self.feature_inputs, self.structure_inputs, index], labels,
             device=self.device, escape=type(self.structure_inputs))
         return sequence
+

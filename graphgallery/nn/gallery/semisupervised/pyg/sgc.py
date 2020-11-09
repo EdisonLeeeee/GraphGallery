@@ -10,7 +10,7 @@ class SGC(SemiSupervisedModel):
         Pytorch implementation: <https://github.com/Tiiiger/SGC>
 
     """    
-    def __init__(self, *graph, adj_transform=None, attr_transform=None,
+    def __init__(self, *graph, order=2, adj_transform=None, attr_transform=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
         """Create a Simplifying Graph Convolutional Networks (SGC) model.
 
@@ -53,7 +53,8 @@ class SGC(SemiSupervisedModel):
         kwargs: other custom keyword parameters.
         """        
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
-
+        
+        self.order = order
         self.adj_transform = F.get(adj_transform)
         self.attr_transform = F.get(attr_transform)
         self.process()
@@ -69,9 +70,9 @@ class SGC(SemiSupervisedModel):
 
     # use decorator to make sure all list arguments have the same length
     @F.EqualVarLength()
-    def build(self, hiddens=[], activations=[], dropout=0., weight_decay=5e-5, lr=0.2, use_bias=True, K=2):
+    def build(self, hiddens=[], activations=[], dropout=0., weight_decay=5e-5, lr=0.2, use_bias=True):
 
-        self.model = pygSGC(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens, K=K,
+        self.model = pygSGC(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens, K=self.order,
                             activations=activations, dropout=dropout, weight_decay=weight_decay,
                             lr=lr, use_bias=use_bias).to(self.device)
 

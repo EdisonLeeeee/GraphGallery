@@ -4,9 +4,7 @@ from torch import optim
 from torch.nn import Module, ModuleList, Dropout
 
 from graphgallery.nn.models import TorchKeras
-from graphgallery.nn.layers.pytorch.get_activation import get_activation
-
-from torch_geometric.nn import SGConv
+from dgl.nn.pytorch.conv import SGConv
 
 
 class SGC(TorchKeras):
@@ -18,20 +16,19 @@ class SGC(TorchKeras):
                  K=2,
                  dropout=0.5,
                  weight_decay=5e-5,
-                 lr=0.2, use_bias=False):
+                 lr=0.2, use_bias=True):
         super().__init__()
 
         if hiddens or activations:
-            raise RuntimeError(f"Arguments 'hiddens' and 'activations' are not supported to use in SGC (PyG backend).")
+            raise RuntimeError(f"Arguments 'hiddens' and 'activations' are not supported to use in SGC (DGL backend).")
 
-        conv = SGConv(in_channels, out_channels, bias=use_bias, K=K, cached=True, add_self_loops=False)
+        conv = SGConv(in_channels, out_channels, bias=use_bias, k=K, cached=True)
         self.conv = conv
         self.dropout = Dropout(dropout)
         self.optimizer = optim.Adam(conv.parameters(), lr=lr, weight_decay=weight_decay)
         self.loss_fn = torch.nn.CrossEntropyLoss()
 
     def forward(self, inputs):
-        x, edge_index, edge_weight, idx = inputs
-        x = self.dropout(x)
-        x = self.conv(x, edge_index, edge_weight)
+        x, g, idx = inputs
+        x = self.conv(g, x)
         return x[idx]

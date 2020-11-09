@@ -33,9 +33,8 @@ class GAT(SemiSupervisedModel):
         graph: graphgallery.data.Graph, or `adj_matrix, attr_matrix and labels` triplets.
             A sparse, attributed, labeled graph.
         adj_transform: string, `transform`, or None. optional
-            How to transform the adjacency matrix. (default: :obj:`'normalize_adj'`
-            with normalize rate `-0.5`.
-            i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
+            How to transform the adjacency matrix.             
+            (default: :obj:`'add_selfloops'`, i.e., A = A + I) 
         attr_transform: string, `transform`, or None. optional
             How to transform the node attribute matrix. See `graphgallery.functional`
             (default :obj: `None`)
