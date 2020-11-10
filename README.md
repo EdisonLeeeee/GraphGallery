@@ -19,9 +19,6 @@
   <a href="https://pypi.org/project/graphgallery/">
     <img src="https://badge.fury.io/py/graphgallery.svg" alt="pypi">
   </a>       
-  <img alt="stars" src="https://img.shields.io/github/stars/EdisonLeeeee/GraphGallery">
-  <img alt="forks" src="https://img.shields.io/github/forks/EdisonLeeeee/GraphGallery">
-  <img alt="issues" src="https://img.shields.io/github/issues/EdisonLeeeee/GraphGallery">    
   <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/LICENSE">
     <img src="https://img.shields.io/github/license/EdisonLeeeee/GraphGallery" alt="pypi">
   </a>       
@@ -55,10 +52,13 @@
 # GraphGallery
 GraphGallery is a gallery for benchmarking Graph Neural Networks (GNNs) with [TensorFlow 2.x](https://github.com/tensorflow/tensorflow) and [PyTorch](https://github.com/pytorch/pytorch) backend. GraphGallery 0.5.x is a total re-write from previous versions, and some things have changed. 
 
+NEWS: [PyG](https://github.com/rusty1s/pytorch_geometric) backend and [DGL](https://github.com/dmlc/dgl) backend now are supported in GraphGallery!
+
+
 # 👀 What's important
 Differences between GraphGallery and [Pytorch Geometric (PyG)](https://github.com/rusty1s/pytorch_geometric), [Deep Graph Library (DGL)](https://github.com/dmlc/dgl), etc...
 + PyG and DGL are just like **TensorFlow** while GraphGallery is more like **Keras**
-+ GraphGallery is more extensible and user-friendly
++ GraphGallery is a plug-and-play and user-friendly toolbox
 + GraphGallery has high scalaribility for researchers to use
 
 
@@ -355,7 +355,7 @@ array([1, 2, 3])
     with 3 stored elements in Compressed Sparse Row format>
 ```
 
-+ Or even convert one Tensor to another one
++ Or even convert one Tensor to another
 ```python
 >>> tensor = F.astensor(arr, backend="tensorflow") # or "tf" in short
 >>> tensor
