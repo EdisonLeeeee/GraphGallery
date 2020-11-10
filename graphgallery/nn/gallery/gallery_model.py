@@ -130,4 +130,4 @@ class GalleryModel(Model):
         return self._model(*args, **kwargs)
 
     def __repr__(self):
-        return f"GraphGallery.nn.{gallery}.{self.name}(device={self.device}, backend={self.backend})"
+        return f"{self.name}(device={self.device}, backend={self.backend})"
