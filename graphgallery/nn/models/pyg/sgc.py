@@ -32,6 +32,5 @@ class SGC(TorchKeras):
 
     def forward(self, inputs):
         x, edge_index, edge_weight, idx = inputs
-        x = self.dropout(x)
         x = self.conv(x, edge_index, edge_weight)
         return x[idx]
