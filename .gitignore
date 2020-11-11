@@ -97,3 +97,6 @@ ENV/
 
 *.pickle
 .vscode
+
+# dataset file
+dataset/

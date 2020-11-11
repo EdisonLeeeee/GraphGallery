@@ -2,7 +2,7 @@
 # coding: utf-8
 from setuptools import setup, find_packages
 
-VERSION = "0.5.0"
+VERSION = "0.5.1"
 url = 'https://github.com/EdisonLeeeee/GraphGallery'
 
 install_requires = [
@@ -45,8 +45,9 @@ setup(
     setup_requires=setup_requires,
     tests_require=tests_require,
     extras_require={'test': tests_require},
-    packages=find_packages(exclude=("examples", "imgs", "scripts")),
+    packages=find_packages(exclude=("examples", "imgs", "scripts", "benchmark", "dataset")),
     classifiers=[
+        'Development Status :: 3 - Alpha',        
         "Programming Language :: Python :: 3",
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: MIT License",
