@@ -24,7 +24,7 @@ class SGC(TorchKeras):
         if hiddens or activations:
             raise RuntimeError(f"Arguments 'hiddens' and 'activations' are not supported to use in SGC (PyG backend).")
 
-        conv = SGConv(in_channels, out_channels, bias=use_bias, K=K, cached=True, add_self_loops=False)
+        conv = SGConv(in_channels, out_channels, bias=use_bias, K=K, cached=True, add_self_loops=True)
         self.conv = conv
         self.dropout = Dropout(dropout)
         self.optimizer = optim.Adam(conv.parameters(), lr=lr, weight_decay=weight_decay)
