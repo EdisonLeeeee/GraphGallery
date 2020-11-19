@@ -255,7 +255,7 @@ class SemiSupervisedModel(GalleryModel):
         callbacks.on_train_begin()
 
         if verbose:
-            stateful_metrics = {"acc", 'loss', 'val_acc', 'val_loss', 'time'}
+            stateful_metrics = {"acc", 'loss', 'val_acc', 'val_loss', 'duration'}
             if verbose <= 2:
                 progbar = Progbar(target=epochs, verbose=verbose, stateful_metrics=stateful_metrics)
             print("Training...")
@@ -284,7 +284,7 @@ class SemiSupervisedModel(GalleryModel):
 
                 if verbose:
                     time_passed = time.perf_counter() - begin_time
-                    training_logs.update({'time': time_passed})
+                    training_logs.update({'duration': time_passed})
                     if verbose > 2:
                         print(f"Epoch {epoch+1}/{epochs}")
                         progbar.update(len(train_data), training_logs.items())
@@ -340,12 +340,12 @@ class SemiSupervisedModel(GalleryModel):
         if verbose:
             print("Testing...")
 
-        stateful_metrics = {"test_acc", 'test_loss', 'time'}
+        stateful_metrics = {"test_acc", 'test_loss', 'duration'}
         progbar = Progbar(target=len(test_data), verbose=verbose, stateful_metrics=stateful_metrics)
         begin_time = time.perf_counter()
         loss, accuracy = self.test_step(test_data)
         time_passed = time.perf_counter() - begin_time
-        progbar.update(len(test_data), [('test_loss', loss), ('test_acc', accuracy), ('time', time_passed)])
+        progbar.update(len(test_data), [('test_loss', loss), ('test_acc', accuracy), ('duration', time_passed)])
         return loss, accuracy
 
     def train_step(self, sequence):
