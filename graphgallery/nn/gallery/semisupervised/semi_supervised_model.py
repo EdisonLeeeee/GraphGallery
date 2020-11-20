@@ -131,7 +131,7 @@ class SemiSupervisedModel(GalleryModel):
 
     def train(self, idx_train, idx_val=None,
               epochs=200, early_stopping=None,
-              verbose=0, save_best=True, weight_path=None, as_model=False,
+              verbose=1, save_best=True, weight_path=None, as_model=False,
               monitor='val_acc', early_stop_metric='val_loss', callbacks=None, **kwargs):
         """Train the model for the input `idx_train` of nodes or `sequence`.
 
@@ -158,7 +158,7 @@ class SemiSupervisedModel(GalleryModel):
                 'verbose=2': Progbar (one line, omitted);
                 'verbose=3': Progbar (multi line, detailed);
                 'verbose=4': Progbar (multi line, omitted);
-            (default :obj: 0)
+            (default :obj: 1)
         save_best: bool
             Whether to save the best weights (accuracy of loss depend on `monitor`)
             of training or validation (depend on `validation` is `False` or `True`).

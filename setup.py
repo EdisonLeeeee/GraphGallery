@@ -45,13 +45,15 @@ setup(
     setup_requires=setup_requires,
     tests_require=tests_require,
     extras_require={'test': tests_require},
-    packages=find_packages(exclude=("examples", "imgs", "scripts", "benchmark", "dataset")),
+    packages=find_packages(exclude=("examples", "imgs", "scripts", "benchmark")),
     classifiers=[
         'Development Status :: 3 - Alpha',        
         "Programming Language :: Python :: 3",
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: MIT License",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
+        'Topic :: Scientific/Engineering',
+        'Topic :: Software Development :: Libraries',        
         "Operating System :: OS Independent"
     ],
 )
