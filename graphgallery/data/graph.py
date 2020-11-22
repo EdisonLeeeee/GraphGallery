@@ -19,17 +19,17 @@ LabelMatrix = Union[Array1D, Matrix2D]
 AdjMatrix = Union[sp.csr_matrix, sp.csc_matrix]
 
 
-def _check_and_convert(adj_matrix: Optional[AdjMatrix] = None,
-                       attr_matrix: Optional[Matrix2D] = None,
-                       labels: Optional[LabelMatrix] = None, copy: bool = True):
+def _check(adj_matrix: Optional[AdjMatrix] = None,
+           attr_matrix: Optional[Matrix2D] = None,
+           labels: Optional[LabelMatrix] = None,
+           copy: bool = True):
     # Make sure that the dimensions of matrices / arrays all agree
     if adj_matrix is not None:
         if sp.isspmatrix(adj_matrix):
             adj_matrix = adj_matrix.tocsr(
                 copy=False).astype(np.float32, copy=copy)
         else:
-            raise ValueError("Adjacency matrix must be in sparse format (got {0} instead)"
-                             .format(type(adj_matrix)))
+            raise ValueError(f"Adjacency matrix must be in sparse format (got {type(adj_matrix)} instead).")
 
         if adj_matrix.shape[0] != adj_matrix.shape[1]:
             raise ValueError("Dimensions of the adjacency matrix don't agree!")
@@ -42,7 +42,7 @@ def _check_and_convert(adj_matrix: Optional[AdjMatrix] = None,
             attr_matrix = attr_matrix.astype(np.float32, copy=copy)
         else:
             raise ValueError(
-                "Attribute matrix must be a sp.spmatrix or a np.ndarray (got {0} instead)".format(type(attr_matrix)))
+                f"Attribute matrix must be a sp.spmatrix or a np.ndarray (got {type(attr_matrix)} instead).")
 
         if adj_matrix is not None and attr_matrix.shape[0] != adj_matrix.shape[0]:
             raise ValueError(
@@ -50,10 +50,8 @@ def _check_and_convert(adj_matrix: Optional[AdjMatrix] = None,
 
     if labels is not None:
         labels = np.array(labels, dtype=np.int64, copy=copy).squeeze()
-        if labels.ndim != 1:
-            assert labels.ndim == 2
-            if (labels.sum(1) == 1).all():
-                labels = labels.argmax(1)
+        if not 0 < labels.ndim <= 2:
+            raise ValueError("Label matrix must be a 1D or 2D array!")
 
     return adj_matrix, attr_matrix, labels
 
@@ -61,15 +59,9 @@ def _check_and_convert(adj_matrix: Optional[AdjMatrix] = None,
 class Graph(BaseGraph):
     """Attributed labeled graph stored in sparse matrix form."""
 
-    # By default, the attr_matrix is dense format, i.e., Numpy array
-    _sparse_attr = False
-
     def __init__(self, adj_matrix: Optional[AdjMatrix] = None,
                  attr_matrix: Optional[Union[AdjMatrix, Matrix2D]] = None,
                  labels: Optional[LabelMatrix] = None,
-                 node_names: List[str] = None,
-                 attr_names: List[str] = None,
-                 class_names: List[str] = None,
                  metadata: str = None,
                  copy: bool = True):
         """Create an (un)dirtected (attributed and labeled) graph.
@@ -82,56 +74,31 @@ class Graph(BaseGraph):
             Attribute matrix in CSR or Numpy format.
         labels : np.ndarray, shape [n_nodes], optional
             Array, where each entry represents respective node's label(s).
-        node_names : np.ndarray, shape [n_nodes], optional
-            Names of nodes (as strings).
-        attr_names : np.ndarray, shape [n_attrs]
-            Names of the attributes (as strings).
-        class_names : np.ndarray, shape [n_classes], optional
-            Names of the class labels (as strings).
         metadata : object, optional
             Additional metadata such as text.
         copy: bool, optional
             whether to use copy for the inputs.
         """
-        adj_matrix, attr_matrix, labels = _check_and_convert(
+        adj_matrix, attr_matrix, labels = _check(
             adj_matrix, attr_matrix, labels, copy=copy)
 
-        if node_names is not None and adj_matrix is not None:
-            if len(node_names) != adj_matrix.shape[0]:
-                raise ValueError(
-                    "Dimensions of the adjacency matrix and the node names don't agree!")
-
-        if attr_names is not None and attr_matrix is not None:
-            if len(attr_names) != attr_matrix.shape[1]:
-                raise ValueError(
-                    "Dimensions of the attribute matrix and the attribute names don't agree!")
-
-        self.adj_matrix = adj_matrix
-        self.attr_matrix = attr_matrix
-        self.labels = labels
+        self._adj_matrix = adj_matrix
+        self._attr_matrix = attr_matrix
+        self._labels = labels
 
         if copy:
-            self.node_names = copy_fn(node_names)
-            self.attr_names = copy_fn(attr_names)
-            self.class_names = copy_fn(class_names)
             self.metadata = copy_fn(metadata)
         else:
-            self.node_names = node_names
-            self.attr_names = attr_names
-            self.class_names = class_names
             self.metadata = metadata
 
     def set_inputs(self, adj_matrix: Optional[AdjMatrix] = None,
                    attr_matrix: Optional[Union[AdjMatrix, Matrix2D]] = None,
                    labels: Optional[LabelMatrix] = None,
-                   node_names: List[str] = None,
-                   attr_names: List[str] = None,
-                   class_names: List[str] = None,
                    metadata: str = None,
                    copy: bool = False):
 
-        adj_matrix, attr_matrix, labels = _check_and_convert(adj_matrix, attr_matrix,
-                                                             labels, copy=copy)
+        adj_matrix, attr_matrix, labels = _check(adj_matrix, attr_matrix,
+                                                 labels, copy=copy)
 
         if adj_matrix is not None:
             self.adj_matrix = adj_matrix
@@ -142,46 +109,24 @@ class Graph(BaseGraph):
         if labels is not None:
             self.labels = labels
 
-        if node_names is not None:
-            if copy:
-                self.node_names = copy_fn(node_names)
-            else:
-                self.node_names = node_names
-        if attr_names is not None:
-            if copy:
-                self.attr_names = copy_fn(attr_names)
-            else:
-                self.attr_names = attr_names
-        if class_names is not None:
-            if copy:
-                self.class_names = copy_fn(class_names)
-            else:
-                self.class_names = class_names
         if metadata is not None:
             if copy:
                 self.metadata = copy_fn(metadata)
             else:
                 self.metadata = metadata
 
-    @property
-    def sparse_attr(self) -> bool:
-        return self._sparse_attr
-
-    @sparse_attr.setter
-    def sparse_attr(self, value):
-        self._sparse_attr = value
-        # clear LRU cache
-        self.get_attr_matrix.cache_clear()
-
     @lru_cache(maxsize=1)
     def get_attr_matrix(self) -> Union[AdjMatrix, Matrix2D]:
         if self._attr_matrix is None:
-            return None
+            n_nodes = self.n_nodes
+            if n_nodes:
+                return np.eye(n_nodes, dtype=np.float32)
+            else:
+                return None
+
         is_sparse = sp.isspmatrix(self._attr_matrix)
-        if not self.sparse_attr and is_sparse:
-            return self._attr_matrix.A
-        elif self.sparse_attr and not is_sparse:
-            return sp.csr_matrix(self._attr_matrix)
+        if is_sparse:
+            return self._attr_matrix.toarray()
         return self._attr_matrix
 
     @property
@@ -204,7 +149,10 @@ class Graph(BaseGraph):
 
     @property
     def labels(self) -> LabelMatrix:
-        return self._labels
+        _labels = self._labels
+        if _labels.ndim == 2 and (_labels.sum(1) == 1).all():
+            _labels = _labels.argmax(1)
+        return _labels
 
     @labels.setter
     def labels(self, x):
@@ -221,7 +169,10 @@ class Graph(BaseGraph):
     @property
     def n_nodes(self) -> int:
         """Get the number of nodes in the graph."""
-        return self.adj_matrix.shape[0]
+        if self.adj_matrix is not None:
+            return self.adj_matrix.shape[0]
+        else:
+            return None
 
     @property
     def n_edges(self) -> int:
@@ -379,10 +330,7 @@ class Graph(BaseGraph):
 
     def is_binary(self) -> bool:
         '''Check if the attribute matrix has binary attributes.'''
-        if self.sparse_attr:
-            return np.all(self.attr_matrix.data == 1)
-        else:
-            return np.all(np.unique(self.attr_matrix) == (0, 1))
+        return np.all(np.unique(self.attr_matrix) == (0, 1))
 
     def is_weighted(self) -> bool:
         """Check if the graph is weighted (edge weights other than 1)."""
@@ -440,35 +388,26 @@ def load_npz_to_graph(filename: str) -> "Graph":
 
     with np.load(filename, allow_pickle=True) as loader:
         loader = dict(loader)
-        adj_matrix = sp.csr_matrix((loader['adj_data'], loader['adj_indices'], loader['adj_indptr']),
+        adj_matrix = sp.csr_matrix((loader['adj_data'],
+                                    loader['adj_indices'],
+                                    loader['adj_indptr']),
                                    shape=loader['adj_shape'])
 
         if 'attr_data' in loader:
             # Attributes are stored as a sparse CSR matrix
-            attr_matrix = sp.csr_matrix((loader['attr_data'], loader['attr_indices'], loader['attr_indptr']),
+            attr_matrix = sp.csr_matrix((loader['attr_data'],
+                                         loader['attr_indices'],
+                                         loader['attr_indptr']),
                                         shape=loader['attr_shape'])
-        elif 'attr_matrix' in loader:
+        else:
             # Attributes are stored as a (dense) np.ndarray
-            attr_matrix = loader['attr_matrix']
-        else:
-            attr_matrix = None
+            attr_matrix = loader.get('attr_matrix', None)
 
-        if 'labels_data' in loader:
-            # Labels are stored as a CSR matrix
-            labels = sp.csr_matrix((loader['labels_data'], loader['labels_indices'], loader['labels_indptr']),
-                                   shape=loader['labels_shape'])
-        elif 'labels' in loader:
-            # Labels are stored as a Numpy array
-            labels = loader['labels']
-        else:
-            labels = None
-
-        node_names = loader.get('node_names', None)
-        attr_names = loader.get('attr_names', None)
-        class_names = loader.get('class_names', None)
+        # Labels are stored as a Numpy array
+        labels = loader.get('labels', None)
         metadata = loader.get('metadata', None)
 
-    return Graph(adj_matrix, attr_matrix, labels, node_names, attr_names, class_names, metadata)
+    return Graph(adj_matrix, attr_matrix, labels, metadata)
 
 
 def save_graph_to_npz(filepath: str, graph: "Graph"):
@@ -489,30 +428,17 @@ def save_graph_to_npz(filepath: str, graph: "Graph"):
         'adj_indptr': adj_matrix.indptr,
         'adj_shape': adj_matrix.shape
     }
+
     if sp.isspmatrix(attr_matrix):
         data_dict['attr_data'] = attr_matrix.data
         data_dict['attr_indices'] = attr_matrix.indices
         data_dict['attr_indptr'] = attr_matrix.indptr
         data_dict['attr_shape'] = attr_matrix.shape
-    elif isinstance(attr_matrix, np.ndarray):
+    elif attr_matrix is not None:
         data_dict['attr_matrix'] = attr_matrix
 
-    if sp.isspmatrix(labels):
-        data_dict['labels_data'] = labels.data
-        data_dict['labels_indices'] = labels.indices
-        data_dict['labels_indptr'] = labels.indptr
-        data_dict['labels_shape'] = labels.shape
-    elif isinstance(labels, np.ndarray):
+    if labels is not None:
         data_dict['labels'] = labels
-
-    if graph.node_names is not None:
-        data_dict['node_names'] = graph.node_names
-
-    if graph.attr_names is not None:
-        data_dict['attr_names'] = graph.attr_names
-
-    if graph.class_names is not None:
-        data_dict['class_names'] = graph.class_names
 
     if graph.metadata is not None:
         data_dict['metadata'] = graph.metadata
@@ -520,6 +446,6 @@ def save_graph_to_npz(filepath: str, graph: "Graph"):
     if not filepath.endswith('.npz'):
         filepath = filepath + '.npz'
 
-    filepath = osp.abspath(osp.expanduser(osp.normpath(filepath)))
+    filepath = osp.abspath(osp.expanduser(osp.realpath(filepath)))
     np.savez_compressed(filepath, **data_dict)
     return filepath

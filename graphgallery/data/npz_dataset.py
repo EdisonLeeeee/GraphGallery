@@ -8,7 +8,6 @@ from typing import Optional, List, Tuple, Union, Callable
 from graphgallery.data import Dataset
 from graphgallery.data.io import makedirs, files_exist, download_file
 from graphgallery.data.graph import Graph, load_dataset
-from graphgallery.functional import get
 
 
 _DATASETS = ('citeseer', 'citeseer_full', 'cora', 'cora_ml',
@@ -16,7 +15,7 @@ _DATASETS = ('citeseer', 'citeseer_full', 'cora', 'cora_ml',
              'coauthor_cs', 'coauthor_phy', 'polblogs', 'karate_club',
              'pubmed', 'flickr', 'blogcatalog', 'dblp', 'acm', 'uai')
 
-Transform = Union[List[str], Tuple[str], str, List[Callable], Tuple[Callable], Callable]
+Transform = Union[List, Tuple, str, List, Tuple, Callable]
 
 
 class NPZDataset(Dataset):
@@ -27,9 +26,8 @@ class NPZDataset(Dataset):
     def __init__(self, name: str,
                  root: Optional[str] = None,
                  url: Optional[str] = None,
-                 standardize: bool = False,
-                 verbose: bool = True,
                  transform: Optional[Transform] = None,
+                 verbose: bool = True
                  ):
 
         name = str(name)
@@ -39,12 +37,10 @@ class NPZDataset(Dataset):
         else:
             custom = False
 
-        super().__init__(name, root, verbose)
+        super().__init__(name, root, transform, verbose)
 
         self._url = url
         self.download_dir = self.root
-        self.standardize = standardize
-        self.transform = get(transform)
 
         if not custom:
             makedirs(self.download_dir)

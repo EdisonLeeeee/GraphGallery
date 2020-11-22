@@ -3,16 +3,18 @@ import os.path as osp
 import numpy as np
 import pickle as pkl
 
-from typing import Optional, List
+from typing import Optional, List, Tuple, Callable, Union
 
 from graphgallery.data import Dataset
 from graphgallery.data.io import makedirs, files_exist, download_file
 from graphgallery.data.preprocess import process_planetoid_datasets
 from graphgallery.data.graph import Graph
-from graphgallery.typing import MultiArrayLike
 
 
 _DATASETS = {'citeseer', 'cora', 'pubmed'}
+
+TrainValTest = Tuple[np.ndarray]
+Transform = Union[List, Tuple, str, List, Tuple, Callable]
 
 
 class Planetoid(Dataset):
@@ -29,14 +31,17 @@ class Planetoid(Dataset):
     "GraphData/master/datasets/planetoid"
     supported_datasets = _DATASETS
 
-    def __init__(self, name: str, root: Optional[str] = None, verbose: bool = True):
+    def __init__(self, name: str,
+                 root: Optional[str] = None,
+                 transform: Optional[Transform] = None,
+                 verbose: bool = True):
         name = str(name)
 
         if not name in self.supported_datasets:
             raise ValueError(
                 f"Currently only support for these datasets {self.supported_datasets}.")
 
-        super().__init__(name, root, verbose)
+        super().__init__(name, root, transform, verbose)
 
         self.download_dir = osp.join(self.root, 'planetoid')
 
@@ -66,15 +71,19 @@ class Planetoid(Dataset):
             print("Processing...")
         adj_matrix, attributes, labels, idx_train, idx_val, idx_test = process_planetoid_datasets(self.name, self.raw_paths)
 
-        self.graph = Graph(adj_matrix, attributes, labels).eliminate_selfloops()
+        graph = Graph(adj_matrix, attributes, labels)
+        self.graph = self.transform(graph)
         self.idx_train = idx_train
         self.idx_val = idx_val
         self.idx_test = idx_test
         if self.verbose:
             print("Processing completed.")
 
-    def split_nodes(self, train_size=None, val_size=None, test_size=None,
-                    random_state=None) -> MultiArrayLike:
+    def split_nodes(self, train_size: float = 0.1,
+                    val_size: float = 0.1,
+                    test_size: float = 0.8,
+                    random_state: Optional[int] = None) -> TrainValTest:
+
         if not all((train_size, val_size, test_size)):
             return self.idx_train, self.idx_val, self.idx_test
         else:
