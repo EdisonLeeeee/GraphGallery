@@ -24,7 +24,7 @@ class EdgeGCN(SemiSupervisedModel):
 
     def __init__(self, *graph, adj_transform="normalize_adj", attr_transform=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
-        """Create a Edge Convolution version of Graph Convolutional Networks (EdgeGCN) model.
+        r"""Create a Edge Convolution version of Graph Convolutional Networks (EdgeGCN) model.
 
             This can be instantiated in several ways:
 
@@ -32,9 +32,9 @@ class EdgeGCN(SemiSupervisedModel):
                     with a `graphgallery.data.Graph` instance representing
                     A sparse, attributed, labeled graph.
 
-                model = EdgeGCN(adj_matrix, attr_matrix, labels)
+                model = EdgeGCN(adj_matrix, node_attr, labels)
                     where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
-                     `attr_matrix` is a 2D Numpy array-like matrix denoting the node 
+                     `node_attr` is a 2D Numpy array-like matrix denoting the node 
                      attributes, `labels` is a 1D Numpy array denoting the node labels.
 
 
@@ -75,11 +75,11 @@ class EdgeGCN(SemiSupervisedModel):
     def process_step(self):
         graph = self.graph
         adj_matrix = self.adj_transform(graph.adj_matrix)
-        attr_matrix = self.attr_transform(graph.attr_matrix)
+        node_attr = self.attr_transform(graph.node_attr)
         edge_index, edge_weight = F.sparse_adj_to_edge(adj_matrix)
 
         self.feature_inputs, self.structure_inputs = F.astensors(
-            attr_matrix, (edge_index.T, edge_weight), device=self.device)
+            node_attr, (edge_index.T, edge_weight), device=self.device)
 
     # use decorator to make sure all list arguments have the same length
     @F.EqualVarLength()
@@ -87,7 +87,7 @@ class EdgeGCN(SemiSupervisedModel):
               weight_decay=5e-4, lr=0.01, use_bias=False):
 
         with tf.device(self.device):
-            self.model = tfEdgeGCN(self.graph.n_attrs, self.graph.n_classes,
+            self.model = tfEdgeGCN(self.graph.num_node_attrs, self.graph.num_node_classes,
                                    hiddens=hiddens,
                                    activations=activations,
                                    dropout=dropout, weight_decay=weight_decay,
@@ -95,7 +95,7 @@ class EdgeGCN(SemiSupervisedModel):
 
     def train_sequence(self, index):
 
-        labels = self.graph.labels[index]
+        labels = self.graph.node_labels[index]
         sequence = FullBatchNodeSequence(
             [self.feature_inputs, *self.structure_inputs, index], labels, device=self.device)
         return sequence

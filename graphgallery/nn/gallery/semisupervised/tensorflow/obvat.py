@@ -26,7 +26,7 @@ class OBVAT(SemiSupervisedModel):
 
     def __init__(self, *graph, adj_transform="normalize_adj", attr_transform=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
-        """Create an optimization - based Batch Virtual Adversarial Training
+        r"""Create an optimization - based Batch Virtual Adversarial Training
         Graph Convolutional Networks(OBVAT) model.
 
         This can be instantiated in several ways:
@@ -35,9 +35,9 @@ class OBVAT(SemiSupervisedModel):
                 with a `graphgallery.data.Graph` instance representing
                 A sparse, attributed, labeled graph.
 
-            model = OBVAT(adj_matrix, attr_matrix, labels)
+            model = OBVAT(adj_matrix, node_attr, labels)
                 where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
-                 `attr_matrix` is a 2D Numpy array - like matrix denoting the node
+                 `node_attr` is a 2D Numpy array - like matrix denoting the node
                  attributes, `labels` is a 1D Numpy array denoting the node labels.
 
         Parameters:
@@ -71,10 +71,10 @@ class OBVAT(SemiSupervisedModel):
     def process_step(self):
         graph = self.graph
         adj_matrix = self.adj_transform(graph.adj_matrix)
-        attr_matrix = self.attr_transform(graph.attr_matrix)
+        node_attr = self.attr_transform(graph.node_attr)
 
         self.feature_inputs, self.structure_inputs = F.astensors(
-            attr_matrix, adj_matrix, device=self.device)
+            node_attr, adj_matrix, device=self.device)
 
     # use decorator to make sure all list arguments have the same length
     @F.EqualVarLength()
@@ -86,8 +86,8 @@ class OBVAT(SemiSupervisedModel):
 
         with tf.device(self.device):
 
-            x = Input(batch_shape=[None, self.graph.n_attrs],
-                      dtype=self.floatx, name='attr_matrix')
+            x = Input(batch_shape=[None, self.graph.num_node_attrs],
+                      dtype=self.floatx, name='node_attr')
             adj = Input(batch_shape=[None, None],
                         dtype=self.floatx, sparse=True, name='adj_matrix')
             index = Input(batch_shape=[None],
@@ -98,7 +98,7 @@ class OBVAT(SemiSupervisedModel):
                 GCN_layers.append(GraphConvolution(hidden, activation=activation, use_bias=use_bias,
                                                    kernel_regularizer=regularizers.l2(weight_decay)))
 
-            GCN_layers.append(GraphConvolution(self.graph.n_classes, use_bias=use_bias))
+            GCN_layers.append(GraphConvolution(self.graph.num_node_classes, use_bias=use_bias))
             self.GCN_layers = GCN_layers
             self.dropout = Dropout(rate=dropout)
 
@@ -109,8 +109,8 @@ class OBVAT(SemiSupervisedModel):
             model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
                           optimizer=Adam(lr=lr), metrics=['accuracy'])
 
-            self.r_vadv = tf.Variable(TruncatedNormal(stddev=0.01)(shape=[self.graph.n_nodes,
-                                                                          self.graph.n_attrs]), name="r_vadv")
+            self.r_vadv = tf.Variable(TruncatedNormal(stddev=0.01)(shape=[self.graph.num_nodes,
+                                                                          self.graph.num_node_attrs]), name="r_vadv")
             entropy_loss = entropy_y_x(logit)
             vat_loss = self.virtual_adversarial_loss(x, adj, logit)
             model.add_loss(p1 * vat_loss + p2 * entropy_loss)
@@ -156,7 +156,7 @@ class OBVAT(SemiSupervisedModel):
 
     def train_sequence(self, index):
 
-        labels = self.graph.labels[index]
+        labels = self.graph.node_labels[index]
         sequence = FullBatchNodeSequence(
             [self.feature_inputs, self.structure_inputs, index], labels, device=self.device)
         return sequence

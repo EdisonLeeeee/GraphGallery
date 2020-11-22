@@ -25,7 +25,7 @@ class GMNN(SemiSupervisedModel):
 
     def __init__(self, *graph, adj_transform="normalize_adj", attr_transform=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
-        """Create a Graph Markov Neural Networks (GMNN) model
+        r"""Create a Graph Markov Neural Networks (GMNN) model
 
        This can be instantiated in several ways:
 
@@ -33,9 +33,9 @@ class GMNN(SemiSupervisedModel):
                 with a `graphgallery.data.Graph` instance representing
                 A sparse, attributed, labeled graph.
 
-            model = GMNN(adj_matrix, attr_matrix, labels)
+            model = GMNN(adj_matrix, node_attr, labels)
                 where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
-                 `attr_matrix` is a 2D Numpy array-like matrix denoting the node 
+                 `node_attr` is a 2D Numpy array-like matrix denoting the node 
                  attributes, `labels` is a 1D Numpy array denoting the node labels.
 
 
@@ -66,7 +66,7 @@ class GMNN(SemiSupervisedModel):
 
         self.adj_transform = F.get(adj_transform)
         self.attr_transform = F.get(attr_transform)
-        self.labels_onehot = self.graph.labels_onehot
+        self.labels_onehot = self.graph.node_labels_onehot
         self.custom_objects = {
             'GraphConvolution': GraphConvolution, 'Gather': Gather}
         self.process()
@@ -74,10 +74,10 @@ class GMNN(SemiSupervisedModel):
     def process_step(self):
         graph = self.graph
         adj_matrix = self.adj_transform(graph.adj_matrix)
-        attr_matrix = self.attr_transform(graph.attr_matrix)
+        node_attr = self.attr_transform(graph.node_attr)
 
         self.feature_inputs, self.structure_inputs = F.astensors(
-            attr_matrix, adj_matrix, device=self.device)
+            node_attr, adj_matrix, device=self.device)
 
     # use decorator to make sure all list arguments have the same length
     @F.EqualVarLength()
@@ -85,9 +85,9 @@ class GMNN(SemiSupervisedModel):
               lr=0.05, use_bias=False):
 
         with tf.device(self.device):
-            x_p = Input(batch_shape=[None, self.graph.n_classes],
+            x_p = Input(batch_shape=[None, self.graph.num_node_classes],
                         dtype=self.floatx, name='input_p')
-            x_q = Input(batch_shape=[None, self.graph.n_attrs],
+            x_q = Input(batch_shape=[None, self.graph.num_node_attrs],
                         dtype=self.floatx, name='input_q')
             adj = Input(batch_shape=[None, None],
                         dtype=self.floatx, sparse=True, name='adj_matrix')
@@ -102,7 +102,7 @@ class GMNN(SemiSupervisedModel):
                                          kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
                     h = Dropout(rate=dropout)(h)
 
-                h = GraphConvolution(self.graph.n_classes,
+                h = GraphConvolution(self.graph.num_node_classes,
                                      use_bias=use_bias)([h, adj])
                 h = Gather()([h, index])
 
@@ -125,7 +125,7 @@ class GMNN(SemiSupervisedModel):
               monitor='val_acc', early_stop_metric='val_loss'):
 
         histories = []
-        index_all = tf.range(self.graph.n_nodes, dtype=self.intx)
+        index_all = tf.range(self.graph.num_nodes, dtype=self.intx)
 
         # pre train model_q
         self.model = self.model_q
@@ -136,8 +136,8 @@ class GMNN(SemiSupervisedModel):
         histories.append(history)
 
         label_predict = self.predict(index_all).argmax(1)
-        label_predict[idx_train] = self.graph.labels[idx_train]
-        label_predict = tf.one_hot(label_predict, depth=self.graph.n_classes)
+        label_predict[idx_train] = self.graph.node_labels[idx_train]
+        label_predict = tf.one_hot(label_predict, depth=self.graph.num_node_classes)
         # train model_p fitst
         train_sequence = FullBatchNodeSequence([label_predict,
                                                 self.structure_inputs, index_all], label_predict,

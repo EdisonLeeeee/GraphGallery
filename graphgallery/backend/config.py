@@ -211,19 +211,21 @@ def backend(module_name: Optional[Union[str, BackendModule]] = None) -> BACKEND_
     else:
         module_name = str(module_name)
         module = _BACKEND_DICT.get(module_name.lower(), None)
-        
+
         if module is None:
             raise ValueError(
                 f"Unsupported backend module name: '{module_name}', expected one of {allowed_backends()}.")
         return module()
 
+
 def set_to_default_backend():
     global _BACKEND
     _BACKEND = _DEFAULT_BACKEND
     # Using `int32` is more efficient
-    set_intx('int32')    
+    set_intx('int32')
     return _BACKEND
-    
+
+
 def set_backend(module_name: Optional[Union[str, BackendModule]] = None) -> BACKEND_TYPE:
     """Set the default backend module.
 
@@ -248,7 +250,6 @@ def set_backend(module_name: Optional[Union[str, BackendModule]] = None) -> BACK
 
     _backend = backend(module_name)
 
-
     global _BACKEND
 
     if _backend != _BACKEND:
@@ -265,8 +266,8 @@ def set_backend(module_name: Optional[Union[str, BackendModule]] = None) -> BACK
         except Exception as e:
             print(f"Something went wrong. Set to Default Backend {_DEFAULT_BACKEND}.", file=sys.stderr)
             set_to_default_backend()
-            raise e        
-        
+            raise e
+
     return _BACKEND
 
 

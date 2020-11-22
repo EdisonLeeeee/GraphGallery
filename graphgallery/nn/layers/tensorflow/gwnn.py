@@ -14,7 +14,7 @@ class WaveletConvolution(Layer):
 
         `WaveletConvolution` implements the operation:
         `output = activation(wavelet @ filter @ inverse_wavelet @ x @ kernel + bias)`
-        where `x` is the attribute matrix, `wavelet` is the wavelet matrix,
+        where `x` is the node node attribute matrix, `wavelet` is the wavelet matrix,
         `inverse_wavelet` is the inversed wavelet matrix, filter is the trainable diagnal matrix.
         `activation` is the element-wise activation function
         passed as the `activation` argument, `kernel` is a weights matrix
@@ -40,11 +40,11 @@ class WaveletConvolution(Layer):
           bias_constraint: Constraint function applied to the bias vector.
 
         Input shape:
-          tuple/list with three 2-D tensor: Tensor `x`, SparseTensor `wavelet` and inverse_wavelet: `[(n_nodes, n_attrs), (n_nodes, n_nodes), (n_nodes, n_nodes)]`.
-          The former one is the attribute matrix (Tensor) and the others is wavelet matrix (SparseTensor) and inversed wavelet matrix (SparseTensor).
+          tuple/list with three 2-D tensor: Tensor `x`, SparseTensor `wavelet` and inverse_wavelet: `[(num_nodes, num_node_attrs), (num_nodes, num_nodes), (num_nodes, num_nodes)]`.
+          The former one is the node node attribute matrix (Tensor) and the others is wavelet matrix (SparseTensor) and inversed wavelet matrix (SparseTensor).
 
         Output shape:
-          2-D tensor with shape: `(n_nodes, units)`.       
+          2-D tensor with shape: `(num_nodes, units)`.       
     """
 
     def __init__(self, units,
@@ -94,14 +94,14 @@ class WaveletConvolution(Layer):
         else:
             self.bias = None
 
-        n_nodes = input_shapes[1][0]
-        self.filter = self.add_weight(shape=(n_nodes,),
+        num_nodes = input_shapes[1][0]
+        self.filter = self.add_weight(shape=(num_nodes,),
                                       initializer=self.filter_initializer,
                                       name='filter',
                                       regularizer=self.filter_regularizer,
                                       constraint=self.filter_constraint)
 
-        self.indices = np.stack([np.arange(n_nodes)] * 2, axis=1)
+        self.indices = np.stack([np.arange(num_nodes)] * 2, axis=1)
 
         super().build(input_shapes)
 

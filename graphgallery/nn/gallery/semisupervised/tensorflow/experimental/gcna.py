@@ -12,9 +12,9 @@ from ..gcn import GCN
 
 class GCNA(GCN):
     """
-    GCN + attribute matrix
+    GCN + node node attribute matrix
 
-    Implementation of Graph Convolutional Networks(GCN) concated with attribute matrix.
+    Implementation of Graph Convolutional Networks(GCN) concated with node node attribute matrix.
     `Semi - Supervised Classification with Graph Convolutional Networks 
     <https://arxiv.org/abs/1609.02907>`
     GCN Tensorflow 1.x implementation: <https://github.com/tkipf/gcn>
@@ -24,8 +24,8 @@ class GCNA(GCN):
 
     def __init__(self, *graph, adj_transform="normalize_adj", attr_transform=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
-        """Create a Graph Convolutional Networks(GCN) model 
-            concated with attribute matrix (GCNA).
+        r"""Create a Graph Convolutional Networks(GCN) model 
+            concated with node node attribute matrix (GCNA).
 
         This can be instantiated in several ways:
 
@@ -33,9 +33,9 @@ class GCNA(GCN):
                 with a `graphgallery.data.Graph` instance representing
                 A sparse, attributed, labeled graph.
 
-            model = GCNA(adj_matrix, attr_matrix, labels)
+            model = GCNA(adj_matrix, node_attr, labels)
                 where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
-                 `attr_matrix` is a 2D Numpy array - like matrix denoting the node
+                 `node_attr` is a 2D Numpy array - like matrix denoting the node
                  attributes, `labels` is a 1D Numpy array denoting the node labels.
 
         Parameters:
@@ -70,6 +70,6 @@ class GCNA(GCN):
               weight_decay=5e-4, lr=0.01, use_bias=False):
 
         with tf.device(self.device):
-            self.model = tfGCNA(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
+            self.model = tfGCNA(self.graph.num_node_attrs, self.graph.num_node_classes, hiddens=hiddens,
                                 activations=activations, dropout=dropout, weight_decay=weight_decay,
                                 lr=lr, use_bias=use_bias)

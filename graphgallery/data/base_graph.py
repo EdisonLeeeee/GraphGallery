@@ -1,3 +1,5 @@
+import collections
+
 from abc import ABC
 from copy import copy as _copy, deepcopy as _deepcopy
 from typing import Union, Tuple, List
@@ -18,32 +20,27 @@ from typing import Union, Tuple, List
 
 class BaseGraph(ABC):
 
-    _adj_matrix = None
-    _attr_matrix = None
-    _labels = None
-    metadata = None
-
     def __init__(self):
         ...
 
     @property
-    def n_nodes(self) -> int:
+    def num_nodes(self):
         ...
 
     @property
-    def n_edges(self) -> int:
+    def num_edges(self):
         ...
 
     @property
-    def n_graphs(self) -> int:
+    def num_graphs(self):
         ...
 
     @property
-    def n_attrs(self) -> int:
+    def num_node_attrs(self):
         ...
 
     @property
-    def n_classes(self) -> int:
+    def num_node_classes(self):
         ...
 
     @property
@@ -52,54 +49,103 @@ class BaseGraph(ABC):
         return self.adj_matrix
 
     @property
-    def X(self):
-        """alias of attr_matrix."""
-        return self.attr_matrix
+    def x(self):
+        """alias of node_attr."""
+        return self.node_attr
 
     @property
-    def Y(self):
-        """alias of labels."""
-        return self.labels
+    def y(self):
+        """alias of node_labels."""
+        return self.node_labels
 
     @property
     def D(self):
         """alias of degrees."""
         return self.degrees
 
-    def __len__(self) -> int:
-        return self.n_graphs
+    @property
+    def keys(self):
+        keys = {key for key in self.__dict__.keys() if self[key] is not None and not key.startswith("_")}
+        return keys
 
-    def unpack(self) -> tuple:
-        """Return the (A, X, Y) triplet."""
-        return self.A, self.X, self.Y
+    @property
+    def items(self):
+        for key in sorted(self.keys):
+            yield key, self[key]
 
-    def raw(self) -> tuple:
-        """Return the raw (A, X, Y) triplet."""
-        return self._adj_matrix, self._attr_matrix, self._labels
+    def is_labeled(self):
+        return self.node_labels is not None and len(self.node_labels) != 0
 
-    def is_labeled(self) -> bool:
-        return self.labels is not None and len(self.labels) != 0
+    def is_attributed(self):
+        return self.node_attr is not None and len(self.node_attr) != 0
 
-    def is_attributed(self) -> bool:
-        return self.attr_matrix is not None and len(self.attr_matrix) != 0
+    @classmethod
+    def from_dict(cls, dictionary: dict):
+        graph = cls(**dictionary)
+        return graph
 
-    def copy(self, deepcopy: bool = False) -> "BaseGraph":
+    def to_dict(self):
+        return dict(self.items)
+
+    def to_namedtuple(self):
+        keys = self.keys
+        DataTuple = collections.namedtuple('DataTuple', keys)
+        return DataTuple(*[self[key] for key in keys])
+
+    def copy(self, deepcopy: bool = False):
         cls = self.__class__
         if deepcopy:
             return _deepcopy(self)
         else:
             return _copy(self)
 
-    def __copy__(self) -> "BaseGraph":
+    def update(self, dictionary: dict):
+        for k, v in dictionary.items():
+            self[k] = v
+
+    def __len__(self):
+        return self.num_graphs
+
+    def __contains__(self, key):
+        return key in self.keys
+
+    def __call__(self, *keys):
+        for key in sorted(self.keys) if not keys else keys:
+            if key in self:
+                yield key, self[key]
+
+    def __getitem__(self, key):
+        return getattr(self, key, None)
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
+
+    def __copy__(self):
         cls = self.__class__
         result = cls.__new__(cls)
         result.__dict__.update(self.__dict__)
         return result
 
-    def __deepcopy__(self, memo: dict) -> "BaseGraph":
+    def __deepcopy__(self, memo: dict):
         cls = self.__class__
         result = cls.__new__(cls)
         memo[id(self)] = result
         for k, v in self.__dict__.items():
             setattr(result, k, _deepcopy(v, memo))
         return result
+
+    def __repr__(self):
+        string = f"{self.__class__.__name__}("
+
+        updated = False
+        for k, v in self.items:
+            if v is None or k == 'metadata':
+                continue
+            string += f"{k}{getattr(v, 'shape', '(None)')}, "
+            updated = True
+
+        if updated:
+            string = string[:-2]
+
+        string += ")"
+        return string

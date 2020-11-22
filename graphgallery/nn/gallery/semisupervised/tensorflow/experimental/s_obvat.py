@@ -23,7 +23,7 @@ class SimplifiedOBVAT(OBVAT):
 
     def __init__(self, *graph, adj_transform="normalize_adj", attr_transform=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
-        """Create a Simplified OBVAT model.
+        r"""Create a Simplified OBVAT model.
 
         This can be instantiated in several ways:
 
@@ -31,9 +31,9 @@ class SimplifiedOBVAT(OBVAT):
                 with a `graphgallery.data.Graph` instance representing
                 A sparse, attributed, labeled graph.
 
-            model = SimplifiedOBVAT(adj_matrix, attr_matrix, labels)
+            model = SimplifiedOBVAT(adj_matrix, node_attr, labels)
                 where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
-                 `attr_matrix` is a 2D Numpy array - like matrix denoting the node
+                 `node_attr` is a 2D Numpy array - like matrix denoting the node
                  attributes, `labels` is a 1D Numpy array denoting the node labels.
 
         Parameters:
@@ -74,8 +74,8 @@ class SimplifiedOBVAT(OBVAT):
 
         with tf.device(self.device):
 
-            x = Input(batch_shape=[None, self.graph.n_attrs],
-                      dtype=self.floatx, name='attr_matrix')
+            x = Input(batch_shape=[None, self.graph.num_node_attrs],
+                      dtype=self.floatx, name='node_attr')
             adj = Input(batch_shape=[None, None],
                         dtype=self.floatx, sparse=True, name='adj_matrix')
             index = Input(batch_shape=[None],
@@ -88,7 +88,7 @@ class SimplifiedOBVAT(OBVAT):
                                                    use_bias=use_bias,
                                                    kernel_regularizer=regularizers.l2(weight_decay)))
 
-            GCN_layers.append(GraphConvolution(self.graph.n_classes, use_bias=use_bias))
+            GCN_layers.append(GraphConvolution(self.graph.num_node_classes, use_bias=use_bias))
 
             self.GCN_layers = GCN_layers
             self.dropout = Dropout(rate=dropout)
@@ -110,7 +110,7 @@ class SimplifiedOBVAT(OBVAT):
         return super(OBVAT, self).train_step(sequence)
 
     def virtual_adversarial_loss(self, x, adj, logit, epsilon):
-        d = tf.random.normal(shape=[self.graph.n_nodes, self.graph.n_attrs], dtype=self.floatx)
+        d = tf.random.normal(shape=[self.graph.num_nodes, self.graph.num_node_attrs], dtype=self.floatx)
 
         r_vadv = get_normalized_vector(d) * epsilon
         logit_p = tf.stop_gradient(logit)

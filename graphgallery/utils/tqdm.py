@@ -20,4 +20,5 @@ def tqdm(*args, **kwargs):
             tqdm_base._decr_instances(instance)
     return tqdm_base(*args, **kwargs)
 
+
 tqdm.__doc__ = tqdm_base.__doc__ + tqdm_base.__init__.__doc__

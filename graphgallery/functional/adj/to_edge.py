@@ -6,6 +6,7 @@ from ..transforms import Transform
 
 __all__ = ['SparseAdjToEdge', 'sparse_adj_to_edge']
 
+
 class SparseAdjToEdge(Transform):
     def __call__(self, adj_matrix: sp.csr_matrix) -> Tuple[np.ndarray]:
         return sparse_adj_to_edge(adj_matrix)

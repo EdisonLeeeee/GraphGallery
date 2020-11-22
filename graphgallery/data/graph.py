@@ -20,8 +20,8 @@ AdjMatrix = Union[sp.csr_matrix, sp.csc_matrix]
 
 
 def _check(adj_matrix: Optional[AdjMatrix] = None,
-           attr_matrix: Optional[Matrix2D] = None,
-           labels: Optional[LabelMatrix] = None,
+           node_attr: Optional[Matrix2D] = None,
+           node_labels: Optional[LabelMatrix] = None,
            copy: bool = True):
     # Make sure that the dimensions of matrices / arrays all agree
     if adj_matrix is not None:
@@ -31,127 +31,62 @@ def _check(adj_matrix: Optional[AdjMatrix] = None,
         else:
             raise ValueError(f"Adjacency matrix must be in sparse format (got {type(adj_matrix)} instead).")
 
+        assert adj_matrix.ndim == 2
+
         if adj_matrix.shape[0] != adj_matrix.shape[1]:
             raise ValueError("Dimensions of the adjacency matrix don't agree!")
 
-    if attr_matrix is not None:
-        if sp.isspmatrix(attr_matrix):
-            attr_matrix = attr_matrix.tocsr(
+    if node_attr is not None:
+        if sp.isspmatrix(node_attr):
+            node_attr = node_attr.tocsr(
                 copy=False).astype(np.float32, copy=copy)
-        elif isinstance(attr_matrix, np.ndarray):
-            attr_matrix = attr_matrix.astype(np.float32, copy=copy)
+        elif isinstance(node_attr, np.ndarray):
+            node_attr = node_attr.astype(np.float32, copy=copy)
         else:
             raise ValueError(
-                f"Attribute matrix must be a sp.spmatrix or a np.ndarray (got {type(attr_matrix)} instead).")
+                f"Node attribute matrix must be a sp.spmatrix or a np.ndarray (got {type(node_attr)} instead).")
 
-        if adj_matrix is not None and attr_matrix.shape[0] != adj_matrix.shape[0]:
-            raise ValueError(
-                "Dimensions of the adjacency and attribute matrices don't agree!")
+        assert node_attr.ndim == 2
 
-    if labels is not None:
-        labels = np.array(labels, dtype=np.int64, copy=copy).squeeze()
-        if not 0 < labels.ndim <= 2:
-            raise ValueError("Label matrix must be a 1D or 2D array!")
+    if node_labels is not None:
+        node_labels = np.array(node_labels, dtype=np.int64, copy=copy).squeeze()
 
-    return adj_matrix, attr_matrix, labels
+        assert 0 < node_labels.ndim <= 2
+
+    return adj_matrix, node_attr, node_labels
 
 
 class Graph(BaseGraph):
     """Attributed labeled graph stored in sparse matrix form."""
 
     def __init__(self, adj_matrix: Optional[AdjMatrix] = None,
-                 attr_matrix: Optional[Union[AdjMatrix, Matrix2D]] = None,
-                 labels: Optional[LabelMatrix] = None,
+                 node_attr: Optional[Union[AdjMatrix, Matrix2D]] = None,
+                 node_labels: Optional[LabelMatrix] = None,
                  metadata: Any = None,
                  copy: bool = True):
-        """Create an (un)dirtected (attributed and labeled) graph.
+        r"""Create an (un)dirtected (attributed and labeled) graph.
 
         Parameters
         ----------
-        adj_matrix : sp.csr_matrix, shape [n_nodes, n_nodes], optional
+        adj_matrix : sp.csr_matrix, shape [num_nodes, num_nodes], optional
             Adjacency matrix in CSR format.
-        attr_matrix : sp.csr_matrix or np.ndarray, shape [n_nodes, n_attrs], optional
-            Attribute matrix in CSR or Numpy format.
-        labels : np.ndarray, shape [n_nodes], optional
+        node_attr : sp.csr_matrix or np.ndarray, shape [num_nodes, num_node_attrs], optional
+            Node attribute matrix in CSR or Numpy format.
+        node_labels : np.ndarray, shape [num_nodes], optional
             Array, where each entry represents respective node's label(s).
         metadata : object, optional
             Additional metadata such as text.
         copy: bool, optional
             whether to use copy for the inputs.
         """
-        adj_matrix, attr_matrix, labels = _check(
-            adj_matrix, attr_matrix, labels, copy=copy)
+        adj_matrix, node_attr, node_labels = _check(
+            adj_matrix, node_attr, node_labels, copy=copy)
 
-        self.adj_matrix = adj_matrix
-        self.attr_matrix = attr_matrix
-        self.labels = labels
-        self.metadata = metadata
+        local_vars = locals()
+        del local_vars['self'], local_vars['copy']
+        self.update(local_vars)
 
-    def set_inputs(self, adj_matrix: Optional[AdjMatrix] = None,
-                   attr_matrix: Optional[Union[AdjMatrix, Matrix2D]] = None,
-                   labels: Optional[LabelMatrix] = None,
-                   metadata: str = None,
-                   copy: bool = False):
-
-        adj_matrix, attr_matrix, labels = _check(adj_matrix, attr_matrix,
-                                                 labels, copy=copy)
-
-        if adj_matrix is not None:
-            self.adj_matrix = adj_matrix
-
-        if attr_matrix is not None:
-            self.attr_matrix = attr_matrix
-
-        if labels is not None:
-            self.labels = labels
-
-        if metadata is not None:
-            self.metadata = metadata
-
-    @lru_cache(maxsize=1)
-    def get_attr_matrix(self) -> Union[AdjMatrix, Matrix2D]:
-        if self._attr_matrix is None:
-            n_nodes = self.n_nodes
-            if n_nodes:
-                return np.eye(n_nodes, dtype=np.float32)
-            else:
-                return None
-
-        is_sparse = sp.isspmatrix(self._attr_matrix)
-        if is_sparse:
-            return self._attr_matrix.toarray()
-        return self._attr_matrix
-
-    @property
-    def adj_matrix(self) -> AdjMatrix:
-        return self._adj_matrix
-
-    @adj_matrix.setter
-    def adj_matrix(self, x):
-        self._adj_matrix = x
-
-    @property
-    def attr_matrix(self) -> Union[AdjMatrix, Matrix2D]:
-        return self.get_attr_matrix()
-
-    @attr_matrix.setter
-    def attr_matrix(self, x):
-        # clear LRU cache
-        self.get_attr_matrix.cache_clear()
-        self._attr_matrix = x
-
-    @property
-    def labels(self) -> LabelMatrix:
-        _labels = self._labels
-        if _labels is not None and _labels.ndim == 2 and (_labels.sum(1) == 1).all():
-            _labels = _labels.argmax(1)
-        return _labels
-
-    @labels.setter
-    def labels(self, x):
-        self._labels = x
-
-    @property
+    @ property
     def degrees(self) -> Union[Tuple[Array1D, Array1D], Array1D]:
         if not self.is_directed():
             return self.adj_matrix.sum(1).A1
@@ -159,16 +94,16 @@ class Graph(BaseGraph):
             # in-degree and out-degree
             return self.adj_matrix.sum(0).A1, self.adj_matrix.sum(1).A1
 
-    @property
-    def n_nodes(self) -> int:
+    @ property
+    def num_nodes(self) -> int:
         """Get the number of nodes in the graph."""
         if self.adj_matrix is not None:
             return self.adj_matrix.shape[0]
         else:
             return None
 
-    @property
-    def n_edges(self) -> int:
+    @ property
+    def num_edges(self) -> int:
         """Get the number of edges in the graph.
         For undirected graphs, (i, j) and (j, i) are counted as single edge.
         """
@@ -181,34 +116,34 @@ class Graph(BaseGraph):
             A.eliminate_zeros()
             return int(A.nnz / 2) + int((diag != 0).sum())
 
-    @property
-    def n_graphs(self) -> int:
+    @ property
+    def num_graphs(self) -> int:
         """Get the number of graphs."""
         return 1
 
-    @property
-    def n_classes(self) -> int:
-        """Get the number of classes labels of the nodes."""
-        if self.labels is not None:
-            return self.labels.max() + 1
+    @ property
+    def num_node_classes(self) -> int:
+        """Get the number of classes node_labels of the nodes."""
+        if self.node_labels is not None:
+            return self.node_labels.max() + 1
         else:
             return None
 
-    @property
-    def n_attrs(self) -> int:
+    @ property
+    def num_node_attrs(self) -> int:
         """Get the number of attribute dimensions of the nodes."""
-        if self.attr_matrix is not None:
-            return self.attr_matrix.shape[1]
+        if self.node_attr is not None:
+            return self.node_attr.shape[1]
         else:
             return None
 
-    @property
-    def labels_onehot(self) -> Matrix2D:
-        """Get the one-hot like labels of nodes."""
-        labels = self.labels
-        if labels is not None and labels.ndim == 1:
-            return np.eye(self.n_classes)[labels].astype(labels.dtype)
-        return labels
+    @ property
+    def node_labels_onehot(self) -> Matrix2D:
+        """Get the one-hot like node_labels of nodes."""
+        node_labels = self.node_labels
+        if node_labels is not None and node_labels.ndim == 1:
+            return np.eye(self.num_node_classes)[node_labels].astype(node_labels.dtype)
+        return node_labels
 
     def neighbors(self, idx) -> Array1D:
         """Get the indices of neighbors of a given node.
@@ -250,30 +185,37 @@ class Graph(BaseGraph):
         return G
 
     def eliminate_classes(self, threshold=0) -> "Graph":
-        """Remove nodes from graph that correspond to a class of which there are less 
+        """Remove nodes from graph that correspond to a class of which there are less
         or equal than 'threshold'. Those classes would otherwise break the training procedure.
         """
-        if self.labels is None:
+        if self.node_labels is None:
             return self
-        labels = self.labels
-        counts = np.bincount(labels)
+        node_labels = self.node_labels
+        counts = np.bincount(node_labels)
         nodes_to_remove = []
         removed = 0
         left = []
         for _class, count in enumerate(counts):
             if count <= threshold:
-                nodes_to_remove.extend(np.where(labels == _class)[0])
+                nodes_to_remove.extend(np.where(node_labels == _class)[0])
                 removed += 1
             else:
                 left.append(_class)
 
         if removed > 0:
             G = self.subgraph(nodes_to_remove=nodes_to_remove)
-            mapping = dict(zip(left, range(self.n_classes - removed)))
-            G.labels = np.asarray(list(map(lambda key: mapping[key], G.labels)), dtype=np.int32)
+            mapping = dict(zip(left, range(self.num_node_classes - removed)))
+            G.node_labels = np.asarray(list(map(lambda key: mapping[key], G.node_labels)), dtype=np.int32)
             return G
         else:
             return self
+
+    def eliminate_singleton(self) -> "Graph":
+        G = self.graph.eliminate_selfloops()
+        A = G.adj_matrix
+        mask = np.logical_and(A.sum(0) == 0, A.sum(1) == 1)
+        nodes_to_keep = mask.nonzero()[0]
+        return G.subgraph(nodes_to_keep=nodes_to_keep)
 
     def add_selfloops(self, value=1.0) -> "Graph":
         """Set the diagonal."""
@@ -307,7 +249,7 @@ class Graph(BaseGraph):
         filepath = save_graph_to_npz(filepath, self)
         print(f"save to {filepath}.")
 
-    @staticmethod
+    @ staticmethod
     def from_npz(filepath) -> "Graph":
         return load_dataset(filepath)
 
@@ -323,8 +265,8 @@ class Graph(BaseGraph):
         return self.adj_matrix.diagonal().sum() != 0
 
     def is_binary(self) -> bool:
-        '''Check if the attribute matrix has binary attributes.'''
-        return np.all(np.unique(self.attr_matrix) == (0, 1))
+        '''Check if the node attribute matrix has binary attributes.'''
+        return np.all(np.unique(self.node_attr) == (0, 1))
 
     def is_weighted(self) -> bool:
         """Check if the graph is weighted (edge weights other than 1)."""
@@ -333,14 +275,6 @@ class Graph(BaseGraph):
     def is_directed(self) -> bool:
         """Check if the graph is directed (adjacency matrix is not symmetric)."""
         return (self.adj_matrix != self.adj_matrix.T).sum() != 0
-
-    def __repr__(self):
-        A_shape = self.adj_matrix.shape if self.adj_matrix is not None else (
-            None, None)
-        X_shape = self.attr_matrix.shape if self.attr_matrix is not None else (
-            None, None)
-        Y_shape = self.labels.shape if self.labels is not None else (None,)
-        return f"{self.__class__.__name__}(adj_matrix{A_shape}, attr_matrix{X_shape}, labels{Y_shape})"
 
 
 def load_dataset(data_path: str) -> "Graph":
@@ -356,7 +290,7 @@ def load_dataset(data_path: str) -> "Graph":
     graph : Graph
         The requested dataset in sparse format.
     """
-    data_path = osp.abspath(osp.expanduser(osp.normpath(data_path)))
+    data_path = osp.abspath(osp.expanduser(osp.realpath(data_path)))
 
     if not data_path.endswith('.npz'):
         data_path = data_path + '.npz'
@@ -373,7 +307,8 @@ def load_npz_to_graph(filename: str) -> "Graph":
     ----------
     filename : str
         Name of the file to load.
-
+    graph : graphgalllery.data.Graph
+        Graph in sparse matrix format.
     Returns
     -------
     graph : Graph
@@ -383,29 +318,11 @@ def load_npz_to_graph(filename: str) -> "Graph":
     with np.load(filename, allow_pickle=True) as loader:
         loader = dict(loader)
 
-        if 'adj_data' in loader:
-            adj_matrix = sp.csr_matrix((loader['adj_data'],
-                                        loader['adj_indices'],
-                                        loader['adj_indptr']),
-                                       shape=loader['adj_shape'])
-        else:
-            adj_matrix = None
+        for k, v in loader.items():
+            if v.dtype.kind == 'O':
+                loader[k] = v.tolist()
 
-        if 'attr_data' in loader:
-            # Attributes are stored as a sparse CSR matrix
-            attr_matrix = sp.csr_matrix((loader['attr_data'],
-                                         loader['attr_indices'],
-                                         loader['attr_indptr']),
-                                        shape=loader['attr_shape'])
-        else:
-            # Attributes are stored as a (dense) np.ndarray
-            attr_matrix = loader.get('attr_matrix', None)
-
-        # Labels are stored as a Numpy array
-        labels = loader.get('labels', None)
-        metadata = loader.get('metadata', None)
-
-    return Graph(adj_matrix, attr_matrix, labels, metadata)
+        return Graph(**loader)
 
 
 def save_graph_to_npz(filepath: str, graph: "Graph"):
@@ -418,31 +335,7 @@ def save_graph_to_npz(filepath: str, graph: "Graph"):
     graph : graphgalllery.data.Graph
         Graph in sparse matrix format.
     """
-    adj_matrix, attr_matrix, labels = graph.raw()
-
-    if adj_matrix is not None:
-        data_dict = {
-            'adj_data': adj_matrix.data,
-            'adj_indices': adj_matrix.indices,
-            'adj_indptr': adj_matrix.indptr,
-            'adj_shape': adj_matrix.shape
-        }
-    else:
-        data_dict = {}
-
-    if sp.isspmatrix(attr_matrix):
-        data_dict['attr_data'] = attr_matrix.data
-        data_dict['attr_indices'] = attr_matrix.indices
-        data_dict['attr_indptr'] = attr_matrix.indptr
-        data_dict['attr_shape'] = attr_matrix.shape
-    elif attr_matrix is not None:
-        data_dict['attr_matrix'] = attr_matrix
-
-    if labels is not None:
-        data_dict['labels'] = labels
-
-    if graph.metadata is not None:
-        data_dict['metadata'] = graph.metadata
+    data_dict = {k: v for k, v in graph.items if v is not None}
 
     if not filepath.endswith('.npz'):
         filepath = filepath + '.npz'

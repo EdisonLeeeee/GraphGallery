@@ -31,9 +31,9 @@ class GCN_MIX(FastGCN):
                 with a `graphgallery.data.Graph` instance representing
                 A sparse, attributed, labeled graph.
 
-            model = GCN(adj_matrix, attr_matrix, labels)
+            model = GCN(adj_matrix, node_attr, labels)
                 where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
-                 `attr_matrix` is a 2D Numpy array-like matrix denoting the node 
+                 `node_attr` is a 2D Numpy array-like matrix denoting the node 
                  attributes, `labels` is a 1D Numpy array denoting the node labels.
 
 
@@ -64,7 +64,7 @@ class GCN_MIX(FastGCN):
                          device=device, seed=seed, name=name, **kwargs)
 
     def train_sequence(self, index):
-        labels = self.graph.labels[index]
+        labels = self.graph.node_labels[index]
 
         sequence = FullBatchNodeSequence(
             [self.feature_inputs, self.structure_inputs[index]], labels, device=self.device)

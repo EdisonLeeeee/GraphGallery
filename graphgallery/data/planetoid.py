@@ -18,7 +18,7 @@ Transform = Union[List, Tuple, str, List, Tuple, Callable]
 
 
 class Planetoid(Dataset):
-    r"""The citation network datasets "Cora", "CiteSeer" and "PubMed" from the
+    """The citation network datasets "Cora", "CiteSeer" and "PubMed" from the
     `"Revisiting Semi-Supervised Learning with Graph Embeddings"
     <https://arxiv.org/abs/1603.08861>`_ paper.
     Nodes represent documents and edges represent citation links.

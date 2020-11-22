@@ -21,7 +21,7 @@ class RobustGCN(Model):
 
         _floatx = floatx()
         x = Input(batch_shape=[None, in_channels],
-                  dtype=_floatx, name='attr_matrix')
+                  dtype=_floatx, name='node_attr')
         adj = [Input(batch_shape=[None, None], dtype=_floatx,
                      sparse=True, name='adj_matrix_1'),
                Input(batch_shape=[None, None], dtype=_floatx, sparse=True,

@@ -24,7 +24,7 @@ class SBVAT(SemiSupervisedModel):
     def __init__(self, *graph, n_samples=50,
                  adj_transform="normalize_adj", attr_transform=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
-        """Create a sample-based Batch Virtual Adversarial Training
+        r"""Create a sample-based Batch Virtual Adversarial Training
         Graph Convolutional Networks (SBVAT) model.
 
          This can be instantiated in several ways:
@@ -33,9 +33,9 @@ class SBVAT(SemiSupervisedModel):
                 with a `graphgallery.data.Graph` instance representing
                 A sparse, attributed, labeled graph.
 
-            model = SBVAT(adj_matrix, attr_matrix, labels)
+            model = SBVAT(adj_matrix, node_attr, labels)
                 where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
-                 `attr_matrix` is a 2D Numpy array-like matrix denoting the node
+                 `node_attr` is a 2D Numpy array-like matrix denoting the node
                  attributes, `labels` is a 1D Numpy array denoting the node labels.
 
 
@@ -74,11 +74,11 @@ class SBVAT(SemiSupervisedModel):
     def process_step(self):
         graph = self.graph
         adj_matrix = self.adj_transform(graph.adj_matrix)
-        attr_matrix = self.attr_transform(graph.attr_matrix)
+        node_attr = self.attr_transform(graph.node_attr)
         self.neighbors = F.find_4o_nbrs(adj_matrix)
 
         self.feature_inputs, self.structure_inputs = F.astensors(
-            attr_matrix, adj_matrix, device=self.device)
+            node_attr, adj_matrix, device=self.device)
 
     # use decorator to make sure all list arguments have the same length
     @F.EqualVarLength()
@@ -88,10 +88,10 @@ class SBVAT(SemiSupervisedModel):
 
         if self.backend == "tensorflow":
             with tf.device(self.device):
-                self.model = tfGCN(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
+                self.model = tfGCN(self.graph.num_node_attrs, self.graph.num_node_classes, hiddens=hiddens,
                                    activations=activations, dropout=dropout, weight_decay=weight_decay,
                                    lr=lr, use_bias=use_bias)
-                self.index_all = tf.range(self.graph.n_nodes, dtype=self.intx)
+                self.index_all = tf.range(self.graph.num_nodes, dtype=self.intx)
         else:
             raise NotImplementedError
 
@@ -152,7 +152,7 @@ class SBVAT(SemiSupervisedModel):
 
     def train_sequence(self, index):
 
-        labels = self.graph.labels[index]
+        labels = self.graph.node_labels[index]
 
         sequence = SBVATSampleSequence([self.feature_inputs, self.structure_inputs,
                                         index], labels,
@@ -163,7 +163,7 @@ class SBVAT(SemiSupervisedModel):
 
     def test_sequence(self, index):
 
-        labels = self.graph.labels[index]
+        labels = self.graph.node_labels[index]
         sequence = FullBatchNodeSequence([self.feature_inputs, self.structure_inputs,
                                           index], labels, device=self.device)
 

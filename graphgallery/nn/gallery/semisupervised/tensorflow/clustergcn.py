@@ -25,7 +25,7 @@ class ClusterGCN(SemiSupervisedModel):
     def __init__(self, *graph, n_clusters=None,
                  adj_transform="normalize_adj", attr_transform=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
-        """Create a Cluster Graph Convolutional Networks (ClusterGCN) model.
+        r"""Create a Cluster Graph Convolutional Networks (ClusterGCN) model.
 
         This can be instantiated in several ways:
 
@@ -33,9 +33,9 @@ class ClusterGCN(SemiSupervisedModel):
                 with a `graphgallery.data.Graph` instance representing
                 A sparse, attributed, labeled graph.
 
-            model = ClusterGCN(adj_matrix, attr_matrix, labels)
+            model = ClusterGCN(adj_matrix, node_attr, labels)
                 where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
-                 `attr_matrix` is a 2D Numpy array-like matrix denoting the node 
+                 `node_attr` is a 2D Numpy array-like matrix denoting the node 
                  attributes, `labels` is a 1D Numpy array denoting the node labels.
 
 
@@ -68,7 +68,7 @@ class ClusterGCN(SemiSupervisedModel):
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
         if not n_clusters:
-            n_clusters = self.graph.n_classes
+            n_clusters = self.graph.num_node_classes
 
         self.n_clusters = n_clusters
         self.adj_transform = F.get(adj_transform)
@@ -77,10 +77,10 @@ class ClusterGCN(SemiSupervisedModel):
 
     def process_step(self):
         graph = self.graph
-        attr_matrix = self.attr_transform(graph.attr_matrix)
+        node_attr = self.attr_transform(graph.node_attr)
 
         batch_adj, batch_x, self.cluster_member = F.graph_partition(graph.adj_matrix,
-                                                                    attr_matrix,
+                                                                    node_attr,
                                                                     n_clusters=self.n_clusters)
 
         batch_adj = self.adj_transform(*batch_adj)
@@ -93,14 +93,14 @@ class ClusterGCN(SemiSupervisedModel):
               weight_decay=0., lr=0.01, use_bias=False):
 
         with tf.device(self.device):
-            self.model = tfGCN(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
+            self.model = tfGCN(self.graph.num_node_attrs, self.graph.num_node_classes, hiddens=hiddens,
                                activations=activations, dropout=dropout, weight_decay=weight_decay,
                                lr=lr, use_bias=use_bias, experimental_run_tf_function=False)
 
     def train_sequence(self, index):
 
-        mask = F.indices2mask(index, self.graph.n_nodes)
-        labels = self.graph.labels
+        mask = F.indices2mask(index, self.graph.num_nodes)
+        labels = self.graph.node_labels
 
         batch_idx, batch_labels = [], []
         batch_x, batch_adj = [], []
@@ -122,7 +122,7 @@ class ClusterGCN(SemiSupervisedModel):
 
     def predict(self, index):
 
-        mask = F.indices2mask(index, self.graph.n_nodes)
+        mask = F.indices2mask(index, self.graph.num_nodes)
 
         orders_dict = {idx: order for order, idx in enumerate(index)}
         batch_idx, orders = [], []
@@ -140,7 +140,7 @@ class ClusterGCN(SemiSupervisedModel):
 
         batch_data = tuple(zip(batch_x, batch_adj, batch_idx))
 
-        logit = np.zeros((index.size, self.graph.n_classes), dtype=self.floatx)
+        logit = np.zeros((index.size, self.graph.num_node_classes), dtype=self.floatx)
         batch_data = F.astensors(batch_data, device=self.device)
 
         model = self.model

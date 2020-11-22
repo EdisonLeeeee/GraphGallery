@@ -30,7 +30,7 @@ def files_exist(files: List[str]) -> bool:
 
 def makedirs(path: str) -> None:
     try:
-        os.makedirs(osp.expanduser(osp.normpath(path)))
+        os.makedirs(osp.expanduser(osp.normpath(path)), exist_ok=True)
     except OSError as e:
         if e.errno != errno.EEXIST and osp.isdir(path):
             raise e
@@ -38,7 +38,4 @@ def makedirs(path: str) -> None:
 
 def makedirs_from_filename(filename: str, verbose: bool = True) -> None:
     folder = osp.realpath(osp.expanduser(osp.dirname(filename)))
-    if not osp.exists(folder):
-        makedirs(folder)
-        if verbose:
-            print(f"Creating folder in {filename}.", file=sys.stderr)
+    makedirs(folder)

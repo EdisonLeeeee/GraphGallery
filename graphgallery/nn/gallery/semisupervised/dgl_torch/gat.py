@@ -3,6 +3,7 @@ from graphgallery.nn.models.dgl_torch import GAT as dglGAT
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery import functional as F
 
+
 class GAT(SemiSupervisedModel):
     """
         Implementation of Graph Attention Networks (GAT).
@@ -15,7 +16,7 @@ class GAT(SemiSupervisedModel):
 
     def __init__(self, *graph, adj_transform="add_selfloops", attr_transform=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
-        """Create a Graph Attention Networks (GAT) model.
+        r"""Create a Graph Attention Networks (GAT) model.
 
 
         This can be instantiated in several ways:
@@ -24,13 +25,13 @@ class GAT(SemiSupervisedModel):
                 with a `graphgallery.data.Graph` instance representing
                 A sparse, attributed, labeled graph.
 
-            model = GAT(adj_matrix, attr_matrix, labels)
+            model = GAT(adj_matrix, node_attr, labels)
                 where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
-                 `attr_matrix` is a 2D Numpy array-like matrix denoting the node 
+                 `node_attr` is a 2D Numpy array-like matrix denoting the node 
                  attributes, `labels` is a 1D Numpy array denoting the node labels.
         Parameters:
         ----------
-        graph: graphgallery.data.Graph, or `adj_matrix, attr_matrix and labels` triplets.
+        graph: graphgallery.data.Graph, or `adj_matrix, node_attr and labels` triplets.
             A sparse, attributed, labeled graph.
         adj_transform: string, `transform`, or None. optional
             How to transform the adjacency matrix.             
@@ -59,25 +60,25 @@ class GAT(SemiSupervisedModel):
     def process_step(self):
         graph = self.graph
         adj_matrix = self.adj_transform(graph.adj_matrix)
-        attr_matrix = self.attr_transform(graph.attr_matrix)
+        node_attr = self.attr_transform(graph.node_attr)
 
-        self.feature_inputs, self.structure_inputs = F.astensors(attr_matrix, adj_matrix, device=self.device)
+        self.feature_inputs, self.structure_inputs = F.astensors(node_attr, adj_matrix, device=self.device)
 
     # use decorator to make sure all list arguments have the same length
     @F.EqualVarLength(include=["n_heads"])
     def build(self, hiddens=[8], n_heads=[8], activations=['elu'],
               dropout=0.6, weight_decay=5e-4, lr=0.01):
 
-        self.model = dglGAT(self.graph.n_attrs, self.graph.n_classes,
-                           hiddens=hiddens, n_heads=n_heads,
-                           activations=activations,
-                           dropout=dropout,
-                           weight_decay=weight_decay,
-                           lr=lr).to(self.device)
+        self.model = dglGAT(self.graph.num_node_attrs, self.graph.num_node_classes,
+                            hiddens=hiddens, n_heads=n_heads,
+                            activations=activations,
+                            dropout=dropout,
+                            weight_decay=weight_decay,
+                            lr=lr).to(self.device)
 
     def train_sequence(self, index):
 
-        labels = self.graph.labels[index]
+        labels = self.graph.node_labels[index]
         sequence = FullBatchNodeSequence(
             [self.feature_inputs, self.structure_inputs, index], labels,
             device=self.device, escape=type(self.structure_inputs))

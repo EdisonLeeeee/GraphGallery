@@ -15,7 +15,7 @@ class GraphEdgeConvolution(Layer):
 
         `GraphEdgeConvolution` implements the operation using message passing framework:
         `output = activation(adj @ x @ kernel + bias)`
-        where `x` is the attribute matrix, `adj` is the adjacency matrix,
+        where `x` is the node node attribute matrix, `adj` is the adjacency matrix,
         `activation` is the element-wise activation function
         passed as the `activation` argument, `kernel` is a weights matrix
         created by the layer, and `bias` is a bias vector created by the layer
@@ -47,12 +47,12 @@ class GraphEdgeConvolution(Layer):
 
         Input shape:
             tuple/list with three tensor: Tensor `x`, `edge_index` and `edge_weight`: 
-                `[(n_nodes, n_attrs), (n_edges, 2), (n_edges,)]`. The former one is the 
-                attribute matrix (Tensor) and the last two are edge index and edge weight of 
+                `[(num_nodes, num_node_attrs), (num_edges, 2), (num_edges,)]`. The former one is the 
+                node node attribute matrix (Tensor) and the last two are edge index and edge weight of 
                 the adjacency matrix.
 
         Output shape:
-            2-D tensor with shape: `(n_nodes, units)`.       
+            2-D tensor with shape: `(num_nodes, units)`.       
     """
 
     def __init__(self, units,
@@ -142,4 +142,4 @@ class GraphEdgeConvolution(Layer):
     def compute_output_shape(self, input_shapes):
         attributes_shape = input_shapes[0]
         output_shape = (attributes_shape[0], self.units)
-        return tf.TensorShape(output_shape)  # (n_nodes, output_dim)
+        return tf.TensorShape(output_shape)  # (num_nodes, output_dim)

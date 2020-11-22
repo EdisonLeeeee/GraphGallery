@@ -13,7 +13,7 @@ class ChebyConvolution(Layer):
 
         `ChebyConvolution` implements the operation:
         `output = activation(adj_0 @ x @ kernel + bias) + activation(adj_1 @ x @ kernel + bias) + ...`
-        where `x` is the attribute matrix, `adj_i` is the i-th adjacency matrix, 0<=i<=`order`,
+        where `x` is the node node attribute matrix, `adj_i` is the i-th adjacency matrix, 0<=i<=`order`,
         `activation` is the element-wise activation function
         passed as the `activation` argument, `kernel` is a weights matrix
         created by the layer, and `bias` is a bias vector created by the layer
@@ -40,11 +40,11 @@ class ChebyConvolution(Layer):
 
         Input shape:
           tuple/list with `order + 2` 2-D tensor: Tensor `x` and `order + 1` SparseTensor `adj`: 
-          `[(n_nodes, n_attrs), (n_nodes, n_nodes), (n_nodes, n_nodes), ...]`.
-          The former one is the attribute matrix (Tensor) and the last is adjacency matrix (SparseTensor).
+          `[(num_nodes, num_node_attrs), (num_nodes, num_nodes), (num_nodes, num_nodes), ...]`.
+          The former one is the node node attribute matrix (Tensor) and the last is adjacency matrix (SparseTensor).
 
         Output shape:
-          2-D tensor with shape: `(n_nodes, units)`.  
+          2-D tensor with shape: `(num_nodes, units)`.  
     """
 
     def __init__(self, units,
@@ -137,4 +137,4 @@ class ChebyConvolution(Layer):
     def compute_output_shape(self, input_shapes):
         attributes_shape = input_shapes[0]
         output_shape = (attributes_shape[0], self.units)
-        return tf.TensorShape(output_shape)  # (n_nodes, output_dim)
+        return tf.TensorShape(output_shape)  # (num_nodes, output_dim)

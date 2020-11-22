@@ -21,7 +21,7 @@ class GWNN(SemiSupervisedModel):
 
     def __init__(self, *graph, adj_transform="wavelet_basis", attr_transform=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
-        """Create a Graph Wavelet Neural Networks (GWNN) model.
+        r"""Create a Graph Wavelet Neural Networks (GWNN) model.
 
 
         This can be instantiated in several ways:
@@ -30,9 +30,9 @@ class GWNN(SemiSupervisedModel):
                 with a `graphgallery.data.Graph` instance representing
                 A sparse, attributed, labeled graph.
 
-            model = GWNN(adj_matrix, attr_matrix, labels)
+            model = GWNN(adj_matrix, node_attr, labels)
                 where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
-                 `attr_matrix` is a 2D Numpy array-like matrix denoting the node 
+                 `node_attr` is a 2D Numpy array-like matrix denoting the node 
                  attributes, `labels` is a 1D Numpy array denoting the node labels.
 
 
@@ -67,10 +67,10 @@ class GWNN(SemiSupervisedModel):
     def process_step(self):
         graph = self.graph
         adj_matrix = self.adj_transform(graph.adj_matrix)
-        attr_matrix = self.attr_transform(graph.attr_matrix)
+        node_attr = self.attr_transform(graph.node_attr)
 
         self.feature_inputs, self.structure_inputs = F.astensors(
-            attr_matrix, adj_matrix, device=self.device)
+            node_attr, adj_matrix, device=self.device)
 
     # use decorator to make sure all list arguments have the same length
     @F.EqualVarLength()
@@ -79,7 +79,7 @@ class GWNN(SemiSupervisedModel):
 
         if self.backend == "tensorflow":
             with tf.device(self.device):
-                self.model = tfGWNN(self.graph.n_attrs, self.graph.n_classes, self.graph.n_nodes,
+                self.model = tfGWNN(self.graph.num_node_attrs, self.graph.num_node_classes, self.graph.num_nodes,
                                     hiddens=hiddens,
                                     activations=activations,
                                     dropout=dropout, weight_decay=weight_decay,
@@ -89,7 +89,7 @@ class GWNN(SemiSupervisedModel):
 
     def train_sequence(self, index):
 
-        labels = self.graph.labels[index]
+        labels = self.graph.node_labels[index]
         sequence = FullBatchNodeSequence(
             [self.feature_inputs, *self.structure_inputs, index], labels, device=self.device)
         return sequence

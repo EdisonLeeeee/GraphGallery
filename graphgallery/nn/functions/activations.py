@@ -17,4 +17,4 @@ def softmax(x: np.ndarray, axis: int = -1) -> np.ndarray:
         An array with the same shape as `x`.
     """
     exp_x = np.exp(x - np.max(x))
-    return exp_x/exp_x.sum(axis=axis, keepdims=True)
+    return exp_x / exp_x.sum(axis=axis, keepdims=True)

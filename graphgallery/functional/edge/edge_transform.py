@@ -11,20 +11,20 @@ from ..ops import get_length
 __all__ = ['add_selfloops_edge', 'normalize_edge', 'augment_edge']
 
 
-def add_selfloops_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0):
+def add_selfloops_edge(edge_index, edge_weight, num_nodes=None, fill_weight=1.0):
     edge_index = edge_transpose(edge_index)
 
-    if n_nodes is None:
-        n_nodes = edge_index.max() + 1
+    if num_nodes is None:
+        num_nodes = edge_index.max() + 1
 
     if edge_weight is None:
         edge_weight = np.ones(edge_index.shape[1], dtype=gg.floatx())
 
-    diagnal_edge_index = np.asarray(np.diag_indices(n_nodes)).astype(edge_index.dtype, copy=False)
+    diagnal_edge_index = np.asarray(np.diag_indices(num_nodes)).astype(edge_index.dtype, copy=False)
 
     updated_edge_index = np.hstack([edge_index, diagnal_edge_index])
 
-    diagnal_edge_weight = np.zeros(n_nodes, dtype=gg.floatx()) + fill_weight
+    diagnal_edge_weight = np.zeros(num_nodes, dtype=gg.floatx()) + fill_weight
     updated_edge_weight = np.hstack([edge_weight, diagnal_edge_weight])
 
     return updated_edge_index, updated_edge_weight
@@ -33,14 +33,14 @@ def add_selfloops_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0):
 def normalize_edge(edge_index, edge_weight=None, rate=-0.5, fill_weight=1.0):
     edge_index = edge_transpose(edge_index)
 
-    n_nodes = edge_index.max() + 1
+    num_nodes = edge_index.max() + 1
 
     if edge_weight is None:
         edge_weight = np.ones(edge_index.shape[1], dtype=gg.floatx())
 
     if fill_weight:
         edge_index, edge_weight = add_selfloops_edge(
-            edge_index, edge_weight, n_nodes=n_nodes, fill_weight=fill_weight)
+            edge_index, edge_weight, num_nodes=num_nodes, fill_weight=fill_weight)
 
     degree = np.bincount(edge_index[0], weights=edge_weight)
     degree_power = np.power(degree, rate, dtype=gg.floatx())
@@ -66,7 +66,7 @@ def augment_edge(edge_index: np.ndarray, nodes: np.ndarray,
     nodes: the nodes that will be linked to the graph.
         list or np.array: the nodes connected to `nbrs_to_link`
         int: new added nodes connected to `nbrs_to_link`, 
-            node ids [n_nodes, ..., n_nodes+nodes-1].            
+            node ids [num_nodes, ..., num_nodes+nodes-1].            
     edge_weight: shape [M,]
         edge weights of a Scipy sparse adjacency matrix.
     nbrs_to_link: a list of N elements,
@@ -95,11 +95,11 @@ def augment_edge(edge_index: np.ndarray, nodes: np.ndarray,
     if edge_weight is None:
         edge_weight = np.ones(edge_index.shape[1], dtype=gg.floatx())
 
-    n_nodes = edge_index.max() + 1
+    num_nodes = edge_index.max() + 1
 
     if gg.is_intscalar(nodes):
         # int, add nodes to the graph
-        nodes = np.arange(n_nodes, n_nodes + nodes, dtype=edge_index.dtype)
+        nodes = np.arange(num_nodes, num_nodes + nodes, dtype=edge_index.dtype)
     else:
         # array-like, link nodes to the graph
         nodes = np.asarray(nodes, dtype=edge_index.dtype)

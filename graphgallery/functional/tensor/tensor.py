@@ -174,19 +174,19 @@ def normalize_adj_tensor(adj, rate=-0.5, fill_weight=1.0, backend=None):
         return th_tensor.normalize_adj_tensor(adj, rate=rate, fill_weight=fill_weight)
 
 
-def add_selfloops_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0, backend=None):
+def add_selfloops_edge(edge_index, edge_weight, num_nodes=None, fill_weight=1.0, backend=None):
     backend = gg.backend(backend)
     if backend == "tensorflow":
-        return tf_tensor.normalize_adj_tensor(edge_index, edge_weight, n_nodes=n_nodes, fill_weight=fill_weight)
+        return tf_tensor.normalize_adj_tensor(edge_index, edge_weight, num_nodes=num_nodes, fill_weight=fill_weight)
     else:
         # TODO
-        return th_tensor.normalize_adj_tensor(edge_index, edge_weight, n_nodes=n_nodes, fill_weight=fill_weight)
+        return th_tensor.normalize_adj_tensor(edge_index, edge_weight, num_nodes=num_nodes, fill_weight=fill_weight)
 
 
-def normalize_edge_tensor(edge_index, edge_weight=None, n_nodes=None, fill_weight=1.0, rate=-0.5, backend=None):
+def normalize_edge_tensor(edge_index, edge_weight=None, num_nodes=None, fill_weight=1.0, rate=-0.5, backend=None):
     backend = gg.backend(backend)
     if backend == "tensorflow":
-        return tf_tensor.normalize_adj_tensor(edge_index, edge_weight=edge_weight, n_nodes=n_nodes, fill_weight=fill_weight, rate=rate)
+        return tf_tensor.normalize_adj_tensor(edge_index, edge_weight=edge_weight, num_nodes=num_nodes, fill_weight=fill_weight, rate=rate)
     else:
         # TODO
-        return th_tensor.normalize_adj_tensor(edge_index, edge_weight=edge_weight, n_nodes=n_nodes, fill_weight=fill_weight, rate=rate)
+        return th_tensor.normalize_adj_tensor(edge_index, edge_weight=edge_weight, num_nodes=num_nodes, fill_weight=fill_weight, rate=rate)

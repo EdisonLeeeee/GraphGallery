@@ -1,6 +1,7 @@
 import random
 import numpy as np
 
+
 def create_alias_table(area_ratio):
     """
 
@@ -45,12 +46,13 @@ def alias_sample(accept, alias):
     :return: sample index
     """
     N = len(accept)
-    i = int(random.random()*N)
+    i = int(random.random() * N)
     r = random.random()
     if r < accept[i]:
         return i
     else:
         return alias[i]
+
 
 class RandomWalker:
     def __init__(self, G, p=1, q=1):
@@ -77,16 +79,16 @@ class RandomWalker:
         unnormalized_probs = []
         for x in G.neighbors(v):
             weight = G[v][x].get('weight', 1.0)  # w_vx
-            
+
             if x == t:  # d_tx == 0
-                unnormalized_probs.append(weight/p)
+                unnormalized_probs.append(weight / p)
             elif G.has_edge(x, t):  # d_tx == 1
                 unnormalized_probs.append(weight)
             else:  # d_tx > 1
-                unnormalized_probs.append(weight/q)
-                
+                unnormalized_probs.append(weight / q)
+
         norm_const = sum(unnormalized_probs)
-        normalized_probs = [float(u_prob)/norm_const for u_prob in unnormalized_probs]
+        normalized_probs = [float(u_prob) / norm_const for u_prob in unnormalized_probs]
 
         return create_alias_table(normalized_probs)
 
@@ -101,7 +103,7 @@ class RandomWalker:
             unnormalized_probs = [G[node][nbr].get('weight', 1.0)
                                   for nbr in G.neighbors(node)]
             norm_const = sum(unnormalized_probs)
-            normalized_probs = [float(u_prob)/norm_const for u_prob in unnormalized_probs]
+            normalized_probs = [float(u_prob) / norm_const for u_prob in unnormalized_probs]
             alias_nodes[node] = create_alias_table(normalized_probs)
 
         alias_edges = {}

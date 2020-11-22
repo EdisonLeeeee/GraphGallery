@@ -20,17 +20,17 @@ from .ops import *
 __all__ = ['get', 'Compose']
 
 _TRANSFORMS = {"gdc": GDC,
-                "svd": SVD,
-                "normalize_adj": NormalizeAdj,
-                "normalize_attr": NormalizeAttr,
-                "add_selfloops": AddSelfLoops,
-                "wavelet_basis": WaveletBasis,
-                "cheby_basis": ChebyBasis,
-                "neighbor_sampler": NeighborSampler,
-                "graph_partition": GraphPartition,
-                "sparse_adj_to_edge": SparseAdjToEdge,
-#                 "edge_to_sparse_adj": EdgeToSparseAdj,
-                "sparse_reshape": SparseReshape}
+               "svd": SVD,
+               "normalize_adj": NormalizeAdj,
+               "normalize_attr": NormalizeAttr,
+               "add_selfloops": AddSelfLoops,
+               "wavelet_basis": WaveletBasis,
+               "cheby_basis": ChebyBasis,
+               "neighbor_sampler": NeighborSampler,
+               "graph_partition": GraphPartition,
+               "sparse_adj_to_edge": SparseAdjToEdge,
+               #                 "edge_to_sparse_adj": EdgeToSparseAdj,
+               "sparse_reshape": SparseReshape}
 
 _ALLOWED = set(list(_TRANSFORMS.keys()))
 
@@ -47,7 +47,7 @@ class Compose(Transform):
                 inputs = transform(inputs)
 
         return inputs
-    
+
     def add(self, transform):
         self.transforms.append(get(transform))
 
@@ -72,5 +72,5 @@ def get(transform: Union[str, Transform, None, List, Tuple, Compose]) -> Transfo
     _transform = _TRANSFORMS.get(_transform, None)
     if _transform is None:
         raise ValueError(
-            f"Unknown transform: '{transform}', expected one of {_ALLOWED}, None or a callable function.")
+            f"Unknown transform: '{transform}', expected string, callable function or None.")
     return _transform()

@@ -30,7 +30,7 @@ class GraphSAGE(Model):
 
         _intx = intx()
         x = Input(batch_shape=[None, in_channels],
-                  dtype=floatx(), name='attr_matrix')
+                  dtype=floatx(), name='node_attr')
         nodes = Input(batch_shape=[None], dtype=_intx, name='nodes')
         neighbors = [Input(batch_shape=[None], dtype=_intx, name=f'neighbors_{hop}')
                      for hop, n_sample in enumerate(n_samples)]

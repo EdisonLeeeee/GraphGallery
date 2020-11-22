@@ -47,7 +47,7 @@ class SemiSupervisedModel(GalleryModel):
 
     def process(self, *graph, **kwargs):
         """pre-process for the input graph, including manipulations
-        on adjacency matrix and attribute matrix, and finally convert
+        on adjacency matrix and node node attribute matrix, and finally convert
         them into tensor (optional).
 
         Note:
@@ -89,7 +89,7 @@ class SemiSupervisedModel(GalleryModel):
         Parameters:
         ----------
             hiddens: `list` of integer or integer scalar
-                The number of hidden units of model. Note: the last hidden unit (`n_classes`)
+                The number of hidden units of model. Note: the last hidden unit (`num_node_classes`)
                 aren't necessary to specified and it will be automatically added in the last
                 layer.
             activations: `list` of string or string
@@ -294,7 +294,7 @@ class SemiSupervisedModel(GalleryModel):
                 if model.stop_training:
                     print(f"Early Stopping in Epoch {epoch}", file=sys.stderr)
                     break
-                    
+
             callbacks.on_train_end()
             self.load(weight_path, as_model=as_model)
         finally:
@@ -425,7 +425,7 @@ class SemiSupervisedModel(GalleryModel):
         Return:
         ----------
         The predicted probability of each class for each node,
-            shape (n_nodes, n_classes).
+            shape (num_nodes, num_node_classes).
 
         """
 
@@ -434,7 +434,7 @@ class SemiSupervisedModel(GalleryModel):
                 'You must compile your model before training/testing/predicting. Use `model.build()`.')
 
         if index is None:
-            index = np.arange(self.graph.n_nodes, dtype=gg.intx())
+            index = np.arange(self.graph.num_nodes, dtype=gg.intx())
         else:
             index = asintarr(index)
         sequence = self.predict_sequence(index)
@@ -505,7 +505,7 @@ class SemiSupervisedModel(GalleryModel):
     def _test_predict(self, index):
         logit = self.predict(index)
         predict_class = logit.argmax(1)
-        labels = self.graph.labels[index]
+        labels = self.graph.node_labels[index]
         return (predict_class == labels).mean()
 
     def reset_weights(self):

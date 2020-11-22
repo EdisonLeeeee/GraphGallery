@@ -94,4 +94,4 @@ class MedianConvolution(Layer):
     def compute_output_shape(self, input_shapes):
         attributes_shape = input_shapes[0]
         output_shape = (attributes_shape[0], self.units)
-        return tf.TensorShape(output_shape)  # (n_nodes, output_dim)
+        return tf.TensorShape(output_shape)  # (num_nodes, output_dim)

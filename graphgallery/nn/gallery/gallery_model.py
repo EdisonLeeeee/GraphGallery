@@ -21,7 +21,7 @@ class GalleryModel(Model):
     """Base model for semi-supervised learning and unsupervised learning."""
 
     def __init__(self, *graph, device="cpu:0", seed=None, name=None, **kwargs):
-        """Create a Base model for semi-supervised learning and unsupervised learning.
+        r"""Create a Base model for semi-supervised learning and unsupervised learning.
 
         Parameters:
         ----------

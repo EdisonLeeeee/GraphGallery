@@ -17,7 +17,7 @@ class EdgeGCN(Model):
         _intx = intx()
         _floatx = floatx()
         x = Input(batch_shape=[None, in_channels],
-                  dtype=_floatx, name='attr_matrix')
+                  dtype=_floatx, name='node_attr')
         edge_index = Input(batch_shape=[None, 2], dtype=_intx,
                            name='edge_index')
         edge_weight = Input(batch_shape=[None], dtype=_floatx,

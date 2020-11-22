@@ -33,12 +33,12 @@ def augment_adj(adj_matrix: sp.csr_matrix, nodes: Union[list, int, np.ndarray],
                                 fill_weight=1.0)                                 
     Parameters
     ----------
-    adj_matrix: shape [n_nodes, n_nodes].
+    adj_matrix: shape [num_nodes, num_nodes].
         A Scipy sparse adjacency matrix.
     nodes: the nodes that will be linked to the graph.
         list or np.array: the nodes connected to `nbrs_to_link`
         int: new added nodes connected to `nbrs_to_link`, 
-            node ids [n_nodes, ..., n_nodes+nodes-1].            
+            node ids [num_nodes, ..., num_nodes+nodes-1].            
     nbrs_to_link: a list of N elements,
         where N is the length of 'nodes'.
         the specified neighbor(s) for each added node.

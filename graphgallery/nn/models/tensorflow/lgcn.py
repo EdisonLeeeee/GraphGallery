@@ -18,7 +18,7 @@ class LGCN(Model):
                  weight_decay=5e-4, lr=0.1, use_bias=False, K=8):
 
         x = Input(batch_shape=[None, in_channels],
-                  dtype=floatx(), name='attr_matrix')
+                  dtype=floatx(), name='node_attr')
         adj = Input(batch_shape=[None, None], dtype=floatx(),
                     sparse=False, name='adj_matrix')
         mask = Input(batch_shape=[None], dtype='bool', name='node_mask')

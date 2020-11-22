@@ -28,18 +28,18 @@ def asintarr(x: Any, dtype: Optional[str] = None) -> np.ndarray:
     """
     if dtype is None:
         dtype = gg.intx()
-        
+
     if gg.is_tensor(x, backend="tensorflow"):
         if x.dtype != dtype:
             return tf.cast(x, dtype=dtype)
         else:
             return x
-        
+
     if gg.is_tensor(x, backend="torch"):
         if x.dtype != dtype:
             return x.to(getattr(torch, dtype))
         else:
-            return x       
+            return x
 
     if gg.is_intscalar(x):
         x = np.asarray([x], dtype=dtype)
@@ -55,6 +55,7 @@ def indices2mask(indices: np.ndarray, shape: tuple) -> np.ndarray:
     mask = np.zeros(shape, dtype=gg.boolx())
     mask[indices] = True
     return mask
+
 
 def repeat(src: Any, length: int) -> Any:
     if src is None:
@@ -76,6 +77,7 @@ def get_length(obj: Any) -> int:
     else:
         length = 1
     return length
+
 
 class Bunch(dict):
     """Container object for datasets

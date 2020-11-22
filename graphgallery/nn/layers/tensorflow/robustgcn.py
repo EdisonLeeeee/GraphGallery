@@ -36,11 +36,11 @@ class GaussionConvolution_F(Layer):
 
         Inputs:
           tuple/list with three 2-D tensor: Tensor `x` and SparseTensor `adj_0, adj_1`: 
-            `[(n_nodes, n_attrs), (n_nodes, n_nodes), (n_nodes, n_nodes)]`.
-          The former one is the attribute matrix (Tensor) and the others are adjacency matrix (SparseTensor) with different normalize rate (-0.5, -1.0).
+            `[(num_nodes, num_node_attrs), (num_nodes, num_nodes), (num_nodes, num_nodes)]`.
+          The former one is the node node attribute matrix (Tensor) and the others are adjacency matrix (SparseTensor) with different normalize rate (-0.5, -1.0).
 
         Outputs:
-          shape ((n_nodes, units), (n_nodes, units)), two 2-D tensor representing the
+          shape ((num_nodes, units), (num_nodes, units)), two 2-D tensor representing the
           `mean` and `variance` of outputs.
     """
 
@@ -96,7 +96,7 @@ class GaussionConvolution_F(Layer):
         mean = activations.elu(h)
         var = activations.relu(h)
 
-        attention = tf.exp(-self.gamma*var)
+        attention = tf.exp(-self.gamma * var)
         mean = tf.sparse.sparse_dense_matmul(adj[0], mean * attention)
         var = tf.sparse.sparse_dense_matmul(adj[1], var * attention * attention)
 
@@ -166,12 +166,12 @@ class GaussionConvolution_D(Layer):
 
         Inputs:
           tuple/list with four 2-D tensor: Tensor `mean`, `var` and SparseTensor `adj_0`, `adj_1`: 
-              `[(n_nodes, n_attrs), (n_nodes, n_attrs), (n_nodes, n_nodes), (n_nodes, n_nodes)]`.
+              `[(num_nodes, num_node_attrs), (num_nodes, num_node_attrs), (num_nodes, num_nodes), (num_nodes, num_nodes)]`.
           The former two is the mean and variance vector (Tensor) and the last are adjacency matrices (SparseTensor) with 
               different normalize rates (-0.5, -1.0).
 
         Outputs:
-          Shape ((n_nodes, units), (n_nodes, units)), two 2-D tensors representing the
+          Shape ((num_nodes, units), (num_nodes, units)), two 2-D tensors representing the
               `mean` and `var` of outputs.
     """
 
@@ -241,7 +241,7 @@ class GaussionConvolution_D(Layer):
         mean = activations.elu(mean @ self.kernel_mean)
         var = activations.relu(var @ self.kernel_var)
 
-        attention = tf.math.exp(-self.gamma*var)
+        attention = tf.math.exp(-self.gamma * var)
         mean = tf.sparse.sparse_dense_matmul(adj[0], mean * attention)
         var = tf.sparse.sparse_dense_matmul(adj[1], var * attention * attention)
 

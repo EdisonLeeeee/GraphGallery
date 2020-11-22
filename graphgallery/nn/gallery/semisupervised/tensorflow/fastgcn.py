@@ -22,7 +22,7 @@ class FastGCN(SemiSupervisedModel):
     def __init__(self, *graph, batch_size=256, rank=100,
                  adj_transform="normalize_adj", attr_transform=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
-        """Create a Fast Graph Convolutional Networks (FastGCN) model.
+        r"""Create a Fast Graph Convolutional Networks (FastGCN) model.
 
 
         This can be instantiated in several ways:
@@ -31,9 +31,9 @@ class FastGCN(SemiSupervisedModel):
                 with a `graphgallery.data.Graph` instance representing
                 A sparse, attributed, labeled graph.
 
-            model = FastGCN(adj_matrix, attr_matrix, labels)
+            model = FastGCN(adj_matrix, node_attr, labels)
                 where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
-                 `attr_matrix` is a 2D Numpy array-like matrix denoting the node 
+                 `node_attr` is a 2D Numpy array-like matrix denoting the node 
                  attributes, `labels` is a 1D Numpy array denoting the node labels.
 
         Parameters:
@@ -74,12 +74,12 @@ class FastGCN(SemiSupervisedModel):
     def process_step(self):
         graph = self.graph
         adj_matrix = self.adj_transform(graph.adj_matrix)
-        attr_matrix = self.attr_transform(graph.attr_matrix)
+        node_attr = self.attr_transform(graph.node_attr)
 
-        attr_matrix = adj_matrix @ attr_matrix
+        node_attr = adj_matrix @ node_attr
 
         self.feature_inputs, self.structure_inputs = F.astensor(
-            attr_matrix, device=self.device), adj_matrix
+            node_attr, device=self.device), adj_matrix
 
     # use decorator to make sure all list arguments have the same length
     @F.EqualVarLength()
@@ -88,7 +88,7 @@ class FastGCN(SemiSupervisedModel):
 
         if self.backend == "tensorflow":
             with tf.device(self.device):
-                self.model = tfFastGCN(self.graph.n_attrs, self.graph.n_classes,
+                self.model = tfFastGCN(self.graph.num_node_attrs, self.graph.num_node_classes,
                                        hiddens=hiddens,
                                        activations=activations,
                                        dropout=dropout, weight_decay=weight_decay,
@@ -98,7 +98,7 @@ class FastGCN(SemiSupervisedModel):
 
     def train_sequence(self, index):
 
-        labels = self.graph.labels[index]
+        labels = self.graph.node_labels[index]
         adj_matrix = self.graph.adj_matrix[index][:, index]
         adj_matrix = self.adj_transform(adj_matrix)
 
@@ -110,7 +110,7 @@ class FastGCN(SemiSupervisedModel):
 
     def test_sequence(self, index):
 
-        labels = self.graph.labels[index]
+        labels = self.graph.node_labels[index]
         structure_inputs = self.structure_inputs[index]
 
         sequence = FastGCNBatchSequence([self.feature_inputs, structure_inputs],

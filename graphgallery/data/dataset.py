@@ -61,7 +61,7 @@ class Dataset(ABC):
             test_size = 1.0 - train_size - val_size
         assert train_size + val_size + test_size <= 1.0
 
-        labels = self.graph.labels
+        labels = self.graph.node_labels
         idx_train, idx_val, idx_test = train_val_test_split_tabular(labels.shape[0],
                                                                     train_size,
                                                                     val_size,
@@ -78,7 +78,7 @@ class Dataset(ABC):
 
         self.graph = self.graph.eliminate_classes(train_examples_per_class + val_examples_per_class).standardize()
 
-        labels = self.graph.labels
+        labels = self.graph.node_labels
         idx_train, idx_val, idx_test = get_train_val_test_split(labels,
                                                                 train_examples_per_class,
                                                                 val_examples_per_class,

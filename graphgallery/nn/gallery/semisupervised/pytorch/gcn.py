@@ -17,7 +17,7 @@ class GCN(SemiSupervisedModel):
 
     def __init__(self, *graph, adj_transform="normalize_adj", attr_transform=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
-        """Create a Graph Convolutional Networks (GCN) model.
+        r"""Create a Graph Convolutional Networks (GCN) model.
 
 
         This can be instantiated in several ways:
@@ -26,9 +26,9 @@ class GCN(SemiSupervisedModel):
                 with a `graphgallery.data.Graph` instance representing
                 A sparse, attributed, labeled graph.
 
-            model = GCN(adj_matrix, attr_matrix, labels)
+            model = GCN(adj_matrix, node_attr, labels)
                 where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
-                 `attr_matrix` is a 2D Numpy array-like matrix denoting the node 
+                 `node_attr` is a 2D Numpy array-like matrix denoting the node 
                  attributes, `labels` is a 1D Numpy array denoting the node labels.
 
 
@@ -63,23 +63,23 @@ class GCN(SemiSupervisedModel):
     def process_step(self):
         graph = self.graph
         adj_matrix = self.adj_transform(graph.adj_matrix)
-        attr_matrix = self.attr_transform(graph.attr_matrix)
+        node_attr = self.attr_transform(graph.node_attr)
 
         self.feature_inputs, self.structure_inputs = F.astensors(
-            attr_matrix, adj_matrix, device=self.device)
+            node_attr, adj_matrix, device=self.device)
 
     # use decorator to make sure all list arguments have the same length
     @F.EqualVarLength()
     def build(self, hiddens=[16], activations=['relu'], dropout=0.5,
               weight_decay=5e-4, lr=0.01, use_bias=False):
 
-        self.model = pyGCN(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
+        self.model = pyGCN(self.graph.num_node_attrs, self.graph.num_node_classes, hiddens=hiddens,
                            activations=activations, dropout=dropout, weight_decay=weight_decay,
                            lr=lr, use_bias=use_bias).to(self.device)
 
     def train_sequence(self, index):
 
-        labels = self.graph.labels[index]
+        labels = self.graph.node_labels[index]
         sequence = FullBatchNodeSequence(
             [self.feature_inputs, self.structure_inputs, index], labels, device=self.device)
         return sequence

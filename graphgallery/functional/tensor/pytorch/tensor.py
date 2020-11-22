@@ -5,7 +5,6 @@ import graphgallery as gg
 from typing import Any
 
 
-    
 from graphgallery import functional as F
 
 __all__ = ["astensor", "data_type_dict",
@@ -49,12 +48,12 @@ def dtype_to_tensor_class(dtype):
 
 
 def astensor(x, *, dtype=None, device=None, escape=None):
-    
+
     if x is None:
         return x
     if escape is not None and isinstance(x, escape):
         return x
-    
+
     if dtype is None:
         dtype = gg.infer_type(x)
     elif isinstance(dtype, str):
@@ -65,7 +64,7 @@ def astensor(x, *, dtype=None, device=None, escape=None):
     else:
         raise TypeError(
             f"argument 'dtype' must be torch.dtype or str, not {type(dtype).__name__}.")
-        
+
     if gg.is_tensor(x, backend='torch'):
         tensor = x.to(getattr(torch, dtype))
     elif gg.is_tensor(x, backend='tensorflow'):
@@ -80,7 +79,7 @@ def astensor(x, *, dtype=None, device=None, escape=None):
                 tensor = sparse_adj_to_sparse_tensor(x, dtype=dtype)
         else:
             tensor = sparse_adj_to_sparse_tensor(x, dtype=dtype)
-            
+
     elif isinstance(x, (np.ndarray, np.matrix)) or gg.is_listlike(x) or gg.is_scalar(x):
         tensor = torch.tensor(x, dtype=getattr(torch, dtype), device=device)
     else:
@@ -154,11 +153,11 @@ def normalize_adj_tensor(adj, rate=-0.5, fill_weight=1.0):
     ...
 
 
-def add_selfloops_edge(edge_index, edge_weight, n_nodes=None, fill_weight=1.0):
+def add_selfloops_edge(edge_index, edge_weight, num_nodes=None, fill_weight=1.0):
 
     ...
 
 
-def normalize_edge_tensor(edge_index, edge_weight=None, n_nodes=None, fill_weight=1.0, rate=-0.5):
+def normalize_edge_tensor(edge_index, edge_weight=None, num_nodes=None, fill_weight=1.0, rate=-0.5):
 
     ...

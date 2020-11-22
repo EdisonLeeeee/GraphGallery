@@ -16,7 +16,7 @@ class PropConvolution(Layer):
         output = activation(propagations @ kernel + bias).transpose([0, 2, 1])
         output = (output @ propagationsoutput).squeeze()`
 
-        where `x` is the attribute matrix, `adj` is the adjacency matrix,
+        where `x` is the node node attribute matrix, `adj` is the adjacency matrix,
         K is the propagation steps of adjacency matrix.
         `activation` is the element-wise activation function
         passed as the `activation` argument, `kernel` is a weights matrix
@@ -42,11 +42,11 @@ class PropConvolution(Layer):
           bias_constraint: Constraint function applied to the bias vector.
 
         Input shape:
-          tuple/list with two 2-D tensor: Tensor `x` and SparseTensor `adj`: `[(n_nodes, n_attrs), (n_nodes, n_nodes)]`.
-          The former one is the attribute matrix (Tensor) and the last is adjacency matrix (SparseTensor).
+          tuple/list with two 2-D tensor: Tensor `x` and SparseTensor `adj`: `[(num_nodes, num_node_attrs), (num_nodes, num_nodes)]`.
+          The former one is the node node attribute matrix (Tensor) and the last is adjacency matrix (SparseTensor).
 
         Output shape:
-          2-D tensor with the same shape as `x`: `(n_nodes, n_attrs)`.       
+          2-D tensor with the same shape as `x`: `(num_nodes, num_node_attrs)`.       
     """
 
     def __init__(self, K=10,
@@ -142,4 +142,4 @@ class PropConvolution(Layer):
     def compute_output_shape(self, input_shapes):
         attributes_shape = input_shapes[0]
         output_shape = (attributes_shape[0], self.units)
-        return tf.TensorShape(output_shape)  # (n_nodes, output_dim)
+        return tf.TensorShape(output_shape)  # (num_nodes, output_dim)

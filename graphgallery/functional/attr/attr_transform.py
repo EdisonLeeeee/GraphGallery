@@ -10,22 +10,22 @@ from ..decorators import MultiInputs
 __all__ = ['augment_attr', 'normalize_attr', 'NormalizeAttr']
 
 
-def augment_attr(attr_matrix: np.ndarray, N: int,
+def augment_attr(node_attr: np.ndarray, N: int,
                  fill_weight: Union[float, list, np.ndarray] = 0.):
-    """Augment a specified attribute matrix.
+    """Augment a specified node node attribute matrix.
 
     Examples
     ----------
-    >>> augment_attr(attr_matrix, 10, fill_weight=1.0)
+    >>> augment_attr(node_attr, 10, fill_weight=1.0)
 
-    >>> augment_attr(attr_matrix, 10, fill_weight=attr_matrix[-1])
+    >>> augment_attr(node_attr, 10, fill_weight=node_attr[-1])
 
     Parameters
     ----------
-    attr_matrix: shape [n_nodes, n_nodes].
+    node_attr: shape [num_nodes, num_nodes].
         A Scipy sparse adjacency matrix.
     N: number of added nodes.
-        node ids [n_nodes, ..., n_nodes+N-1].   
+        node ids [num_nodes, ..., num_nodes+N-1].   
     fill_weight: float or 1D array.
         + float scalar: the weight for the augmented matrix
         + 1D array: repeated N times to augment the matrix.
@@ -33,19 +33,19 @@ def augment_attr(attr_matrix: np.ndarray, N: int,
 
     """
     if is_scalar(fill_weight):
-        M = np.zeros([N, attr_matrix.shape[1]], dtype=attr_matrix.dtype) + fill_weight
+        M = np.zeros([N, node_attr.shape[1]], dtype=node_attr.dtype) + fill_weight
     elif isinstance(fill_weight, (list, np.ndarray)):
-        fill_weight = fill_weight.astype(attr_matrix.dtype, copy=False)
+        fill_weight = fill_weight.astype(node_attr.dtype, copy=False)
         M = np.tile(fill_weight, N).reshape([N, -1])
     else:
         raise ValueError(f"Unrecognized input: {fill_weight}.")
 
-    augmented_attr = np.vstack([attr_matrix, M])
+    augmented_attr = np.vstack([node_attr, M])
     return augmented_attr
 
 
 class NormalizeAttr(Transform):
-    """Normalize the attribute matrix with given type."""
+    """Normalize the node node attribute matrix with given type."""
 
     def __init__(self, norm='l1'):
         """
@@ -62,26 +62,26 @@ class NormalizeAttr(Transform):
 
         Returns
         ----------
-            A normalized attribute matrix.
+            A normalized node node attribute matrix.
         """
         super().__init__()
         self.norm = norm
 
-    def __call__(self, attr_matrix):
+    def __call__(self, node_attr):
         """
         Parameters
         ----------
-        attr_matrix: [N, M], Numpy array-like matrix
+        node_attr: [N, M], Numpy array-like matrix
 
         Returns
         ----------
-        A Normalized attribute matrix.
+        A Normalized node node attribute matrix.
 
         See also
         ----------
         graphgallery.functional.normalize_attr
         """
-        return normalize_attr(attr_matrix, norm=self.norm)
+        return normalize_attr(node_attr, norm=self.norm)
 
     def __repr__(self):
         return f"{self.__class__.__name__}(norm={self.norm})"

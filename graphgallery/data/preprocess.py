@@ -65,7 +65,7 @@ def largest_connected_components(graph: GalleryGraph, n_components: int = 1) -> 
 def create_subgraph(graph: GalleryGraph, *,
                     nodes_to_remove: Optional[ArrayLike1D] = None,
                     nodes_to_keep: Optional[ArrayLike1D] = None) -> GalleryGraph:
-    """Create a graph with the specified subset of nodes.
+    r"""Create a graph with the specified subset of nodes.
     Exactly one of (nodes_to_remove, nodes_to_keep) should be provided, while the other stays None.
     Note that to avoid confusion, it is required to pass node indices as named Parameters to this function.
 
@@ -92,25 +92,25 @@ def create_subgraph(graph: GalleryGraph, *,
     elif nodes_to_remove is not None:
         if len(nodes_to_remove) == 0:
             return graph.copy()
-        nodes_to_keep = np.setdiff1d(np.arange(graph.n_nodes), nodes_to_remove)
+        nodes_to_keep = np.setdiff1d(np.arange(graph.num_nodes), nodes_to_remove)
     elif nodes_to_keep is not None:
         nodes_to_keep = np.sort(nodes_to_keep)
     else:
         raise RuntimeError("This should never happen.")
 
     graph = graph.copy()
-    adj_matrix, attr_matrix, labels = graph.raw()
+    adj_matrix, node_attr, labels = graph.raw()
     graph.adj_matrix = adj_matrix[nodes_to_keep][:, nodes_to_keep]
-    if attr_matrix is not None:
-        graph.attr_matrix = attr_matrix[nodes_to_keep]
+    if node_attr is not None:
+        graph.node_attr = node_attr[nodes_to_keep]
     if labels is not None:
-        graph.labels = labels[nodes_to_keep]
+        graph.node_labels = labels[nodes_to_keep]
     if graph.node_names is not None:
         graph.node_names = graph.node_names[nodes_to_keep]
     return graph
 
 
-def binarize_labels(labels: ArrayLike1D, sparse_output: bool = False, return_classes: bool = False):
+def binarize_labels(labels: ArrayLike1D, sparse_output: bool = False, returnum_node_classes: bool = False):
     """Convert labels vector to a binary label matrix.
     In the default single-label case, labels look like
     labels = [y1, y2, y3, ...].
@@ -123,15 +123,15 @@ def binarize_labels(labels: ArrayLike1D, sparse_output: bool = False, return_cla
         Array of node labels in categorical single- or multi-label format.
     sparse_output : bool, default False
         Whether return the label_matrix in CSR format.
-    return_classes : bool, default False
+    returnum_node_classes : bool, default False
         Whether return the classes corresponding to the columns of the label matrix.
     Returns
     -------
-    label_matrix : np.ndarray or sp.csr_matrix, shape [n_samples, n_classes]
+    label_matrix : np.ndarray or sp.csr_matrix, shape [n_samples, num_node_classes]
         Binary matrix of class labels.
-        n_classes = number of unique values in "labels" array.
+        num_node_classes = number of unique values in "labels" array.
         label_matrix[i, k] = 1 <=> node i belongs to class k.
-    classes : np.array, shape [n_classes], optional
+    classes : np.array, shape [num_node_classes], optional
         Classes that correspond to each column of the label_matrix.
     """
     if hasattr(labels[0], '__iter__'):  # labels[0] is iterable <=> multilabel format
@@ -139,7 +139,7 @@ def binarize_labels(labels: ArrayLike1D, sparse_output: bool = False, return_cla
     else:
         binarizer = LabelBinarizer(sparse_output=sparse_output)
     label_matrix = binarizer.fit_transform(labels).astype(np.float32)
-    return (label_matrix, binarizer.classes_) if return_classes else label_matrix
+    return (label_matrix, binarizer.classes_) if returnum_node_classes else label_matrix
 
 
 def get_train_val_test_split(stratify: ArrayLike1D,
@@ -182,12 +182,12 @@ def sample_per_class(stratify: ArrayLike1D, n_examples_per_class: int,
                      forbidden_indices: Optional[ArrayLike1D] = None,
                      random_state: Optional[int] = None) -> ArrayLike1D:
 
-    n_classes = stratify.max() + 1
+    num_node_classes = stratify.max() + 1
     n_samples = stratify.shape[0]
-    sample_indices_per_class = {index: [] for index in range(n_classes)}
+    sample_indices_per_class = {index: [] for index in range(num_node_classes)}
 
     # get indices sorted by class
-    for class_index in range(n_classes):
+    for class_index in range(num_node_classes):
         for sample_index in range(n_samples):
             if stratify[sample_index] == class_index:
                 if forbidden_indices is None or sample_index not in forbidden_indices:
@@ -234,8 +234,8 @@ def process_planetoid_datasets(name: str, paths: List[str]) -> Tuple:
         ty_extended[test_idx_range - min(test_idx_range), :] = ty
         ty = ty_extended
 
-    attr_matrix = sp.vstack((allx, tx)).tolil()
-    attr_matrix[test_idx_reorder, :] = attr_matrix[test_idx_range, :]
+    node_attr = sp.vstack((allx, tx)).tolil()
+    node_attr[test_idx_reorder, :] = node_attr[test_idx_range, :]
 
     adj_matrix = nx.adjacency_matrix(nx.from_dict_of_lists(
         graph, create_using=nx.DiGraph()))
@@ -250,6 +250,6 @@ def process_planetoid_datasets(name: str, paths: List[str]) -> Tuple:
     labels = labels.argmax(1)
 
     adj_matrix = adj_matrix.astype('float32')
-    attr_matrix = attr_matrix.astype('float32')
+    node_attr = node_attr.astype('float32')
 
-    return adj_matrix, attr_matrix, labels, idx_train, idx_val, idx_test
+    return adj_matrix, node_attr, labels, idx_train, idx_val, idx_test

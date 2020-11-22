@@ -22,7 +22,7 @@ class UnsupervisedModel(GalleryModel):
     """
 
     def __init__(self, *graph, device='cpu:0', seed=None, name=None, **kwargs):
-        """Create an unsupervised model.
+        r"""Create an unsupervised model.
 
         Parameters:
         ----------
@@ -58,7 +58,7 @@ class UnsupervisedModel(GalleryModel):
             self.get_embeddings()
 
         index = asintarr(index)
-        self.classifier.fit(self.embeddings[index], self.graph.labels[index])
+        self.classifier.fit(self.embeddings[index], self.graph.node_labels[index])
 
     def predict(self, index):
         index = asintarr(index)
@@ -67,7 +67,7 @@ class UnsupervisedModel(GalleryModel):
 
     def test(self, index):
         index = asintarr(index)
-        y_true = self.graph.labels[index]
+        y_true = self.graph.node_labels[index]
         y_pred = self.classifier.predict(self.embeddings[index])
         accuracy = accuracy_score(y_true, y_pred)
         return accuracy

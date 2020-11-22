@@ -3,28 +3,28 @@ from tensorflow.keras.layers import Layer
 
 
 class SparseConversion(Layer):
-    def __init__(self, n_nodes=None, *args, **kwargs):
+    def __init__(self, num_nodes=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.n_nodes = n_nodes
+        self.num_nodes = num_nodes
         self.trainable = False
 
     def call(self, inputs):
         indices, values = inputs
-        n_nodes = tf.reduce_max(indices) + 1
+        num_nodes = tf.reduce_max(indices) + 1
 
-        self.n_nodes = n_nodes
+        self.num_nodes = num_nodes
 
         if indices.dtype != tf.int64:
             indices = tf.cast(indices, tf.int64)
 
         # Build sparse tensor for the matrix
         output = tf.sparse.SparseTensor(
-            indices=indices, values=values, dense_shape=(n_nodes, n_nodes)
+            indices=indices, values=values, dense_shape=(num_nodes, num_nodes)
         )
         return output
 
     def compute_output_shape(self, input_shapes):
-        return tf.TensorShape([self.n_nodes, self.n_nodes])
+        return tf.TensorShape([self.num_nodes, self.num_nodes])
 
     def get_config(self):
         base_config = super().get_config()

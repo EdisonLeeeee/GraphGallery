@@ -19,7 +19,7 @@ class SGC(SemiSupervisedModel):
 
     def __init__(self, *graph, order=2, adj_transform="normalize_adj", attr_transform=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
-        """Create a Simplifying Graph Convolutional Networks (SGC) model.
+        r"""Create a Simplifying Graph Convolutional Networks (SGC) model.
 
 
         This can be instantiated in several ways:
@@ -28,9 +28,9 @@ class SGC(SemiSupervisedModel):
                 with a `graphgallery.data.Graph` instance representing
                 A sparse, attributed, labeled graph.
 
-            model = SGC(adj_matrix, attr_matrix, labels)
+            model = SGC(adj_matrix, node_attr, labels)
                 where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
-                 `attr_matrix` is a 2D Numpy array-like matrix denoting the node 
+                 `node_attr` is a 2D Numpy array-like matrix denoting the node 
                  attributes, `labels` is a 1D Numpy array denoting the node labels.
 
 
@@ -69,14 +69,14 @@ class SGC(SemiSupervisedModel):
     def process_step(self):
         graph = self.graph
         adj_matrix = self.adj_transform(graph.adj_matrix)
-        attr_matrix = self.attr_transform(graph.attr_matrix)
+        node_attr = self.attr_transform(graph.node_attr)
 
         feature_inputs, structure_inputs = F.astensors(
-            attr_matrix, adj_matrix, device=self.device)
+            node_attr, adj_matrix, device=self.device)
 
         # To avoid this tensorflow error in large dataset:
         # InvalidArgumentError: Cannot use GPU when output.shape[1] * nnz(a) > 2^31 [Op:SparseTensorDenseMatMul]
-        if self.graph.n_attrs * adj_matrix.nnz > 2**31:
+        if self.graph.num_node_attrs * adj_matrix.nnz > 2**31:
             device = "CPU"
         else:
             device = self.device
@@ -93,13 +93,13 @@ class SGC(SemiSupervisedModel):
     def build(self, hiddens=[], activations=[], dropout=0.5, weight_decay=5e-5, lr=0.2, use_bias=True):
 
         with tf.device(self.device):
-            self.model = tfSGC(self.graph.n_attrs, self.graph.n_classes, hiddens=hiddens,
+            self.model = tfSGC(self.graph.num_node_attrs, self.graph.num_node_classes, hiddens=hiddens,
                                activations=activations, dropout=dropout, weight_decay=weight_decay,
                                lr=lr, use_bias=use_bias)
 
     def train_sequence(self, index):
         index = F.astensor(index)
-        labels = self.graph.labels[index]
+        labels = self.graph.node_labels[index]
 
         feature_inputs = tf.gather(self.feature_inputs, index)
         sequence = FullBatchNodeSequence(feature_inputs, labels, device=self.device)

@@ -21,7 +21,7 @@ class GraphSAGE(SemiSupervisedModel):
     def __init__(self, *graph, n_samples=(15, 5),
                  adj_transform="neighbor_sampler", attr_transform=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
-        """Create a SAmple and aggreGatE Graph Convolutional Networks (GraphSAGE) model.
+        r"""Create a SAmple and aggreGatE Graph Convolutional Networks (GraphSAGE) model.
 
         This can be instantiated in several ways:
 
@@ -29,9 +29,9 @@ class GraphSAGE(SemiSupervisedModel):
                 with a `graphgallery.data.Graph` instance representing
                 A sparse, attributed, labeled graph.
 
-            model = GraphSAGE(adj_matrix, attr_matrix, labels)
+            model = GraphSAGE(adj_matrix, node_attr, labels)
                 where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
-                 `attr_matrix` is a 2D Numpy array-like matrix denoting the node 
+                 `node_attr` is a 2D Numpy array-like matrix denoting the node 
                  attributes, `labels` is a 1D Numpy array denoting the node labels.
 
 
@@ -71,16 +71,16 @@ class GraphSAGE(SemiSupervisedModel):
 
     def process_step(self):
         graph = self.graph
-        # Dense matrix, shape [n_nodes, max_degree]
+        # Dense matrix, shape [num_nodes, max_degree]
         adj_matrix = self.adj_transform(graph.adj_matrix)
-        attr_matrix = self.attr_transform(graph.attr_matrix)
+        node_attr = self.attr_transform(graph.node_attr)
 
         # pad with a dummy zero vector
-        attr_matrix = np.vstack(
-            [attr_matrix, np.zeros(attr_matrix.shape[1], dtype=self.floatx)])
+        node_attr = np.vstack(
+            [node_attr, np.zeros(node_attr.shape[1], dtype=self.floatx)])
 
         self.feature_inputs, self.structure_inputs = F.astensors(
-            attr_matrix, device=self.device), adj_matrix
+            node_attr, device=self.device), adj_matrix
 
     # use decorator to make sure all list arguments have the same length
     @F.EqualVarLength()
@@ -89,7 +89,7 @@ class GraphSAGE(SemiSupervisedModel):
 
         if self.backend == "tensorflow":
             with tf.device(self.device):
-                self.model = tfGraphSAGE(self.graph.n_attrs, self.graph.n_classes,
+                self.model = tfGraphSAGE(self.graph.num_node_attrs, self.graph.num_node_classes,
                                          hiddens=hiddens,
                                          activations=activations,
                                          dropout=dropout, weight_decay=weight_decay,
@@ -101,7 +101,7 @@ class GraphSAGE(SemiSupervisedModel):
 
     def train_sequence(self, index):
 
-        labels = self.graph.labels[index]
+        labels = self.graph.node_labels[index]
         sequence = SAGEMiniBatchSequence(
             [self.feature_inputs, self.structure_inputs, index], labels,
             n_samples=self.n_samples, device=self.device)

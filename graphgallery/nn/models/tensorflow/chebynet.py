@@ -18,7 +18,7 @@ class ChebyNet(Model):
                  lr=0.01, order=2, use_bias=False):
 
         x = Input(batch_shape=[None, in_channels],
-                  dtype=floatx(), name='attr_matrix')
+                  dtype=floatx(), name='node_attr')
         adj = [Input(batch_shape=[None, None],
                      dtype=floatx(), sparse=True,
                      name=f'adj_matrix_{i}') for i in range(order + 1)]

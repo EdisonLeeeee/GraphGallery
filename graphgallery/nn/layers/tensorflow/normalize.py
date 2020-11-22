@@ -17,18 +17,18 @@ class NormalizeLayer(Layer):
 
     def call(self, inputs, improved=False):
         edge_index, edge_weight = inputs
-        n_nodes = tf.reduce_max(edge_index) + 1
+        num_nodes = tf.reduce_max(edge_index) + 1
         if not edge_weight:
             edge_weight = tf.ones([edge_index.shape[0]], dtype=floatx())
 
         fill_weight = 2.0 if improved else 1.0
         edge_index, edge_weight = self.add_selfloops_edge(
-            edge_index, n_nodes, edge_weight=edge_weight, fill_weight=fill_weight)
+            edge_index, num_nodes, edge_weight=edge_weight, fill_weight=fill_weight)
 
         row = tf.gather(edge_index, 0, axis=1)
         col = tf.gather(edge_index, 1, axis=1)
         deg = tf.math.unsorted_segment_sum(
-            edge_weight, row, num_segments=n_nodes)
+            edge_weight, row, num_segments=num_nodes)
         deg_inv_sqrt = tf.pow(deg, self.norm_adj)
         deg_inv_sqrt = tf.where(tf.math.is_inf(
             deg_inv_sqrt), tf.zeros_like(deg_inv_sqrt), deg_inv_sqrt)
@@ -41,16 +41,16 @@ class NormalizeLayer(Layer):
         return edge_index, noremd_edge_weight
 
     @staticmethod
-    def add_selfloops_edge(edge_index, n_nodes, edge_weight=None, fill_weight=1.0):
+    def add_selfloops_edge(edge_index, num_nodes, edge_weight=None, fill_weight=1.0):
         diagnal_edge_index = tf.reshape(
-            tf.repeat(tf.range(n_nodes, dtype=intx()), 2), [n_nodes, 2])
+            tf.repeat(tf.range(num_nodes, dtype=intx()), 2), [num_nodes, 2])
 
         updated_edge_index = tf.concat(
             [edge_index, diagnal_edge_index], axis=0)
 
         if edge_weight:
             diagnal_edge_weight = tf.cast(
-                tf.fill([n_nodes], fill_weight), dtype=floatx())
+                tf.fill([num_nodes], fill_weight), dtype=floatx())
             updated_edge_weight = tf.concat(
                 [edge_weight, diagnal_edge_weight], axis=0)
 

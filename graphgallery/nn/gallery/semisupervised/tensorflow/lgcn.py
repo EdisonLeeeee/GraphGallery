@@ -19,7 +19,7 @@ class LGCN(SemiSupervisedModel):
 
     def __init__(self, *graph, adj_transform="normalize_adj", attr_transform=None,
                  device='cpu:0', seed=None, name=None, **kwargs):
-        """Create a Large-Scale Learnable Graph Convolutional Networks (LGCN) model.
+        r"""Create a Large-Scale Learnable Graph Convolutional Networks (LGCN) model.
 
 
         This can be instantiated in several ways:
@@ -28,9 +28,9 @@ class LGCN(SemiSupervisedModel):
                 with a `graphgallery.data.Graph` instance representing
                 A sparse, attributed, labeled graph.
 
-            model = LGCN(adj_matrix, attr_matrix, labels)
+            model = LGCN(adj_matrix, node_attr, labels)
                 where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
-                 `attr_matrix` is a 2D Numpy array-like matrix denoting the node 
+                 `node_attr` is a 2D Numpy array-like matrix denoting the node 
                  attributes, `labels` is a 1D Numpy array denoting the node labels.
 
 
@@ -65,9 +65,9 @@ class LGCN(SemiSupervisedModel):
     def process_step(self):
         graph = self.graph
         adj_matrix = self.adj_transform(graph.adj_matrix).toarray()
-        attr_matrix = self.attr_transform(graph.attr_matrix)
+        node_attr = self.attr_transform(graph.node_attr)
 
-        self.feature_inputs, self.structure_inputs = attr_matrix, adj_matrix
+        self.feature_inputs, self.structure_inputs = node_attr, adj_matrix
 
     # @F.EqualVarLength()
     def build(self, hiddens=[32], n_filters=[8, 8], activations=[None, None], dropout=0.8,
@@ -75,7 +75,7 @@ class LGCN(SemiSupervisedModel):
 
         if self.backend == "tensorflow":
             with tf.device(self.device):
-                self.model = tfLGCN(self.graph.n_attrs, self.graph.n_classes,
+                self.model = tfLGCN(self.graph.num_node_attrs, self.graph.num_node_classes,
                                     hiddens=hiddens,
                                     activations=activations,
                                     dropout=dropout, weight_decay=weight_decay,
@@ -87,7 +87,7 @@ class LGCN(SemiSupervisedModel):
 
     def train_sequence(self, index, batch_size=np.inf):
 
-        mask = F.indices2mask(index, self.graph.n_nodes)
+        mask = F.indices2mask(index, self.graph.num_nodes)
         index = get_indice_graph(self.structure_inputs, index, batch_size)
         while index.size < self.K:
             index = get_indice_graph(self.structure_inputs, index)
@@ -95,7 +95,7 @@ class LGCN(SemiSupervisedModel):
         structure_inputs = self.structure_inputs[index][:, index]
         feature_inputs = self.feature_inputs[index]
         mask = mask[index]
-        labels = self.graph.labels[index[mask]]
+        labels = self.graph.node_labels[index[mask]]
 
         sequence = FullBatchNodeSequence(
             [feature_inputs, structure_inputs, mask], labels, device=self.device)

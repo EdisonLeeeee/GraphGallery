@@ -54,7 +54,7 @@ class SAGEMiniBatchSequence(Sequence):
         *args, **kwargs
     ):
         super().__init__(*args, **kwargs)
-        self.attr_matrix, self.adj_matrix, self.batch_nodes = x
+        self.node_attr, self.adj_matrix, self.batch_nodes = x
         self.y = y
         self.n_batches = int(np.ceil(len(self.batch_nodes) / batch_size))
         self.shuffle = shuffle
@@ -62,7 +62,7 @@ class SAGEMiniBatchSequence(Sequence):
         self.indices = np.arange(len(self.batch_nodes))
         self.n_samples = n_samples
 
-        self.attr_matrix = self.astensor(self.attr_matrix)
+        self.node_attr = self.astensor(self.node_attr)
 
     def __len__(self):
         return self.n_batches
@@ -82,7 +82,7 @@ class SAGEMiniBatchSequence(Sequence):
 
         y = self.y[idx] if self.y is not None else None
 
-        return self.astensors([self.attr_matrix, *nodes_input], y)
+        return self.astensors([self.node_attr, *nodes_input], y)
 
     def on_epoch_end(self):
         if self.shuffle:
@@ -112,7 +112,7 @@ class FastGCNBatchSequence(Sequence):
         *args, **kwargs
     ):
         super().__init__(*args, **kwargs)
-        attr_matrix, adj_matrix = x
+        node_attr, adj_matrix = x
         self.y = y
         self.n_batches = int(
             np.ceil(adj_matrix.shape[0] / batch_size)) if batch_size else 1
@@ -123,16 +123,16 @@ class FastGCNBatchSequence(Sequence):
         if rank:
             self.p = column_prop(adj_matrix)
 
-        self.attr_matrix, self.adj_matrix = attr_matrix, adj_matrix
+        self.node_attr, self.adj_matrix = node_attr, adj_matrix
 
     def __len__(self):
         return self.n_batches
 
     def __getitem__(self, index):
         if not self.batch_size:
-            (attr_matrix, adj_matrix), y = self.full_batch()
+            (node_attr, adj_matrix), y = self.full_batch()
         else:
-            (attr_matrix, adj_matrix), y = self.mini_batch(index)
+            (node_attr, adj_matrix), y = self.mini_batch(index)
 
         if self.rank:
             p = self.p
@@ -145,15 +145,15 @@ class FastGCNBatchSequence(Sequence):
                     distr, rank, replace=False, p=p[distr] / p[distr].sum())
             adj_matrix = adj_matrix[:, q].dot(sp.diags(1.0 / (p[q] * rank)))
 
-            if tf.is_tensor(attr_matrix):
-                attr_matrix = tf.gather(attr_matrix, q)
+            if tf.is_tensor(node_attr):
+                node_attr = tf.gather(node_attr, q)
             else:
-                attr_matrix = attr_matrix[q]
+                node_attr = node_attr[q]
 
-        return self.astensors((attr_matrix, adj_matrix), y)
+        return self.astensors((node_attr, adj_matrix), y)
 
     def full_batch(self):
-        return (self.attr_matrix, self.adj_matrix), self.y
+        return (self.node_attr, self.adj_matrix), self.y
 
     def mini_batch(self, index):
         if self.shuffle:
@@ -164,9 +164,9 @@ class FastGCNBatchSequence(Sequence):
 
         y = self.y[idx]
         adj_matrix = self.adj_matrix[idx]
-        attr_matrix = self.attr_matrix
+        node_attr = self.node_attr
 
-        return (attr_matrix, adj_matrix), y
+        return (node_attr, adj_matrix), y
 
     def on_epoch_end(self):
         if self.shuffle:

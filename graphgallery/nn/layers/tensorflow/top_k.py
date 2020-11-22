@@ -11,17 +11,17 @@ class Top_k_features(Layer):
 
         `Top_k_features` implements the operation:
         Select the top-K attributes for each node and each attribute dimension.
-        And finally the selected attributes will concatenated with the input attribute matrix along last dimension.
+        And finally the selected attributes will concatenated with the input node node attribute matrix along last dimension.
 
         Parameters:
           K: Positive Integer, Number of top elements to look for.
 
         Input shape:
-          tuple/list with two 2-D tensor: Tensor `x` and SparseTensor `adj`: `[(n_nodes, n_attrs), (n_nodes, n_nodes)]`.
-          The former one is the attribute matrix (Tensor) and the other is adjacency matrix (SparseTensor).
+          tuple/list with two 2-D tensor: Tensor `x` and SparseTensor `adj`: `[(num_nodes, num_node_attrs), (num_nodes, num_nodes)]`.
+          The former one is the node node attribute matrix (Tensor) and the other is adjacency matrix (SparseTensor).
 
         Output shape:
-          3-D tensor with shape: `(n_nodes, K+1, n_attrs)`.
+          3-D tensor with shape: `(num_nodes, K+1, num_node_attrs)`.
     """
 
     def __init__(self, K, **kwargs):
@@ -51,5 +51,5 @@ class Top_k_features(Layer):
 
     def compute_output_shape(self, input_shapes):
         attributes_shape = input_shapes[0]
-        output_shape = (attributes_shape[0], self.K+1, attributes_shape[1])
+        output_shape = (attributes_shape[0], self.K + 1, attributes_shape[1])
         return tf.TensorShape(output_shape)

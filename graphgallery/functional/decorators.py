@@ -8,6 +8,7 @@ from .ops import get_length, repeat
 
 __all__ = ['MultiInputs', 'EqualVarLength']
 
+
 def cal_outpus(func: Callable, args: list, kwargs: dict,
                type_check: bool = True):
 

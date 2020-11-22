@@ -21,7 +21,7 @@ class SGC(Model):
                                " Or you can set both of them to `[]`.")
 
         x = Input(batch_shape=[None, in_channels],
-                  dtype=floatx(), name='attr_matrix')
+                  dtype=floatx(), name='node_attr')
 
         h = x
         for hidden, activation in zip(hiddens, activations):

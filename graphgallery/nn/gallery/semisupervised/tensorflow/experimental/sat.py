@@ -17,7 +17,7 @@ class SAT(SemiSupervisedModel):
     def __init__(self, *graph, adj_transform="normalize_adj",
                  attr_transform=None, k=35,
                  device='cpu:0', seed=None, name=None, **kwargs):
-        """Create a Graph Convolutional Networks (GCN) model
+        r"""Create a Graph Convolutional Networks (GCN) model
             using Spetral Adversarial Training (SAT) defense strategy.
 
 
@@ -27,9 +27,9 @@ class SAT(SemiSupervisedModel):
                 with a `graphgallery.data.Graph` instance representing
                 A sparse, attributed, labeled graph.
 
-            model = SAT(adj_matrix, attr_matrix, labels)
+            model = SAT(adj_matrix, node_attr, labels)
                 where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
-                 `attr_matrix` is a 2D Numpy array-like matrix denoting the node 
+                 `node_attr` is a 2D Numpy array-like matrix denoting the node 
                  attributes, `labels` is a 1D Numpy array denoting the node labels.
 
 
@@ -70,7 +70,7 @@ class SAT(SemiSupervisedModel):
     def process_step(self, re_decompose=False):
         graph = self.graph
         adj_matrix = self.adj_transform(graph.adj_matrix)
-        attr_matrix = self.attr_transform(graph.attr_matrix)
+        node_attr = self.attr_transform(graph.node_attr)
 
         if re_decompose or not hasattr(self, "U"):
             V, U = sp.linalg.eigs(adj_matrix.astype('float64'), k=self.k)
@@ -83,7 +83,7 @@ class SAT(SemiSupervisedModel):
 
         with tf.device(self.device):
             self.feature_inputs, self.structure_inputs, self.U, self.V = F.astensors(
-                attr_matrix, adj_matrix, U, V, device=self.device)
+                node_attr, adj_matrix, U, V, device=self.device)
 
     # use decorator to make sure all list arguments have the same length
     @F.EqualVarLength()
@@ -92,7 +92,7 @@ class SAT(SemiSupervisedModel):
 
         with tf.device(self.device):
 
-            x = Input(batch_shape=[None, self.graph.n_attrs], dtype=self.floatx, name='features')
+            x = Input(batch_shape=[None, self.graph.num_node_attrs], dtype=self.floatx, name='features')
             adj = Input(batch_shape=[None, None], dtype=self.floatx, name='adj_matrix')
             index = Input(batch_shape=[None], dtype=self.intx, name='index')
 
@@ -104,7 +104,7 @@ class SAT(SemiSupervisedModel):
 
                 h = Dropout(rate=dropout)(h)
 
-            h = DenseConvolution(self.graph.n_classes, use_bias=use_bias)([h, adj])
+            h = DenseConvolution(self.graph.num_node_classes, use_bias=use_bias)([h, adj])
             h = Gather()([h, index])
 
             model = Model(inputs=[x, adj, index], outputs=h)
@@ -158,7 +158,7 @@ class SAT(SemiSupervisedModel):
         return loss, metric.result()
 
     def train_sequence(self, index):
-        labels = self.graph.labels[index]
+        labels = self.graph.node_labels[index]
         with tf.device(self.device):
             sequence = FullBatchNodeSequence([self.feature_inputs,
                                               self.structure_inputs,

@@ -18,9 +18,9 @@ def metis_clustering(graph, n_clusters):
     return parts
 
 
-def random_clustering(n_nodes, n_clusters):
+def random_clustering(num_nodes, n_clusters):
     """Partitioning graph randomly"""
-    parts = np.random.choice(n_clusters, size=n_nodes)
+    parts = np.random.choice(n_clusters, size=num_nodes)
     return parts
 
 
@@ -29,15 +29,15 @@ class GraphPartition(Transform):
         self.n_clusters = on_clustersrder
         self.metis_partition = metis_partition
 
-    def __call__(self, adj_matrix, attr_matrix):
-        return graph_partition(adj_matrix, attr_matrix, n_clusters=self.n_clusters, metis_partition=self.metis_partition)
+    def __call__(self, adj_matrix, node_attr):
+        return graph_partition(adj_matrix, node_attr, n_clusters=self.n_clusters, metis_partition=self.metis_partition)
 
     def __repr__(self):
         return f"{self.__class__.__name__}(n_clusters={self.n_clusters}, metis_partition={self.metis_partition})"
 
 
 # TODO: accept a Graph and output a MultiGraph
-def graph_partition(adj_matrix, attr_matrix, n_clusters: int, metis_partition: bool = True):
+def graph_partition(adj_matrix, node_attr, n_clusters: int, metis_partition: bool = True):
     # partition graph
     if metis_partition:
         assert metis, "Please install `metis` package!"
@@ -61,7 +61,7 @@ def graph_partition(adj_matrix, attr_matrix, n_clusters: int, metis_partition: b
         mapper.update({old_id: new_id for new_id, old_id in enumerate(nodes)})
 
         mini_adj = adj_matrix[nodes][:, nodes]
-        mini_x = attr_matrix[nodes]
+        mini_x = node_attr[nodes]
 
         batch_adj.append(mini_adj)
         batch_x.append(mini_x)

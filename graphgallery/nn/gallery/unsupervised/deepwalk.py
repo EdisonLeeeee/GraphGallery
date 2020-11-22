@@ -14,7 +14,7 @@ class Deepwalk(UnsupervisedModel):
     """
 
     def __init__(self, *graph, device='cpu:0', seed=None, name=None, **kwargs):
-        """Create an unsupervised Deepwalk model.
+        r"""Create an unsupervised Deepwalk model.
 
         This can be instantiated in several ways:
 
@@ -22,9 +22,9 @@ class Deepwalk(UnsupervisedModel):
                 with a `graphgallery.data.Graph` instance representing
                 A sparse, attributed, labeled graph.
 
-            model = Deepwalk(adj_matrix, attr_matrix, labels)
+            model = Deepwalk(adj_matrix, node_attr, labels)
                 where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
-                 `attr_matrix` is a 2D Numpy array-like matrix denoting the node 
+                 `node_attr` is a 2D Numpy array-like matrix denoting the node 
                  attributes, `labels` is a 1D Numpy array denoting the node labels.
 
             model = Deepwalk(adj_matrix, None, labels)

@@ -10,7 +10,7 @@ class LGConvolution(Layer):
         Tensorflow 1.x implementation: https://github.com/divelab/lgcn
 
         `LGConvolution` implements the operation:
-        `output = Conv1d(Conv1d(x))`, where `x` is the input attribute matrix, 
+        `output = Conv1d(Conv1d(x))`, where `x` is the input node node attribute matrix, 
         and the dropout will be used in `x` and hidden outpus.
 
 
@@ -38,10 +38,10 @@ class LGConvolution(Layer):
             bias_constraint: Constraint function applied to the bias vector.
 
         Input shape:
-            2-D tensor: Tensor `x`: `(n_nodes, n_attrs)`. where `x` is the node attribute matrix (Tensor).
+            2-D tensor: Tensor `x`: `(num_nodes, num_node_attrs)`. where `x` is the node attribute matrix (Tensor).
 
         Output shape:
-            2-D tensor with shape: `(n_nodes, filters)`.
+            2-D tensor with shape: `(num_nodes, filters)`.
     """
 
     def __init__(self, filters, kernel_size,
@@ -79,7 +79,7 @@ class LGConvolution(Layer):
         input_dim = input_shapes[-1]
 
         self.dropout = Dropout(rate=self.dropout_rate)
-        self.conv1 = Conv1D((input_dim+filters)//2, (kernel_size+1)//2+1,
+        self.conv1 = Conv1D((input_dim + filters) // 2, (kernel_size + 1) // 2 + 1,
                             use_bias=True,
                             activation=self.activation,
                             kernel_initializer=self.kernel_initializer,
@@ -89,7 +89,7 @@ class LGConvolution(Layer):
                             kernel_constraint=self.kernel_constraint,
                             bias_constraint=self.bias_constraint,
                             name='conv1')
-        self.conv2 = Conv1D(filters, kernel_size//2+1,
+        self.conv2 = Conv1D(filters, kernel_size // 2 + 1,
                             use_bias=self.use_bias,
                             activation=self.activation,
                             kernel_initializer=self.kernel_initializer,
@@ -137,4 +137,4 @@ class LGConvolution(Layer):
 
     def compute_output_shape(self, input_shapes):
         output_shape = (input_shapes[0], self.filters)
-        return tf.TensorShape(output_shape)  # (n_nodes, output_dim)
+        return tf.TensorShape(output_shape)  # (num_nodes, output_dim)
