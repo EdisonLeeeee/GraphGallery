@@ -4,17 +4,19 @@ import zipfile
 import os.path as osp
 import numpy as np
 
-from typing import Optional, List
+from typing import Optional, List, Tuple, Union, Callable
 from graphgallery.data import Dataset
 from graphgallery.data.io import makedirs, files_exist, download_file
 from graphgallery.data.graph import Graph, load_dataset
-from graphgallery.typing import MultiArrayLike
+from graphgallery.functional import get
 
 
-_DATASETS = ('citeseer', 'citeseer_full', 'cora', 'cora_ml', 
+_DATASETS = ('citeseer', 'citeseer_full', 'cora', 'cora_ml',
              'cora_full', 'amazon_cs', 'amazon_photo',
              'coauthor_cs', 'coauthor_phy', 'polblogs', 'karate_club',
              'pubmed', 'flickr', 'blogcatalog', 'dblp', 'acm', 'uai')
+
+Transform = Union[List[str], Tuple[str], str, List[Callable], Tuple[Callable], Callable]
 
 
 class NPZDataset(Dataset):
@@ -22,11 +24,14 @@ class NPZDataset(Dataset):
     github_url = "https://raw.githubusercontent.com/EdisonLeeeee/GraphData/master/datasets/{}.npz"
     supported_datasets = _DATASETS
 
-    def __init__(self, name: str, 
-                 root: Optional[str]=None, 
-                 url: Optional[str]=None, 
-                 standardize: bool=False, verbose: bool=True):
-        
+    def __init__(self, name: str,
+                 root: Optional[str] = None,
+                 url: Optional[str] = None,
+                 standardize: bool = False,
+                 verbose: bool = True,
+                 transform: Optional[Transform] = None,
+                 ):
+
         name = str(name)
         if not name in self.supported_datasets:
             print(f"Dataset not found in supported datasets. Using custom dataset: {name}.", file=sys.stderr)
@@ -39,12 +44,13 @@ class NPZDataset(Dataset):
         self._url = url
         self.download_dir = self.root
         self.standardize = standardize
+        self.transform = get(transform)
 
         if not custom:
             makedirs(self.download_dir)
             self.download()
         elif not osp.exists(self.raw_paths[0]):
-            raise RuntimeError(f"dataset file '{name}' not exists. Please put the file in {self.raw_paths[0]}")
+            raise RuntimeError(f"Dataset file '{name}' not exists. Please put the file in {self.raw_paths[0]}")
 
         self.process()
 
@@ -52,7 +58,7 @@ class NPZDataset(Dataset):
 
         if files_exist(self.raw_paths):
             if self.verbose:
-                print(f"Downloaded dataset files have existed.")
+                print(f"Dataset {self.name} have already existed.")
                 self.print_files(self.raw_paths)
             return
 
@@ -68,13 +74,11 @@ class NPZDataset(Dataset):
     def process(self) -> None:
         if self.verbose:
             print("Processing...")
-        graph = load_dataset(
-            self.raw_paths[0])
+        graph = load_dataset(self.raw_paths[0])
 #             self.raw_paths[0]).eliminate_selfloops().to_unweighted().to_undirected()
-        
-        if self.standardize:
-            graph = graph.standardize()
-        self.graph = graph
+        # if self.standardize:
+        #     graph = graph.standardize()
+        self.graph = self.transform(graph)
         if self.verbose:
             print("Processing completed.")
 

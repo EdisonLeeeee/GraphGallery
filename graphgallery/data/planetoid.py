@@ -16,7 +16,7 @@ _DATASETS = {'citeseer', 'cora', 'pubmed'}
 
 
 class Planetoid(Dataset):
-    """The citation network datasets "Cora", "CiteSeer" and "PubMed" from the
+    r"""The citation network datasets "Cora", "CiteSeer" and "PubMed" from the
     `"Revisiting Semi-Supervised Learning with Graph Embeddings"
     <https://arxiv.org/abs/1603.08861>`_ paper.
     Nodes represent documents and edges represent citation links.
@@ -25,7 +25,8 @@ class Planetoid(Dataset):
     The original url is: <https://github.com/kimiyoung/planetoid/raw/master/data>
     """
 
-    github_url = "https://raw.githubusercontent.com/EdisonLeeeee/GraphData/master/datasets/planetoid"
+    github_url = "https://raw.githubusercontent.com/EdisonLeeeee/"
+    "GraphData/master/datasets/planetoid"
     supported_datasets = _DATASETS
 
     def __init__(self, name: str, root: Optional[str] = None, verbose: bool = True):
@@ -48,7 +49,7 @@ class Planetoid(Dataset):
 
         if files_exist(self.raw_paths):
             if self.verbose:
-                print(f"Downloaded dataset files have existed.")
+                print(f"Dataset {self.name} have already existed.")
                 self.print_files(self.raw_paths)
             return
 
@@ -63,9 +64,9 @@ class Planetoid(Dataset):
 
         if self.verbose:
             print("Processing...")
-        adj, attributes, labels, idx_train, idx_val, idx_test = process_planetoid_datasets(
-            self.name, self.raw_paths)
-        self.graph = Graph(adj, attributes, labels).eliminate_selfloops()
+        adj_matrix, attributes, labels, idx_train, idx_val, idx_test = process_planetoid_datasets(self.name, self.raw_paths)
+
+        self.graph = Graph(adj_matrix, attributes, labels).eliminate_selfloops()
         self.idx_train = idx_train
         self.idx_val = idx_val
         self.idx_test = idx_test
@@ -81,7 +82,7 @@ class Planetoid(Dataset):
 
     @property
     def urls(self) -> List[str]:
-        return [f"{osp.join(self.github_url, raw_filename)}" for raw_filename in self.raw_filenames]
+        return [osp.join(self.github_url, raw_filename) for raw_filename in self.raw_filenames]
 
     @property
     def raw_filenames(self) -> List[str]:
@@ -90,4 +91,4 @@ class Planetoid(Dataset):
 
     @property
     def raw_paths(self) -> List[str]:
-        return [f"{osp.join(self.download_dir, raw_filename)}" for raw_filename in self.raw_filenames]
+        return [osp.join(self.download_dir, raw_filename) for raw_filename in self.raw_filenames]

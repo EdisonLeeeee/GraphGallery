@@ -4,25 +4,25 @@ import os.path as osp
 from tensorflow.keras.utils import get_file
 from typing import List
 
-from graphgallery import is_listlike
-
 
 def download_file(raw_paths: List[str],
                   urls: List[str]) -> None:
 
-    last_except = None
+    exceptions = []
     for filename, url in zip(raw_paths, urls):
-        try:
-            get_file(filename, origin=url)
-        except Exception as e:
-            last_except = e
+        if not osp.exists(filename):
+            try:
+                get_file(filename, origin=url)
+            except Exception as e:
+                exceptions.append(e)
+                print(f"Downloading failed: {url}")
 
-    if last_except is not None:
-        raise last_except
+    if exceptions:
+        raise exceptions[0]
 
 
 def files_exist(files: List[str]) -> bool:
-    if is_listlike(files):
+    if isinstance(files, (list, tuple)):
         return len(files) != 0 and all([osp.exists(f) for f in files])
     else:
         return osp.exists(files)
@@ -37,8 +37,8 @@ def makedirs(path: str) -> None:
 
 
 def makedirs_from_filename(filename: str, verbose: bool = True) -> None:
-    file_dir = osp.split(osp.realpath(filename))[0]
-    if not osp.exists(file_dir):
-        makedirs(file_dir)
+    folder = osp.realpath(osp.expanduser(osp.dirname(filename)))
+    if not osp.exists(folder):
+        makedirs(folder)
         if verbose:
             print(f"Creating folder in {filename}.", file=sys.stderr)

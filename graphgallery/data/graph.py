@@ -10,13 +10,18 @@ from copy import copy as copy_fn
 
 from typing import Union, Optional, List, Tuple
 from graphgallery.data.base_graph import BaseGraph
-from graphgallery.typing import SparseMatrix, ArrayLike1D, ArrayLike2D, NxGraph, GalleryGraph
 from graphgallery.data.preprocess import largest_connected_components, create_subgraph
 
+NxGraph = Union[nx.Graph, nx.DiGraph]
+Array1D = Union[List, np.ndarray]
+Matrix2D = Union[List[List], np.ndarray]
+LabelMatrix = Union[Array1D, Matrix2D]
+AdjMatrix = Union[sp.csr_matrix, sp.csc_matrix]
 
-def _check_and_convert(adj_matrix: Optional[SparseMatrix] = None,
-                       attr_matrix: Optional[ArrayLike2D] = None,
-                       labels: Optional[ArrayLike1D] = None, copy: bool = True):
+
+def _check_and_convert(adj_matrix: Optional[AdjMatrix] = None,
+                       attr_matrix: Optional[Matrix2D] = None,
+                       labels: Optional[LabelMatrix] = None, copy: bool = True):
     # Make sure that the dimensions of matrices / arrays all agree
     if adj_matrix is not None:
         if sp.isspmatrix(adj_matrix):
@@ -44,10 +49,10 @@ def _check_and_convert(adj_matrix: Optional[SparseMatrix] = None,
                 "Dimensions of the adjacency and attribute matrices don't agree!")
 
     if labels is not None:
-        labels = np.array(labels, dtype=np.int32, copy=copy).squeeze()
+        labels = np.array(labels, dtype=np.int64, copy=copy).squeeze()
         if labels.ndim != 1:
             assert labels.ndim == 2
-            if (labels.sum(1)==1).all():
+            if (labels.sum(1) == 1).all():
                 labels = labels.argmax(1)
 
     return adj_matrix, attr_matrix, labels
@@ -59,9 +64,9 @@ class Graph(BaseGraph):
     # By default, the attr_matrix is dense format, i.e., Numpy array
     _sparse_attr = False
 
-    def __init__(self, adj_matrix: Optional[SparseMatrix] = None,
-                 attr_matrix: Optional[Union[SparseMatrix, ArrayLike2D]] = None,
-                 labels: Optional[ArrayLike1D] = None,
+    def __init__(self, adj_matrix: Optional[AdjMatrix] = None,
+                 attr_matrix: Optional[Union[AdjMatrix, Matrix2D]] = None,
+                 labels: Optional[LabelMatrix] = None,
                  node_names: List[str] = None,
                  attr_names: List[str] = None,
                  class_names: List[str] = None,
@@ -116,9 +121,9 @@ class Graph(BaseGraph):
             self.class_names = class_names
             self.metadata = metadata
 
-    def set_inputs(self, adj_matrix: Optional[SparseMatrix] = None,
-                   attr_matrix: Optional[Union[SparseMatrix, ArrayLike2D]] = None,
-                   labels: Optional[ArrayLike1D] = None,
+    def set_inputs(self, adj_matrix: Optional[AdjMatrix] = None,
+                   attr_matrix: Optional[Union[AdjMatrix, Matrix2D]] = None,
+                   labels: Optional[LabelMatrix] = None,
                    node_names: List[str] = None,
                    attr_names: List[str] = None,
                    class_names: List[str] = None,
@@ -169,7 +174,7 @@ class Graph(BaseGraph):
         self.get_attr_matrix.cache_clear()
 
     @lru_cache(maxsize=1)
-    def get_attr_matrix(self) -> Union[SparseMatrix, ArrayLike2D]:
+    def get_attr_matrix(self) -> Union[AdjMatrix, Matrix2D]:
         if self._attr_matrix is None:
             return None
         is_sparse = sp.isspmatrix(self._attr_matrix)
@@ -180,7 +185,7 @@ class Graph(BaseGraph):
         return self._attr_matrix
 
     @property
-    def adj_matrix(self) -> SparseMatrix:
+    def adj_matrix(self) -> AdjMatrix:
         return self._adj_matrix
 
     @adj_matrix.setter
@@ -188,7 +193,7 @@ class Graph(BaseGraph):
         self._adj_matrix = x
 
     @property
-    def attr_matrix(self) -> Union[SparseMatrix, ArrayLike2D]:
+    def attr_matrix(self) -> Union[AdjMatrix, Matrix2D]:
         return self.get_attr_matrix()
 
     @attr_matrix.setter
@@ -198,7 +203,7 @@ class Graph(BaseGraph):
         self._attr_matrix = x
 
     @property
-    def labels(self) -> ArrayLike1D:
+    def labels(self) -> LabelMatrix:
         return self._labels
 
     @labels.setter
@@ -206,7 +211,7 @@ class Graph(BaseGraph):
         self._labels = x
 
     @property
-    def degrees(self) -> Union[Tuple[ArrayLike1D, ArrayLike1D], ArrayLike1D]:
+    def degrees(self) -> Union[Tuple[Array1D, Array1D], Array1D]:
         if not self.is_directed():
             return self.adj_matrix.sum(1).A1
         else:
@@ -228,9 +233,9 @@ class Graph(BaseGraph):
         else:
             A = self.adj_matrix
             diag = A.diagonal()
-            A = A - sp.diags(diag)    
+            A = A - sp.diags(diag)
             A.eliminate_zeros()
-            return int(A.nnz / 2) + int((diag!=0).sum())
+            return int(A.nnz / 2) + int((diag != 0).sum())
 
     @property
     def n_graphs(self) -> int:
@@ -254,13 +259,13 @@ class Graph(BaseGraph):
             return None
 
     @property
-    def labels_onehot(self) -> ArrayLike2D:
+    def labels_onehot(self) -> Matrix2D:
         """Get the one-hot like labels of nodes."""
         labels = self.labels
         if labels is not None:
             return np.eye(self.n_classes)[labels].astype(labels.dtype)
 
-    def neighbors(self, idx) -> ArrayLike1D:
+    def neighbors(self, idx) -> Array1D:
         """Get the indices of neighbors of a given node.
 
         Parameters
@@ -270,7 +275,7 @@ class Graph(BaseGraph):
         """
         return self.adj_matrix[idx].indices
 
-    def to_undirected(self) -> GalleryGraph:
+    def to_undirected(self) -> "Graph":
         """Convert to an undirected graph (make adjacency matrix symmetric)."""
         if self.is_weighted():
             raise ValueError(
@@ -282,7 +287,7 @@ class Graph(BaseGraph):
             G.adj_matrix = A
         return G
 
-    def to_unweighted(self) -> GalleryGraph:
+    def to_unweighted(self) -> "Graph":
         """Convert to an unweighted graph (set all edge weights to 1)."""
         G = self.copy()
         A = G.adj_matrix
@@ -290,7 +295,7 @@ class Graph(BaseGraph):
             (np.ones_like(A.data), A.indices, A.indptr), shape=A.shape)
         return G
 
-    def eliminate_selfloops(self) -> GalleryGraph:
+    def eliminate_selfloops(self) -> "Graph":
         """Remove self-loops from the adjacency matrix."""
         G = self.copy()
         A = G.adj_matrix
@@ -299,7 +304,7 @@ class Graph(BaseGraph):
         G.adj_matrix = A
         return G
 
-    def eliminate_classes(self, threshold=0) -> GalleryGraph:
+    def eliminate_classes(self, threshold=0) -> "Graph":
         """Remove nodes from graph that correspond to a class of which there are less 
         or equal than 'threshold'. Those classes would otherwise break the training procedure.
         """
@@ -325,7 +330,7 @@ class Graph(BaseGraph):
         else:
             return self
 
-    def add_selfloops(self, value=1.0) -> GalleryGraph:
+    def add_selfloops(self, value=1.0) -> "Graph":
         """Set the diagonal."""
         G = self.eliminate_selfloops()
         A = G.adj_matrix
@@ -334,7 +339,7 @@ class Graph(BaseGraph):
         G.adj_matrix = A
         return G
 
-    def standardize(self) -> GalleryGraph:
+    def standardize(self) -> "Graph":
         """Select the LCC of the unweighted/undirected/no-self-loop graph.
         All changes are done inplace.
         """
@@ -350,7 +355,7 @@ class Graph(BaseGraph):
             create_using = nx.Graph
         return nx.from_scipy_sparse_matrix(self.adj_matrix, create_using=create_using)
 
-    def subgraph(self, *, nodes_to_remove=None, nodes_to_keep=None) -> GalleryGraph:
+    def subgraph(self, *, nodes_to_remove=None, nodes_to_keep=None) -> "Graph":
         return create_subgraph(self, nodes_to_remove=nodes_to_remove, nodes_to_keep=nodes_to_keep)
 
     def to_npz(self, filepath):
@@ -358,7 +363,7 @@ class Graph(BaseGraph):
         print(f"save to {filepath}.")
 
     @staticmethod
-    def from_npz(filepath) -> GalleryGraph:
+    def from_npz(filepath) -> "Graph":
         return load_dataset(filepath)
 
     def is_singleton(self) -> bool:
@@ -396,7 +401,7 @@ class Graph(BaseGraph):
         return f"{self.__class__.__name__}(adj_matrix{A_shape}, attr_matrix{X_shape}, labels{Y_shape})"
 
 
-def load_dataset(data_path: str) -> GalleryGraph:
+def load_dataset(data_path: str) -> "Graph":
     """Load a dataset.
 
     Parameters
@@ -419,7 +424,7 @@ def load_dataset(data_path: str) -> GalleryGraph:
         raise ValueError(f"{data_path} doesn't exist.")
 
 
-def load_npz_to_graph(filename: str) -> GalleryGraph:
+def load_npz_to_graph(filename: str) -> "Graph":
     """Load a Graph from a Numpy binary file.
 
     Parameters
@@ -466,7 +471,7 @@ def load_npz_to_graph(filename: str) -> GalleryGraph:
     return Graph(adj_matrix, attr_matrix, labels, node_names, attr_names, class_names, metadata)
 
 
-def save_graph_to_npz(filepath: str, graph: GalleryGraph):
+def save_graph_to_npz(filepath: str, graph: "Graph"):
     """Save a Graph to a Numpy binary file.
 
     Parameters
