@@ -79,9 +79,9 @@ class Planetoid(Dataset):
         if self.verbose:
             print("Processing completed.")
 
-    def split_nodes(self, train_size: float = 0.1,
-                    val_size: float = 0.1,
-                    test_size: float = 0.8,
+    def split_nodes(self, train_size: float = None,
+                    val_size: float = None,
+                    test_size: float = None,
                     random_state: Optional[int] = None) -> TrainValTest:
 
         if not all((train_size, val_size, test_size)):

@@ -26,42 +26,42 @@ class BaseGraph(ABC):
     def __init__(self):
         ...
 
-    @ property
+    @property
     def n_nodes(self) -> int:
         ...
 
-    @ property
+    @property
     def n_edges(self) -> int:
         ...
 
-    @ property
+    @property
     def n_graphs(self) -> int:
         ...
 
-    @ property
+    @property
     def n_attrs(self) -> int:
         ...
 
-    @ property
+    @property
     def n_classes(self) -> int:
         ...
 
-    @ property
+    @property
     def A(self):
         """alias of adj_matrix."""
         return self.adj_matrix
 
-    @ property
+    @property
     def X(self):
         """alias of attr_matrix."""
         return self.attr_matrix
 
-    @ property
+    @property
     def Y(self):
         """alias of labels."""
         return self.labels
 
-    @ property
+    @property
     def D(self):
         """alias of degrees."""
         return self.degrees

@@ -8,7 +8,7 @@ from functools import lru_cache
 from collections import Counter
 from copy import copy as copy_fn
 
-from typing import Union, Optional, List, Tuple
+from typing import Union, Optional, List, Tuple, Any
 from graphgallery.data.base_graph import BaseGraph
 from graphgallery.data.preprocess import largest_connected_components, create_subgraph
 
@@ -62,7 +62,7 @@ class Graph(BaseGraph):
     def __init__(self, adj_matrix: Optional[AdjMatrix] = None,
                  attr_matrix: Optional[Union[AdjMatrix, Matrix2D]] = None,
                  labels: Optional[LabelMatrix] = None,
-                 metadata: str = None,
+                 metadata: Any = None,
                  copy: bool = True):
         """Create an (un)dirtected (attributed and labeled) graph.
 
@@ -82,14 +82,10 @@ class Graph(BaseGraph):
         adj_matrix, attr_matrix, labels = _check(
             adj_matrix, attr_matrix, labels, copy=copy)
 
-        self._adj_matrix = adj_matrix
-        self._attr_matrix = attr_matrix
-        self._labels = labels
-
-        if copy:
-            self.metadata = copy_fn(metadata)
-        else:
-            self.metadata = metadata
+        self.adj_matrix = adj_matrix
+        self.attr_matrix = attr_matrix
+        self.labels = labels
+        self.metadata = metadata
 
     def set_inputs(self, adj_matrix: Optional[AdjMatrix] = None,
                    attr_matrix: Optional[Union[AdjMatrix, Matrix2D]] = None,
@@ -110,10 +106,7 @@ class Graph(BaseGraph):
             self.labels = labels
 
         if metadata is not None:
-            if copy:
-                self.metadata = copy_fn(metadata)
-            else:
-                self.metadata = metadata
+            self.metadata = metadata
 
     @lru_cache(maxsize=1)
     def get_attr_matrix(self) -> Union[AdjMatrix, Matrix2D]:
@@ -150,7 +143,7 @@ class Graph(BaseGraph):
     @property
     def labels(self) -> LabelMatrix:
         _labels = self._labels
-        if _labels.ndim == 2 and (_labels.sum(1) == 1).all():
+        if _labels is not None and _labels.ndim == 2 and (_labels.sum(1) == 1).all():
             _labels = _labels.argmax(1)
         return _labels
 
@@ -213,8 +206,9 @@ class Graph(BaseGraph):
     def labels_onehot(self) -> Matrix2D:
         """Get the one-hot like labels of nodes."""
         labels = self.labels
-        if labels is not None:
+        if labels is not None and labels.ndim == 1:
             return np.eye(self.n_classes)[labels].astype(labels.dtype)
+        return labels
 
     def neighbors(self, idx) -> Array1D:
         """Get the indices of neighbors of a given node.
@@ -388,10 +382,14 @@ def load_npz_to_graph(filename: str) -> "Graph":
 
     with np.load(filename, allow_pickle=True) as loader:
         loader = dict(loader)
-        adj_matrix = sp.csr_matrix((loader['adj_data'],
-                                    loader['adj_indices'],
-                                    loader['adj_indptr']),
-                                   shape=loader['adj_shape'])
+
+        if 'adj_data' in loader:
+            adj_matrix = sp.csr_matrix((loader['adj_data'],
+                                        loader['adj_indices'],
+                                        loader['adj_indptr']),
+                                       shape=loader['adj_shape'])
+        else:
+            adj_matrix = None
 
         if 'attr_data' in loader:
             # Attributes are stored as a sparse CSR matrix
@@ -422,12 +420,15 @@ def save_graph_to_npz(filepath: str, graph: "Graph"):
     """
     adj_matrix, attr_matrix, labels = graph.raw()
 
-    data_dict = {
-        'adj_data': adj_matrix.data,
-        'adj_indices': adj_matrix.indices,
-        'adj_indptr': adj_matrix.indptr,
-        'adj_shape': adj_matrix.shape
-    }
+    if adj_matrix is not None:
+        data_dict = {
+            'adj_data': adj_matrix.data,
+            'adj_indices': adj_matrix.indices,
+            'adj_indptr': adj_matrix.indptr,
+            'adj_shape': adj_matrix.shape
+        }
+    else:
+        data_dict = {}
 
     if sp.isspmatrix(attr_matrix):
         data_dict['attr_data'] = attr_matrix.data
