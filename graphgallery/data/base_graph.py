@@ -8,6 +8,8 @@ from typing import Union, Tuple, List
 from functools import lru_cache
 
 from .collate import sparse_collate
+from .utils import check
+
 # NxGraph = Union[nx.Graph, nx.DiGraph]
 # Array1D = Union[List, np.ndarray]
 # Matrix2D = Union[List[List], np.ndarray]
@@ -107,9 +109,6 @@ class BaseGraph(ABC):
 
         filepath = osp.abspath(osp.expanduser(osp.realpath(filepath)))
 
-        if not filepath.endswith('.npz'):
-            filepath = filepath + '.npz'
-
         data_dict = {k: v for k, v in self.items(collate_fn=collate_fn) if v is not None}
         np.savez_compressed(filepath, **data_dict)
         print(f"Save to {filepath}.", file=sys.stderr)
@@ -135,10 +134,11 @@ class BaseGraph(ABC):
         else:
             return _copy(self)
 
-    def update(self, dictionary: dict):
-        # NOTE: the inputs are not validated
-        assert isinstance(dictionary, dict)
-        for k, v in dictionary.items():
+    def update(self, **collections):
+        # TODO: check the acceptable args
+        copy = collections.pop('copy', False)
+        collections = check(collections, copy=copy)
+        for k, v in collections.items():
             self[k] = v
 
     def __len__(self):

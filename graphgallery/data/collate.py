@@ -7,7 +7,7 @@ _SPARSE_THRESHOLD = 0.5
 def sparse_collate(key, val):
     if isinstance(val, np.ndarray) and val.ndim == 2:
         # one-hot like matrix stored with 1D array
-        if "labels" in key and all(val.sum(1) == 1):
+        if "labels" in key and np.all(val.sum(1) == 1):
             val = val.argmax(1)
         else:
             shape = val.shape

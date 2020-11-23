@@ -121,7 +121,7 @@ class GMNN(SemiSupervisedModel):
 
     def train(self, idx_train, idx_val=None, pre_train_epochs=100,
               epochs=100, early_stopping=None, verbose=None, save_best=True,
-              weight_path=None, as_model=False,
+              ckpt_path=None, as_model=False,
               monitor='val_acc', early_stop_metric='val_loss'):
 
         histories = []
@@ -131,7 +131,7 @@ class GMNN(SemiSupervisedModel):
         self.model = self.model_q
         history = super().train(idx_train, idx_val, epochs=pre_train_epochs,
                                 early_stopping=early_stopping,
-                                verbose=verbose, save_best=save_best, weight_path=weight_path, as_model=True,
+                                verbose=verbose, save_best=save_best, ckpt_path=ckpt_path, as_model=True,
                                 monitor=monitor, early_stop_metric=early_stop_metric)
         histories.append(history)
 
@@ -153,7 +153,7 @@ class GMNN(SemiSupervisedModel):
         self.model = self.model_p
         history = super().train(train_sequence, val_sequence, epochs=epochs,
                                 early_stopping=early_stopping,
-                                verbose=verbose, save_best=save_best, weight_path=weight_path, as_model=as_model,
+                                verbose=verbose, save_best=save_best, ckpt_path=ckpt_path, as_model=as_model,
                                 monitor=monitor, early_stop_metric=early_stop_metric)
         histories.append(history)
 
@@ -174,7 +174,7 @@ class GMNN(SemiSupervisedModel):
         history = super().train(train_sequence, idx_val, epochs=epochs,
                                 early_stopping=early_stopping,
                                 verbose=verbose, save_best=save_best,
-                                weight_path=weight_path, as_model=as_model,
+                                ckpt_path=ckpt_path, as_model=as_model,
                                 monitor=monitor, early_stop_metric=early_stop_metric)
 
         histories.append(history)

@@ -47,15 +47,15 @@ class GalleryModel(Model):
         self._model = None
         self._custom_objects = None  # used for save/load TF model
 
-        # log path
+        # checkpoint path
         # add random integer to avoid duplication
         _id = np.random.RandomState(None).randint(100)
-        self.weight_path = osp.join(os.getcwd(), f"{self.name}_weights_id_{_id}{gg.file_postfix()}")
+        self.ckpt_path = osp.join(os.getcwd(), f"{self.name}_checkpoint_{_id}{gg.file_postfix()}")
 
     def save(self, path=None, as_model=False, overwrite=True, save_format=None, **kwargs):
 
         if not path:
-            path = self.weight_path
+            path = self.ckpt_path
 
         makedirs_from_filename(path)
 
@@ -72,7 +72,7 @@ class GalleryModel(Model):
 
     def load(self, path=None, as_model=False):
         if not path:
-            path = self.weight_path
+            path = self.ckpt_path
 
         # if not osp.exists(path):
         #     print(f"{path} do not exists.", file=sys.stderr)

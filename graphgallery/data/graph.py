@@ -20,56 +20,16 @@ ArrOrMatrix = Union[Array1D, Matrix2D]
 AdjMatrix = Union[sp.csr_matrix, sp.csc_matrix]
 
 
-def _check(adj_matrix: Optional[AdjMatrix] = None,
-           node_attr: Optional[Matrix2D] = None,
-           node_labels: Optional[ArrOrMatrix] = None,
-           copy: bool = True):
-    # Make sure that the dimensions of matrices / arrays all agree
-    if adj_matrix is not None:
-        if sp.isspmatrix(adj_matrix):
-            adj_matrix = adj_matrix.tocsr(
-                copy=False).astype(np.float32, copy=copy)
-        else:
-            raise ValueError(f"Adjacency matrix must be in sparse format (got {type(adj_matrix)} instead).")
-
-        assert adj_matrix.ndim == 2
-
-        if adj_matrix.shape[0] != adj_matrix.shape[1]:
-            raise ValueError("Dimensions of the adjacency matrix don't agree!")
-
-    if node_attr is not None:
-        if sp.isspmatrix(node_attr):
-            node_attr = node_attr.toarray().astype(np.float32, copy=False)
-        elif isinstance(node_attr, np.ndarray):
-            node_attr = node_attr.astype(np.float32, copy=copy)
-        else:
-            raise ValueError(
-                f"Node attribute matrix must be a sp.spmatrix or a np.ndarray (got {type(node_attr)} instead).")
-
-        assert node_attr.ndim == 2
-    # elif adj_matrix is not None:
-    #     # TODO: is it necessary?
-    #     # Using identity matrix instead
-    #     node_attr = np.eye(adj_matrix.shape[0], dtype=np.float32)
-
-    if node_labels is not None:
-        node_labels = np.array(node_labels, dtype=np.int32, copy=copy).squeeze()
-
-        assert 0 < node_labels.ndim <= 2
-        # For one-hot like matrix, convert to 1D array
-        if node_labels.ndim == 2 and all(node_labels.sum(1) == 1):
-            node_labels = node_labels.argmax(1).astype(np.int32, copy=False)
-
-    return adj_matrix, node_attr, node_labels
-
-
 class Graph(BaseGraph):
     """Attributed labeled graph stored in sparse matrix form."""
 
     def __init__(self, adj_matrix: Optional[AdjMatrix] = None,
                  node_attr: Optional[Union[AdjMatrix, Matrix2D]] = None,
                  node_labels: Optional[ArrOrMatrix] = None,
-                 graph_labels: Optional[int] = 0,
+                 edge_attr=None,
+                 edge_labels=None,
+                 graph_labels=None,
+                 graph_attr=None,
                  metadata: Any = None,
                  copy: bool = True):
         r"""Create an (un)dirtected (attributed and labeled) graph.
@@ -82,19 +42,14 @@ class Graph(BaseGraph):
             Node attribute matrix in CSR or Numpy format.
         node_labels : np.ndarray, shape [num_nodes], optional
             Array, where each entry represents respective node's label(s).
-        graph_labels: int, optional
-            The label of the graph, default to '0'.
         metadata : object, optional
             Additional metadata such as text.
         copy: bool, optional
             whether to use copy for the inputs.
         """
-        adj_matrix, node_attr, node_labels = _check(
-            adj_matrix, node_attr, node_labels, copy=copy)
-
-        local_vars = locals()
-        del local_vars['self'], local_vars['copy']
-        self.update(local_vars)
+        collections = locals()
+        del collections['self']
+        self.update(**collections)
 
     @ property
     def degrees(self) -> Union[Tuple[Array1D], Array1D]:

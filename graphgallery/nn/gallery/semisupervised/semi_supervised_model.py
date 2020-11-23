@@ -131,7 +131,7 @@ class SemiSupervisedModel(GalleryModel):
 
     def train(self, idx_train, idx_val=None,
               epochs=200, early_stopping=None,
-              verbose=1, save_best=True, weight_path=None, as_model=False,
+              verbose=1, save_best=True, ckpt_path=None, as_model=False,
               monitor='val_acc', early_stop_metric='val_loss', callbacks=None, **kwargs):
         """Train the model for the input `idx_train` of nodes or `sequence`.
 
@@ -163,7 +163,7 @@ class SemiSupervisedModel(GalleryModel):
             Whether to save the best weights (accuracy of loss depend on `monitor`)
             of training or validation (depend on `validation` is `False` or `True`).
             (default :bool: `True`)
-        weight_path: String or None
+        ckpt_path: String or None
             The path of saved weights/model. (default :obj: `None`, i.e.,
             `./log/{self.name}_weights`)
         as_model: bool
@@ -233,17 +233,17 @@ class SemiSupervisedModel(GalleryModel):
             callbacks.append(es_callback)
 
         if save_best:
-            if not weight_path:
-                weight_path = self.weight_path
+            if not ckpt_path:
+                ckpt_path = self.ckpt_path
             else:
-                self.weight_path = weight_path
+                self.ckpt_path = ckpt_path
 
-            makedirs_from_filename(weight_path)
+            makedirs_from_filename(ckpt_path)
 
-            if not weight_path.endswith(gg.file_postfix()):
-                weight_path = weight_path + gg.file_postfix()
+            if not ckpt_path.endswith(gg.file_postfix()):
+                ckpt_path = ckpt_path + gg.file_postfix()
 
-            mc_callback = ModelCheckpoint(weight_path,
+            mc_callback = ModelCheckpoint(ckpt_path,
                                           monitor=monitor,
                                           save_best_only=True,
                                           save_weights_only=not as_model,
@@ -296,7 +296,7 @@ class SemiSupervisedModel(GalleryModel):
                     break
 
             callbacks.on_train_end()
-            self.load(weight_path, as_model=as_model)
+            self.load(ckpt_path, as_model=as_model)
         finally:
             # to avoid unexpected termination of the model
             self.remove_weights()
@@ -534,7 +534,7 @@ class SemiSupervisedModel(GalleryModel):
         model.optimizer.learning_rate.assign(value)
 
     def remove_weights(self):
-        filepath = self.weight_path
+        filepath = self.ckpt_path
         if self.backend == "tensorflow":
             remove_extra_tf_files(filepath)
 
