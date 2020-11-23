@@ -2,19 +2,18 @@
 # coding: utf-8
 from setuptools import setup, find_packages
 
-VERSION = "0.5.1"
+VERSION = "0.6.0"
 url = 'https://github.com/EdisonLeeeee/GraphGallery'
 
 install_requires = [
     'torch',
+    'tqdm',
     'tensorflow>=2.1.0',
-    'networkx==2.3',
+    'networkx>=2.3',
     'scipy>=1.4.1',
     'numpy>=1.17.4',
     'gensim>=3.8.0',
     'numba==0.46.0',
-    'llvmlite==0.30',
-    'tqdm>=4.32.1',
     'scikit_learn>=0.22',
 ]
 
@@ -45,13 +44,13 @@ setup(
     extras_require={'test': tests_require},
     packages=find_packages(exclude=("examples", "imgs", "scripts", "benchmark")),
     classifiers=[
-        'Development Status :: 3 - Alpha',        
+        'Development Status :: 3 - Alpha',
         "Programming Language :: Python :: 3",
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: MIT License",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
         'Topic :: Scientific/Engineering',
-        'Topic :: Software Development :: Libraries',        
+        'Topic :: Software Development :: Libraries',
         "Operating System :: OS Independent"
     ],
 )
