@@ -9,19 +9,20 @@ from collections import Counter
 from copy import copy as copy_fn
 
 from typing import Union, Optional, List, Tuple, Any
-from graphgallery.data.base_graph import BaseGraph
-from graphgallery.data.preprocess import largest_connected_components, create_subgraph
+
+from .base_graph import BaseGraph
+from .preprocess import largest_connected_components, create_subgraph
 
 NxGraph = Union[nx.Graph, nx.DiGraph]
 Array1D = Union[List, np.ndarray]
 Matrix2D = Union[List[List], np.ndarray]
-LabelMatrix = Union[Array1D, Matrix2D]
+ArrOrMatrix = Union[Array1D, Matrix2D]
 AdjMatrix = Union[sp.csr_matrix, sp.csc_matrix]
 
 
 def _check(adj_matrix: Optional[AdjMatrix] = None,
            node_attr: Optional[Matrix2D] = None,
-           node_labels: Optional[LabelMatrix] = None,
+           node_labels: Optional[ArrOrMatrix] = None,
            copy: bool = True):
     # Make sure that the dimensions of matrices / arrays all agree
     if adj_matrix is not None:
@@ -49,7 +50,7 @@ def _check(adj_matrix: Optional[AdjMatrix] = None,
         assert node_attr.ndim == 2
 
     if node_labels is not None:
-        node_labels = np.array(node_labels, dtype=np.int64, copy=copy).squeeze()
+        node_labels = np.array(node_labels, dtype=np.int32, copy=copy).squeeze()
 
         assert 0 < node_labels.ndim <= 2
 
@@ -61,7 +62,7 @@ class Graph(BaseGraph):
 
     def __init__(self, adj_matrix: Optional[AdjMatrix] = None,
                  node_attr: Optional[Union[AdjMatrix, Matrix2D]] = None,
-                 node_labels: Optional[LabelMatrix] = None,
+                 node_labels: Optional[ArrOrMatrix] = None,
                  metadata: Any = None,
                  copy: bool = True):
         r"""Create an (un)dirtected (attributed and labeled) graph.
@@ -245,14 +246,6 @@ class Graph(BaseGraph):
     def subgraph(self, *, nodes_to_remove=None, nodes_to_keep=None) -> "Graph":
         return create_subgraph(self, nodes_to_remove=nodes_to_remove, nodes_to_keep=nodes_to_keep)
 
-    def to_npz(self, filepath):
-        filepath = save_graph_to_npz(filepath, self)
-        print(f"save to {filepath}.")
-
-    @ staticmethod
-    def from_npz(filepath) -> "Graph":
-        return load_dataset(filepath)
-
     def is_singleton(self) -> bool:
         """Check if the input adjacency matrix has singletons."""
         A = self.adj_matrix
@@ -275,71 +268,3 @@ class Graph(BaseGraph):
     def is_directed(self) -> bool:
         """Check if the graph is directed (adjacency matrix is not symmetric)."""
         return (self.adj_matrix != self.adj_matrix.T).sum() != 0
-
-
-def load_dataset(data_path: str) -> "Graph":
-    """Load a dataset.
-
-    Parameters
-    ----------
-    name : str
-        Name of the dataset to load.
-
-    Returns
-    -------
-    graph : Graph
-        The requested dataset in sparse format.
-    """
-    data_path = osp.abspath(osp.expanduser(osp.realpath(data_path)))
-
-    if not data_path.endswith('.npz'):
-        data_path = data_path + '.npz'
-    if osp.isfile(data_path):
-        return load_npz_to_graph(data_path)
-    else:
-        raise ValueError(f"{data_path} doesn't exist.")
-
-
-def load_npz_to_graph(filename: str) -> "Graph":
-    """Load a Graph from a Numpy binary file.
-
-    Parameters
-    ----------
-    filename : str
-        Name of the file to load.
-    graph : graphgalllery.data.Graph
-        Graph in sparse matrix format.
-    Returns
-    -------
-    graph : Graph
-        Graph in sparse matrix format.
-    """
-
-    with np.load(filename, allow_pickle=True) as loader:
-        loader = dict(loader)
-
-        for k, v in loader.items():
-            if v.dtype.kind == 'O':
-                loader[k] = v.tolist()
-
-        return Graph(**loader)
-
-
-def save_graph_to_npz(filepath: str, graph: "Graph"):
-    """Save a Graph to a Numpy binary file.
-
-    Parameters
-    ----------
-    filepath : str
-        Name of the output file.
-    graph : graphgalllery.data.Graph
-        Graph in sparse matrix format.
-    """
-    data_dict = {k: v for k, v in graph.items if v is not None}
-
-    if not filepath.endswith('.npz'):
-        filepath = filepath + '.npz'
-
-    filepath = osp.abspath(osp.expanduser(osp.realpath(filepath)))
-    np.savez_compressed(filepath, **data_dict)
-    return filepath

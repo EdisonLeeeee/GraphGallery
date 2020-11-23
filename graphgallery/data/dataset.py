@@ -7,10 +7,10 @@ import numpy as np
 import os.path as osp
 
 from abc import ABC
-
 from typing import Union, Optional, List, Tuple, Callable
-from graphgallery.data.preprocess import train_val_test_split_tabular, get_train_val_test_split
+
 from graphgallery.functional import get
+from .preprocess import train_val_test_split_tabular, get_train_val_test_split
 
 TrainValTest = Tuple[np.ndarray]
 

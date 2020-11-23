@@ -5,9 +5,9 @@ import os.path as osp
 import numpy as np
 
 from typing import Optional, List, Tuple, Union, Callable
-from graphgallery.data import Dataset
-from graphgallery.data.io import makedirs, files_exist, download_file
-from graphgallery.data.graph import Graph, load_dataset
+from .dataset import Dataset
+from .io import makedirs, files_exist, download_file
+from .graph import Graph
 
 
 _DATASETS = ('citeseer', 'citeseer_full', 'cora', 'cora_ml',
@@ -70,7 +70,7 @@ class NPZDataset(Dataset):
     def process(self) -> None:
         if self.verbose:
             print("Processing...")
-        graph = load_dataset(self.raw_paths[0])
+        graph = Graph.from_npz(self.raw_paths[0])
 #             self.raw_paths[0]).eliminate_selfloops().to_unweighted().to_undirected()
         # if self.standardize:
         #     graph = graph.standardize()

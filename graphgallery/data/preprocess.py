@@ -99,14 +99,21 @@ def create_subgraph(graph: GalleryGraph, *,
         raise RuntimeError("This should never happen.")
 
     graph = graph.copy()
-    adj_matrix, node_attr, labels = graph.raw()
+
+    adj_matrix, node_attr, node_labels = graph('adj_matrix',
+                                               'node_attr',
+                                               'node_labels')
     graph.adj_matrix = adj_matrix[nodes_to_keep][:, nodes_to_keep]
     if node_attr is not None:
         graph.node_attr = node_attr[nodes_to_keep]
-    if labels is not None:
-        graph.node_labels = labels[nodes_to_keep]
-    if graph.node_names is not None:
-        graph.node_names = graph.node_names[nodes_to_keep]
+    if node_labels is not None:
+        graph.node_labels = node_labels[nodes_to_keep]
+
+    # TODO: remove?
+    metadata = graph.metadata
+    if metadata is not None and 'node_names' in metadata:
+        graph.metadata['node_names'] = metadata['node_names'][nodes_to_keep]
+
     return graph
 
 
@@ -240,16 +247,16 @@ def process_planetoid_datasets(name: str, paths: List[str]) -> Tuple:
     adj_matrix = nx.adjacency_matrix(nx.from_dict_of_lists(
         graph, create_using=nx.DiGraph()))
 
-    labels = np.vstack((ally, ty))
-    labels[test_idx_reorder, :] = labels[test_idx_range, :]
+    node_labels = np.vstack((ally, ty))
+    node_labels[test_idx_reorder, :] = node_labels[test_idx_range, :]
 
     idx_train = np.arange(len(y))
     idx_val = np.arange(len(y), len(y) + 500)
     idx_test = test_idx_range
 
-    labels = labels.argmax(1)
+    node_labels = node_labels.argmax(1)
 
     adj_matrix = adj_matrix.astype('float32')
     node_attr = node_attr.astype('float32')
 
-    return adj_matrix, node_attr, labels, idx_train, idx_val, idx_test
+    return adj_matrix, node_attr, node_labels, idx_train, idx_val, idx_test

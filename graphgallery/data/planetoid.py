@@ -5,10 +5,10 @@ import pickle as pkl
 
 from typing import Optional, List, Tuple, Callable, Union
 
-from graphgallery.data import Dataset
-from graphgallery.data.io import makedirs, files_exist, download_file
-from graphgallery.data.preprocess import process_planetoid_datasets
-from graphgallery.data.graph import Graph
+from .dataset import Dataset
+from .io import makedirs, files_exist, download_file
+from .preprocess import process_planetoid_datasets
+from .graph import Graph
 
 
 _DATASETS = {'citeseer', 'cora', 'pubmed'}
@@ -18,7 +18,7 @@ Transform = Union[List, Tuple, str, List, Tuple, Callable]
 
 
 class Planetoid(Dataset):
-    """The citation network datasets "Cora", "CiteSeer" and "PubMed" from the
+    r"""The citation network datasets "Cora", "CiteSeer" and "PubMed" from the
     `"Revisiting Semi-Supervised Learning with Graph Embeddings"
     <https://arxiv.org/abs/1603.08861>`_ paper.
     Nodes represent documents and edges represent citation links.
@@ -69,9 +69,9 @@ class Planetoid(Dataset):
 
         if self.verbose:
             print("Processing...")
-        adj_matrix, attributes, labels, idx_train, idx_val, idx_test = process_planetoid_datasets(self.name, self.raw_paths)
+        adj_matrix, attributes, node_labels, idx_train, idx_val, idx_test = process_planetoid_datasets(self.name, self.raw_paths)
 
-        graph = Graph(adj_matrix, attributes, labels)
+        graph = Graph(adj_matrix, attributes, node_labels)
         self.graph = self.transform(graph)
         self.idx_train = idx_train
         self.idx_val = idx_val
