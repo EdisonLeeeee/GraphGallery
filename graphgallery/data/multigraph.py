@@ -4,12 +4,13 @@ import networkx as nx
 import os.path as osp
 import scipy.sparse as sp
 
-from functools import lru_cache
+from functools import partial
 from copy import copy as copy_fn
 
 from typing import Union, Optional, List, Tuple, Any
 
 from .base_graph import BaseGraph
+from ..data_type import is_intscalar
 
 
 class MultiGraph(BaseGraph):
@@ -29,9 +30,9 @@ class MultiGraph(BaseGraph):
         r"""Create a multiple (un)dirtected (attributed and labeled) graph.
 
         """
-        collects = locals()
-        del collects['self']
-        self.update(**collects)
+        collates = locals()
+        del collates['self']
+        self.update(**collates)
 
     def extra_repr(self):
         excluded = {"metadata"}
@@ -42,3 +43,21 @@ class MultiGraph(BaseGraph):
                 continue
             string += f"{k}(num={len(v)}),\n{blank}"
         return string
+
+    def __getitem__(self, index):
+        if isinstance(index, str):
+            return super().__getitem__(index)
+        else:
+            try:
+                G = self.copy()
+                collate_fn = partial(index_select, index=index)
+                G.update(**G.dicts(collate_fn=collate_fn))
+                return G
+            except IndexError as e:
+                raise IndexError(f"Invalid index {index}.")
+
+
+def index_select(key, value, index):
+    if isinstance(value, np.ndarray):
+        value = value[index]
+    return key, value

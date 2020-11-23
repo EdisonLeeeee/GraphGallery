@@ -3,6 +3,7 @@ import networkx as nx
 import scipy.sparse as sp
 
 from typing import Union, Optional, List, Tuple, Any
+from ..data_type import is_listlike
 
 NxGraph = Union[nx.Graph, nx.DiGraph]
 Array1D = Union[List, np.ndarray]
@@ -51,26 +52,24 @@ def _check_label_matrix(label_matrix, copy=True):
 EXCLUDE = {"metadata"}
 
 
-def check_and_convert(collects: dict, multiple=False, copy=False) -> dict:
-    for key in collects:
-        value = collects.get(key, None)
-        if value is not None and key not in EXCLUDE:
-            if "adj" in key:
-                check_fn = _check_adj_matrix
-            elif "attr" in key:
-                check_fn = _check_attr_matrix
-            else:
-                check_fn = _check_label_matrix
+def check_and_convert(key, value, multiple=False, copy=False) -> dict:
+    if value is not None and key not in EXCLUDE:
+        if "adj" in key:
+            check_fn = _check_adj_matrix
+        elif "attr" in key:
+            check_fn = _check_attr_matrix
+        else:
+            check_fn = _check_label_matrix
 
-            if multiple:
-                if isinstance(value, (list, tuple)):
-                    collects[key] = [check_fn(v, copy=copy) for v in value]
-                else:
-                    collects[key] = [check_fn(value, copy=copy)]
+        if multiple:
+            if is_listlike(value):
+                value = np.asarray([check_fn(v, copy=copy) for v in value])
             else:
-                collects[key] = check_fn(value, copy=copy)
+                value = np.asarray([check_fn(value, copy=copy)])
+        else:
+            value = check_fn(value, copy=copy)
 
-    return collects
+    return key, value
 
 
 # def check(adj_matrix: Optional[AdjMatrix] = None,

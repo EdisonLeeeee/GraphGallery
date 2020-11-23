@@ -33,7 +33,7 @@ def is_listlike(x: Any) -> bool:
     ----------
     `True` iff `x` is a list like sequence.
     """
-    return isinstance(x, (list, tuple))
+    return isinstance(obj, (list, tuple)) or (isinstance(obj, np.ndarray) and obj.dtype == "O")
 
 
 def is_scalar(x: Any) -> bool:

@@ -48,9 +48,9 @@ class Graph(BaseGraph):
         copy: bool, optional
             whether to use copy for the inputs.
         """
-        collections = locals()
-        del collections['self']
-        self.update(**collections)
+        collates = locals()
+        del collates['self']
+        self.update(**collates)
 
     @ property
     def degrees(self) -> Union[Tuple[Array1D], Array1D]:

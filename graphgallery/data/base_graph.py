@@ -4,10 +4,11 @@ import os.path as osp
 from abc import ABC
 from copy import copy as _copy, deepcopy as _deepcopy
 from typing import Union, Tuple, List
-from functools import lru_cache
+from functools import partial
 
 from .collate import sparse_collate
 from .utils import check_and_convert
+from ..data_type import is_listlike
 
 # NxGraph = Union[nx.Graph, nx.DiGraph]
 # Array1D = Union[List, np.ndarray]
@@ -87,6 +88,9 @@ class BaseGraph(ABC):
         else:
             return tuple((key, self[key]) for key in sorted(self.keys()))
 
+    def dicts(self, collate_fn=None):
+        return dict(self.items(collate_fn=collate_fn))
+
     def is_directed(self) -> bool:
         """Check if the graph is directed (adjacency matrix is not symmetric)."""
         adj_matrix = self.adj_matrix
@@ -143,13 +147,15 @@ class BaseGraph(ABC):
         else:
             return _copy(self)
 
-    def update(self, **collects):
-        copy = collects.pop('copy', False)
-        # TODO: check the acceptable args
-        collects = check_and_convert(collects,
-                                     multiple=self.multiple,
-                                     copy=copy)
-        for k, v in collects.items():
+    def update(self, *, collate_fn=None, copy=False, **collates):
+        if collate_fn is None:
+            # TODO: check the acceptable args
+            collate_fn = partial(check_and_convert,
+                                 multiple=self.multiple,
+                                 copy=copy)
+
+        for k, v in collates.items():
+            k, v = collate_fn(k, v)
             self[k] = v
 
     def __len__(self):
@@ -195,7 +201,7 @@ def get_num_nodes(adj_matrices):
     if adj_matrices is None:
         return 0
 
-    if isinstance(adj_matrices, (list, tuple)):
+    if is_listlike(adj_matrices):
         return sum(get_num_nodes(adj_matrix) for adj_matrix in adj_matrices)
 
     return adj_matrices.shape[0]
@@ -205,7 +211,7 @@ def get_num_graphs(adj_matrices):
     if adj_matrices is None:
         return 0
 
-    if isinstance(adj_matrices, (list, tuple)):
+    if is_listlike(adj_matrices):
         # return sum(get_num_graphs(adj_matrix) for adj_matrix in adj_matrices)
         return len(adj_matrices)
 
@@ -216,7 +222,7 @@ def get_num_edges(adj_matrices, is_directed=False):
     if adj_matrices is None:
         return 0
 
-    if isinstance(adj_matrices, (list, tuple)):
+    if is_listlike(adj_matrices):
         return sum(get_num_edges(adj_matrix) for adj_matrix in adj_matrices)
 
     if is_directed:
@@ -231,7 +237,7 @@ def get_num_node_attrs(node_attrs):
     if node_attrs is None:
         return 0
 
-    if isinstance(node_attrs, (tupke, list)):
+    if is_listlike(node_attrs):
         return max(get_num_node_attrs(node_attr for node_attr in node_attrs))
 
     return node_attrs.shape[1]
@@ -241,7 +247,7 @@ def get_num_node_classes(node_labels):
     if node_labels is None:
         return 0
 
-    if isinstance(node_labels, (tupke, list)):
+    if is_listlike(node_labels):
         return max(get_num_node_classes(node_label for node_label in node_labels))
 
     if node_labels.ndim == 1:
