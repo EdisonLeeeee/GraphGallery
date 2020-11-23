@@ -1,5 +1,4 @@
 import sys
-import collections
 import numpy as np
 import os.path as osp
 from abc import ABC
@@ -8,7 +7,7 @@ from typing import Union, Tuple, List
 from functools import lru_cache
 
 from .collate import sparse_collate
-from .utils import check
+from .utils import check_and_convert
 
 # NxGraph = Union[nx.Graph, nx.DiGraph]
 # Array1D = Union[List, np.ndarray]
@@ -25,29 +24,37 @@ from .utils import check
 
 
 class BaseGraph(ABC):
+    multiple = None
 
     def __init__(self):
         ...
 
-    @property
-    def num_nodes(self):
-        ...
+    @ property
+    def num_nodes(self) -> int:
+        """Get the number of nodes in the graph."""
+        return get_num_nodes(self.adj_matrix)
 
     @property
     def num_edges(self):
-        ...
+        """Get the number of edges in the graph.
+        For undirected graphs, (i, j) and (j, i) are counted as single edge.
+        """
+        return get_num_edges(self.adj_matrix, self.is_directed())
 
-    @property
-    def num_graphs(self):
-        ...
+    @ property
+    def num_graphs(self) -> int:
+        """Get the number of graphs."""
+        return get_num_graphs(self.adj_matrix)
 
-    @property
-    def num_node_attrs(self):
-        ...
+    @ property
+    def num_node_attrs(self) -> int:
+        """Get the number of attribute dimensions of the nodes."""
+        return get_num_node_attrs(self.node_attr)
 
-    @property
-    def num_node_classes(self):
-        ...
+    @ property
+    def num_node_classes(self) -> int:
+        """Get the number of classes node_labels of the nodes."""
+        return get_num_node_classes(self.node_labels)
 
     @property
     def A(self):
@@ -79,6 +86,13 @@ class BaseGraph(ABC):
             return tuple(collate_fn(key, self[key]) for key in sorted(self.keys()))
         else:
             return tuple((key, self[key]) for key in sorted(self.keys()))
+
+    def is_directed(self) -> bool:
+        """Check if the graph is directed (adjacency matrix is not symmetric)."""
+        adj_matrix = self.adj_matrix
+        if isinstance(adj_matrix, (list, tuple)):
+            adj_matrix = adj_matrix[0]
+        return (adj_matrix != adj_matrix.T).sum() != 0
 
     def is_labeled(self):
         return self.node_labels is not None and len(self.node_labels) != 0
@@ -123,22 +137,19 @@ class BaseGraph(ABC):
     def to_dict(self):
         return dict(self.items())
 
-    def to_namedtuple(self):
-        keys = self.keys()
-        DataTuple = collections.namedtuple('DataTuple', keys)
-        return DataTuple(*[self[key] for key in keys])
-
     def copy(self, deepcopy: bool = False):
         if deepcopy:
             return _deepcopy(self)
         else:
             return _copy(self)
 
-    def update(self, **collections):
+    def update(self, **collects):
+        copy = collects.pop('copy', False)
         # TODO: check the acceptable args
-        copy = collections.pop('copy', False)
-        collections = check(collections, copy=copy)
-        for k, v in collections.items():
+        collects = check_and_convert(collects,
+                                     multiple=self.multiple,
+                                     copy=copy)
+        for k, v in collects.items():
             self[k] = v
 
     def __len__(self):
@@ -172,13 +183,68 @@ class BaseGraph(ABC):
             setattr(result, k, _deepcopy(v, memo))
         return result
 
-    def __repr__(self):
-        excluded = {"metadata", "graph_labels"}
+    def extra_repr(self):
+        return ""
 
-        string = f"{self.__class__.__name__}("
-        for k, v in self.items():
-            if v is None or k in excluded:
-                continue
-            string += f"{k}{getattr(v, 'shape', f'({v})')}, "
-        string += f"graph_labels={(self['graph_labels'])})"
-        return string
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.extra_repr()}" \
+            + f"metadata={tuple(self.metadata.keys()) if isinstance(self.metadata, dict) else self.metadata})"
+
+
+def get_num_nodes(adj_matrices):
+    if adj_matrices is None:
+        return 0
+
+    if isinstance(adj_matrices, (list, tuple)):
+        return sum(get_num_nodes(adj_matrix) for adj_matrix in adj_matrices)
+
+    return adj_matrices.shape[0]
+
+
+def get_num_graphs(adj_matrices):
+    if adj_matrices is None:
+        return 0
+
+    if isinstance(adj_matrices, (list, tuple)):
+        # return sum(get_num_graphs(adj_matrix) for adj_matrix in adj_matrices)
+        return len(adj_matrices)
+
+    return 1
+
+
+def get_num_edges(adj_matrices, is_directed=False):
+    if adj_matrices is None:
+        return 0
+
+    if isinstance(adj_matrices, (list, tuple)):
+        return sum(get_num_edges(adj_matrix) for adj_matrix in adj_matrices)
+
+    if is_directed:
+        return int(adj_matrices.nnz)
+    else:
+        A = adj_matrices
+        num_diag = (A.diagonal() != 0).sum()
+        return int((A.nnz - num_diag) / 2) + int(num_diag)
+
+
+def get_num_node_attrs(node_attrs):
+    if node_attrs is None:
+        return 0
+
+    if isinstance(node_attrs, (tupke, list)):
+        return max(get_num_node_attrs(node_attr for node_attr in node_attrs))
+
+    return node_attrs.shape[1]
+
+
+def get_num_node_classes(node_labels):
+    if node_labels is None:
+        return 0
+
+    if isinstance(node_labels, (tupke, list)):
+        return max(get_num_node_classes(node_label for node_label in node_labels))
+
+    if node_labels.ndim == 1:
+        return node_labels.max() + 1
+    else:
+        return node_labels.shape[1]

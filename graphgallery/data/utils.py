@@ -51,9 +51,9 @@ def _check_label_matrix(label_matrix, copy=True):
 EXCLUDE = {"metadata"}
 
 
-def check(collections: dict, allow_multi=False, copy=False) -> dict:
-    for key in collections:
-        value = collections.get(key, None)
+def check_and_convert(collects: dict, multiple=False, copy=False) -> dict:
+    for key in collects:
+        value = collects.get(key, None)
         if value is not None and key not in EXCLUDE:
             if "adj" in key:
                 check_fn = _check_adj_matrix
@@ -61,8 +61,16 @@ def check(collections: dict, allow_multi=False, copy=False) -> dict:
                 check_fn = _check_attr_matrix
             else:
                 check_fn = _check_label_matrix
-            collections[key] = check_fn(value, copy=copy)
-    return collections
+
+            if multiple:
+                if isinstance(value, (list, tuple)):
+                    collects[key] = [check_fn(v, copy=copy) for v in value]
+                else:
+                    collects[key] = [check_fn(value, copy=copy)]
+            else:
+                collects[key] = check_fn(value, copy=copy)
+
+    return collects
 
 
 # def check(adj_matrix: Optional[AdjMatrix] = None,

@@ -22,6 +22,7 @@ AdjMatrix = Union[sp.csr_matrix, sp.csc_matrix]
 
 class Graph(BaseGraph):
     """Attributed labeled graph stored in sparse matrix form."""
+    multiple = False
 
     def __init__(self, adj_matrix: Optional[AdjMatrix] = None,
                  node_attr: Optional[Union[AdjMatrix, Matrix2D]] = None,
@@ -60,50 +61,6 @@ class Graph(BaseGraph):
         else:
             # in-degree and out-degree
             return self.adj_matrix.sum(0).A1, self.adj_matrix.sum(1).A1
-
-    @ property
-    def num_nodes(self) -> int:
-        """Get the number of nodes in the graph."""
-        if self.adj_matrix is not None:
-            return self.adj_matrix.shape[0]
-
-    @ property
-    def num_edges(self) -> int:
-        """Get the number of edges in the graph.
-        For undirected graphs, (i, j) and (j, i) are counted as single edge.
-        """
-        assert self.adj_matrix is not None
-
-        if self.is_directed():
-            return int(self.adj_matrix.nnz)
-        else:
-            A = self.adj_matrix
-            diag = A.diagonal()
-            A = A - sp.diags(diag)
-            A.eliminate_zeros()
-            return int(A.nnz / 2) + int((diag != 0).sum())
-
-    @ property
-    def num_graphs(self) -> int:
-        """Get the number of graphs."""
-        return 1
-
-    @ property
-    def num_node_classes(self) -> int:
-        """Get the number of classes node_labels of the nodes."""
-        node_labels = self.node_labels
-
-        if node_labels is not None:
-            if node_labels.ndim == 1:
-                return node_labels.max() + 1
-            else:
-                return node_labels.shape[1]
-
-    @ property
-    def num_node_attrs(self) -> int:
-        """Get the number of attribute dimensions of the nodes."""
-        if self.node_attr is not None:
-            return self.node_attr.shape[1]
 
     @ property
     def node_labels_onehot(self) -> Matrix2D:
@@ -232,6 +189,12 @@ class Graph(BaseGraph):
         """Check if the graph is weighted (edge weights other than 1)."""
         return np.any(self.adj_matrix.data != 1)
 
-    def is_directed(self) -> bool:
-        """Check if the graph is directed (adjacency matrix is not symmetric)."""
-        return (self.adj_matrix != self.adj_matrix.T).sum() != 0
+    def extra_repr(self):
+        excluded = {"metadata"}
+        string = ""
+        blank = ' ' * (len(self.__class__.__name__) + 1)
+        for k, v in self.items():
+            if v is None or k in excluded:
+                continue
+            string += f"{k}{getattr(v, 'shape', f'({v})')},\n{blank}"
+        return string
