@@ -39,8 +39,7 @@ def _check(adj_matrix: Optional[AdjMatrix] = None,
 
     if node_attr is not None:
         if sp.isspmatrix(node_attr):
-            node_attr = node_attr.tocsr(
-                copy=False).astype(np.float32, copy=copy)
+            node_attr = node_attr.toarray().astype(np.float32, copy=False)
         elif isinstance(node_attr, np.ndarray):
             node_attr = node_attr.astype(np.float32, copy=copy)
         else:
@@ -48,11 +47,18 @@ def _check(adj_matrix: Optional[AdjMatrix] = None,
                 f"Node attribute matrix must be a sp.spmatrix or a np.ndarray (got {type(node_attr)} instead).")
 
         assert node_attr.ndim == 2
+    # elif adj_matrix is not None:
+    #     # TODO: is it necessary?
+    #     # Using identity matrix instead
+    #     node_attr = np.eye(adj_matrix.shape[0], dtype=np.float32)
 
     if node_labels is not None:
         node_labels = np.array(node_labels, dtype=np.int32, copy=copy).squeeze()
 
         assert 0 < node_labels.ndim <= 2
+        # For one-hot like matrix, convert to 1D array
+        if node_labels.ndim == 2 and all(node_labels.sum(1) == 1):
+            node_labels = node_labels.argmax(1).astype(np.int32, copy=False)
 
     return adj_matrix, node_attr, node_labels
 
@@ -63,6 +69,7 @@ class Graph(BaseGraph):
     def __init__(self, adj_matrix: Optional[AdjMatrix] = None,
                  node_attr: Optional[Union[AdjMatrix, Matrix2D]] = None,
                  node_labels: Optional[ArrOrMatrix] = None,
+                 graph_labels: Optional[int] = 0,
                  metadata: Any = None,
                  copy: bool = True):
         r"""Create an (un)dirtected (attributed and labeled) graph.
@@ -75,6 +82,8 @@ class Graph(BaseGraph):
             Node attribute matrix in CSR or Numpy format.
         node_labels : np.ndarray, shape [num_nodes], optional
             Array, where each entry represents respective node's label(s).
+        graph_labels: int, optional
+            The label of the graph, default to '0'.
         metadata : object, optional
             Additional metadata such as text.
         copy: bool, optional
@@ -88,7 +97,9 @@ class Graph(BaseGraph):
         self.update(local_vars)
 
     @ property
-    def degrees(self) -> Union[Tuple[Array1D, Array1D], Array1D]:
+    def degrees(self) -> Union[Tuple[Array1D], Array1D]:
+        assert self.adj_matrix is not None
+
         if not self.is_directed():
             return self.adj_matrix.sum(1).A1
         else:
@@ -100,14 +111,14 @@ class Graph(BaseGraph):
         """Get the number of nodes in the graph."""
         if self.adj_matrix is not None:
             return self.adj_matrix.shape[0]
-        else:
-            return None
 
     @ property
     def num_edges(self) -> int:
         """Get the number of edges in the graph.
         For undirected graphs, (i, j) and (j, i) are counted as single edge.
         """
+        assert self.adj_matrix is not None
+
         if self.is_directed():
             return int(self.adj_matrix.nnz)
         else:
@@ -125,25 +136,26 @@ class Graph(BaseGraph):
     @ property
     def num_node_classes(self) -> int:
         """Get the number of classes node_labels of the nodes."""
-        if self.node_labels is not None:
-            return self.node_labels.max() + 1
-        else:
-            return None
+        node_labels = self.node_labels
+
+        if node_labels is not None:
+            if node_labels.ndim == 1:
+                return node_labels.max() + 1
+            else:
+                return node_labels.shape[1]
 
     @ property
     def num_node_attrs(self) -> int:
         """Get the number of attribute dimensions of the nodes."""
         if self.node_attr is not None:
             return self.node_attr.shape[1]
-        else:
-            return None
 
     @ property
     def node_labels_onehot(self) -> Matrix2D:
         """Get the one-hot like node_labels of nodes."""
         node_labels = self.node_labels
         if node_labels is not None and node_labels.ndim == 1:
-            return np.eye(self.num_node_classes)[node_labels].astype(node_labels.dtype)
+            return np.eye(self.num_node_classes, dtype=node_labels.dtype)[node_labels]
         return node_labels
 
     def neighbors(self, idx) -> Array1D:

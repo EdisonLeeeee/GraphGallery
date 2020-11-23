@@ -5,7 +5,9 @@ import os.path as osp
 from abc import ABC
 from copy import copy as _copy, deepcopy as _deepcopy
 from typing import Union, Tuple, List
+from functools import lru_cache
 
+from .collate import sparse_collate
 # NxGraph = Union[nx.Graph, nx.DiGraph]
 # Array1D = Union[List, np.ndarray]
 # Matrix2D = Union[List[List], np.ndarray]
@@ -65,16 +67,16 @@ class BaseGraph(ABC):
         """alias of degrees."""
         return self.degrees
 
-    @property
     def keys(self):
-        # TODO: maybe using `List`?
+        # TODO: maybe using `tuple`?
         keys = {key for key in self.__dict__.keys() if self[key] is not None and not key.startswith("_")}
         return keys
 
-    @property
-    def items(self):
-        for key in sorted(self.keys):
-            yield key, self[key]
+    def items(self, collate_fn=None):
+        if callable(collate_fn):
+            return tuple(collate_fn(key, self[key]) for key in sorted(self.keys()))
+        else:
+            return tuple((key, self[key]) for key in sorted(self.keys()))
 
     def is_labeled(self):
         return self.node_labels is not None and len(self.node_labels) != 0
@@ -82,8 +84,8 @@ class BaseGraph(ABC):
     def is_attributed(self):
         return self.node_attr is not None and len(self.node_attr) != 0
 
-    @classmethod
-    def from_npz(cls, filepath):
+    @ classmethod
+    def from_npz(cls, filepath: str):
         filepath = osp.abspath(osp.expanduser(osp.realpath(filepath)))
 
         if not filepath.endswith('.npz'):
@@ -101,34 +103,33 @@ class BaseGraph(ABC):
         else:
             raise ValueError(f"{filepath} doesn't exist.")
 
-    def to_npz(self, filepath):
+    def to_npz(self, filepath: str, collate_fn=sparse_collate):
 
         filepath = osp.abspath(osp.expanduser(osp.realpath(filepath)))
 
         if not filepath.endswith('.npz'):
             filepath = filepath + '.npz'
 
-        data_dict = {k: v for k, v in self.items if v is not None}
+        data_dict = {k: v for k, v in self.items(collate_fn=collate_fn) if v is not None}
         np.savez_compressed(filepath, **data_dict)
         print(f"Save to {filepath}.", file=sys.stderr)
 
         return filepath
 
-    @classmethod
+    @ classmethod
     def from_dict(cls, dictionary: dict):
         graph = cls(**dictionary)
         return graph
 
     def to_dict(self):
-        return dict(self.items)
+        return dict(self.items())
 
     def to_namedtuple(self):
-        keys = self.keys
+        keys = self.keys()
         DataTuple = collections.namedtuple('DataTuple', keys)
         return DataTuple(*[self[key] for key in keys])
 
     def copy(self, deepcopy: bool = False):
-        cls = self.__class__
         if deepcopy:
             return _deepcopy(self)
         else:
@@ -136,6 +137,7 @@ class BaseGraph(ABC):
 
     def update(self, dictionary: dict):
         # NOTE: the inputs are not validated
+        assert isinstance(dictionary, dict)
         for k, v in dictionary.items():
             self[k] = v
 
@@ -144,10 +146,10 @@ class BaseGraph(ABC):
 
     def __contains__(self, key):
         assert isinstance(key, str)
-        return key in self.keys
+        return key in self.keys()
 
     def __call__(self, *keys):
-        for key in sorted(self.keys) if not keys else keys:
+        for key in sorted(self.keys()) if not keys else keys:
             yield key, self[key]
 
     def __getitem__(self, key):
@@ -171,17 +173,12 @@ class BaseGraph(ABC):
         return result
 
     def __repr__(self):
+        excluded = {"metadata", "graph_labels"}
+
         string = f"{self.__class__.__name__}("
-
-        updated = False
-        for k, v in self.items:
-            if v is None or k == 'metadata':
+        for k, v in self.items():
+            if v is None or k in excluded:
                 continue
-            string += f"{k}{getattr(v, 'shape', '(None)')}, "
-            updated = True
-
-        if updated:
-            string = string[:-2]
-
-        string += ")"
+            string += f"{k}{getattr(v, 'shape', f'({v})')}, "
+        string += f"graph_labels={(self['graph_labels'])})"
         return string

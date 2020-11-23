@@ -4,5 +4,6 @@ from .ops import *
 from .edge import *
 from .adj import *
 from .attr import *
+from .graph import *
 from .get_transform import *
 from .tensor import *

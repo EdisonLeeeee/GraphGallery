@@ -3,19 +3,22 @@ import networkx as nx
 import scipy.sparse as sp
 import pickle as pkl
 
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Union
 from collections import Counter
 from sklearn.preprocessing import MultiLabelBinarizer, LabelBinarizer, normalize
 from sklearn.model_selection import train_test_split
-from graphgallery.typing import MultiArrayLike, ArrayLike1D, GalleryGraph
+
+
+TrainValTest = Tuple[np.ndarray]
+Array1D = Union[List, np.ndarray]
 
 
 def train_val_test_split_tabular(N: int,
                                  train_size: float = 0.1,
                                  val_size: float = 0.1,
                                  test_size: float = 0.8,
-                                 stratify: Optional[ArrayLike1D] = None,
-                                 random_state: Optional[int] = None) -> MultiArrayLike:
+                                 stratify: Optional[Array1D] = None,
+                                 random_state: Optional[int] = None) -> TrainValTest:
 
     idx = np.arange(N)
     idx_train_and_val, idx_test = train_test_split(idx,
@@ -37,18 +40,19 @@ def train_val_test_split_tabular(N: int,
     return idx_train, idx_val, idx_test
 
 
-def largest_connected_components(graph: GalleryGraph, n_components: int = 1) -> GalleryGraph:
+def largest_connected_components(graph: "Graph", n_components: int = 1) -> "Graph":
     """Select the largest connected components in the graph.
 
     Parameters
     ----------
-    graph : GalleryGraph
+    graph : Graph
         Input graph.
     n_components : int, default 1
         Number of largest connected components to keep.
+
     Returns
     -------
-    graph : GalleryGraph
+    graph : Graph
         Subgraph of the input graph where only the nodes in largest n_components are kept.
     """
     _, component_indices = sp.csgraph.connected_components(
@@ -62,25 +66,26 @@ def largest_connected_components(graph: GalleryGraph, n_components: int = 1) -> 
     return create_subgraph(graph, nodes_to_keep=nodes_to_keep)
 
 
-def create_subgraph(graph: GalleryGraph, *,
-                    nodes_to_remove: Optional[ArrayLike1D] = None,
-                    nodes_to_keep: Optional[ArrayLike1D] = None) -> GalleryGraph:
+def create_subgraph(graph: "Graph", *,
+                    nodes_to_remove: Optional[Array1D] = None,
+                    nodes_to_keep: Optional[Array1D] = None) -> "Graph":
     r"""Create a graph with the specified subset of nodes.
     Exactly one of (nodes_to_remove, nodes_to_keep) should be provided, while the other stays None.
     Note that to avoid confusion, it is required to pass node indices as named Parameters to this function.
 
     Parameters
     ----------
-    graph : GalleryGraph
+    graph : Graph
         Input graph.
     nodes_to_remove : array-like of int
         Indices of nodes that have to removed.
     nodes_to_keep : array-like of int
         Indices of nodes that have to be kept.
+
     Returns
     -------
-    graph : GalleryGraph
-        GalleryGraph with specified nodes removed.
+    graph : Graph
+        Graph with specified nodes removed.
     """
     # Check that Parameters are passed correctly
     if nodes_to_remove is None and nodes_to_keep is None:
@@ -117,13 +122,14 @@ def create_subgraph(graph: GalleryGraph, *,
     return graph
 
 
-def binarize_labels(labels: ArrayLike1D, sparse_output: bool = False, returnum_node_classes: bool = False):
+def binarize_labels(labels: Array1D, sparse_output: bool = False, returnum_node_classes: bool = False):
     """Convert labels vector to a binary label matrix.
     In the default single-label case, labels look like
     labels = [y1, y2, y3, ...].
     Also supports the multi-label format.
     In this case, labels should look something like
     labels = [[y11, y12], [y21, y22, y23], [y31], ...].
+
     Parameters
     ----------
     labels : array-like, shape [n_samples]
@@ -132,6 +138,7 @@ def binarize_labels(labels: ArrayLike1D, sparse_output: bool = False, returnum_n
         Whether return the label_matrix in CSR format.
     returnum_node_classes : bool, default False
         Whether return the classes corresponding to the columns of the label matrix.
+
     Returns
     -------
     label_matrix : np.ndarray or sp.csr_matrix, shape [n_samples, num_node_classes]
@@ -149,11 +156,11 @@ def binarize_labels(labels: ArrayLike1D, sparse_output: bool = False, returnum_n
     return (label_matrix, binarizer.classes_) if returnum_node_classes else label_matrix
 
 
-def get_train_val_test_split(stratify: ArrayLike1D,
+def get_train_val_test_split(stratify: Array1D,
                              train_examples_per_class: int,
                              val_examples_per_class: int,
                              test_examples_per_class: Optional[None] = None,
-                             random_state: Optional[None] = None) -> MultiArrayLike:
+                             random_state: Optional[None] = None) -> TrainValTest:
 
     random_state = np.random.RandomState(random_state)
     remaining_indices = list(range(stratify.shape[0]))
@@ -185,9 +192,9 @@ def get_train_val_test_split(stratify: ArrayLike1D,
     return idx_train, idx_val, idx_test
 
 
-def sample_per_class(stratify: ArrayLike1D, n_examples_per_class: int,
-                     forbidden_indices: Optional[ArrayLike1D] = None,
-                     random_state: Optional[int] = None) -> ArrayLike1D:
+def sample_per_class(stratify: Array1D, n_examples_per_class: int,
+                     forbidden_indices: Optional[Array1D] = None,
+                     random_state: Optional[int] = None) -> Array1D:
 
     num_node_classes = stratify.max() + 1
     n_samples = stratify.shape[0]
