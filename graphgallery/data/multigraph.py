@@ -11,6 +11,7 @@ from typing import Union, Optional, List, Tuple, Any
 
 from .base_graph import BaseGraph
 from .graph import Graph
+from .collate import index_select
 from ..data_type import is_intscalar
 
 
@@ -60,9 +61,3 @@ class MultiGraph(BaseGraph):
                     return G
             except IndexError as e:
                 raise IndexError(f"Invalid index {index}.")
-
-
-def index_select(key, value, index):
-    if isinstance(value, np.ndarray):
-        value = value[index]
-    return key, value

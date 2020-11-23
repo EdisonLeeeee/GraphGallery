@@ -6,8 +6,7 @@ from copy import copy as _copy, deepcopy as _deepcopy
 from typing import Union, Tuple, List
 from functools import partial
 
-from .collate import sparse_collate
-from .utils import check_and_convert
+from .collate import sparse_collate, check_and_convert
 from ..data_type import is_listlike
 
 # NxGraph = Union[nx.Graph, nx.DiGraph]
