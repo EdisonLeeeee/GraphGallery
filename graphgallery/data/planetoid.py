@@ -71,7 +71,7 @@ class Planetoid(Dataset):
             print("Processing...")
         adj_matrix, attributes, node_labels, idx_train, idx_val, idx_test = process_planetoid_datasets(self.name, self.raw_paths)
 
-        graph = Graph(adj_matrix, attributes, node_labels)
+        graph = Graph(adj_matrix, attributes, node_labels, copy=False)
         self.graph = self.transform(graph)
         self.idx_train = idx_train
         self.idx_val = idx_val

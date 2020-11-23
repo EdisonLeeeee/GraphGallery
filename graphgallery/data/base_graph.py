@@ -119,7 +119,7 @@ class BaseGraph(ABC):
                     if v.dtype.kind == 'O':
                         loader[k] = v.tolist()
 
-                return cls(**loader)
+                return cls(copy=False, **loader)
         else:
             raise ValueError(f"{filepath} doesn't exist.")
 

@@ -10,6 +10,7 @@ from copy import copy as copy_fn
 from typing import Union, Optional, List, Tuple, Any
 
 from .base_graph import BaseGraph
+from .graph import Graph
 from ..data_type import is_intscalar
 
 
@@ -19,11 +20,11 @@ class MultiGraph(BaseGraph):
 
     def __init__(self, adj_matrix=None,
                  node_attr=None,
-                 node_labels=None,
+                 node_labels=None, *,
                  edge_attr=None,
                  edge_labels=None,
-                 graph_labels=None,
                  graph_attr=None,
+                 graph_labels=None,
                  mapping=None,
                  metadata: Any = None,
                  copy: bool = True):
@@ -49,10 +50,14 @@ class MultiGraph(BaseGraph):
             return super().__getitem__(index)
         else:
             try:
-                G = self.copy()
                 collate_fn = partial(index_select, index=index)
-                G.update(**G.dicts(collate_fn=collate_fn))
-                return G
+                collates = self.dicts(collate_fn=collate_fn)
+                if is_intscalar(index):
+                    return Graph(**collates)
+                else:
+                    G = self.copy()
+                    G.update(**collates)
+                    return G
             except IndexError as e:
                 raise IndexError(f"Invalid index {index}.")
 

@@ -26,11 +26,12 @@ class Graph(BaseGraph):
 
     def __init__(self, adj_matrix: Optional[AdjMatrix] = None,
                  node_attr: Optional[Union[AdjMatrix, Matrix2D]] = None,
-                 node_labels: Optional[ArrOrMatrix] = None,
+                 node_labels: Optional[ArrOrMatrix] = None, *,
                  edge_attr=None,
                  edge_labels=None,
-                 graph_labels=None,
                  graph_attr=None,
+                 graph_labels=None,
+                 mapping=None,
                  metadata: Any = None,
                  copy: bool = True):
         r"""Create an (un)dirtected (attributed and labeled) graph.
@@ -43,6 +44,11 @@ class Graph(BaseGraph):
             Node attribute matrix in CSR or Numpy format.
         node_labels : np.ndarray, shape [num_nodes], optional
             Array, where each entry represents respective node's label(s).
+        edge_attr:
+        edge_labels:
+        graph_attr:
+        graph_labels:
+        mapping:
         metadata : object, optional
             Additional metadata such as text.
         copy: bool, optional

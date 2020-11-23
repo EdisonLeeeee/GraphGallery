@@ -19,13 +19,14 @@ __all__ = ['is_iterable',
            ]
 
 
-def is_iterable(obj: Any) -> bool:
+def is_iterable(x: Any) -> bool:
     """Check whether `x` is an iterable object except for string."""
-    return isinstance(obj, Iterable) and not isinstance(obj, str)
+    return isinstance(x, Iterable) and not isinstance(x, str)
 
 
 def is_listlike(x: Any) -> bool:
-    """Check whether `x` is list like, e.g., Tuple or List.
+    """Check whether `x` is list like, e.g., Tuple, List, or Numpy object.
+
     Parameters:
     ----------
     x: A python object to check.
@@ -33,7 +34,7 @@ def is_listlike(x: Any) -> bool:
     ----------
     `True` iff `x` is a list like sequence.
     """
-    return isinstance(obj, (list, tuple)) or (isinstance(obj, np.ndarray) and obj.dtype == "O")
+    return isinstance(x, (list, tuple)) or (isinstance(x, np.ndarray) and x.dtype == "O")
 
 
 def is_scalar(x: Any) -> bool:
