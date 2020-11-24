@@ -3,6 +3,8 @@ import scipy.sparse as sp
 from typing import Union, Optional, List, Tuple, Any
 from ..data_type import is_objects
 
+__all__ = ['sparse_collate', 'check_and_convert', 'index_select']
+
 _SPARSE_THRESHOLD = 0.5
 
 

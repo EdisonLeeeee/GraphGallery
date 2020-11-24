@@ -7,6 +7,7 @@ from typing import Union, Tuple, List
 from functools import partial
 
 from .collate import sparse_collate, check_and_convert
+from .io import load_npz
 from ..data_type import is_objects
 
 # NxGraph = Union[nx.Graph, nx.DiGraph]
@@ -83,9 +84,9 @@ class BaseGraph(ABC):
 
     def items(self, collate_fn=None):
         if callable(collate_fn):
-            return tuple(collate_fn(key, self[key]) for key in sorted(self.keys()))
+            return tuple(collate_fn(key, self[key]) for key in self.keys())
         else:
-            return tuple((key, self[key]) for key in sorted(self.keys()))
+            return tuple((key, self[key]) for key in self.keys())
 
     def dicts(self, collate_fn=None):
         return dict(self.items(collate_fn=collate_fn))
@@ -105,24 +106,12 @@ class BaseGraph(ABC):
 
     @ classmethod
     def from_npz(cls, filepath: str):
-        filepath = osp.abspath(osp.expanduser(osp.realpath(filepath)))
+        loader = load_npz(filepath)
 
-        if not filepath.endswith('.npz'):
-            filepath = filepath + '.npz'
-
-        if osp.isfile(filepath):
-            with np.load(filepath, allow_pickle=True) as loader:
-                loader = dict(loader)
-
-                for k, v in loader.items():
-                    if v.dtype.kind == 'O':
-                        loader[k] = v.tolist()
-                # FIXME
-                loader['node_label'] = loader['node_labels']
-                loader.pop('node_labels')
-                return cls(copy=False, **loader)
-        else:
-            raise ValueError(f"{filepath} doesn't exist.")
+        # FIXME
+        loader['node_label'] = loader['node_labels']
+        loader.pop('node_labels')
+        return cls(copy=False, **loader)
 
     def to_npz(self, filepath: str, collate_fn=sparse_collate):
 
@@ -148,14 +137,14 @@ class BaseGraph(ABC):
         else:
             return _copy(self)
 
-    def update(self, *, collate_fn=None, copy=False, **collates):
+    def update(self, *, collate_fn=None, copy=False, **collects):
         if collate_fn is None:
             # TODO: check the acceptable args
             collate_fn = partial(check_and_convert,
                                  multiple=self.multiple,
                                  copy=copy)
 
-        for k, v in collates.items():
+        for k, v in collects.items():
             k, v = collate_fn(k, v)
             self[k] = v
 
@@ -167,7 +156,7 @@ class BaseGraph(ABC):
         return key in self.keys()
 
     def __call__(self, *keys):
-        for key in sorted(self.keys()) if not keys else keys:
+        for key in keys:
             yield self[key]
 
     def __getitem__(self, key):
@@ -198,17 +187,19 @@ class BaseGraph(ABC):
             + f"metadata={tuple(self.metadata.keys()) if isinstance(self.metadata, dict) else self.metadata})"
 
 
-def get_num_nodes(adj_matrices):
+def get_num_nodes(adj_matrices, fn=sum):
     if adj_matrices is None:
         return 0
 
     if is_objects(adj_matrices):
-        return sum(get_num_nodes(adj_matrix) for adj_matrix in adj_matrices)
+        return fn(get_num_nodes(adj_matrix) for adj_matrix in adj_matrices)
+        # # NOTE: please make sure all the graph are the same!!
+        # return max(get_num_nodes(adj_matrix) for adj_matrix in adj_matrices)
 
     return adj_matrices.shape[0]
 
 
-def get_num_graphs(adj_matrices):
+def get_num_graphs(adj_matrices, fn=None):
     if adj_matrices is None:
         return 0
 
@@ -219,12 +210,12 @@ def get_num_graphs(adj_matrices):
     return 1
 
 
-def get_num_edges(adj_matrices, is_directed=False):
+def get_num_edges(adj_matrices, is_directed=False, fn=sum):
     if adj_matrices is None:
         return 0
 
     if is_objects(adj_matrices):
-        return sum(get_num_edges(adj_matrix) for adj_matrix in adj_matrices)
+        return fn(get_num_edges(adj_matrix) for adj_matrix in adj_matrices)
 
     if is_directed:
         return int(adj_matrices.nnz)
@@ -234,22 +225,22 @@ def get_num_edges(adj_matrices, is_directed=False):
         return int((A.nnz - num_diag) / 2) + int(num_diag)
 
 
-def get_num_node_attrs(node_attrs):
+def get_num_node_attrs(node_attrs, fn=max):
     if node_attrs is None:
         return 0
 
     if is_objects(node_attrs):
-        return max(get_num_node_attrs(node_attr) for node_attr in node_attrs)
+        return fn(get_num_node_attrs(node_attr) for node_attr in node_attrs)
 
     return node_attrs.shape[1]
 
 
-def get_num_node_classes(node_labels):
+def get_num_node_classes(node_labels, fn=max):
     if node_labels is None:
         return 0
 
     if is_objects(node_labels):
-        return max(get_num_node_classes(node_label) for node_label in node_labels)
+        return fn(get_num_node_classes(node_label) for node_label in node_labels)
 
     if node_labels.ndim == 1:
         return node_labels.max() + 1

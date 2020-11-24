@@ -33,14 +33,16 @@ class Graph(BaseGraph):
                  graph_label=None,
                  mapping=None,
                  metadata: Any = None,
-                 copy: bool = True):
+                 copy: bool = False):
         r"""Create an (un)dirtected (attributed and labeled) graph.
 
         Parameters
         ----------
-        adj_matrix : sp.csr_matrix, shape [num_nodes, num_nodes], optional
+        adj_matrix : sp.csr_matrix, 
+            shape [num_nodes, num_nodes], optional
             Adjacency matrix in CSR format.
-        node_attr : sp.csr_matrix or np.ndarray, shape [num_nodes, num_node_attrs], optional
+        node_attr : sp.csr_matrix or np.ndarray, 
+            shape [num_nodes, num_node_attrs], optional
             Node attribute matrix in CSR or Numpy format.
         node_label : np.ndarray, shape [num_nodes], optional
             Array, where each entry represents respective node's label(s).
@@ -54,9 +56,9 @@ class Graph(BaseGraph):
         copy: bool, optional
             whether to use copy for the inputs.
         """
-        collates = locals()
-        del collates['self']
-        self.update(**collates)
+        collects = locals()
+        del collects['self']
+        self.update(**collects)
 
     @ property
     def degrees(self) -> Union[Tuple[Array1D], Array1D]:

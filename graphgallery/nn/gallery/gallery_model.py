@@ -10,7 +10,7 @@ import scipy.sparse as sp
 
 from tensorflow.keras import backend as K
 
-from graphgallery.data.io import makedirs_from_filename
+from graphgallery.data.io import makedirs_from_filepath
 from graphgallery.utils import saver
 import graphgallery as gg
 
@@ -58,7 +58,7 @@ class GalleryModel(Model):
         if not path:
             path = self.ckpt_path
 
-        makedirs_from_filename(path)
+        makedirs_from_filepath(path)
 
         if as_model:
             if self.backend == "tensorflow":

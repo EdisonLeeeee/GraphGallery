@@ -18,7 +18,7 @@ from tensorflow.python.keras.utils.generic_utils import Progbar
 import graphgallery as gg
 from graphgallery.nn.gallery import GalleryModel
 from graphgallery.nn.functions import softmax
-from graphgallery.data.io import makedirs_from_filename
+from graphgallery.data.io import makedirs_from_filepath
 from graphgallery.data import BaseGraph
 from graphgallery.functional import asintarr
 from graphgallery.utils.raise_error import raise_if_kwargs
@@ -233,7 +233,7 @@ class SemiSupervisedModel(GalleryModel):
             else:
                 self.ckpt_path = ckpt_path
 
-            makedirs_from_filename(ckpt_path)
+            makedirs_from_filepath(ckpt_path)
 
             if not ckpt_path.endswith(gg.file_postfix()):
                 ckpt_path = ckpt_path + gg.file_postfix()

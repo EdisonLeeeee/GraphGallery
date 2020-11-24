@@ -55,16 +55,14 @@ class NPZDataset(Dataset):
         if files_exist(self.raw_paths):
             if self.verbose:
                 print(f"Dataset {self.name} have already existed.")
-                self.print_files(self.raw_paths)
+                self.show(self.raw_paths)
             return
-
-        self.print_files(self.raw_paths)
 
         if self.verbose:
             print("Downloading...")
-        download_file(self.raw_paths, self.urls)
+        download_file(self.download_paths, self.urls)
         if self.verbose:
-            self.print_files(self.raw_paths)
+            self.show(self.raw_paths)
             print("Downloading completed.")
 
     def process(self) -> None:

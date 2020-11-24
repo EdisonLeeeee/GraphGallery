@@ -16,7 +16,7 @@ from ..data_type import is_intscalar
 
 
 class MultiGraph(BaseGraph):
-    """Attributed labeled multigraph stored in a list of sparse matrix form."""
+    """Attributed labeled multigraph stored in a list of sparse matrices form."""
     multiple = True
 
     def __init__(self, adj_matrix=None,
@@ -29,12 +29,10 @@ class MultiGraph(BaseGraph):
                  mapping=None,
                  metadata: Any = None,
                  copy: bool = True):
-        r"""Create a multiple (un)dirtected (attributed and labeled) graph.
-
-        """
-        collates = locals()
-        del collates['self']
-        self.update(**collates)
+        r"""Create a multiple (un)dirtected (attributed and labeled) graph."""
+        collects = locals()
+        del collects['self']
+        self.update(**collects)
 
     def extra_repr(self):
         excluded = {"metadata"}
@@ -52,12 +50,13 @@ class MultiGraph(BaseGraph):
         else:
             try:
                 collate_fn = partial(index_select, index=index)
-                collates = self.dicts(collate_fn=collate_fn)
+                collects = self.dicts(collate_fn=collate_fn)
                 if is_intscalar(index):
-                    return Graph(**collates)
+                    # Single graph
+                    return Graph(**collects)
                 else:
                     G = self.copy()
-                    G.update(**collates)
+                    G.update(**collects)
                     return G
             except IndexError as e:
                 raise IndexError(f"Invalid index {index}.")

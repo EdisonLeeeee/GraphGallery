@@ -13,7 +13,6 @@ from .graph import Graph
 
 _DATASETS = {'citeseer', 'cora', 'pubmed'}
 
-TrainValTest = Tuple[np.ndarray]
 Transform = Union[List, Tuple, str, List, Tuple, Callable]
 
 
@@ -55,14 +54,14 @@ class Planetoid(Dataset):
         if files_exist(self.raw_paths):
             if self.verbose:
                 print(f"Dataset {self.name} have already existed.")
-                self.print_files(self.raw_paths)
+                self.show(self.raw_paths)
             return
 
         if self.verbose:
             print("Downloading...")
-        download_file(self.raw_paths, self.urls)
+        download_file(self.download_paths, self.urls)
         if self.verbose:
-            self.print_files(self.raw_paths)
+            self.show(self.raw_paths)
             print("Downloading completed.")
 
     def process(self) -> None:
@@ -82,7 +81,7 @@ class Planetoid(Dataset):
     def split_nodes(self, train_size: float = None,
                     val_size: float = None,
                     test_size: float = None,
-                    random_state: Optional[int] = None) -> TrainValTest:
+                    random_state: Optional[int] = None) -> dict:
 
         if not all((train_size, val_size, test_size)):
             return self.splits
