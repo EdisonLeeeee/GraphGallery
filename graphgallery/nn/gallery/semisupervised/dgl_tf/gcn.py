@@ -120,7 +120,7 @@ class GCN(SemiSupervisedModel):
         return loss.numpy().item(), metric.result().numpy().item()
 
     def train_sequence(self, index):
-        labels = self.graph.node_labels[index]
+        labels = self.graph.node_label[index]
         sequence = FullBatchNodeSequence(
             [self.feature_inputs, self.structure_inputs, index], labels,
             device=self.device, escape=type(self.structure_inputs))

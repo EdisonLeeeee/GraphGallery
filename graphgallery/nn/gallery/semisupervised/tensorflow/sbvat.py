@@ -152,7 +152,7 @@ class SBVAT(SemiSupervisedModel):
 
     def train_sequence(self, index):
 
-        labels = self.graph.node_labels[index]
+        labels = self.graph.node_label[index]
 
         sequence = SBVATSampleSequence([self.feature_inputs, self.structure_inputs,
                                         index], labels,
@@ -163,7 +163,7 @@ class SBVAT(SemiSupervisedModel):
 
     def test_sequence(self, index):
 
-        labels = self.graph.node_labels[index]
+        labels = self.graph.node_label[index]
         sequence = FullBatchNodeSequence([self.feature_inputs, self.structure_inputs,
                                           index], labels, device=self.device)
 

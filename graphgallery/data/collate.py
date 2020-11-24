@@ -1,14 +1,16 @@
 import numpy as np
 import scipy.sparse as sp
 from typing import Union, Optional, List, Tuple, Any
-from ..data_type import is_listlike
+from ..data_type import is_objects
 
 _SPARSE_THRESHOLD = 0.5
 
 
 def sparse_collate(key, val):
-    if is_listlike(val):
+    # TODO: multiple graph
+    if is_objects(val):
         return key, val
+
     if isinstance(val, np.ndarray) and val.ndim == 2:
         # one-hot like matrix stored with 1D array
         if "labels" in key and np.all(val.sum(1) == 1):
@@ -84,10 +86,12 @@ def check_and_convert(key, value, multiple=False, copy=False) -> dict:
             check_fn = _check_label_matrix
 
         if multiple:
-            if is_listlike(value):
+            if is_objects(value):
                 value = np.asarray([check_fn(v, copy=copy) for v in value])
             else:
-                value = np.asarray([check_fn(value, copy=copy)])
+                value = check_fn(value, copy=copy)
+                if not "graph" in key:
+                    value = np.asarray([value])
         else:
             value = check_fn(value, copy=copy)
 

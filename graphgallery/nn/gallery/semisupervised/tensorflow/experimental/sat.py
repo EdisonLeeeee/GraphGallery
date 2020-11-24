@@ -158,7 +158,7 @@ class SAT(SemiSupervisedModel):
         return loss, metric.result()
 
     def train_sequence(self, index):
-        labels = self.graph.node_labels[index]
+        labels = self.graph.node_label[index]
         with tf.device(self.device):
             sequence = FullBatchNodeSequence([self.feature_inputs,
                                               self.structure_inputs,

@@ -95,7 +95,7 @@ class LGCN(SemiSupervisedModel):
         structure_inputs = self.structure_inputs[index][:, index]
         feature_inputs = self.feature_inputs[index]
         mask = mask[index]
-        labels = self.graph.node_labels[index[mask]]
+        labels = self.graph.node_label[index[mask]]
 
         sequence = FullBatchNodeSequence(
             [feature_inputs, structure_inputs, mask], labels, device=self.device)

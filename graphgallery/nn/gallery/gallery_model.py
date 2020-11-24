@@ -39,9 +39,10 @@ class GalleryModel(Model):
         """
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
-        self.idx_train = None
-        self.idx_val = None
-        self.idx_test = None
+        self.train_data = None
+        self.val_data = None
+        self.test_data = None
+        self.predict_data = None
         self.backup = None
 
         self._model = None
@@ -117,9 +118,9 @@ class GalleryModel(Model):
         return self._custom_objects
 
     @custom_objects.setter
-    def custom_objects(self, value):
-        assert isinstance(value, dict)
-        self._custom_objects = value
+    def custom_objects(self, objs):
+        assert isinstance(objs, dict)
+        self._custom_objects = objs
 
     def close(self):
         """Close the session of model and empty cache."""

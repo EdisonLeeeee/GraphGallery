@@ -2,6 +2,7 @@ import torch
 import itertools
 
 import numpy as np
+import networkx as nx
 import tensorflow as tf
 import scipy.sparse as sp
 
@@ -10,7 +11,9 @@ from numbers import Number
 
 import graphgallery as gg
 
-__all__ = ['asintarr', 'indices2mask', 'repeat', 'get_length', 'Bunch']
+__all__ = ['asintarr', 'indices2mask',
+           'repeat', 'get_length',
+           'nx_graph_to_sparse_adj', 'Bunch']
 
 
 def asintarr(x: Any, dtype: Optional[str] = None) -> np.ndarray:
@@ -43,7 +46,7 @@ def asintarr(x: Any, dtype: Optional[str] = None) -> np.ndarray:
 
     if gg.is_intscalar(x):
         x = np.asarray([x], dtype=dtype)
-    elif gg.is_listlike(x) or isinstance(x, (np.ndarray, np.matrix)):
+    elif gg.is_listlike(x) or (isinstance(x, np.ndarray) and x.dtype != "O"):
         x = np.asarray(x, dtype=dtype)
     else:
         raise ValueError(
@@ -77,6 +80,15 @@ def get_length(obj: Any) -> int:
     else:
         length = 1
     return length
+
+
+def nx_graph_to_sparse_adj(graph):
+    num_nodes = graph.number_of_nodes()
+    data = np.asarray(list(graph.edges().data('weight', default=1)))
+    edge_index = data[:, :2].T.astype(np.int64)
+    edge_weight = data[:, -1].T.astype(np.float32)
+    adj_matrix = sp.csr_matrix((edge_weight, edge_index), shape=(num_nodes, num_nodes))
+    return adj_matrix
 
 
 class Bunch(dict):
@@ -120,3 +132,7 @@ class Bunch(dict):
         # Overriding __setstate__ to be a noop has the effect of
         # ignoring the pickled __dict__
         pass
+
+    def show(self):
+        # TODO: improve it using texttable
+        return f"{self.__class__.__name__}({tuple(self.keys())})"

@@ -20,6 +20,7 @@ class TorchKeras(Module):
         # To be compatible with TensorFlow
         self._in_multi_worker_mode = dummy_function
         self._is_graph_network = dummy_function
+        self.distribute_strategy = None
 
     def build(self, inputs):
         # TODO
@@ -35,11 +36,14 @@ class TorchKeras(Module):
         # TODO
         pass
 
-    def save_weights(self, filepath, overwrite=True, save_format=None):
-        saver.save_torch_weights(self, filepath, overwrite=overwrite, save_format=save_format)
+    def save_weights(self, filepath, overwrite=True,
+                     save_format=None, **kwargs):
+        saver.save_torch_weights(self, filepath, overwrite=overwrite,
+                                 save_format=save_format, **kwargs)
 
     def save(self, filepath, overwrite=True, save_format=None, **kwargs):
-        saver.save_torch_model(self, filepath, overwrite=overwrite, save_format=save_format, **kwargs)
+        saver.save_torch_model(self, filepath, overwrite=overwrite,
+                               save_format=save_format, **kwargs)
 
     def reset_parameters(self):
         for layer in self.layers:

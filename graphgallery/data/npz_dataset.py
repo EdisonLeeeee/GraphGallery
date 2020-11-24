@@ -71,6 +71,7 @@ class NPZDataset(Dataset):
         if self.verbose:
             print("Processing...")
         graph = Graph.from_npz(self.raw_paths[0])
+        # TODO
 #             self.raw_paths[0]).eliminate_selfloops().to_unweighted().to_undirected()
         # if self.standardize:
         #     graph = graph.standardize()

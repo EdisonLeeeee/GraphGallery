@@ -100,7 +100,7 @@ class ClusterGCN(SemiSupervisedModel):
     def train_sequence(self, index):
 
         mask = F.indices2mask(index, self.graph.num_nodes)
-        labels = self.graph.node_labels
+        labels = self.graph.node_label
 
         batch_idx, batch_labels = [], []
         batch_x, batch_adj = [], []

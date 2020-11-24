@@ -85,7 +85,7 @@ class SGC(SemiSupervisedModel):
 
     def train_sequence(self, index):
         index = F.astensor(index)
-        labels = self.graph.node_labels[index]
+        labels = self.graph.node_label[index]
 
         feature_inputs = self.feature_inputs[index]
         sequence = FullBatchNodeSequence(feature_inputs, labels, device=self.device)

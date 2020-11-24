@@ -69,13 +69,13 @@ class Planetoid(Dataset):
 
         if self.verbose:
             print("Processing...")
-        adj_matrix, attributes, node_labels, idx_train, idx_val, idx_test = process_planetoid_datasets(self.name, self.raw_paths)
+        adj_matrix, node_attr, node_label, train_nodes, val_nodes, test_nodes = process_planetoid_datasets(self.name, self.raw_paths)
 
-        graph = Graph(adj_matrix, attributes, node_labels, copy=False)
+        graph = Graph(adj_matrix, node_attr, node_label, copy=False)
         self.graph = self.transform(graph)
-        self.idx_train = idx_train
-        self.idx_val = idx_val
-        self.idx_test = idx_test
+        self.splits.update(dict(train_nodes=train_nodes,
+                                val_nodes=val_nodes,
+                                test_nodes=test_nodes))
         if self.verbose:
             print("Processing completed.")
 
@@ -85,7 +85,7 @@ class Planetoid(Dataset):
                     random_state: Optional[int] = None) -> TrainValTest:
 
         if not all((train_size, val_size, test_size)):
-            return self.idx_train, self.idx_val, self.idx_test
+            return self.splits
         else:
             return super().split_nodes(train_size, val_size, test_size, random_state)
 

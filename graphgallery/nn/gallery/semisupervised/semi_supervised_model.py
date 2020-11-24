@@ -129,11 +129,11 @@ class SemiSupervisedModel(GalleryModel):
         else:
             self.model = model.to(self.device)
 
-    def train(self, idx_train, idx_val=None,
+    def train(self, train_data, val_data=None,
               epochs=200, early_stopping=None,
               verbose=1, save_best=True, ckpt_path=None, as_model=False,
               monitor='val_acc', early_stop_metric='val_loss', callbacks=None, **kwargs):
-        """Train the model for the input `idx_train` of nodes or `sequence`.
+        """Train the model for the input `train_data` of nodes or `sequence`.
 
         Note:
         ----------
@@ -141,9 +141,9 @@ class SemiSupervisedModel(GalleryModel):
 
         Parameters:
         ----------
-        idx_train: Numpy array-like, `list`, Integer scalar or `graphgallery.Sequence`
+        train_data: Numpy array-like, `list`, Integer scalar or `graphgallery.Sequence`
             The index of nodes (or sequence) that will be used during training.
-        idx_val: Numpy array-like, `list`, Integer scalar or
+        val_data: Numpy array-like, `list`, Integer scalar or
             `graphgallery.Sequence`, optional
             The index of nodes (or sequence) that will be used for validation.
             (default :obj: `None`, i.e., do not use validation during training)
@@ -200,22 +200,17 @@ class SemiSupervisedModel(GalleryModel):
             raise RuntimeError(
                 'You must compile your model before training/testing/predicting. Use `model.build()`.')
 
-        if isinstance(idx_train, Sequence):
-            train_data = idx_train
-        else:
-            idx_train = asintarr(idx_train)
-            train_data = self.train_sequence(idx_train)
-            self.idx_train = idx_train
+        if not isinstance(train_data, Sequence):
+            train_data = self.train_sequence(train_data)
 
-        validation = idx_val is not None
+        self.train_data = train_data
+
+        validation = val_data is not None
 
         if validation:
-            if isinstance(idx_val, Sequence):
-                val_data = idx_val
-            else:
-                idx_val = asintarr(idx_val)
-                val_data = self.test_sequence(idx_val)
-                self.idx_val = idx_val
+            if not isinstance(val_data, Sequence):
+                val_data = self.test_sequence(val_data)
+            self.val_data = val_data
         else:
             monitor = 'acc' if monitor[:3] == 'val' else monitor
 
@@ -303,9 +298,8 @@ class SemiSupervisedModel(GalleryModel):
 
         return history
 
-    def test(self, index, verbose=1):
-        """
-            Test the output accuracy for the `index` of nodes or `sequence`.
+    def test(self, data, verbose=1):
+        """Test the output accuracy for the data.
 
         Note:
         ----------
@@ -314,7 +308,7 @@ class SemiSupervisedModel(GalleryModel):
 
         Parameters:
         ----------
-        index: Numpy array-like, `list`, Integer scalar or `graphgallery.Sequence`
+        data: Numpy array-like, `list` or `graphgallery.Sequence`
             The index of nodes (or sequence) that will be tested.
 
 
@@ -330,12 +324,12 @@ class SemiSupervisedModel(GalleryModel):
             raise RuntimeError(
                 'You must compile your model before training/testing/predicting. Use `model.build()`.')
 
-        if isinstance(index, Sequence):
-            test_data = index
+        if isinstance(data, Sequence):
+            test_data = data
         else:
-            index = asintarr(index)
-            test_data = self.test_sequence(index)
-            self.idx_test = index
+            test_data = self.test_sequence(data)
+
+        self.test_data = test_data
 
         if verbose:
             print("Testing...")
@@ -403,9 +397,9 @@ class SemiSupervisedModel(GalleryModel):
         """
         return self.test_step_fn(self.model, sequence)
 
-    def predict(self, index=None, return_prob=True):
+    def predict(self, data=None, return_prob=True):
         """
-        Predict the output probability for the input node index.
+        Predict the output probability for the input data.
 
 
         Note:
@@ -415,7 +409,7 @@ class SemiSupervisedModel(GalleryModel):
 
         Parameters:
         ----------
-        index: Numpy 1D array, optional.
+        data: Numpy 1D array, optional.
             The indices of nodes to predict.
             if None, predict the all nodes.
 
@@ -433,12 +427,15 @@ class SemiSupervisedModel(GalleryModel):
             raise RuntimeError(
                 'You must compile your model before training/testing/predicting. Use `model.build()`.')
 
-        if index is None:
-            index = np.arange(self.graph.num_nodes, dtype=gg.intx())
-        else:
-            index = asintarr(index)
-        sequence = self.predict_sequence(index)
-        logit = self.predict_step(sequence)
+        if data is None:
+            data = np.arange(self.graph.num_nodes, dtype=gg.intx())
+
+        if not isinstance(data, Sequence):
+            data = self.predict_sequence(data)
+
+        self.predict_data = data
+
+        logit = self.predict_step(data)
         if return_prob:
             logit = softmax(logit)
         return logit
@@ -505,7 +502,7 @@ class SemiSupervisedModel(GalleryModel):
     def _test_predict(self, index):
         logit = self.predict(index)
         predict_class = logit.argmax(1)
-        labels = self.graph.node_labels[index]
+        labels = self.graph.node_label[index]
         return (predict_class == labels).mean()
 
     def reset_weights(self):

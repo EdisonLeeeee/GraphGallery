@@ -26,11 +26,11 @@ class Graph(BaseGraph):
 
     def __init__(self, adj_matrix: Optional[AdjMatrix] = None,
                  node_attr: Optional[Union[AdjMatrix, Matrix2D]] = None,
-                 node_labels: Optional[ArrOrMatrix] = None, *,
+                 node_label: Optional[ArrOrMatrix] = None, *,
                  edge_attr=None,
-                 edge_labels=None,
+                 edge_label=None,
                  graph_attr=None,
-                 graph_labels=None,
+                 graph_label=None,
                  mapping=None,
                  metadata: Any = None,
                  copy: bool = True):
@@ -42,12 +42,12 @@ class Graph(BaseGraph):
             Adjacency matrix in CSR format.
         node_attr : sp.csr_matrix or np.ndarray, shape [num_nodes, num_node_attrs], optional
             Node attribute matrix in CSR or Numpy format.
-        node_labels : np.ndarray, shape [num_nodes], optional
+        node_label : np.ndarray, shape [num_nodes], optional
             Array, where each entry represents respective node's label(s).
         edge_attr:
-        edge_labels:
+        edge_label:
         graph_attr:
-        graph_labels:
+        graph_label:
         mapping:
         metadata : object, optional
             Additional metadata such as text.
@@ -69,12 +69,12 @@ class Graph(BaseGraph):
             return self.adj_matrix.sum(0).A1, self.adj_matrix.sum(1).A1
 
     @ property
-    def node_labels_onehot(self) -> Matrix2D:
-        """Get the one-hot like node_labels of nodes."""
-        node_labels = self.node_labels
-        if node_labels is not None and node_labels.ndim == 1:
-            return np.eye(self.num_node_classes, dtype=node_labels.dtype)[node_labels]
-        return node_labels
+    def node_label_onehot(self) -> Matrix2D:
+        """Get the one-hot like node_label of nodes."""
+        node_label = self.node_label
+        if node_label is not None and node_label.ndim == 1:
+            return np.eye(self.num_node_classes, dtype=node_label.dtype)[node_label]
+        return node_label
 
     def neighbors(self, idx) -> Array1D:
         """Get the indices of neighbors of a given node.
@@ -119,16 +119,16 @@ class Graph(BaseGraph):
         """Remove nodes from graph that correspond to a class of which there are less
         or equal than 'threshold'. Those classes would otherwise break the training procedure.
         """
-        if self.node_labels is None:
+        if self.node_label is None:
             return self
-        node_labels = self.node_labels
-        counts = np.bincount(node_labels)
+        node_label = self.node_label
+        counts = np.bincount(node_label)
         nodes_to_remove = []
         removed = 0
         left = []
         for _class, count in enumerate(counts):
             if count <= threshold:
-                nodes_to_remove.extend(np.where(node_labels == _class)[0])
+                nodes_to_remove.extend(np.where(node_label == _class)[0])
                 removed += 1
             else:
                 left.append(_class)
@@ -136,7 +136,7 @@ class Graph(BaseGraph):
         if removed > 0:
             G = self.subgraph(nodes_to_remove=nodes_to_remove)
             mapping = dict(zip(left, range(self.num_node_classes - removed)))
-            G.node_labels = np.asarray(list(map(lambda key: mapping[key], G.node_labels)), dtype=np.int32)
+            G.node_label = np.asarray(list(map(lambda key: mapping[key], G.node_label)), dtype=np.int32)
             return G
         else:
             return self

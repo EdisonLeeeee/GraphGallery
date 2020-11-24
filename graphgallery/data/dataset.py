@@ -9,7 +9,7 @@ import os.path as osp
 from abc import ABC
 from typing import Union, Optional, List, Tuple, Callable
 
-from graphgallery.functional import get
+import graphgallery.functional as F
 from .preprocess import train_val_test_split_tabular, get_train_val_test_split
 
 TrainValTest = Tuple[np.ndarray]
@@ -35,7 +35,8 @@ class Dataset(ABC):
         self.download_dir = None
         self.processed_dir = None
         self.graph = None
-        self.transform = get(transform)
+        self.splits = F.Bunch()
+        self.transform = F.get(transform)
 
     @property
     def urls(self) -> List[str]:
@@ -61,15 +62,17 @@ class Dataset(ABC):
             test_size = 1.0 - train_size - val_size
         assert train_size + val_size + test_size <= 1.0
 
-        labels = self.graph.node_labels
-        idx_train, idx_val, idx_test = train_val_test_split_tabular(labels.shape[0],
-                                                                    train_size,
-                                                                    val_size,
-                                                                    test_size,
-                                                                    stratify=labels,
-                                                                    random_state=random_state)
-
-        return idx_train, idx_val, idx_test
+        label = self.graph.node_label
+        train_nodes, val_nodes, test_nodes = train_val_test_split_tabular(label.shape[0],
+                                                                          train_size,
+                                                                          val_size,
+                                                                          test_size,
+                                                                          stratify=label,
+                                                                          random_state=random_state)
+        self.splits.update(dict(train_nodes=train_nodes,
+                                val_nodes=val_nodes,
+                                test_nodes=test_nodes))
+        return self.splits
 
     def split_nodes_by_sample(self, train_examples_per_class: int,
                               val_examples_per_class: int,
@@ -78,13 +81,16 @@ class Dataset(ABC):
 
         self.graph = self.graph.eliminate_classes(train_examples_per_class + val_examples_per_class).standardize()
 
-        labels = self.graph.node_labels
-        idx_train, idx_val, idx_test = get_train_val_test_split(labels,
-                                                                train_examples_per_class,
-                                                                val_examples_per_class,
-                                                                test_examples_per_class,
-                                                                random_state=random_state)
-        return idx_train, idx_val, idx_test
+        label = self.graph.node_label
+        train_nodes, val_nodes, test_nodes = get_train_val_test_split(label,
+                                                                      train_examples_per_class,
+                                                                      val_examples_per_class,
+                                                                      test_examples_per_class,
+                                                                      random_state=random_state)
+        self.splits.update(dict(train_nodes=train_nodes,
+                                val_nodes=val_nodes,
+                                test_nodes=test_nodes))
+        return self.splits
 
     def split_edges(self, train_size: float = 0.1,
                     val_size: float = 0.1,

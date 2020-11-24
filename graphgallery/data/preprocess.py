@@ -105,14 +105,14 @@ def create_subgraph(graph: "Graph", *,
 
     graph = graph.copy()
 
-    adj_matrix, node_attr, node_labels = graph('adj_matrix',
-                                               'node_attr',
-                                               'node_labels')
+    adj_matrix, node_attr, node_label = graph('adj_matrix',
+                                              'node_attr',
+                                              'node_label')
     graph.adj_matrix = adj_matrix[nodes_to_keep][:, nodes_to_keep]
     if node_attr is not None:
         graph.node_attr = node_attr[nodes_to_keep]
-    if node_labels is not None:
-        graph.node_labels = node_labels[nodes_to_keep]
+    if node_label is not None:
+        graph.node_label = node_label[nodes_to_keep]
 
     # TODO: remove?
     metadata = graph.metadata
@@ -254,16 +254,16 @@ def process_planetoid_datasets(name: str, paths: List[str]) -> Tuple:
     adj_matrix = nx.adjacency_matrix(nx.from_dict_of_lists(
         graph, create_using=nx.DiGraph()))
 
-    node_labels = np.vstack((ally, ty))
-    node_labels[test_idx_reorder, :] = node_labels[test_idx_range, :]
+    node_label = np.vstack((ally, ty))
+    node_label[test_idx_reorder, :] = node_label[test_idx_range, :]
 
     idx_train = np.arange(len(y))
     idx_val = np.arange(len(y), len(y) + 500)
     idx_test = test_idx_range
 
-    node_labels = node_labels.argmax(1)
+    node_label = node_label.argmax(1)
 
     adj_matrix = adj_matrix.astype('float32')
     node_attr = node_attr.astype('float32')
 
-    return adj_matrix, node_attr, node_labels, idx_train, idx_val, idx_test
+    return adj_matrix, node_attr, node_label, idx_train, idx_val, idx_test

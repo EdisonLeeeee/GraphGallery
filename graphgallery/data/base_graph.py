@@ -7,7 +7,7 @@ from typing import Union, Tuple, List
 from functools import partial
 
 from .collate import sparse_collate, check_and_convert
-from ..data_type import is_listlike
+from ..data_type import is_objects
 
 # NxGraph = Union[nx.Graph, nx.DiGraph]
 # Array1D = Union[List, np.ndarray]
@@ -53,8 +53,8 @@ class BaseGraph(ABC):
 
     @ property
     def num_node_classes(self) -> int:
-        """Get the number of classes node_labels of the nodes."""
-        return get_num_node_classes(self.node_labels)
+        """Get the number of classes node_label of the nodes."""
+        return get_num_node_classes(self.node_label)
 
     @property
     def A(self):
@@ -68,8 +68,8 @@ class BaseGraph(ABC):
 
     @property
     def y(self):
-        """alias of node_labels."""
-        return self.node_labels
+        """alias of node_label."""
+        return self.node_label
 
     @property
     def D(self):
@@ -93,12 +93,12 @@ class BaseGraph(ABC):
     def is_directed(self) -> bool:
         """Check if the graph is directed (adjacency matrix is not symmetric)."""
         adj_matrix = self.adj_matrix
-        if isinstance(adj_matrix, (list, tuple)):
+        if is_objects(adj_matrix):
             adj_matrix = adj_matrix[0]
         return (adj_matrix != adj_matrix.T).sum() != 0
 
     def is_labeled(self):
-        return self.node_labels is not None and len(self.node_labels) != 0
+        return self.node_label is not None and len(self.node_label) != 0
 
     def is_attributed(self):
         return self.node_attr is not None and len(self.node_attr) != 0
@@ -117,7 +117,9 @@ class BaseGraph(ABC):
                 for k, v in loader.items():
                     if v.dtype.kind == 'O':
                         loader[k] = v.tolist()
-
+                # FIXME
+                loader['node_label'] = loader['node_labels']
+                loader.pop('node_labels')
                 return cls(copy=False, **loader)
         else:
             raise ValueError(f"{filepath} doesn't exist.")
@@ -166,7 +168,7 @@ class BaseGraph(ABC):
 
     def __call__(self, *keys):
         for key in sorted(self.keys()) if not keys else keys:
-            yield key, self[key]
+            yield self[key]
 
     def __getitem__(self, key):
         return getattr(self, key, None)
@@ -200,7 +202,7 @@ def get_num_nodes(adj_matrices):
     if adj_matrices is None:
         return 0
 
-    if is_listlike(adj_matrices):
+    if is_objects(adj_matrices):
         return sum(get_num_nodes(adj_matrix) for adj_matrix in adj_matrices)
 
     return adj_matrices.shape[0]
@@ -210,7 +212,7 @@ def get_num_graphs(adj_matrices):
     if adj_matrices is None:
         return 0
 
-    if is_listlike(adj_matrices):
+    if is_objects(adj_matrices):
         # return sum(get_num_graphs(adj_matrix) for adj_matrix in adj_matrices)
         return len(adj_matrices)
 
@@ -221,7 +223,7 @@ def get_num_edges(adj_matrices, is_directed=False):
     if adj_matrices is None:
         return 0
 
-    if is_listlike(adj_matrices):
+    if is_objects(adj_matrices):
         return sum(get_num_edges(adj_matrix) for adj_matrix in adj_matrices)
 
     if is_directed:
@@ -236,8 +238,8 @@ def get_num_node_attrs(node_attrs):
     if node_attrs is None:
         return 0
 
-    if is_listlike(node_attrs):
-        return max(get_num_node_attrs(node_attr for node_attr in node_attrs))
+    if is_objects(node_attrs):
+        return max(get_num_node_attrs(node_attr) for node_attr in node_attrs)
 
     return node_attrs.shape[1]
 
@@ -246,8 +248,8 @@ def get_num_node_classes(node_labels):
     if node_labels is None:
         return 0
 
-    if is_listlike(node_labels):
-        return max(get_num_node_classes(node_label for node_label in node_labels))
+    if is_objects(node_labels):
+        return max(get_num_node_classes(node_label) for node_label in node_labels)
 
     if node_labels.ndim == 1:
         return node_labels.max() + 1

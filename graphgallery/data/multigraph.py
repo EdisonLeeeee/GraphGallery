@@ -21,11 +21,11 @@ class MultiGraph(BaseGraph):
 
     def __init__(self, adj_matrix=None,
                  node_attr=None,
-                 node_labels=None, *,
+                 node_label=None, *,
                  edge_attr=None,
-                 edge_labels=None,
+                 edge_label=None,
                  graph_attr=None,
-                 graph_labels=None,
+                 graph_label=None,
                  mapping=None,
                  metadata: Any = None,
                  copy: bool = True):

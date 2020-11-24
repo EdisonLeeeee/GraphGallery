@@ -66,7 +66,7 @@ class GMNN(SemiSupervisedModel):
 
         self.adj_transform = F.get(adj_transform)
         self.attr_transform = F.get(attr_transform)
-        self.labels_onehot = self.graph.node_labels_onehot
+        self.labels_onehot = self.graph.node_label_onehot
         self.custom_objects = {
             'GraphConvolution': GraphConvolution, 'Gather': Gather}
         self.process()
@@ -136,7 +136,7 @@ class GMNN(SemiSupervisedModel):
         histories.append(history)
 
         label_predict = self.predict(index_all).argmax(1)
-        label_predict[idx_train] = self.graph.node_labels[idx_train]
+        label_predict[idx_train] = self.graph.node_label[idx_train]
         label_predict = tf.one_hot(label_predict, depth=self.graph.num_node_classes)
         # train model_p fitst
         train_sequence = FullBatchNodeSequence([label_predict,

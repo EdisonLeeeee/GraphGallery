@@ -10,6 +10,7 @@ from typing import Any, Optional
 
 __all__ = ['is_iterable',
            'is_listlike',
+           'is_objects',
            'is_scalar',
            'is_intscalar',
            'infer_type',
@@ -34,7 +35,22 @@ def is_listlike(x: Any) -> bool:
     ----------
     `True` iff `x` is a list like sequence.
     """
-    return isinstance(x, (list, tuple)) or (isinstance(x, np.ndarray) and x.dtype == "O")
+    return (isinstance(x, (list, tuple)))
+
+
+def is_objects(x: Any) -> bool:
+    """Check whether `x` is a list of complex objects (not integers).
+
+    Parameters:
+    ----------
+    x: A python object to check.
+    Returns:
+    ----------
+    `True` iff `x` is a list of complex objects.
+    """
+    return (is_listlike(x) or
+            (isinstance(x, np.ndarray) and x.dtype == "O")
+            ) and not is_scalar(x[0])
 
 
 def is_scalar(x: Any) -> bool:

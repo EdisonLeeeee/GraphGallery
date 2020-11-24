@@ -101,7 +101,7 @@ class GraphSAGE(SemiSupervisedModel):
 
     def train_sequence(self, index):
 
-        labels = self.graph.node_labels[index]
+        labels = self.graph.node_label[index]
         sequence = SAGEMiniBatchSequence(
             [self.feature_inputs, self.structure_inputs, index], labels,
             n_samples=self.n_samples, device=self.device)

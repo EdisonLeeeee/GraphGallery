@@ -29,18 +29,22 @@ def save_torch_model(model, filepath, overwrite=True, save_format=None, **kwargs
     torch.save(model, filepath)
 
 
-def save_tf_weights(model, filepath, overwrite=True, save_format=None):
+def save_tf_weights(model, filepath, overwrite=True,
+                    save_format=None, **kwargs):
     postfix = gg.file_postfix()
 
     if not filepath.endswith(postfix):
         filepath = filepath + postfix
     try:
-        model.save_weights(filepath, overwrite=overwrite, save_format=save_format)
+        model.save_weights(filepath, overwrite=overwrite,
+                           save_format=save_format, **kwargs)
     except ValueError as e:
-        model.save_weights(filepath[:-3], overwrite=overwrite, save_format=save_format)
+        model.save_weights(filepath[:-3], overwrite=overwrite,
+                           save_format=save_format, **kwargs)
 
 
-def save_torch_weights(model, filepath, overwrite=True, save_format=None):
+def save_torch_weights(model, filepath, overwrite=True,
+                       save_format=None, **kwargs):
     postfix = gg.file_postfix()
 
     if not filepath.endswith(postfix):

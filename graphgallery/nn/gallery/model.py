@@ -21,7 +21,7 @@ def parse_graph_inputs(*graph):
             graph = gg.Graph(graph)
         elif isinstance(graph, dict):
             return gg.Graph(**graph)
-        elif gg.is_listlike(graph):
+        elif gg.is_objects(graph):
             # TODO: multi graph
             ...
         else:
@@ -29,7 +29,7 @@ def parse_graph_inputs(*graph):
     else:
         if sp.isspmatrix(graph[0]):
             graph = gg.Graph(*graph)
-        elif gg.is_listlike(graph[0]):
+        elif gg.is_objects(graph[0]):
             # TODO: multi graph
             ...
         else:

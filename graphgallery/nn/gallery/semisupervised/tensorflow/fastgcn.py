@@ -98,7 +98,7 @@ class FastGCN(SemiSupervisedModel):
 
     def train_sequence(self, index):
 
-        labels = self.graph.node_labels[index]
+        labels = self.graph.node_label[index]
         adj_matrix = self.graph.adj_matrix[index][:, index]
         adj_matrix = self.adj_transform(adj_matrix)
 
@@ -110,7 +110,7 @@ class FastGCN(SemiSupervisedModel):
 
     def test_sequence(self, index):
 
-        labels = self.graph.node_labels[index]
+        labels = self.graph.node_label[index]
         structure_inputs = self.structure_inputs[index]
 
         sequence = FastGCNBatchSequence([self.feature_inputs, structure_inputs],
