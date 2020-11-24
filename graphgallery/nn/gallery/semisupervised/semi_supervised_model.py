@@ -235,8 +235,8 @@ class SemiSupervisedModel(GalleryModel):
 
             makedirs_from_filepath(ckpt_path)
 
-            if not ckpt_path.endswith(gg.file_postfix()):
-                ckpt_path = ckpt_path + gg.file_postfix()
+            if not ckpt_path.endswith(gg.file_ext()):
+                ckpt_path = ckpt_path + gg.file_ext()
 
             mc_callback = ModelCheckpoint(ckpt_path,
                                           monitor=monitor,
@@ -535,9 +535,9 @@ class SemiSupervisedModel(GalleryModel):
         if self.backend == "tensorflow":
             remove_extra_tf_files(filepath)
 
-        postfix = gg.file_postfix()
-        if not filepath.endswith(postfix):
-            filepath = filepath + postfix
+        ext = gg.file_ext()
+        if not filepath.endswith(ext):
+            filepath = filepath + ext
 
         if osp.exists(filepath):
             os.remove(filepath)
@@ -545,11 +545,11 @@ class SemiSupervisedModel(GalleryModel):
 
 def remove_extra_tf_files(filepath):
     # for tensorflow weights that saved without h5 formate
-    for postfix in (".data-00000-of-00001",
-                    ".data-00000-of-00002",
-                    ".data-00001-of-00002",
-                    ".index"):
-        path = filepath + postfix
+    for ext in (".data-00000-of-00001",
+                ".data-00000-of-00002",
+                ".data-00001-of-00002",
+                ".index"):
+        path = filepath + ext
         if osp.exists(path):
             os.remove(path)
 

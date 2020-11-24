@@ -12,11 +12,11 @@ __all__ = ['allowed_backends', 'backend_dict',
            'boolx', 'intx', 'set_intx',
            'floatx', 'set_floatx',
            'epsilon', 'set_epsilon',
-           'file_postfix', 'set_file_postfix']
+           'file_ext', 'set_file_ext']
 
 
 # used to store the models or weights for `TensorFlow` and `PyTorch`
-_POSTFIX = ".h5"
+_EXT = ".h5"
 
 ##### Backends ######
 _TF = 'tensorflow'
@@ -271,14 +271,14 @@ def set_backend(module_name: Optional[Union[str, BackendModule]] = None) -> BACK
     return _BACKEND
 
 
-def file_postfix():
-    return _POSTFIX
+def file_ext():
+    return _EXT
 
 
-def set_file_postfix(postfix):
-    global _POSTFIX
-    _POSTFIX = postfix
-    return _POSTFIX
+def set_file_ext(ext):
+    global _EXT
+    _EXT = ext
+    return _EXT
 
 
 set_backend_dict()

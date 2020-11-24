@@ -8,18 +8,18 @@ import graphgallery as gg
 
 def save_tf_model(model, filepath, overwrite=True, save_format=None, **kwargs):
 
-    postfix = gg.file_postfix()
-    if not filepath.endswith(postfix):
-        filepath = filepath + postfix
+    ext = gg.file_ext()
+    if not filepath.endswith(ext):
+        filepath = filepath + ext
 
     model.save(filepath, overwrite=overwrite, save_format=save_format, **kwargs)
 
 
 def save_torch_model(model, filepath, overwrite=True, save_format=None, **kwargs):
-    postfix = gg.file_postfix()
+    ext = gg.file_ext()
 
-    if not filepath.endswith(postfix):
-        filepath = filepath + postfix
+    if not filepath.endswith(ext):
+        filepath = filepath + ext
 
     if not overwrite and osp.isfile(filepath):
         proceed = ask_to_proceed_with_overwrite(filepath)
@@ -31,10 +31,10 @@ def save_torch_model(model, filepath, overwrite=True, save_format=None, **kwargs
 
 def save_tf_weights(model, filepath, overwrite=True,
                     save_format=None, **kwargs):
-    postfix = gg.file_postfix()
+    ext = gg.file_ext()
 
-    if not filepath.endswith(postfix):
-        filepath = filepath + postfix
+    if not filepath.endswith(ext):
+        filepath = filepath + ext
     try:
         model.save_weights(filepath, overwrite=overwrite,
                            save_format=save_format, **kwargs)
@@ -45,10 +45,10 @@ def save_tf_weights(model, filepath, overwrite=True,
 
 def save_torch_weights(model, filepath, overwrite=True,
                        save_format=None, **kwargs):
-    postfix = gg.file_postfix()
+    ext = gg.file_ext()
 
-    if not filepath.endswith(postfix):
-        filepath = filepath + postfix
+    if not filepath.endswith(ext):
+        filepath = filepath + ext
 
     if not overwrite and osp.isfile(filepath):
         proceed = ask_to_proceed_with_overwrite(filepath)
@@ -59,10 +59,10 @@ def save_torch_weights(model, filepath, overwrite=True,
 
 
 def load_tf_weights(model, filepath):
-    postfix = gg.file_postfix()
+    ext = gg.file_ext()
 
-    if not filepath.endswith(postfix):
-        filepath = filepath + postfix
+    if not filepath.endswith(ext):
+        filepath = filepath + ext
     try:
         model.load_weights(filepath)
     except KeyError as e:
@@ -70,30 +70,30 @@ def load_tf_weights(model, filepath):
 
 
 def load_torch_weights(model, filepath):
-    postfix = gg.file_postfix()
+    ext = gg.file_ext()
 
-    if not filepath.endswith(postfix):
-        filepath = filepath + postfix
+    if not filepath.endswith(ext):
+        filepath = filepath + ext
 
     checkpoint = torch.load(filepath)
     model.load_state_dict(checkpoint)
 
 
 def load_tf_model(filepath, custom_objects=None, **kwargs):
-    postfix = gg.file_postfix()
+    ext = gg.file_ext()
 
-    if not filepath.endswith(postfix):
-        filepath = filepath + postfix
+    if not filepath.endswith(ext):
+        filepath = filepath + ext
 
     return tf.keras.models.load_model(filepath,
                                       custom_objects=custom_objects, **kwargs)
 
 
 def load_torch_model(filepath):
-    postfix = gg.file_postfix()
+    ext = gg.file_ext()
 
-    if not filepath.endswith(postfix):
-        filepath = filepath + postfix
+    if not filepath.endswith(ext):
+        filepath = filepath + ext
 
     return torch.load(filepath)
 

@@ -51,7 +51,7 @@ class GalleryModel(Model):
         # checkpoint path
         # add random integer to avoid duplication
         _id = np.random.RandomState(None).randint(100)
-        self.ckpt_path = osp.join(os.getcwd(), f"{self.name}_checkpoint_{_id}{gg.file_postfix()}")
+        self.ckpt_path = osp.join(os.getcwd(), f"{self.name}_checkpoint_{_id}{gg.file_ext()}")
 
     def save(self, path=None, as_model=False, overwrite=True, save_format=None, **kwargs):
 
