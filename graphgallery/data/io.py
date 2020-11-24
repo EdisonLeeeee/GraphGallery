@@ -2,6 +2,7 @@ import os
 import errno
 import zipfile
 import os.path as osp
+import numpy as np
 from tensorflow.keras.utils import get_file
 from typing import List
 
@@ -16,6 +17,8 @@ def download_file(raw_paths: List[str],
         raw_paths = (raw_paths,)
     if isinstance(urls, str):
         urls = (urls,)
+
+    assert len(raw_paths) == len(urls)
 
     exceptions = []
     for filename, url in zip(raw_paths, urls):
