@@ -33,12 +33,13 @@ class Reddit(InMemoryDataset):
 
         node_attr = data['feature']
         node_label = data['label']
-        graph_label = data['node_types']
-        graph = Graph(adj_matrix, node_attr, node_label, graph_label=graph_label)
+        node_graph_label = data['node_types']
+        graph = Graph(adj_matrix, node_attr, node_label,
+                      node_graph_label=node_graph_label)
 
-        train_nodes = np.where(graph_label == 1)[0]
-        val_nodes = np.where(graph_label == 2)[0]
-        test_nodes = np.where(graph_label == 3)[0]
+        train_nodes = np.where(node_graph_label == 1)[0]
+        val_nodes = np.where(node_graph_label == 2)[0]
+        test_nodes = np.where(node_graph_label == 3)[0]
 
         cache = dict(train_nodes=train_nodes,
                      val_nodes=val_nodes,

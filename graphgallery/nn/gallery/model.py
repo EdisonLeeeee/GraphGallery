@@ -8,10 +8,8 @@ import graphgallery as gg
 
 
 def parse_graph_inputs(*graph):
-    if len(graph) == 0:
+    if not graph:
         return None
-    elif len(graph) == 1:
-        graph, = graph
 
     if isinstance(graph[0], gg.data.BaseGraph):
         ...
@@ -25,6 +23,8 @@ def parse_graph_inputs(*graph):
     else:
         raise ValueError(f"Unrecognized inputs {graph[0]}.")
 
+    if len(graph) == 1:
+        graph, = graph
     return graph
 
 

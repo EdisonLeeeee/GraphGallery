@@ -32,7 +32,7 @@ def sparse_collate(key, val):
 
 
 def index_select(key, value, index, escape=None):
-    if isinstance(value, np.ndarray) and \
+    if (isinstance(value, np.ndarray) or sp.isspmatrix(value)) and \
             (escape is None or key not in escape):
         value = value[index]
     return key, value

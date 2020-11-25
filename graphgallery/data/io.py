@@ -53,7 +53,9 @@ def extract_zip(filename, folder=None):
         f.extractall(folder)
 
 
-def clean(filepaths):
+def clean(filepaths: List[str]):
+    if isinstance(filepaths, str):
+        filepaths = (filepaths,)
     for path in filepaths:
         if osp.exists(path):
             os.unlink(path)

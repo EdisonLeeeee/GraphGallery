@@ -10,7 +10,7 @@ from typing import Optional, List, Tuple, Callable, Union
 
 from .in_memory_dataset import InMemoryDataset
 from ..data.preprocess import process_planetoid_datasets
-from ..data.multigraph import MultiGraph
+from ..data.multi_graph import MultiGraph
 import graphgallery.functional as F
 
 Transform = Union[List, Tuple, str, List, Tuple, Callable]

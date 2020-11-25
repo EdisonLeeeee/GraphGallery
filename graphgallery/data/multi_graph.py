@@ -9,14 +9,15 @@ from copy import copy as copy_fn
 
 from typing import Union, Optional, List, Tuple, Any
 
-from .base_graph import BaseGraph
+from .homograph import HomoGraph
 from .graph import Graph
 from .collate import index_select
 from ..data_type import is_intscalar
 
 
-class MultiGraph(BaseGraph):
-    """Attributed labeled multigraph stored in a list of sparse matrices form."""
+class MultiGraph(HomoGraph):
+    """Multiple attributed labeled homogeneous graph stored in a list of 
+        sparse matrices form."""
     multiple = True
 
     def __init__(self, adj_matrix=None,

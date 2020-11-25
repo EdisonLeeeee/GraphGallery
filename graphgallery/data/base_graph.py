@@ -4,24 +4,6 @@ import os.path as osp
 from abc import ABC
 from copy import copy as _copy, deepcopy as _deepcopy
 from typing import Union, Tuple, List
-from functools import partial
-
-from .collate import sparse_collate, check_and_convert
-from .io import load_npz
-from ..data_type import is_objects
-
-# NxGraph = Union[nx.Graph, nx.DiGraph]
-# Array1D = Union[List, np.ndarray]
-# Matrix2D = Union[List[List], np.ndarray]
-# LabelMatrix = Union[Array1D, Matrix2D]
-# AdjMatrix = Union[sp.csr_matrix, sp.csc_matrix]
-
-
-# MultiNxGraph = Union[List[NxGraph], Tuple[NxGraph]]
-# MultiArray1D = Union[List[Array1D], Tuple[Array1D]]
-# MultiMatrix2D = Union[List[Matrix2D], Tuple[Matrix2D]]
-# MultiLabelMatrix = Union[List[LabelMatrix], Tuple[LabelMatrix]]
-# MultiAdjMatrix = Union[List[AdjMatrix], Tuple[AdjMatrix]]
 
 
 class BaseGraph(ABC):
@@ -33,54 +15,34 @@ class BaseGraph(ABC):
     @ property
     def num_nodes(self) -> int:
         """Get the number of nodes in the graph."""
-        return get_num_nodes(self.adj_matrix)
+        raise NotImplementedError
 
     @property
     def num_edges(self):
         """Get the number of edges in the graph.
         For undirected graphs, (i, j) and (j, i) are counted as single edge.
         """
-        return get_num_edges(self.adj_matrix, self.is_directed())
+        raise NotImplementedError
 
     @ property
     def num_graphs(self) -> int:
         """Get the number of graphs."""
-        return get_num_graphs(self.adj_matrix)
+        raise NotImplementedError
 
     @ property
     def num_node_attrs(self) -> int:
         """Get the number of attribute dimensions of the nodes."""
-        return get_num_node_attrs(self.node_attr)
+        raise NotImplementedError
 
     @ property
     def num_node_classes(self) -> int:
         """Get the number of classes node_label of the nodes."""
-        return get_num_node_classes(self.node_label)
-
-    @property
-    def A(self):
-        """alias of adj_matrix."""
-        return self.adj_matrix
-
-    @property
-    def x(self):
-        """alias of node_attr."""
-        return self.node_attr
-
-    @property
-    def y(self):
-        """alias of node_label."""
-        return self.node_label
-
-    @property
-    def D(self):
-        """alias of degrees."""
-        return self.degrees
+        raise NotImplementedError
 
     def keys(self):
         # TODO: maybe using `tuple`?
         keys = {key for key in self.__dict__.keys() if self[key] is not None and not key.startswith("_")}
-        return keys
+        return sorted(keys)
 
     def items(self, collate_fn=None):
         if callable(collate_fn):
@@ -90,34 +52,6 @@ class BaseGraph(ABC):
 
     def dicts(self, collate_fn=None):
         return dict(self.items(collate_fn=collate_fn))
-
-    def is_directed(self) -> bool:
-        """Check if the graph is directed (adjacency matrix is not symmetric)."""
-        adj_matrix = self.adj_matrix
-        if is_objects(adj_matrix):
-            adj_matrix = adj_matrix[0]
-        return (adj_matrix != adj_matrix.T).sum() != 0
-
-    def is_labeled(self):
-        return self.node_label is not None and len(self.node_label) != 0
-
-    def is_attributed(self):
-        return self.node_attr is not None and len(self.node_attr) != 0
-
-    @ classmethod
-    def from_npz(cls, filepath: str):
-        loader = load_npz(filepath)
-        return cls(copy=False, **loader)
-
-    def to_npz(self, filepath: str, collate_fn=sparse_collate):
-
-        filepath = osp.abspath(osp.expanduser(osp.realpath(filepath)))
-
-        data_dict = {k: v for k, v in self.items(collate_fn=collate_fn) if v is not None}
-        np.savez_compressed(filepath, **data_dict)
-        print(f"Save to {filepath}.", file=sys.stderr)
-
-        return filepath
 
     @ classmethod
     def from_dict(cls, dictionary: dict):
@@ -132,17 +66,6 @@ class BaseGraph(ABC):
             return _deepcopy(self)
         else:
             return _copy(self)
-
-    def update(self, *, collate_fn=None, copy=False, **collects):
-        if collate_fn is None:
-            # TODO: check the acceptable args
-            collate_fn = partial(check_and_convert,
-                                 multiple=self.multiple,
-                                 copy=copy)
-
-        for k, v in collects.items():
-            k, v = collate_fn(k, v)
-            self[k] = v
 
     def __len__(self):
         return self.num_graphs
@@ -181,64 +104,3 @@ class BaseGraph(ABC):
     def __repr__(self):
         return f"{self.__class__.__name__}({self.extra_repr()}" \
             + f"metadata={tuple(self.metadata.keys()) if isinstance(self.metadata, dict) else self.metadata})"
-
-
-def get_num_nodes(adj_matrices, fn=sum):
-    if adj_matrices is None:
-        return 0
-
-    if is_objects(adj_matrices):
-        return fn(get_num_nodes(adj_matrix) for adj_matrix in adj_matrices)
-        # # NOTE: please make sure all the graph are the same!!
-        # return max(get_num_nodes(adj_matrix) for adj_matrix in adj_matrices)
-
-    return adj_matrices.shape[0]
-
-
-def get_num_graphs(adj_matrices, fn=None):
-    if adj_matrices is None:
-        return 0
-
-    if is_objects(adj_matrices):
-        # return sum(get_num_graphs(adj_matrix) for adj_matrix in adj_matrices)
-        return len(adj_matrices)
-
-    return 1
-
-
-def get_num_edges(adj_matrices, is_directed=False, fn=sum):
-    if adj_matrices is None:
-        return 0
-
-    if is_objects(adj_matrices):
-        return fn(get_num_edges(adj_matrix) for adj_matrix in adj_matrices)
-
-    if is_directed:
-        return int(adj_matrices.nnz)
-    else:
-        A = adj_matrices
-        num_diag = (A.diagonal() != 0).sum()
-        return int((A.nnz - num_diag) / 2) + int(num_diag)
-
-
-def get_num_node_attrs(node_attrs, fn=max):
-    if node_attrs is None:
-        return 0
-
-    if is_objects(node_attrs):
-        return fn(get_num_node_attrs(node_attr) for node_attr in node_attrs)
-
-    return node_attrs.shape[1]
-
-
-def get_num_node_classes(node_labels, fn=max):
-    if node_labels is None:
-        return 0
-
-    if is_objects(node_labels):
-        return fn(get_num_node_classes(node_label) for node_label in node_labels)
-
-    if node_labels.ndim == 1:
-        return node_labels.max() + 1
-    else:
-        return node_labels.shape[1]
