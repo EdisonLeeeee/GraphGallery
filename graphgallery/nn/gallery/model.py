@@ -17,6 +17,9 @@ def parse_graph_inputs(*graph):
         graph, = graph
         if isinstance(graph, gg.data.BaseGraph):
             ...
+        elif isinstance(graph, dict):
+            # TODO this could be a dict like
+            ...
         elif sp.isspmatrix(graph):
             graph = gg.Graph(graph)
         elif isinstance(graph, dict):

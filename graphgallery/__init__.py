@@ -6,12 +6,12 @@ from graphgallery import nn
 from graphgallery import utils
 from graphgallery import sequence
 from graphgallery import data
-from graphgallery import dataset
+from graphgallery import datasets
 from graphgallery import backend
 from graphgallery import functional
 
 
 from .version import __version__
 
-__all__ = ['graphgallery', 'nn', 'utils', 'sequence', 'data', 'dataset',
+__all__ = ['graphgallery', 'nn', 'utils', 'sequence', 'data', 'datasets',
            'backend', 'functional', '__version__']

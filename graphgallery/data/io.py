@@ -41,6 +41,11 @@ def extract_zip(filename, folder=None):
     filename (string): The path to the tar archive.
     folder (string): The folder.
     """
+    if isinstance(filename, (list, tuple)):
+        for f in filename:
+            extract_zip(f, folder)
+        return
+
     if folder is None:
         folder = osp.realpath(osp.expanduser(osp.dirname(filename)))
 

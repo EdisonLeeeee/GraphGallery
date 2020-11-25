@@ -204,5 +204,5 @@ class Graph(BaseGraph):
         for k, v in self.items():
             if v is None or k in excluded:
                 continue
-            string += f"{k}{getattr(v, 'shape', f'({v})')},\n{blank}"
+            string += f"{k}{getattr(v, 'shape')},\n{blank}"
         return string
