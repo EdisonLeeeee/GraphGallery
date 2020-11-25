@@ -9,8 +9,7 @@ from typing import Union, Optional, List, Tuple, Any, Callable
 
 from .base_graph import BaseGraph
 from .preprocess import largest_connected_components, create_subgraph
-from .collate import sparse_collate
-from .io import load_npz
+
 from ..data_type import is_multiobjects
 
 
@@ -95,7 +94,7 @@ class HomoGraph(BaseGraph):
         return self.node_label
 
     @property
-    def D(self):
+    def d(self):
         """alias of degrees."""
         return self.degrees
 
@@ -248,21 +247,6 @@ class HomoGraph(BaseGraph):
     def is_weighted(self) -> bool:
         """Check if the graph is weighted (edge weights other than 1)."""
         return np.any(self.adj_matrix.data != 1)
-
-    @ classmethod
-    def from_npz(cls, filepath: str):
-        loader = load_npz(filepath)
-        return cls(copy=False, **loader)
-
-    def to_npz(self, filepath: str, collate_fn=sparse_collate):
-
-        filepath = osp.abspath(osp.expanduser(osp.realpath(filepath)))
-
-        data_dict = {k: v for k, v in self.items(collate_fn=collate_fn) if v is not None}
-        np.savez_compressed(filepath, **data_dict)
-        print(f"Save to {filepath}.", file=sys.stderr)
-
-        return filepath
 
     def extra_repr(self) -> str:
         excluded = {"metadata"}

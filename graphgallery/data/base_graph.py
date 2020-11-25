@@ -5,7 +5,8 @@ from functools import partial
 from copy import copy as _copy, deepcopy as _deepcopy
 from typing import Union, Tuple, List
 
-from .collate import check_and_convert
+from .collate import check_and_convert, sparse_collate
+from .io import load_npz
 
 
 class BaseGraph:
@@ -63,6 +64,21 @@ class BaseGraph:
 
     def to_dict(self):
         return dict(self.items())
+
+    @ classmethod
+    def from_npz(cls, filepath: str):
+        loader = load_npz(filepath)
+        return cls(copy=False, **loader)
+
+    def to_npz(self, filepath: str, collate_fn=sparse_collate):
+
+        filepath = osp.abspath(osp.expanduser(osp.realpath(filepath)))
+
+        data_dict = {k: v for k, v in self.items(collate_fn=collate_fn) if v is not None}
+        np.savez_compressed(filepath, **data_dict)
+        print(f"Save to {filepath}.", file=sys.stderr)
+
+        return filepath
 
     def update(self, *, collate_fn=None, copy=False, **collects):
         if collate_fn is None:
