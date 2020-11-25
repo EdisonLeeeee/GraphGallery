@@ -4,17 +4,14 @@ import networkx as nx
 import os.path as osp
 import scipy.sparse as sp
 
-from functools import partial
-from collections import Counter
-from copy import copy as copy_fn
 
 from typing import Union, Optional, List, Tuple, Any, Callable
 
 from .base_graph import BaseGraph
 from .preprocess import largest_connected_components, create_subgraph
-from .collate import sparse_collate, check_and_convert
+from .collate import sparse_collate
 from .io import load_npz
-from ..data_type import is_objects
+from ..data_type import is_multiobjects
 
 
 class HomoGraph(BaseGraph):
@@ -105,7 +102,7 @@ class HomoGraph(BaseGraph):
     def is_directed(self) -> bool:
         """Check if the graph is directed (adjacency matrix is not symmetric)."""
         adj_matrix = self.adj_matrix
-        if is_objects(adj_matrix):
+        if is_multiobjects(adj_matrix):
             adj_matrix = adj_matrix[0]
         return (adj_matrix != adj_matrix.T).sum() != 0
 
@@ -252,17 +249,6 @@ class HomoGraph(BaseGraph):
         """Check if the graph is weighted (edge weights other than 1)."""
         return np.any(self.adj_matrix.data != 1)
 
-    def update(self, *, collate_fn=None, copy=False, **collects):
-        if collate_fn is None:
-            # TODO: check the acceptable args
-            collate_fn = partial(check_and_convert,
-                                 multiple=self.multiple,
-                                 copy=copy)
-
-        for k, v in collects.items():
-            k, v = collate_fn(k, v)
-            self[k] = v
-
     @ classmethod
     def from_npz(cls, filepath: str):
         loader = load_npz(filepath)
@@ -293,7 +279,7 @@ def get_num_nodes(adj_matrices, fn=sum):
     if adj_matrices is None:
         return 0
 
-    if is_objects(adj_matrices):
+    if is_multiobjects(adj_matrices):
         return fn(get_num_nodes(adj_matrix) for adj_matrix in adj_matrices)
         # # NOTE: please make sure all the graph are the same!!
         # return max(get_num_nodes(adj_matrix) for adj_matrix in adj_matrices)
@@ -305,7 +291,7 @@ def get_num_graphs(adj_matrices, fn=None):
     if adj_matrices is None:
         return 0
 
-    if is_objects(adj_matrices):
+    if is_multiobjects(adj_matrices):
         # return sum(get_num_graphs(adj_matrix) for adj_matrix in adj_matrices)
         return len(adj_matrices)
 
@@ -316,7 +302,7 @@ def get_num_edges(adj_matrices, is_directed=False, fn=sum):
     if adj_matrices is None:
         return 0
 
-    if is_objects(adj_matrices):
+    if is_multiobjects(adj_matrices):
         return fn(get_num_edges(adj_matrix) for adj_matrix in adj_matrices)
 
     if is_directed:
@@ -331,7 +317,7 @@ def get_num_node_attrs(node_attrs, fn=max):
     if node_attrs is None:
         return 0
 
-    if is_objects(node_attrs):
+    if is_multiobjects(node_attrs):
         return fn(get_num_node_attrs(node_attr) for node_attr in node_attrs)
 
     return node_attrs.shape[1]
@@ -341,7 +327,7 @@ def get_num_node_classes(node_labels, fn=max):
     if node_labels is None:
         return 0
 
-    if is_objects(node_labels):
+    if is_multiobjects(node_labels):
         return fn(get_num_node_classes(node_label) for node_label in node_labels)
 
     if node_labels.ndim == 1:

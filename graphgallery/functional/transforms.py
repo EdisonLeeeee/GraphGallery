@@ -1,10 +1,9 @@
-from abc import ABC
 from typing import Any
 
 __all__ = ['Transform', 'NullTransform']
 
 
-class Transform(ABC):
+class Transform:
 
     def __init__(self):
         super().__init__()

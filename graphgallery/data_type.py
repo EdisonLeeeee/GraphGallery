@@ -10,7 +10,7 @@ from typing import Any, Optional
 
 __all__ = ['is_iterable',
            'is_listlike',
-           'is_objects',
+           'is_multiobjects',
            'is_scalar',
            'is_intscalar',
            'infer_type',
@@ -38,7 +38,7 @@ def is_listlike(x: Any) -> bool:
     return (isinstance(x, (list, tuple)))
 
 
-def is_objects(x: Any) -> bool:
+def is_multiobjects(x: Any) -> bool:
     """Check whether `x` is a list of complex objects (not integers).
 
     Parameters:

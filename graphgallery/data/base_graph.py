@@ -1,15 +1,18 @@
 import sys
 import numpy as np
 import os.path as osp
-from abc import ABC
+from functools import partial
 from copy import copy as _copy, deepcopy as _deepcopy
 from typing import Union, Tuple, List
 
+from .collate import check_and_convert
 
-class BaseGraph(ABC):
+
+class BaseGraph:
     multiple = None
 
     def __init__(self):
+        # something needs to be done here?
         ...
 
     @ property
@@ -60,6 +63,16 @@ class BaseGraph(ABC):
 
     def to_dict(self):
         return dict(self.items())
+
+    def update(self, *, collate_fn=None, copy=False, **collects):
+        if collate_fn is None:
+            collate_fn = partial(check_and_convert,
+                                 multiple=self.multiple,
+                                 copy=copy)
+
+        for k, v in collects.items():
+            k, v = collate_fn(k, v)
+            self[k] = v
 
     def copy(self, deepcopy: bool = False):
         if deepcopy:

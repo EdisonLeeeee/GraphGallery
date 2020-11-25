@@ -12,7 +12,7 @@ __all__ = ['MultiInputs', 'EqualVarLength']
 def cal_outpus(func: Callable, args: list, kwargs: dict,
                type_check: bool = True):
 
-    if gg.is_objects(args):
+    if gg.is_multiobjects(args):
         if type_check:
             assert_same_type(*args)
         return tuple(cal_outpus(func, arg, kwargs, type_check=type_check) for arg in args)
@@ -36,12 +36,12 @@ class MultiInputs:
 
         @functools.wraps(func)
         def wrapper(*args, **kwargs) -> Any:
-            if len(args) == 1 and gg.is_objects(args[0]):
+            if len(args) == 1 and gg.is_multiobjects(args[0]):
                 args, = args
 
             outputs = cal_outpus(func, args, kwargs,
                                  type_check=self.type_check)
-            if outputs is not None and gg.is_objects(outputs) and len(outputs) == 1:
+            if outputs is not None and gg.is_multiobjects(outputs) and len(outputs) == 1:
                 outputs, = outputs
             return outputs
 

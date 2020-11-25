@@ -36,7 +36,7 @@ class MultiGraph(HomoGraph):
         self.update(**collects)
 
     def extra_repr(self):
-        excluded = {"metadata"}
+        excluded = {"metadata", "mapping"}
         string = ""
         blank = ' ' * (len(self.__class__.__name__) + 1)
         for k, v in self.items():

@@ -18,7 +18,7 @@ def parse_graph_inputs(*graph):
         ...
     elif sp.isspmatrix(graph[0]):
         graph = gg.data.Graph(*graph)
-    elif gg.is_objects(graph[0]):
+    elif gg.is_multiobjects(graph[0]):
         graph = gg.data.MultiGraph(*graph)
     else:
         raise ValueError(f"Unrecognized inputs {graph[0]}.")
