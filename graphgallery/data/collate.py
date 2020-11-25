@@ -101,9 +101,29 @@ def _check_dict(obj, copy=None):
     return obj
 
 
+def _check_list_graphs(graphs, copy=False):
+    # to avoid circular imports
+    from .base_graph import BaseGraph
+    for g in graphs:
+        if not isinstance(g, BaseGraph):
+            raise ValueError(f"graphs should be instances of 'BaseGraph', got ({type(g)} instead).")
+    return tuple(g.copy() if copy else g for g in graphs)
+
+
+def _check_dict_graphs(graphs, copy=False):
+    # to avoid circular imports
+    from .base_graph import BaseGraph
+    for g in graphs.values():
+        if not isinstance(g, BaseGraph):
+            raise ValueError(f"graphs should be instances of 'BaseGraph', got ({type(g)} instead).")
+    return {k: g.copy() if copy else g for k, g in graphs.items()}
+
+
 _KEYS = ('adj_matrix', 'node_attr', 'node_label', 'node_graph_label',
-         'edge_attr', 'edge_index', 'edge_weight', 'edge_label',
-         'graph_attr', 'graph_label', 'mapping', 'metadata')
+         'edge_attr', 'edge_index', 'edge_weight', 'edge_label', 'edge_graph_label',
+         'graph_attr', 'graph_label',
+         'list_graphs', 'dict_graphs',
+         'mapping', 'metadata')
 # adj_matrix should be CSR matrix
 # attribute matrices: node_attr, edge_attr, graph_attr should be 2D numpy array
 # label matrices: node_label, node_graph_label, edge_label, graph_label should be 1D or 2D numpy array
@@ -116,9 +136,12 @@ _check_fn_dict = {'adj_matrix': _check_adj_matrix,
                   'node_label': _check_label_matrix,
                   'node_graph_label': _check_label_matrix,
                   'edge_label': _check_label_matrix,
+                  'edge_graph_label': _check_label_matrix,
                   'graph_label': _check_label_matrix,
                   'edge_index': _check_edge_index,
                   'edge_weight': _check_edge_weight,
+                  "list_graphs": _check_list_graphs,
+                  'dict_graphs': _check_dict_graphs,
                   'mapping': _check_dict,
                   'metadata': _check_dict}
 

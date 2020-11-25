@@ -5,5 +5,7 @@ from .graph import Graph
 from .edge_graph import EdgeGraph
 from .multi_graph import MultiGraph
 from .multi_edge_graph import MultiEdgeGraph
+from .listgraph import ListGraph
+from .dictgraph import DictGraph
 from .collate import *
 from .io import *

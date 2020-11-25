@@ -7,7 +7,6 @@ import scipy.sparse as sp
 from typing import Union, Optional, List, Tuple, Any
 
 from .base_graph import BaseGraph
-from .preprocess import largest_connected_components, create_subgraph
 
 
 class HeteGraph(BaseGraph):
@@ -16,6 +15,7 @@ class HeteGraph(BaseGraph):
 
     def __init__(self, edge_index=None, edge_weight=None,
                  edge_attr=None, edge_label=None, *,
+                 edge_graph_label=None,
                  node_attr=None, node_label=None,
                  node_graph_label=None,
                  graph_attr=None,

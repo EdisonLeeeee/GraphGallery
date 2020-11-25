@@ -97,6 +97,9 @@ class BaseGraph:
     def __setitem__(self, key, value):
         setattr(self, key, value)
 
+    def __dir__(self):
+        return self.keys()
+
     def __copy__(self):
         cls = self.__class__
         result = cls.__new__(cls)
