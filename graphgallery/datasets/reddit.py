@@ -52,8 +52,11 @@ class Reddit(InMemoryDataset):
                     val_size=None,
                     test_size=None,
                     random_state: Optional[int] = None):
-        self.splits.update(self.split_cache)
-        return self.splits
+        if not all((train_size, val_size, test_size)):
+            self.splits.update(self.split_cache)
+            return self.splits
+        else:
+            return super().split_nodes(train_size, val_size, test_size, random_state)
 
     @property
     def url(self) -> List[str]:

@@ -6,48 +6,35 @@ import tensorflow as tf
 import scipy.sparse as sp
 import graphgallery as gg
 
-from abc import ABC
-
 
 def parse_graph_inputs(*graph):
-    # TODO: Maybe I could write it a little more elegantly here?
     if len(graph) == 0:
-        graph = None
+        return None
     elif len(graph) == 1:
         graph, = graph
-        if isinstance(graph, gg.data.BaseGraph):
-            ...
-        elif isinstance(graph, dict):
-            # TODO this could be a dict like
-            ...
-        elif sp.isspmatrix(graph):
-            graph = gg.Graph(graph)
-        elif isinstance(graph, dict):
-            return gg.Graph(**graph)
-        elif gg.is_objects(graph):
-            # TODO: multi graph
-            ...
-        else:
-            raise ValueError(f"Unrecognized inputs {graph}.")
+
+    if isinstance(graph[0], gg.data.BaseGraph):
+        ...
+    elif isinstance(graph[0], dict):
+        # TODO this could be a dict like
+        ...
+    elif sp.isspmatrix(graph[0]):
+        graph = gg.data.Graph(*graph)
+    elif gg.is_objects(graph[0]):
+        graph = gg.data.MultiGraph(*graph)
     else:
-        if sp.isspmatrix(graph[0]):
-            graph = gg.Graph(*graph)
-        elif gg.is_objects(graph[0]):
-            # TODO: multi graph
-            ...
-        else:
-            raise ValueError(f"Unrecognized inputs {graph}.")
+        raise ValueError(f"Unrecognized inputs {graph[0]}.")
 
     return graph
 
 
-class Model(ABC):
+class Model:
     def __init__(self, *graph, device="cpu:0", seed=None, name=None, **kwargs):
         """
 
         Parameters:
         ----------
-            graph: Graph or MultiGraph.
+            graph: Graph or MultiGraph, or a dict of them.
             device: string. optional
                 The device where the model running on.
             seed: interger scalar. optional

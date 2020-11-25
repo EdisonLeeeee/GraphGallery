@@ -107,10 +107,6 @@ class BaseGraph(ABC):
     @ classmethod
     def from_npz(cls, filepath: str):
         loader = load_npz(filepath)
-
-        # FIXME
-        loader['node_label'] = loader['node_labels']
-        loader.pop('node_labels')
         return cls(copy=False, **loader)
 
     def to_npz(self, filepath: str, collate_fn=sparse_collate):

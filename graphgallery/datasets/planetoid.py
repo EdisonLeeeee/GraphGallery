@@ -72,9 +72,9 @@ class Planetoid(Dataset):
 
         graph = Graph(adj_matrix, node_attr, node_label, copy=False)
         self.graph = self.transform(graph)
-        self.splits.update(dict(train_nodes=train_nodes,
+        self.split_cache = dict(train_nodes=train_nodes,
                                 val_nodes=val_nodes,
-                                test_nodes=test_nodes))
+                                test_nodes=test_nodes)
         if self.verbose:
             print("Processing completed.")
 
@@ -84,6 +84,7 @@ class Planetoid(Dataset):
                     random_state: Optional[int] = None) -> dict:
 
         if not all((train_size, val_size, test_size)):
+            self.splits.update(self.split_cache)
             return self.splits
         else:
             return super().split_nodes(train_size, val_size, test_size, random_state)
