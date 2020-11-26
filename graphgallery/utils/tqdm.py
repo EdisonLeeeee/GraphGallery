@@ -7,7 +7,7 @@ def tqdm_clear(*args, **kwargs):
 
 
 def tqdm(*args, **kwargs):
-    """decorator of tqdm, to avoid some errors if tqdm 
+    """Decorator of tqdm, to avoid some errors if tqdm 
     terminated unexpectedly
 
     Returns

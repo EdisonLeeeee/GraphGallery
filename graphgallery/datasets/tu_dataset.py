@@ -26,7 +26,7 @@ class TUDataset(InMemoryDataset):
     """
     _url = 'https://ls11-www.cs.tu-dortmund.de/people/morris/graphkerneldatasets/{}.zip'
 
-    def __init__(self, name, root: Optional[str] = None,
+    def __init__(self, name: str, root: Optional[str] = None,
                  transform: Optional[Transform] = None,
                  verbose: bool = True, task=None):
 

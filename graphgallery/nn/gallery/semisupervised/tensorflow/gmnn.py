@@ -66,7 +66,7 @@ class GMNN(SemiSupervisedModel):
 
         self.adj_transform = F.get(adj_transform)
         self.attr_transform = F.get(attr_transform)
-        self.labels_onehot = self.graph.node_label_onehot
+        self.label_onehot = F.label_onehot(self.graph.node_label)
         self.custom_objects = {
             'GraphConvolution': GraphConvolution, 'Gather': Gather}
         self.process()
@@ -145,7 +145,7 @@ class GMNN(SemiSupervisedModel):
         if idx_val is not None:
             val_sequence = FullBatchNodeSequence([label_predict,
                                                   self.structure_inputs, idx_val],
-                                                 self.labels_onehot[idx_val],
+                                                 self.label_onehot[idx_val],
                                                  device=self.device)
         else:
             val_sequence = None
@@ -165,7 +165,7 @@ class GMNN(SemiSupervisedModel):
         if tf.is_tensor(label_predict):
             label_predict = label_predict.numpy()
 
-        label_predict[idx_train] = self.labels_onehot[idx_train]
+        label_predict[idx_train] = self.label_onehot[idx_train]
 
         self.model = self.model_q
         train_sequence = FullBatchNodeSequence([self.feature_inputs,
@@ -184,7 +184,7 @@ class GMNN(SemiSupervisedModel):
     def train_sequence(self, index):
 
         # if the graph is changed?
-        labels = self.labels_onehot[index]
+        labels = self.label_onehot[index]
         sequence = FullBatchNodeSequence(
             [self.feature_inputs, self.structure_inputs, index], labels, device=self.device)
         return sequence

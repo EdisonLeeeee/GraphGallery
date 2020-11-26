@@ -14,7 +14,7 @@ class BaseGraph:
 
     def __init__(self):
         # something needs to be done here?
-        ...
+        pass
 
     @ property
     def num_nodes(self) -> int:
@@ -39,12 +39,50 @@ class BaseGraph:
         raise NotImplementedError
 
     @ property
-    def num_node_classes(self) -> int:
-        """Get the number of classes node_label of the nodes."""
+    def num_edge_attrs(self) -> int:
+        """Get the number of attribute dimensions of the edges."""
         raise NotImplementedError
 
+    @ property
+    def num_graph_attrs(self) -> int:
+        """Get the number of attribute dimensions of the graphs."""
+        raise NotImplementedError
+
+    @ property
+    def num_node_classes(self) -> int:
+        """Get the number of node classes."""
+        raise NotImplementedError
+
+    @ property
+    def num_edge_classes(self) -> int:
+        """Get the number of edge classes."""
+        raise NotImplementedError
+
+    @ property
+    def num_graph_classes(self) -> int:
+        """Get the number of graph classes."""
+        raise NotImplementedError
+
+    def is_node_attributed(self) -> bool:
+        return self.node_attr is not None
+
+    def is_edge_attributed(self) -> bool:
+        return self.edge_attr is not None
+
+    def is_graph_attributed(self) -> bool:
+        return self.graph_attr is not None
+
+    def is_node_labeled(self) -> bool:
+        return self.node_label is not None
+
+    def is_edge_labeled(self) -> bool:
+        return self.edge_label is not None
+
+    def is_graph_labeled(self) -> bool:
+        return self.graph_label is not None
+
     def keys(self):
-        # TODO: maybe using `tuple`?
+        # maybe using `tuple`?
         keys = {key for key in self.__dict__.keys() if self[key] is not None and not key.startswith("_")}
         return sorted(keys)
 
@@ -130,9 +168,9 @@ class BaseGraph:
             setattr(result, k, _deepcopy(v, memo))
         return result
 
-    def extra_repr(self):
-        return ""
-
     def __repr__(self):
         return f"{self.__class__.__name__}({self.extra_repr()}" \
             + f"metadata={tuple(self.metadata.keys()) if isinstance(self.metadata, dict) else self.metadata})"
+
+    def extra_repr(self):
+        return ""

@@ -38,11 +38,15 @@ class HomoGraph(BaseGraph):
             Node attribute matrix in CSR or Numpy format.
         node_label : np.ndarray, shape [num_nodes], optional
             Array, where each entry represents respective node's label(s).
-        node_graph_label:
-        graph_attr:
-        graph_label:
-        mapping:
-        metadata : object, optional
+        node_graph_label: np.ndarray, shape [num_nodes], optional
+            Array, representing the node belongs to which graph
+        graph_attr: sp.csr_matrix or np.ndarray, optional.
+            Graph attribute matrix in CSR or Numpy format.
+        graph_label: np.ndarray, optional
+            Array, graph label matrix
+        mapping: dict, optional
+            Mapping objects
+        metadata : dict, optional
             Additional metadata such as text.
         copy: bool, optional
             whether to use copy for the inputs.
@@ -105,12 +109,6 @@ class HomoGraph(BaseGraph):
             adj_matrix = adj_matrix[0]
         return (adj_matrix != adj_matrix.T).sum() != 0
 
-    def is_labeled(self):
-        return self.node_label is not None and len(self.node_label) != 0
-
-    def is_attributed(self):
-        return self.node_attr is not None and len(self.node_attr) != 0
-
     @ property
     def degrees(self):
         assert self.adj_matrix is not None
@@ -120,14 +118,6 @@ class HomoGraph(BaseGraph):
         else:
             # in-degree and out-degree
             return self.adj_matrix.sum(0).A1, self.adj_matrix.sum(1).A1
-
-    @ property
-    def node_label_onehot(self):
-        """Get the one-hot like node_label of nodes."""
-        node_label = self.node_label
-        if node_label is not None and node_label.ndim == 1:
-            return np.eye(self.num_node_classes, dtype=node_label.dtype)[node_label]
-        return node_label
 
     def neighbors(self, idx):
         """Get the indices of neighbors of a given node.

@@ -10,7 +10,7 @@ from typing import Optional, List, Tuple, Callable, Union
 
 from .in_memory_dataset import InMemoryDataset
 from ..data.multi_graph import MultiGraph
-import graphgallery.functional as F
+from graphgallery import functional as F
 
 Transform = Union[List, Tuple, str, List, Tuple, Callable]
 

@@ -19,7 +19,7 @@ class InMemoryDataset(Dataset):
     motivated by pytorch_geometric <https://github.com/rusty1s/pytorch_geometric/blob/master/torch_geometric/data/in_memory_dataset.py>
     """
 
-    def __init__(self, name=None,
+    def __init__(self, name: Optional[str] = None,
                  root: Optional[str] = None,
                  transform: Optional[Transform] = None,
                  verbose: bool = True):

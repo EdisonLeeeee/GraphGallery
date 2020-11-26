@@ -8,7 +8,7 @@ import os.path as osp
 
 from typing import Union, Optional, List, Tuple, Callable
 
-import graphgallery.functional as F
+from graphgallery import functional as F
 from ..data.preprocess import train_val_test_split_tabular, get_train_val_test_split
 
 Transform = Union[List, Tuple, str, List, Tuple, Callable]
