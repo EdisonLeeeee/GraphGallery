@@ -53,7 +53,7 @@ class HomoGraph(BaseGraph):
         """
         collects = locals()
         del collects['self']
-        self.update(**collects)
+        super().__init__(**collects)
 
     @ property
     def num_nodes(self) -> int:

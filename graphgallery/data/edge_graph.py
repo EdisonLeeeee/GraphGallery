@@ -13,3 +13,10 @@ class EdgeGraph(HeteGraph):
     """Attributed labeled heterogeneous graph stored in 
         Numpy array form."""
     multiple = False
+
+    @property
+    def A(self):
+        raise NotImplementedError
+
+    def to_Graph(self):
+        raise NotImplementedError

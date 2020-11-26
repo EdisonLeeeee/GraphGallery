@@ -12,9 +12,9 @@ from .io import load_npz
 class BaseGraph:
     multiple = None
 
-    def __init__(self):
-        # something needs to be done here?
-        pass
+    def __init__(self, *args, **kwargs):
+        kwargs.pop('__class__', None)
+        self.update(**kwargs)
 
     @ property
     def num_nodes(self) -> int:

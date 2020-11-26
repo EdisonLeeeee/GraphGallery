@@ -12,7 +12,7 @@ from numbers import Number
 import graphgallery as gg
 
 __all__ = ['asintarr', 'indices2mask',
-           'repeat', 'get_length', 'label_onehot',
+           'repeat', 'get_length', 'onehot',
            'nx_graph_to_sparse_adj', 'Bunch']
 
 
@@ -82,7 +82,7 @@ def get_length(obj: Any) -> int:
     return length
 
 
-def label_onehot(label):
+def onehot(label):
     """Get the one-hot like label of nodes."""
     if bp.ndim(label) == 1:
         return np.eye(label.max() + 1, dtype=label.dtype)[label]

@@ -68,7 +68,7 @@ def _check_label_matrix(label_matrix, copy=False):
     else:
         label_matrix = np.array(label_matrix, dtype=np.int32, copy=copy).squeeze()
 
-    assert 0 < label_matrix.ndim <= 2
+    label_matrix.ndim <= 2
     # For one-hot like matrix, convert it to 1D array
     if label_matrix.ndim == 2 and np.all(label_matrix.sum(1) == 1):
         label_matrix = label_matrix.argmax(1).astype(np.int32, copy=False)

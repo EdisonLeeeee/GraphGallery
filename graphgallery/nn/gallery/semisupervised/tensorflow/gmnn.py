@@ -66,7 +66,7 @@ class GMNN(SemiSupervisedModel):
 
         self.adj_transform = F.get(adj_transform)
         self.attr_transform = F.get(attr_transform)
-        self.label_onehot = F.label_onehot(self.graph.node_label)
+        self.label_onehot = F.onehot(self.graph.node_label)
         self.custom_objects = {
             'GraphConvolution': GraphConvolution, 'Gather': Gather}
         self.process()

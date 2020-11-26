@@ -19,7 +19,7 @@ class DictGraph(BaseGraph):
         dict_graphs = F.Bunch(**dict_graphs)
         collects = locals()
         del collects['self']
-        self.update(**collects)
+        super().__init__(**collects)
 
     @property
     def graphs(self):

@@ -23,10 +23,9 @@ class HeteGraph(BaseGraph):
                  mapping=None,
                  metadata: Any = None,
                  copy: bool = False):
-
         collects = locals()
         del collects['self']
-        self.update(**collects)
+        super().__init__(**collects)
 
     @ property
     def num_nodes(self) -> int:

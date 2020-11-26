@@ -1,1 +1,1 @@
-from .generate_node_attr import generate_node_attr
+from .generate_attr import *

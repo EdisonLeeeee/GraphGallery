@@ -16,8 +16,8 @@ class ListGraph(BaseGraph):
                  metadata: Any = None,
                  copy: bool = True):
         collects = locals()
-        del collects['self']
-        self.update(**collects)
+        collects.pop('self')
+        super().__init__(**collects)
 
     @property
     def graphs(self):

@@ -13,3 +13,6 @@ from .preprocess import largest_connected_components, create_subgraph
 class Graph(HomoGraph):
     """Attributed labeled homogeneous graph stored in sparse matrix form."""
     multiple = False
+
+    def to_EdgeGraph(self):
+        raise NotImplementedError
