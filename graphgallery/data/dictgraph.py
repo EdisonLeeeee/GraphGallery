@@ -4,8 +4,9 @@ import networkx as nx
 import os.path as osp
 import scipy.sparse as sp
 
-from .base_graph import BaseGraph
 from typing import Union, Optional, List, Tuple, Any, Callable
+from .base_graph import BaseGraph
+from graphgallery import functional as F
 
 
 class DictGraph(BaseGraph):
@@ -15,6 +16,7 @@ class DictGraph(BaseGraph):
     def __init__(self, metadata: Any = None,
                  copy: bool = True,
                  **dict_graphs):
+        dict_graphs = F.Bunch(**dict_graphs)
         collects = locals()
         del collects['self']
         self.update(**collects)
@@ -31,8 +33,9 @@ class DictGraph(BaseGraph):
         return len(self.graphs.keys()) if self.graphs else 0
 
     def __getitem__(self, key):
-        v = self.graphs.get(key, None)
-        if v:
+        # to avoid value is 'None'
+        v = self.graphs.get(key, "NAN")
+        if v != "NAN":
             return v
         else:
             return super().__getitem__(key)

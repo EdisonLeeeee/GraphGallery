@@ -115,9 +115,9 @@ class EqualVarLength:
 
             repeated = get_length(paras.get(self.length_as, 0))
             for var in self.vars:
-                # use `NOTHING` instead of `None` to avoid `None` exists
-                val = paras.get(var, "NOTHING")
-                if val != "NOTHING":
+                # use `NAN` instead of `None` to avoid `None` exists
+                val = paras.get(var, "NAN")
+                if val != "NAN":
                     paras[var] = repeat(val, repeated)
 
             return func(model, **paras)

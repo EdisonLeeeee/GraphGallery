@@ -40,7 +40,6 @@ class NPZDataset(Dataset):
         super().__init__(name, root, transform, verbose)
 
         self._url = url
-        self.download_dir = self.root
 
         if not custom:
             makedirs(self.download_dir)
@@ -64,6 +63,10 @@ class NPZDataset(Dataset):
         if self.verbose:
             self.show(*self.raw_paths)
             print("Downloading completed.")
+
+    @property
+    def download_dir(self):
+        return self.root
 
     def process(self) -> None:
         if self.verbose:

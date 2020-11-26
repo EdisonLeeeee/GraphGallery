@@ -19,16 +19,15 @@ class InMemoryDataset(Dataset):
     motivated by pytorch_geometric <https://github.com/rusty1s/pytorch_geometric/blob/master/torch_geometric/data/in_memory_dataset.py>
     """
 
-    def __init__(self, name=None, root: Optional[str] = None,
+    def __init__(self, name=None,
+                 root: Optional[str] = None,
                  transform: Optional[Transform] = None,
                  verbose: bool = True):
         super().__init__(name, root, transform, verbose)
 
-        self.download_dir = osp.join(self.root, name)
-        self.process_dir = osp.join(self.root, name)
         makedirs(self.download_dir)
-        makedirs(self.process_dir)
-
+        # since they are same.
+        # makedirs(self.process_dir)
         self.download()
         self.process()
 
@@ -48,14 +47,21 @@ class InMemoryDataset(Dataset):
 
         if self.verbose:
             print("Downloading...")
+        try:
+            download_file(self.download_paths, self.urls)
+        except Exception:
+            raise Exception(f"404 not Found, maybe you specified a wrong dataset '{self.name}'? (NOTE, it is 'Case Sensitive' for dataset name)")
 
-        download_file(self.download_paths, self.urls)
-        extract_zip(self.download_paths)
+        extract_zip(self.download_paths, self.extract_folder)
         clean(self.download_paths)
 
         if self.verbose:
             self.show(*self.raw_paths)
             print("Downloading completed.")
+
+    @property
+    def extract_folder(self):
+        return None
 
     def process(self) -> None:
 

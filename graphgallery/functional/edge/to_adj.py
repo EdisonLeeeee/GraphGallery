@@ -1,5 +1,6 @@
 import numpy as np
 import scipy.sparse as sp
+import graphgallery as gg
 from typing import Optional
 from .shape import maybe_shape
 
@@ -9,9 +10,9 @@ __all__ = ['edge_transpose', 'edge_to_sparse_adj']
 
 def edge_transpose(edge):
     edge = np.asarray(edge, dtype='int64')
-    assert edge.ndim == 2
+    assert edge.ndim == 2 and 2 in edge.shape
     M, N = edge.shape
-    if not (M == 2 and N == 2) and N == 2:
+    if not (M == 2 and N == 2) and M != 2:
         edge = edge.T
     return edge
 
@@ -47,9 +48,8 @@ def edge_to_sparse_adj(edge: np.ndarray,
     edge = edge_transpose(edge)
 
     if edge_weight is None:
-        edge_weight = np.ones(edge.shape[0], dtype=tk.floatx())
+        edge_weight = np.ones(edge.shape[1], dtype=gg.floatx())
 
     if shape is None:
         shape = maybe_shape(edge)
-
     return sp.csr_matrix((edge_weight, edge), shape=shape)

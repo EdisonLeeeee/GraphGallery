@@ -23,8 +23,7 @@ class Reddit(InMemoryDataset):
     def __init__(self, root: Optional[str] = None,
                  transform: Optional[Transform] = None,
                  verbose: bool = True):
-        name = "reddit"
-        super().__init__(name, root, transform, verbose)
+        super().__init__("reddit", root, transform, verbose)
 
     def _process(self) -> None:
 

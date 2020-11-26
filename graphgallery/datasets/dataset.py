@@ -23,14 +23,14 @@ class Dataset:
             root = 'dataset'
 
         if isinstance(root, str):
-            root = osp.expanduser(osp.realpath(root))
+            root = osp.abspath(osp.expanduser(osp.realpath(root)))
+        else:
+            raise ValueError(root)
 
-        root = osp.abspath(root)
         self.root = root
         self.name = str(name)
         self.verbose = verbose
-        self.download_dir = None
-        self.process_dir = None
+
         self.graph = None
         self.split_cache = None
         self.splits = F.Bunch()
@@ -50,12 +50,20 @@ class Dataset:
         raise NotImplementedError
 
     @property
+    def download_dir(self):
+        return osp.join(self.root, self.name)
+
+    @property
     def download_paths(self) -> List[str]:
         return self.raw_paths
 
     @property
     def raw_paths(self) -> List[str]:
         raise NotImplementedError
+
+    @property
+    def process_dir(self):
+        return osp.join(self.root, self.name)
 
     @property
     def processed_path(self) -> List[str]:
@@ -122,6 +130,7 @@ class Dataset:
     def split_graphs(self, train_size=None,
                      val_size=None,
                      test_size=None,
+                     split_by=None,
                      random_state: Optional[int] = None) -> dict:
         raise NotImplementedError
 

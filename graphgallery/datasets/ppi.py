@@ -9,7 +9,6 @@ from itertools import product
 from typing import Optional, List, Tuple, Callable, Union
 
 from .in_memory_dataset import InMemoryDataset
-from ..data.preprocess import process_planetoid_datasets
 from ..data.multi_graph import MultiGraph
 import graphgallery.functional as F
 
@@ -33,8 +32,7 @@ class PPI(InMemoryDataset):
     def __init__(self, root: Optional[str] = None,
                  transform: Optional[Transform] = None,
                  verbose: bool = True):
-        name = "ppi"
-        super().__init__(name, root, transform, verbose)
+        super().__init__("PPI", root, transform, verbose)
 
     def _process(self) -> None:
 
@@ -76,6 +74,7 @@ class PPI(InMemoryDataset):
     def split_graphs(self, train_size=None,
                      val_size=None,
                      test_size=None,
+                     split_by=None,
                      random_state: Optional[int] = None):
         loader = self.split_cache
         graph = self.graph

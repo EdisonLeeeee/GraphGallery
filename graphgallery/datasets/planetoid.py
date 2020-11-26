@@ -42,8 +42,6 @@ class Planetoid(Dataset):
 
         super().__init__(name, root, transform, verbose)
 
-        self.download_dir = osp.join(self.root, 'planetoid')
-
         makedirs(self.download_dir)
 
         self.download()
@@ -92,6 +90,10 @@ class Planetoid(Dataset):
     @property
     def urls(self) -> List[str]:
         return [osp.join(self._url, raw_filename) for raw_filename in self.raw_filenames]
+
+    @property
+    def download_dir(self):
+        return osp.join(self.root, 'planetoid')
 
     @property
     def raw_filenames(self) -> List[str]:
