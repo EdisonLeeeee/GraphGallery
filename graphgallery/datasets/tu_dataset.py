@@ -12,7 +12,7 @@ from typing import Optional, List, Tuple, Callable, Union
 
 from .in_memory_dataset import InMemoryDataset
 from ..data.edge_graph import EdgeGraph
-from ..data.io import extract_zip, clean
+from ..data.io import makedirs, extract_zip, clean
 
 Transform = Union[List, Tuple, str, List, Tuple, Callable]
 
