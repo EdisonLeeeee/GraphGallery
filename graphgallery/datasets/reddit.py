@@ -21,9 +21,10 @@ class Reddit(InMemoryDataset):
     _url = 'https://data.dgl.ai/dataset/reddit.zip'
 
     def __init__(self, root: Optional[str] = None,
+                 url: Optional[str] = None,
                  transform: Optional[Transform] = None,
                  verbose: bool = True):
-        super().__init__("reddit", root, transform, verbose)
+        super().__init__("reddit", root, url, transform, verbose)
 
     def _process(self) -> None:
 

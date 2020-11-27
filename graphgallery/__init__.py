@@ -1,5 +1,7 @@
 from graphgallery.backend import *
 from graphgallery.data_type import *
+from graphgallery.module import tensorflow, torch
+
 
 # modules
 from graphgallery import nn

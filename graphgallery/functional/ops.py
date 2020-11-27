@@ -84,7 +84,8 @@ def get_length(obj: Any) -> int:
 
 def onehot(label):
     """Get the one-hot like label of nodes."""
-    if bp.ndim(label) == 1:
+    label = np.asarray(label, dtype=np.int32)
+    if label.ndim == 1:
         return np.eye(label.max() + 1, dtype=label.dtype)[label]
     else:
         raise ValueError(f"label must be a 1D array!")

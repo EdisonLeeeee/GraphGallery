@@ -12,6 +12,8 @@ from ..data.graph import Graph
 
 
 _DATASETS = {'citeseer', 'cora', 'pubmed'}
+_DATASET_URL = "https://raw.githubusercontent.com/EdisonLeeeee/"
+"GraphData/master/datasets/planetoid"
 
 Transform = Union[List, Tuple, str, List, Tuple, Callable]
 
@@ -26,26 +28,29 @@ class Planetoid(Dataset):
     The original url is: <https://github.com/kimiyoung/planetoid/raw/master/data>
     """
 
-    _url = "https://raw.githubusercontent.com/EdisonLeeeee/"
-    "GraphData/master/datasets/planetoid"
-    supported_datasets = _DATASETS
+    _url = _DATASET_URL
 
     def __init__(self, name: str,
                  root: Optional[str] = None,
+                 url: Optional[str] = None,
                  transform: Optional[Transform] = None,
                  verbose: bool = True):
         name = str(name)
 
-        if not name in self.supported_datasets:
+        if not name in self.available_datasets():
             raise ValueError(
-                f"Currently only support for these datasets {self.supported_datasets}.")
+                f"Currently only support for these datasets {self.available_datasets()}.")
 
-        super().__init__(name, root, transform, verbose)
+        super().__init__(name, root, url, transform, verbose)
 
         makedirs(self.download_dir)
 
         self.download()
         self.process()
+
+    @staticmethod
+    def available_datasets():
+        return _DATASETS
 
     def download(self) -> None:
 

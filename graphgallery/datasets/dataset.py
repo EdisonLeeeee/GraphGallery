@@ -17,6 +17,7 @@ Transform = Union[List, Tuple, str, List, Tuple, Callable]
 class Dataset:
     def __init__(self, name: str,
                  root: Optional[str] = None,
+                 url: Optional[str] = None,
                  transform: Optional[Transform] = None,
                  verbose: bool = True):
         if root is None:
@@ -27,6 +28,8 @@ class Dataset:
         else:
             raise ValueError(root)
 
+        if url:
+            self._url = url
         self.root = root
         self.name = str(name)
         self.verbose = verbose

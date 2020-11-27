@@ -30,9 +30,10 @@ class PPI(InMemoryDataset):
     _url = 'https://data.dgl.ai/dataset/ppi.zip'
 
     def __init__(self, root: Optional[str] = None,
+                 url: Optional[str] = None,
                  transform: Optional[Transform] = None,
                  verbose: bool = True):
-        super().__init__("PPI", root, transform, verbose)
+        super().__init__("PPI", root, url, transform, verbose)
 
     def _process(self) -> None:
 

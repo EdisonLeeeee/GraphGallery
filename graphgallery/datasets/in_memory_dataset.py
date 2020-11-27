@@ -21,9 +21,10 @@ class InMemoryDataset(Dataset):
 
     def __init__(self, name: Optional[str] = None,
                  root: Optional[str] = None,
+                 url: Optional[str] = None,
                  transform: Optional[Transform] = None,
                  verbose: bool = True):
-        super().__init__(name, root, transform, verbose)
+        super().__init__(name, root, url, transform, verbose)
 
         makedirs(self.download_dir)
         # since they are same.

@@ -1,16 +1,21 @@
 import os
 import json
+import glob
 import os.path as osp
 import numpy as np
 import networkx as nx
 import pickle as pkl
-import glob
+import pandas as pd
+from urllib.error import URLError
 from typing import Optional, List, Tuple, Callable, Union
 
 from .in_memory_dataset import InMemoryDataset
 from ..data.edge_graph import EdgeGraph
 
 Transform = Union[List, Tuple, str, List, Tuple, Callable]
+
+_DATASET_URL = 'https://ls11-www.cs.tu-dortmund.de/people/morris/graphkerneldatasets'
+_DATASET_CLEAN_URL = 'https://raw.githubusercontent.com/nd7141/graph_datasets/master/datasets'
 
 
 class TUDataset(InMemoryDataset):
@@ -24,13 +29,31 @@ class TUDataset(InMemoryDataset):
     graphs.
 
     """
-    _url = 'https://ls11-www.cs.tu-dortmund.de/people/morris/graphkerneldatasets/{}.zip'
 
     def __init__(self, name: str, root: Optional[str] = None,
+                 url: Optional[str] = None,
                  transform: Optional[Transform] = None,
                  verbose: bool = True, task=None):
 
-        super().__init__(name, root, transform, verbose)
+        if name.endswith('_clean'):
+            name = name[:-6]
+            self._url = _DATASET_CLEAN_URL
+        else:
+            self._url = _DATASET_URL
+
+        super().__init__(name, root, url, transform, verbose)
+
+    @staticmethod
+    def available_datasets():
+        try:
+            return [
+                d[:-4]
+                for d in pd.read_html(_DATASET_URL)[0].Name[2:-1].values.tolist()
+            ]
+        except URLError:
+            # No internet, don't panic
+            print('No connection. See {}'.format(_DATASET_URL))
+            return []
 
     def _process(self) -> None:
         folder = self.download_dir
@@ -63,7 +86,8 @@ class TUDataset(InMemoryDataset):
             graph_label = np.genfromtxt(osp.join(folder, prefix + '_graph_labels.txt'), dtype=np.int64)
             _, graph_label = np.unique(graph_label, return_inverse=True)
 
-        graph = EdgeGraph(edge_index, edge_attr=edge_attr, edge_label=edge_label,
+        graph = EdgeGraph(edge_index, edge_attr=edge_attr,
+                          edge_label=edge_label,
                           edge_graph_label=edge_graph_label,
                           node_attr=node_attr, node_label=node_label, node_graph_label=node_graph_label,
                           graph_attr=graph_attr, graph_label=graph_label)
@@ -94,7 +118,7 @@ class TUDataset(InMemoryDataset):
 
     @property
     def url(self) -> str:
-        return self._url.format(self.name)
+        return '{}/{}.zip'.format(self._url, self.name)
 
     @property
     def processed_filename(self):

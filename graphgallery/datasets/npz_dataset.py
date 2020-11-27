@@ -15,13 +15,14 @@ _DATASETS = ('citeseer', 'citeseer_full', 'cora', 'cora_ml',
              'coauthor_cs', 'coauthor_phy', 'polblogs', 'karate_club',
              'pubmed', 'flickr', 'blogcatalog', 'dblp', 'acm', 'uai')
 
+_DATASET_URL = "https://raw.githubusercontent.com/EdisonLeeeee/GraphData/master/datasets/"
+
 Transform = Union[List, Tuple, str, List, Tuple, Callable]
 
 
 class NPZDataset(Dataset):
 
-    _url = "https://raw.githubusercontent.com/EdisonLeeeee/GraphData/master/datasets/{}.npz"
-    supported_datasets = _DATASETS
+    _url = _DATASET_URL
 
     def __init__(self, name: str,
                  root: Optional[str] = None,
@@ -31,15 +32,13 @@ class NPZDataset(Dataset):
                  ):
 
         name = str(name)
-        if not name in self.supported_datasets:
-            print(f"Dataset not found in supported datasets. Using custom dataset: {name}.", file=sys.stderr)
+        if not name in self.available_datasets():
+            print(f"Dataset not found in available datasets. Using custom dataset: {name}.", file=sys.stderr)
             custom = True
         else:
             custom = False
 
-        super().__init__(name, root, transform, verbose)
-
-        self._url = url
+        super().__init__(name, root, url, transform, verbose)
 
         if not custom:
             makedirs(self.download_dir)
@@ -48,6 +47,10 @@ class NPZDataset(Dataset):
             raise RuntimeError(f"Dataset file '{name}' not exists. Please put the file in {self.raw_paths[0]}")
 
         self.process()
+
+    @staticmethod
+    def available_datasets():
+        return _DATASETS
 
     def download(self) -> None:
 
@@ -82,10 +85,7 @@ class NPZDataset(Dataset):
 
     @property
     def url(self) -> str:
-        if isinstance(self._url, str):
-            return self._url
-        else:
-            return self._url.format(self.name)
+        return '{}/{}.zip'.format(self._url, self.name)
 
     @property
     def raw_paths(self) -> List[str]:
