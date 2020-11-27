@@ -48,7 +48,7 @@ class GalleryModel(GraphModel):
             self.test_step_fn = trainer.test_step_torch
             self.predict_step_fn = trainer.predict_step_torch
 
-    def process(self, *graph, **kwargs):
+    def process(self, graph=None, updates=None, **kwargs):
         """pre-process for the input graph, including manipulations
         on adjacency matrix and node node attribute matrix, and finally convert
         them into tensor (optional).
@@ -60,20 +60,17 @@ class GalleryModel(GraphModel):
 
         Parameters:
         ----------
-        graph: An instance of `graphgallery.data.Graph` or a tuple (list) of inputs.
-            A sparse, attributed, labeled graph.
+        graph: An instance of graphgallery graph.
+        updates: dict, the updates for the graph
         kwargs: other custom keyword parameters for 'process_step'.
-
         """
-        if graph:
-            if len(graph) == 1:
-                graph, = graph
-                if isinstance(graph, BaseGraph):
-                    self.graph = graph
-                elif isinstance(graph, dict):
-                    self.graph.update(**graph)
-            else:
-                self.graph.update(*graph)
+        assert not graph or isinstance(graph, BaseGraph)
+        if graph is not None:
+            assert isinstance(graph, BaseGraph)
+            self.graph = graph
+        if updates is not None:
+            assert isinstance(updates, dict)
+            self.graph.update(**updates)
 
         return self.process_step(**kwargs)
 
