@@ -8,13 +8,13 @@ url = 'https://github.com/EdisonLeeeee/GraphGallery'
 install_requires = [
     'torch',
     'tqdm',
+    'scipy',
+    'numpy',
+    'scikit_learn',
     'tensorflow>=2.1.0',
     'networkx>=2.3',
-    'scipy>=1.4.1',
-    'numpy>=1.17.4',
     'gensim>=3.8.0',
     'numba==0.46.0',
-    'scikit_learn>=0.22',
 ]
 
 setup_requires = ['pytest-runner']
@@ -33,6 +33,7 @@ setup(
     keywords=[
         'tensorflow',
         'pytorch',
+        'benchmark',
         'geometric-deep-learning',
         'graph-neural-networks',
     ],
