@@ -4,12 +4,11 @@ import graphgallery as gg
 
 from ..transforms import Transform
 from ..ops import repeat
-from ..decorators import MultiInputs
+from ..decorators import multiple
 
 
 class NormalizeAdj(Transform):
     """Normalize adjacency matrix."""
-
     def __init__(self, rate=-0.5, fill_weight=1.0):
         """
         # return a normalized adjacency matrix
@@ -44,14 +43,15 @@ class NormalizeAdj(Transform):
         ----------
             graphgallery.functional.normalize_adj
         """
-        return normalize_adj(*adj_matrix, rate=self.rate,
+        return normalize_adj(*adj_matrix,
+                             rate=self.rate,
                              fill_weight=self.fill_weight)
 
     def __repr__(self):
         return f"{self.__class__.__name__}(normalize rate={self.rate}, fill_weight={self.fill_weight})"
 
 
-@MultiInputs()
+@multiple
 def normalize_adj(adj_matrix, rate=-0.5, fill_weight=1.0):
     """Normalize adjacency matrix.
 

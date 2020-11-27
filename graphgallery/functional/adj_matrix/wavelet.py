@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.preprocessing import normalize
 
 from ..transforms import Transform
-from ..decorators import MultiInputs
+from ..decorators import multiple
 
 # Version: Compute the exact signature
 # def laplacian(W, normalized=True):
@@ -56,7 +56,6 @@ from ..decorators import MultiInputs
 #     Weight = (U * lamb) @ U.T
 #     return Weight
 
-
 # def wavelet_basis(adj_matrix, wavelet_s=1.0, laplacian_normalize=True,
 #                   sparseness=True, threshold=1e-4, weight_normalize=False, k=100):
 
@@ -83,8 +82,13 @@ from ..decorators import MultiInputs
 # ==================================================================
 # Version: Approximate with Chebychev polynomial
 
+
 class WaveletBasis(Transform):
-    def __init__(self, order=3, wavelet_s=1.2, threshold=1e-4, wavelet_normalize=True):
+    def __init__(self,
+                 order=3,
+                 wavelet_s=1.2,
+                 threshold=1e-4,
+                 wavelet_normalize=True):
         super().__init__()
         self.order = order
         self.wavelet_s = wavelet_s
@@ -92,8 +96,11 @@ class WaveletBasis(Transform):
         self.wavelet_normalize = wavelet_normalize
 
     def __call__(self, adj_matrix):
-        return wavelet_basis(adj_matrix, order=self.order, wavelet_s=self.wavelet_s,
-                             threshold=self.threshold, wavelet_normalize=self.wavelet_normalize)
+        return wavelet_basis(adj_matrix,
+                             order=self.order,
+                             wavelet_s=self.wavelet_s,
+                             threshold=self.threshold,
+                             wavelet_normalize=self.wavelet_normalize)
 
     def __repr__(self):
         return f"{self.__class__.__name__}(order={self.order}, wavelet_s={self.wavelet_s}, threshold={self.threshold}, wavelet_normalize={self.wavelet_normalize})"
@@ -109,7 +116,7 @@ def laplacian(adj_matrix, normalized=True):
         L = D - adj_matrix
     else:
         d = 1 / (np.sqrt(d) + 1e-6)
-#         d[np.isinf(d)] = 0.
+        #         d[np.isinf(d)] = 0.
         D = sp.diags(d)
         I = sp.identity(d.size, dtype=adj_matrix.dtype)
         L = I - D * adj_matrix * D
@@ -117,8 +124,10 @@ def laplacian(adj_matrix, normalized=True):
 
 
 def compute_cheb_coeff_basis(scale, order):
-    xx = np.array([np.cos((2. * i - 1.) / (2. * order) * np.pi)
-                   for i in range(1, order + 1)])
+    xx = np.array([
+        np.cos((2. * i - 1.) / (2. * order) * np.pi)
+        for i in range(1, order + 1)
+    ])
     basis = [np.ones((1, order)), xx]
     for k in range(order + 1 - 2):
         basis.append(2 * np.multiply(xx, basis[-1]) - basis[-2])
@@ -130,8 +139,12 @@ def compute_cheb_coeff_basis(scale, order):
     return coeffs
 
 
-@MultiInputs()
-def wavelet_basis(adj_matrix, order=3, wavelet_s=1.0, threshold=1e-4, wavelet_normalize=False):
+@multiple
+def wavelet_basis(adj_matrix,
+                  order=3,
+                  wavelet_s=1.0,
+                  threshold=1e-4,
+                  wavelet_normalize=False):
     lap = laplacian(adj_matrix)
     N = adj_matrix.shape[0]
     I = sp.eye(N)

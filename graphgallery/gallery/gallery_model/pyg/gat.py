@@ -72,7 +72,7 @@ class GAT(GalleryModel):
             node_attr, (edge_index, edge_weight), device=self.device)
 
     # use decorator to make sure all list arguments have the same length
-    @F.EqualVarLength(include=["n_heads"])
+    @F.Equal(include=["n_heads"])
     def build(self,
               hiddens=[8],
               n_heads=[8],

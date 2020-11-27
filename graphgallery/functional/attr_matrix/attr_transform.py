@@ -5,12 +5,13 @@ from sklearn import preprocessing
 from typing import Union
 
 from ..transforms import Transform
-from ..decorators import MultiInputs
+from ..decorators import multiple
 
 __all__ = ['augment_attr', 'normalize_attr', 'NormalizeAttr']
 
 
-def augment_attr(node_attr: np.ndarray, N: int,
+def augment_attr(node_attr: np.ndarray,
+                 N: int,
                  fill_weight: Union[float, list, np.ndarray] = 0.):
     """Augment a specified node node attribute matrix.
 
@@ -33,7 +34,8 @@ def augment_attr(node_attr: np.ndarray, N: int,
 
     """
     if is_scalar(fill_weight):
-        M = np.zeros([N, node_attr.shape[1]], dtype=node_attr.dtype) + fill_weight
+        M = np.zeros([N, node_attr.shape[1]],
+                     dtype=node_attr.dtype) + fill_weight
     elif isinstance(fill_weight, (list, np.ndarray)):
         fill_weight = fill_weight.astype(node_attr.dtype, copy=False)
         M = np.tile(fill_weight, N).reshape([N, -1])
@@ -46,7 +48,6 @@ def augment_attr(node_attr: np.ndarray, N: int,
 
 class NormalizeAttr(Transform):
     """Normalize the node node attribute matrix with given type."""
-
     def __init__(self, norm='l1'):
         """
         Parameters
@@ -87,7 +88,7 @@ class NormalizeAttr(Transform):
         return f"{self.__class__.__name__}(norm={self.norm})"
 
 
-@MultiInputs()
+@multiple
 def normalize_attr(x, norm='l1'):
     """Normalize a matrix with given type.
 

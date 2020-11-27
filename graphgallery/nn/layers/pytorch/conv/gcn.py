@@ -3,12 +3,17 @@ import math
 import numpy as np
 from torch.nn.parameter import Parameter
 from torch.nn import Module
-from graphgallery.nn.init import uniform, zeros
-from .get_activation import get_activation
+from graphgallery.nn.init.pytorch import uniform, zeros
+from ..get_activation import get_activation
+
 
 # TODO: change dtypes of trainable weights based on `floax`
 class GraphConvolution(Module):
-    def __init__(self, in_channels, out_channels, use_bias=False, activation=None):
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 use_bias=False,
+                 activation=None):
         super().__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels
@@ -33,7 +38,7 @@ class GraphConvolution(Module):
 
         if self.bias is not None:
             output += self.bias
-            
+
         return self.activation(output)
 
     def __repr__(self):

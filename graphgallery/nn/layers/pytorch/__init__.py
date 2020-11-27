@@ -1,4 +1,2 @@
-from .gcn import GraphConvolution
-from .gat import GraphAttention, SparseGraphAttention
-from .sgc import SGConvolution
-
+from .conv import *
+from .get_activation import get_activation

@@ -1,1 +1,2 @@
-from .torch_init import *
+from .pytorch import init
+from .tensorflow import *

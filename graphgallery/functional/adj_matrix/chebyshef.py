@@ -3,7 +3,7 @@ import numpy as np
 
 from .normalize_adj import normalize_adj
 from ..transforms import Transform
-from ..decorators import MultiInputs
+from ..decorators import multiple
 
 
 class ChebyBasis(Transform):
@@ -19,7 +19,7 @@ class ChebyBasis(Transform):
         return f"{self.__class__.__name__}(order={self.order}, rate={self.rate})"
 
 
-@MultiInputs()
+@multiple
 def cheby_basis(adj_matrix, order=2, rate=-0.5):
     """Calculate Chebyshev polynomials up to order k. Return a list of sparse matrices (tuple representation)."""
 
@@ -27,8 +27,10 @@ def cheby_basis(adj_matrix, order=2, rate=-0.5):
     adj_normalized = normalize_adj(adj_matrix, rate=rate, fill_weight=1.0)
     I = sp.eye(adj_matrix.shape[0], dtype=adj_matrix.dtype).tocsr()
     laplacian = I - adj_normalized
-    largest_eigval = sp.linalg.eigsh(
-        laplacian, 1, which='LM', return_eigenvectors=False)[0]
+    largest_eigval = sp.linalg.eigsh(laplacian,
+                                     1,
+                                     which='LM',
+                                     return_eigenvectors=False)[0]
     scaled_laplacian = (2. / largest_eigval) * laplacian - I
 
     t_k = []

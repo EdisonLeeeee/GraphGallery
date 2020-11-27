@@ -4,12 +4,11 @@ import graphgallery as gg
 
 from ..transforms import Transform
 from ..ops import repeat
-from ..decorators import MultiInputs
+from ..decorators import multiple
 
 
 class AddSelfLoops(Transform):
     """Add self loops for adjacency matrix."""
-
     def __init__(self, fill_weight: float = 1.0):
         """
         Parameters
@@ -41,7 +40,7 @@ class AddSelfLoops(Transform):
         return f"{self.__class__.__name__}(fill_weight={self.fill_weight})"
 
 
-@MultiInputs()
+@multiple
 def add_selfloops(adj_matrix: sp.csr_matrix, fill_weight: float = 1.0):
     """Normalize adjacency matrix.
 

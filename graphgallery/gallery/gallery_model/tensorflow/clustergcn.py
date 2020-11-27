@@ -94,7 +94,7 @@ class ClusterGCN(GalleryModel):
                                                      device=self.device)
 
     # use decorator to make sure all list arguments have the same length
-    @F.EqualVarLength()
+    @F.equal
     def build(self,
               hiddens=[32],
               activations=['relu'],

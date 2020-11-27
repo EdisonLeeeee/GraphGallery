@@ -5,25 +5,28 @@ import graphgallery as gg
 from typing import Callable, Any, List
 from .ops import get_length, repeat
 
+__all__ = ['Multiple', 'multiple', 'Equal', 'equal']
 
-__all__ = ['MultiInputs', 'EqualVarLength']
 
-
-def cal_outpus(func: Callable, args: list, kwargs: dict,
+def cal_outpus(func: Callable,
+               args: list,
+               kwargs: dict,
                type_check: bool = True):
 
     if gg.is_multiobjects(args):
         if type_check:
             assert_same_type(*args)
-        return tuple(cal_outpus(func, arg, kwargs, type_check=type_check) for arg in args)
+        return tuple(
+            cal_outpus(func, arg, kwargs, type_check=type_check)
+            for arg in args)
 
     return func(args, **kwargs)
 
 
-class MultiInputs:
+class Multiple:
 
     wrapper_doc = """NOTE: This method is decorated by 
-    'graphgallery.utils.decorators.MultiInputs',
+    'graphgallery.functional.Multiple',
     which takes multi inputs and yields multi outputs.
     """
 
@@ -39,9 +42,12 @@ class MultiInputs:
             if len(args) == 1 and gg.is_multiobjects(args[0]):
                 args, = args
 
-            outputs = cal_outpus(func, args, kwargs,
+            outputs = cal_outpus(func,
+                                 args,
+                                 kwargs,
                                  type_check=self.type_check)
-            if outputs is not None and gg.is_multiobjects(outputs) and len(outputs) == 1:
+            if outputs is not None and gg.is_multiobjects(outputs) and len(
+                    outputs) == 1:
                 outputs, = outputs
             return outputs
 
@@ -51,7 +57,7 @@ class MultiInputs:
 def assert_same_type(*inputs) -> bool:
     """ Assert the types of inputs are the same"""
     first, *others = inputs
-    # only one inputs
+    # single input
     if not others:
         return True
 
@@ -68,15 +74,17 @@ def assert_same_type(*inputs) -> bool:
 _BASE_VARS = ['hiddens', 'activations']
 
 
-class EqualVarLength:
+class Equal:
     """
     A decorator class which makes the values of the variables 
     equal in max-length. variables consist of 'hiddens', 'activations'
     and other custom ones in `include`.
 
     """
-
-    def __init__(self, *, include: list = [], exclude: list = [],
+    def __init__(self,
+                 *,
+                 include: list = [],
+                 exclude: list = [],
                  length_as: str = 'hiddens'):
         """
         Parameters
@@ -90,21 +98,22 @@ class EqualVarLength:
             the variable name whose length is used for all variables,
             by default ['hiddens']
         """
-        vars = list(include) + self.base_vars()
-        vars = list(set(vars) - set(list(exclude)))
-        assert length_as in vars
-        self.vars = vars
+        _vars = list(include) + self.base_vars()
+        _vars = list(set(_vars) - set(list(exclude)))
+        assert length_as in _vars
+        self._vars = _vars
         self.length_as = length_as
 
     def __call__(self, func: Callable) -> Callable:
-
         @functools.wraps(func)
         def wrapper(*args, **kwargs) -> Any:
             ArgSpec = inspect.getfullargspec(func)
 
-            if not ArgSpec.defaults or len(ArgSpec.args) != len(ArgSpec.defaults) + 1:
+            if not ArgSpec.defaults or len(
+                    ArgSpec.args) != len(ArgSpec.defaults) + 1:
                 raise Exception(
-                    f"The '{func.__name__}' method must be defined with all default parameters.")
+                    f"The '{func.__name__}' method must be defined with all default parameters."
+                )
 
             model, *values = args
             for i in range(len(values), len(ArgSpec.args[1:])):
@@ -114,15 +123,20 @@ class EqualVarLength:
             paras.update(kwargs)
 
             repeated = get_length(paras.get(self.length_as, 0))
-            for var in self.vars:
+            for var in self._vars:
                 # use `NAN` instead of `None` to avoid `None` exists
                 val = paras.get(var, "NAN")
                 if val != "NAN":
                     paras[var] = repeat(val, repeated)
 
             return func(model, **paras)
+
         return wrapper
 
     @staticmethod
     def base_vars() -> List[str]:
         return _BASE_VARS
+
+
+equal = Equal()
+multiple = Multiple()

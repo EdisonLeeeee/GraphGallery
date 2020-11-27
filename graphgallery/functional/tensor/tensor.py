@@ -9,14 +9,12 @@ from graphgallery import functional as F
 from .tensorflow import tensor as tf_tensor
 from .pytorch import tensor as th_tensor
 
-
-__all__ = ["astensor", "astensors", "tensoras", "tensor2tensor",
-           "sparse_adj_to_sparse_tensor",
-           "sparse_tensor_to_sparse_adj",
-           "sparse_edge_to_sparse_tensor",
-           "normalize_adj_tensor",
-           "add_selfloops_edge",
-           "normalize_edge_tensor"]
+__all__ = [
+    "astensor", "astensors", "tensoras", "tensor2tensor",
+    "sparse_adj_to_sparse_tensor", "sparse_tensor_to_sparse_adj",
+    "sparse_edge_to_sparse_tensor", "normalize_adj_tensor",
+    "add_selfloops_edge", "normalize_edge_tensor"
+]
 
 
 def astensor(x, *, dtype=None, device=None, backend=None, escape=None):
@@ -53,7 +51,7 @@ def astensor(x, *, dtype=None, device=None, backend=None, escape=None):
         return th_tensor.astensor(x, dtype=dtype, device=device, escape=escape)
 
 
-_astensors_fn = F.MultiInputs(type_check=False)(astensor)
+_astensors_fn = F.Multiple(type_check=False)(astensor)
 
 
 def astensors(*xs, dtype=None, device=None, backend=None, escape=None):
@@ -83,7 +81,11 @@ def astensors(*xs, dtype=None, device=None, backend=None, escape=None):
     backend = gg.backend(backend)
     device = F.device(device, backend)
     # escape
-    return _astensors_fn(*xs, dtype=dtype, device=device, backend=backend, escape=escape)
+    return _astensors_fn(*xs,
+                         dtype=dtype,
+                         device=device,
+                         backend=backend,
+                         escape=escape)
 
 
 def tensor2tensor(tensor, *, device=None):
@@ -98,7 +100,9 @@ def tensor2tensor(tensor, *, device=None):
         device = F.device(device, backend="tensorflow")
         return astensor(m, device=device, backend="tensorflow")
     else:
-        raise ValueError(f"The input must be a TensorFlow Tensor or PyTorch Tensor, buf got {type(tensor)}")
+        raise ValueError(
+            f"The input must be a TensorFlow Tensor or PyTorch Tensor, buf got {type(tensor)}"
+        )
 
 
 def tensoras(tensor):
@@ -154,39 +158,72 @@ def sparse_tensor_to_sparse_adj(x, *, backend=None):
         return th_tensor.sparse_tensor_to_sparse_adj(x)
 
 
-def sparse_edge_to_sparse_tensor(edge_index: np.ndarray, edge_weight: np.ndarray = None, shape: tuple = None, backend=None):
+def sparse_edge_to_sparse_tensor(edge_index: np.ndarray,
+                                 edge_weight: np.ndarray = None,
+                                 shape: tuple = None,
+                                 backend=None):
 
     backend = gg.backend(backend)
     if backend == "tensorflow":
-        return tf_tensor.sparse_edge_to_sparse_tensor(edge_index, edge_weight, shape)
+        return tf_tensor.sparse_edge_to_sparse_tensor(edge_index, edge_weight,
+                                                      shape)
     else:
-        return th_tensor.sparse_edge_to_sparse_tensor(edge_index, edge_weight, shape)
+        return th_tensor.sparse_edge_to_sparse_tensor(edge_index, edge_weight,
+                                                      shape)
 
 
 #### only works for tensorflow backend now #####################################
 
+
 def normalize_adj_tensor(adj, rate=-0.5, fill_weight=1.0, backend=None):
     backend = gg.backend(backend)
     if backend == "tensorflow":
-        return tf_tensor.normalize_adj_tensor(adj, rate=rate, fill_weight=fill_weight)
+        return tf_tensor.normalize_adj_tensor(adj,
+                                              rate=rate,
+                                              fill_weight=fill_weight)
     else:
         # TODO
-        return th_tensor.normalize_adj_tensor(adj, rate=rate, fill_weight=fill_weight)
+        return th_tensor.normalize_adj_tensor(adj,
+                                              rate=rate,
+                                              fill_weight=fill_weight)
 
 
-def add_selfloops_edge(edge_index, edge_weight, num_nodes=None, fill_weight=1.0, backend=None):
+def add_selfloops_edge(edge_index,
+                       edge_weight,
+                       num_nodes=None,
+                       fill_weight=1.0,
+                       backend=None):
     backend = gg.backend(backend)
     if backend == "tensorflow":
-        return tf_tensor.normalize_adj_tensor(edge_index, edge_weight, num_nodes=num_nodes, fill_weight=fill_weight)
+        return tf_tensor.normalize_adj_tensor(edge_index,
+                                              edge_weight,
+                                              num_nodes=num_nodes,
+                                              fill_weight=fill_weight)
     else:
         # TODO
-        return th_tensor.normalize_adj_tensor(edge_index, edge_weight, num_nodes=num_nodes, fill_weight=fill_weight)
+        return th_tensor.normalize_adj_tensor(edge_index,
+                                              edge_weight,
+                                              num_nodes=num_nodes,
+                                              fill_weight=fill_weight)
 
 
-def normalize_edge_tensor(edge_index, edge_weight=None, num_nodes=None, fill_weight=1.0, rate=-0.5, backend=None):
+def normalize_edge_tensor(edge_index,
+                          edge_weight=None,
+                          num_nodes=None,
+                          fill_weight=1.0,
+                          rate=-0.5,
+                          backend=None):
     backend = gg.backend(backend)
     if backend == "tensorflow":
-        return tf_tensor.normalize_adj_tensor(edge_index, edge_weight=edge_weight, num_nodes=num_nodes, fill_weight=fill_weight, rate=rate)
+        return tf_tensor.normalize_adj_tensor(edge_index,
+                                              edge_weight=edge_weight,
+                                              num_nodes=num_nodes,
+                                              fill_weight=fill_weight,
+                                              rate=rate)
     else:
         # TODO
-        return th_tensor.normalize_adj_tensor(edge_index, edge_weight=edge_weight, num_nodes=num_nodes, fill_weight=fill_weight, rate=rate)
+        return th_tensor.normalize_adj_tensor(edge_index,
+                                              edge_weight=edge_weight,
+                                              num_nodes=num_nodes,
+                                              fill_weight=fill_weight,
+                                              rate=rate)

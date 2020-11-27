@@ -5,11 +5,16 @@ from scipy.linalg import expm
 
 from .normalize_adj import normalize_adj
 from ..transforms import Transform
-from ..decorators import MultiInputs
+from ..decorators import multiple
 
 
 class GDC(Transform):
-    def __init__(self, alpha: float = 0.3, t: float = None, eps: float = None, k: int = 128, which: str = 'PPR'):
+    def __init__(self,
+                 alpha: float = 0.3,
+                 t: float = None,
+                 eps: float = None,
+                 k: int = 128,
+                 which: str = 'PPR'):
         super().__init__()
         self.alpha = alpha
         self.t = t
@@ -18,14 +23,24 @@ class GDC(Transform):
         self.which = which
 
     def __call__(self, adj_matrix):
-        return gdc(adj_matrix, alpha=self.alpha, t=self.t, eps=self.eps, k=self.k, which=self.which)
+        return gdc(adj_matrix,
+                   alpha=self.alpha,
+                   t=self.t,
+                   eps=self.eps,
+                   k=self.k,
+                   which=self.which)
 
     def __repr__(self):
         return f"{self.__class__.__name__}(alpha={self.alpha}, t={self.t}, eps={self.eps}, k={self.k}, which={self.which})"
 
 
-@MultiInputs()
-def gdc(adj_matrix: sp.csr_matrix, alpha: float = 0.3, t: float = None, eps: float = None, k: int = 128, which: str = 'PPR') -> sp.csr_matrix:
+@multiple
+def gdc(adj_matrix: sp.csr_matrix,
+        alpha: float = 0.3,
+        t: float = None,
+        eps: float = None,
+        k: int = 128,
+        which: str = 'PPR') -> sp.csr_matrix:
 
     if not (eps or k):
         raise RuntimeError('Either `eps` or `k` should be specified!')
@@ -64,7 +79,9 @@ def gdc(adj_matrix: sp.csr_matrix, alpha: float = 0.3, t: float = None, eps: flo
 
 def clip_matrix(matrix, threshold: float) -> sp.csr_matrix:
     '''Sparsify using threshold epsilon'''
-    assert sp.isspmatrix(matrix), 'Input matrix should be sparse matrix with format scipy.sparse.*_matrix.'
+    assert sp.isspmatrix(
+        matrix
+    ), 'Input matrix should be sparse matrix with format scipy.sparse.*_matrix.'
     matrix = matrix.tocsr()
     thres = np.vectorize(lambda x: x if x >= threshold else 0.)
     matrix.data = thres(matrix.data)
@@ -74,7 +91,9 @@ def clip_matrix(matrix, threshold: float) -> sp.csr_matrix:
 
 def top_k_matrix(matrix, k: int) -> sp.csr_matrix:
     '''Row-wise select top-k values'''
-    assert sp.isspmatrix(matrix), 'Input matrix should be sparse matrix with format scipy.sparse.*_matrix.'
+    assert sp.isspmatrix(
+        matrix
+    ), 'Input matrix should be sparse matrix with format scipy.sparse.*_matrix.'
     matrix = matrix.tolil()
     data = matrix.data
     for row in range(matrix.shape[0]):

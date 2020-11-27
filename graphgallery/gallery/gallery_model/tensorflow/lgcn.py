@@ -73,7 +73,7 @@ class LGCN(GalleryModel):
 
         self.feature_inputs, self.structure_inputs = node_attr, adj_matrix
 
-    # @F.EqualVarLength()
+    # @F.equal
     def build(self,
               hiddens=[32],
               n_filters=[8, 8],

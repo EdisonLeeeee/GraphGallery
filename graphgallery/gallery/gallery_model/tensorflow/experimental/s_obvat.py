@@ -20,9 +20,14 @@ class SimplifiedOBVAT(OBVAT):
 
 
     """
-
-    def __init__(self, *graph, adj_transform="normalize_adj", attr_transform=None,
-                 device='cpu:0', seed=None, name=None, **kwargs):
+    def __init__(self,
+                 *graph,
+                 adj_transform="normalize_adj",
+                 attr_transform=None,
+                 device='cpu:0',
+                 seed=None,
+                 name=None,
+                 **kwargs):
         r"""Create a Simplified OBVAT model.
 
         This can be instantiated in several ways:
@@ -63,32 +68,51 @@ class SimplifiedOBVAT(OBVAT):
         This is a simplified implementation of `OBVAT`.                
         """
         super().__init__(*graph,
-                         adj_transform=adj_transform, attr_transform=attr_transform,
-                         device=device, seed=seed, name=name, **kwargs)
+                         adj_transform=adj_transform,
+                         attr_transform=attr_transform,
+                         device=device,
+                         seed=seed,
+                         name=name,
+                         **kwargs)
 
     # use decorator to make sure all list arguments have the same length
-    @F.EqualVarLength()
-    def build(self, hiddens=[16], activations=['relu'], dropout=0.,
-              lr=0.01, weight_decay=5e-4, p1=1.4, p2=0.7, use_bias=False,
+    @F.equal
+    def build(self,
+              hiddens=[16],
+              activations=['relu'],
+              dropout=0.,
+              lr=0.01,
+              weight_decay=5e-4,
+              p1=1.4,
+              p2=0.7,
+              use_bias=False,
               epsilon=0.01):
 
         with tf.device(self.device):
 
             x = Input(batch_shape=[None, self.graph.num_node_attrs],
-                      dtype=self.floatx, name='node_attr')
+                      dtype=self.floatx,
+                      name='node_attr')
             adj = Input(batch_shape=[None, None],
-                        dtype=self.floatx, sparse=True, name='adj_matrix')
+                        dtype=self.floatx,
+                        sparse=True,
+                        name='adj_matrix')
             index = Input(batch_shape=[None],
-                          dtype=self.intx, name='node_index')
+                          dtype=self.intx,
+                          name='node_index')
 
             GCN_layers = []
             for hidden, activation in zip(hiddens, activations):
-                GCN_layers.append(GraphConvolution(hidden,
-                                                   activation=activation,
-                                                   use_bias=use_bias,
-                                                   kernel_regularizer=regularizers.l2(weight_decay)))
+                GCN_layers.append(
+                    GraphConvolution(
+                        hidden,
+                        activation=activation,
+                        use_bias=use_bias,
+                        kernel_regularizer=regularizers.l2(weight_decay)))
 
-            GCN_layers.append(GraphConvolution(self.graph.num_node_classes, use_bias=use_bias))
+            GCN_layers.append(
+                GraphConvolution(self.graph.num_node_classes,
+                                 use_bias=use_bias))
 
             self.GCN_layers = GCN_layers
             self.dropout = Dropout(rate=dropout)
@@ -98,7 +122,8 @@ class SimplifiedOBVAT(OBVAT):
 
             model = Model(inputs=[x, adj, index], outputs=output)
             model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
-                          optimizer=Adam(lr=lr), metrics=['accuracy'])
+                          optimizer=Adam(lr=lr),
+                          metrics=['accuracy'])
 
             entropy_loss = entropy_y_x(logit)
             vat_loss = self.virtual_adversarial_loss(x, adj, logit, epsilon)
@@ -110,7 +135,9 @@ class SimplifiedOBVAT(OBVAT):
         return super(OBVAT, self).train_step(sequence)
 
     def virtual_adversarial_loss(self, x, adj, logit, epsilon):
-        d = tf.random.normal(shape=[self.graph.num_nodes, self.graph.num_node_attrs], dtype=self.floatx)
+        d = tf.random.normal(
+            shape=[self.graph.num_nodes, self.graph.num_node_attrs],
+            dtype=self.floatx)
 
         r_vadv = get_normalized_vector(d) * epsilon
         logit_p = tf.stop_gradient(logit)

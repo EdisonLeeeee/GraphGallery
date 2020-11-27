@@ -4,14 +4,20 @@ import numpy as np
 from torch.nn import Module, Parameter, ParameterList, LeakyReLU, Dropout
 import torch.nn.functional as F
 
-from graphgallery.nn.init import glorot_uniform, zeros
-from .get_activation import get_activation
+from graphgallery.nn.init.pytorch import glorot_uniform, zeros
+from ..get_activation import get_activation
 
 
 class GraphAttention(Module):
-    def __init__(self, in_channels, out_channels, activation=None,
-                 attn_heads=8, alpha=0.2, reduction='concat',
-                 dropout=0.6, use_bias=False):
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 activation=None,
+                 attn_heads=8,
+                 alpha=0.2,
+                 reduction='concat',
+                 dropout=0.6,
+                 use_bias=False):
         super().__init__()
 
         if reduction not in {'concat', 'average'}:
@@ -26,7 +32,8 @@ class GraphAttention(Module):
         self.reduction = reduction
 
         self.kernels = ParameterList()
-        self.attn_kernel_self, self.attn_kernel_neighs = ParameterList(), ParameterList()
+        self.attn_kernel_self, self.attn_kernel_neighs = ParameterList(
+        ), ParameterList()
         self.biases = ParameterList()
         self.use_bias = use_bias
 
@@ -35,11 +42,14 @@ class GraphAttention(Module):
 
         # Initialize weights for each attention head
         for head in range(self.attn_heads):
-            W = Parameter(torch.FloatTensor(in_channels, out_channels), requires_grad=True)
+            W = Parameter(torch.FloatTensor(in_channels, out_channels),
+                          requires_grad=True)
             self.kernels.append(W)
-            a1 = Parameter(torch.FloatTensor(out_channels, 1), requires_grad=True)
+            a1 = Parameter(torch.FloatTensor(out_channels, 1),
+                           requires_grad=True)
             self.attn_kernel_self.append(a1)
-            a2 = Parameter(torch.FloatTensor(out_channels, 1), requires_grad=True)
+            a2 = Parameter(torch.FloatTensor(out_channels, 1),
+                           requires_grad=True)
             self.attn_kernel_neighs.append(a2)
 
             if use_bias:
@@ -52,7 +62,8 @@ class GraphAttention(Module):
 
     def reset_parameters(self):
         for head in range(self.attn_heads):
-            W, a1, a2 = self.kernels[head], self.attn_kernel_self[head], self.attn_kernel_neighs[head]
+            W, a1, a2 = self.kernels[head], self.attn_kernel_self[
+                head], self.attn_kernel_neighs[head]
             glorot_uniform(W)
             glorot_uniform(a1)
             glorot_uniform(a2)
@@ -66,7 +77,8 @@ class GraphAttention(Module):
 
         outputs = []
         for head in range(self.attn_heads):
-            W, a1, a2 = self.kernels[head], self.attn_kernel_self[head], self.attn_kernel_neighs[head]
+            W, a1, a2 = self.kernels[head], self.attn_kernel_self[
+                head], self.attn_kernel_neighs[head]
             Wh = torch.mm(x, W)
 
             f_1 = Wh @ a1
@@ -77,7 +89,9 @@ class GraphAttention(Module):
             zero_vec = -9e15 * torch.ones_like(e)
             attention = torch.where(dense_adj > 0, e, zero_vec)
             attention = F.softmax(attention, dim=1)
-            attention = F.dropout(attention, self.dropout, training=self.training)
+            attention = F.dropout(attention,
+                                  self.dropout,
+                                  training=self.training)
             h_prime = torch.matmul(attention, Wh)
 
             if self.use_bias:
@@ -99,6 +113,7 @@ class GraphAttention(Module):
 
 
 #########################Sparse Version of `GraphAttention` layer###################
+
 
 class SpecialSpmmFunction(torch.autograd.Function):
     """Special function for only sparse region backpropataion layer."""
@@ -132,10 +147,15 @@ class SparseGraphAttention(Module):
     """
     Sparse version GAT layer, similar to https://arxiv.org/abs/1710.10903
     """
-
-    def __init__(self, in_channels, out_channels, activation=None,
-                 attn_heads=8, alpha=0.2, reduction='concat',
-                 dropout=0.6, use_bias=False):
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 activation=None,
+                 attn_heads=8,
+                 alpha=0.2,
+                 reduction='concat',
+                 dropout=0.6,
+                 use_bias=False):
         super().__init__()
 
         if reduction not in {'concat', 'average'}:
@@ -198,11 +218,12 @@ class SparseGraphAttention(Module):
 
             edge_e = torch.exp(-self.leakyrelu(a.mm(edge_h).squeeze()))
 
-            e_rowsum = self.special_spmm(edge, edge_e, torch.Size([N, N]), torch.ones(size=(N, 1), device=dv))
+            e_rowsum = self.special_spmm(edge, edge_e, torch.Size([N, N]),
+                                         torch.ones(size=(N, 1), device=dv))
             edge_e = self.dropout(edge_e)
             h_prime = self.special_spmm(edge, edge_e, torch.Size([N, N]), h)
             h_prime = h_prime.div(e_rowsum)
-#             h_prime[torch.isnan(h_prime)] = 0.
+            #             h_prime[torch.isnan(h_prime)] = 0.
 
             if self.use_bias:
                 h_prime += self.biases[head]
@@ -217,4 +238,5 @@ class SparseGraphAttention(Module):
         return self.activation(output)
 
     def __repr__(self):
-        return self.__class__.__name__ + ' (' + str(self.in_channels) + ' -> ' + str(self.out_channels) + ')'
+        return self.__class__.__name__ + ' (' + str(
+            self.in_channels) + ' -> ' + str(self.out_channels) + ')'
