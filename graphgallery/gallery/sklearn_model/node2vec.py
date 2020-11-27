@@ -64,6 +64,7 @@ class Node2vec(SklearnModel):
               num_neg_samples=1,
               p=0.5,
               q=0.5):
+        super().build()
 
         self.walker = RandomWalker(self.nxgraph, p=p, q=q)
         self.walker.preprocess_transition_probs()
@@ -124,4 +125,4 @@ class Node2vec(SklearnModel):
         if norm:
             embeddings = self.normalize_embedding(embeddings)
 
-        self.embeddings = embeddings
+        return embeddings

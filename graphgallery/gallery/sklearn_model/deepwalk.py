@@ -56,6 +56,7 @@ class Deepwalk(SklearnModel):
               workers=16,
               iter=1,
               num_neg_samples=1):
+        super().build()
 
         adj_matrix = self.graph.adj_matrix
         walks = self.deepwalk_random_walk(adj_matrix.indices,
@@ -108,4 +109,4 @@ class Deepwalk(SklearnModel):
         if norm:
             embeddings = self.normalize_embedding(embeddings)
 
-        self.embeddings = embeddings
+        return embeddings

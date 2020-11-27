@@ -27,22 +27,20 @@ class SklearnModel(GraphModel):
         """
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
-        self.embeddings = None
+    def build(self):
+        self._embeddings = None
         self.classifier = LogisticRegression(solver='lbfgs',
                                              max_iter=1000,
                                              multi_class='auto',
-                                             random_state=seed)
+                                             random_state=self.seed)
 
-    def build(self):
-        raise NotImplementedError
-
-    def get_embeddings(self):
-        raise NotImplementedError
+    @property
+    def embeddings(self):
+        if self._embeddings is None:
+            self._embeddings = self.get_embeddings()
+        return self._embeddings
 
     def train(self, index):
-        if not self.embeddings:
-            self.get_embeddings()
-
         index = asintarr(index)
         self.classifier.fit(self.embeddings[index],
                             self.graph.node_label[index])
