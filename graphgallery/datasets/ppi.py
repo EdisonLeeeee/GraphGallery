@@ -40,7 +40,7 @@ class PPI(InMemoryDataset):
     def available_datasets():
         return "PPI"
 
-    def _process(self) -> None:
+    def _process(self) -> dict:
 
         adj_matrices = []
         node_attrs = []

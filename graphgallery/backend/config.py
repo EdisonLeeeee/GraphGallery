@@ -7,13 +7,11 @@ from typing import Union, Tuple, Optional
 
 from .modules import BackendModule, TensorFlowBackend, PyTorchBackend, PyGBackend, DGLPyTorchBackend, DGLTensorFlowBackend
 
-__all__ = ['allowed_backends', 'backend_dict',
-           'backend', 'set_backend', 'set_to_default_backend',
-           'boolx', 'intx', 'set_intx',
-           'floatx', 'set_floatx',
-           'epsilon', 'set_epsilon',
-           'file_ext', 'set_file_ext']
-
+__all__ = [
+    'allowed_backends', 'backend_dict', 'backend', 'set_backend',
+    'set_to_default_backend', 'boolx', 'intx', 'set_intx', 'floatx',
+    'set_floatx', 'epsilon', 'set_epsilon', 'file_ext', 'set_file_ext'
+]
 
 # used to store the models or weights for `TensorFlow` and `PyTorch`
 _EXT = ".h5"
@@ -28,10 +26,14 @@ _NUMPY = 'numpy'
 _DEFAULT_BACKEND = TensorFlowBackend()
 _BACKEND = _DEFAULT_BACKEND
 
-_ALL_BACKENDS = {TensorFlowBackend, PyTorchBackend, PyGBackend, DGLPyTorchBackend, DGLTensorFlowBackend}
+_ALL_BACKENDS = {
+    TensorFlowBackend, PyTorchBackend, PyGBackend, DGLPyTorchBackend,
+    DGLTensorFlowBackend
+}
 _BACKEND_DICT = {}
 
-BACKEND_TYPE = Union[TensorFlowBackend, PyTorchBackend, PyGBackend, DGLPyTorchBackend, DGLTensorFlowBackend]
+BACKEND_TYPE = Union[TensorFlowBackend, PyTorchBackend, PyGBackend,
+                     DGLPyTorchBackend, DGLTensorFlowBackend]
 
 
 def allowed_backends() -> Tuple[str]:
@@ -118,7 +120,9 @@ def set_floatx(dtype: str) -> str:
     """
 
     if dtype not in _FLOAT_TYPES:
-        raise ValueError(f"Unknown floatx type: '{str(dtype)}', expected one of {_FLOAT_TYPES}.")
+        raise ValueError(
+            f"Unknown floatx type: '{str(dtype)}', expected one of {_FLOAT_TYPES}."
+        )
     global _FLOATX
     _FLOATX = str(dtype)
     return _FLOATX
@@ -169,18 +173,23 @@ def set_intx(dtype: str) -> str:
     """
 
     if dtype not in _INT_TYPES:
-        raise ValueError(f"Unknown integer type: '{str(dtype)}', expected one of {_INT_TYPES}.")
+        raise ValueError(
+            f"Unknown integer type: '{str(dtype)}', expected one of {_INT_TYPES}."
+        )
     global _INTX
 
     if _BACKEND == _TORCH and dtype != 'int64':
         raise RuntimeError(
-            f"For {_BACKEND}, tensors used as integer must be 'long' ('int64'), not '{str(dtype)}'.")
+            f"For {_BACKEND}, tensors used as integer must be 'long' ('int64'), not '{str(dtype)}'."
+        )
 
     _INTX = str(dtype)
     return _INTX
 
 
-def backend(module_name: Optional[Union[str, BackendModule]] = None) -> BACKEND_TYPE:
+def backend(
+        module_name: Optional[Union[str,
+                                    BackendModule]] = None) -> BACKEND_TYPE:
     """Publicly accessible method
     for determining the current backend.
 
@@ -214,7 +223,8 @@ def backend(module_name: Optional[Union[str, BackendModule]] = None) -> BACKEND_
 
         if module is None:
             raise ValueError(
-                f"Unsupported backend module name: '{module_name}', expected one of {allowed_backends()}.")
+                f"Unsupported backend module name: '{module_name}', expected one of {allowed_backends()}."
+            )
         return module()
 
 
@@ -226,7 +236,9 @@ def set_to_default_backend():
     return _BACKEND
 
 
-def set_backend(module_name: Optional[Union[str, BackendModule]] = None) -> BACKEND_TYPE:
+def set_backend(
+        module_name: Optional[Union[str,
+                                    BackendModule]] = None) -> BACKEND_TYPE:
     """Set the default backend module.
 
     Parameters:
@@ -261,10 +273,12 @@ def set_backend(module_name: Optional[Union[str, BackendModule]] = None) -> BACK
             # Using `int32` is more efficient
             set_intx('int32')
         try:
-            from graphgallery.nn import gallery
+            from graphgallery import gallery
             importlib.reload(gallery)
         except Exception as e:
-            print(f"Something went wrong. Set to Default Backend {_DEFAULT_BACKEND}.", file=sys.stderr)
+            print(
+                f"Something went wrong. Set to Default Backend {_DEFAULT_BACKEND}.",
+                file=sys.stderr)
             set_to_default_backend()
             raise e
 

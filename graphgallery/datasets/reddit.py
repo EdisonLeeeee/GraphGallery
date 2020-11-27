@@ -20,7 +20,8 @@ class Reddit(InMemoryDataset):
 
     _url = 'https://data.dgl.ai/dataset/reddit.zip'
 
-    def __init__(self, root: Optional[str] = None,
+    def __init__(self,
+                 root: Optional[str] = None,
                  url: Optional[str] = None,
                  transform: Optional[Transform] = None,
                  verbose: bool = True):
@@ -30,15 +31,18 @@ class Reddit(InMemoryDataset):
     def available_datasets():
         return "reddit"
 
-    def _process(self) -> None:
+    def _process(self) -> dict:
 
         data = np.load(osp.join(self.download_dir, 'reddit_data.npz'))
-        adj_matrix = sp.load_npz(osp.join(self.download_dir, 'reddit_graph.npz')).tocsr(copy=False)
+        adj_matrix = sp.load_npz(
+            osp.join(self.download_dir, 'reddit_graph.npz')).tocsr(copy=False)
 
         node_attr = data['feature']
         node_label = data['label']
         node_graph_label = data['node_types']
-        graph = Graph(adj_matrix, node_attr, node_label,
+        graph = Graph(adj_matrix,
+                      node_attr,
+                      node_label,
                       node_graph_label=node_graph_label)
 
         train_nodes = np.where(node_graph_label == 1)[0]
@@ -53,7 +57,8 @@ class Reddit(InMemoryDataset):
             pkl.dump(cache, f)
         return cache
 
-    def split_nodes(self, train_size=None,
+    def split_nodes(self,
+                    train_size=None,
                     val_size=None,
                     test_size=None,
                     random_state: Optional[int] = None):
@@ -61,7 +66,8 @@ class Reddit(InMemoryDataset):
             self.splits.update(self.split_cache)
             return self.splits
         else:
-            return super().split_nodes(train_size, val_size, test_size, random_state)
+            return super().split_nodes(train_size, val_size, test_size,
+                                       random_state)
 
     @property
     def url(self) -> List[str]:
@@ -81,4 +87,7 @@ class Reddit(InMemoryDataset):
 
     @property
     def raw_paths(self) -> List[str]:
-        return [osp.join(self.download_dir, raw_filename) for raw_filename in self.raw_filenames]
+        return [
+            osp.join(self.download_dir, raw_filename)
+            for raw_filename in self.raw_filenames
+        ]

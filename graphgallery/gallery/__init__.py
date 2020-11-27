@@ -1,7 +1,7 @@
 from .model import Model
-from .gallery_model import GalleryModel
-from .semisupervised.semi_supervised_model import SemiSupervisedModel
-from .unsupervised.unsupervised_model import UnsupervisedModel
+from .graph_model import GraphModel
+from .gallery_model.gallery_model import GalleryModel
+from .sklearn_model.sklearn_model import SklearnModel
 
 import sys
 import importlib
@@ -10,34 +10,34 @@ from typing import Tuple
 
 __all__ = ['Model']
 
-_SEMI_SUPERVISED_MODELS = {"GCN",
-                           "GAT",
-                           "ClusterGCN",
-                           "SGC",
-                           "GWNN",
-                           "RobustGCN",
-                           "GraphSAGE",
-                           "FastGCN",
-                           "ChebyNet",
-                           "DenseGCN",
-                           "LGCN",
-                           "OBVAT",
-                           "SBVAT",
-                           "GMNN",
-                           "DAGNN",
-                           # Experimental models
-                           "EdgeGCN",
-                           "SimplifiedOBVAT",
-                           "GCN_MIX",
-                           "GCNA",
-                           "SAT"
-                           }
+_GALLERY_MODELS = {
+    "GCN",
+    "GAT",
+    "ClusterGCN",
+    "SGC",
+    "GWNN",
+    "RobustGCN",
+    "GraphSAGE",
+    "FastGCN",
+    "ChebyNet",
+    "DenseGCN",
+    "LGCN",
+    "OBVAT",
+    "SBVAT",
+    "GMNN",
+    "DAGNN",
+    # Experimental models
+    "EdgeGCN",
+    "SimplifiedOBVAT",
+    "GCN_MIX",
+    "GCNA",
+    "SAT"
+}
 
-_UNSUPERVISED_MODELS = {
+_SKLEARN_MODELS = {
     "Node2vec",
     "Deepwalk",
 }
-
 _enabled_models = set()
 
 
@@ -46,15 +46,16 @@ def _gen_missing_model(model, backend):
         raise ImportError(f"model {model} is not supported by '{backend}'."
                           " You can switch to other backends by setting"
                           " the 'graphgallery.backend' environment.")
+
     return _missing_model
 
 
 def load_models(backend_name=None):
     _backend = backend(backend_name)
-    mod = importlib.import_module(f".semisupervised.{_backend.abbr}", __name__)
     thismod = sys.modules[__name__]
+    mod = importlib.import_module(f".gallery_model.{_backend.abbr}", __name__)
 
-    for model in _SEMI_SUPERVISED_MODELS:
+    for model in _GALLERY_MODELS:
         _model_class = mod.__dict__.get(model, None)
 
         if _model_class is not None:
@@ -63,9 +64,9 @@ def load_models(backend_name=None):
         else:
             setattr(thismod, model, _gen_missing_model(model, _backend))
 
-    mod = importlib.import_module(f".unsupervised", __name__)
+    mod = importlib.import_module(f".sklearn_model", __name__)
 
-    for model in _UNSUPERVISED_MODELS:
+    for model in _SKLEARN_MODELS:
         _model_class = mod.__dict__.get(model, None)
 
         if _model_class is not None:

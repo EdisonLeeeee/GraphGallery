@@ -10,31 +10,12 @@ import scipy.sparse as sp
 from tensorflow.python.eager.context import _EagerDeviceContext
 from graphgallery.backend import BackendModule
 
-TransformType = TypeVar('TransformType')
-GalleryGraph = TypeVar('GalleryGraph')
+IntNumber = Union[int, np.int8, np.int16, np.int32, np.int64, np.uint8,
+                  np.uint16, np.uint32, np.uint64, ]
 
-IntNumber = Union[
-    int,
-    np.int8,
-    np.int16,
-    np.int32,
-    np.int64,
-    np.uint8,
-    np.uint16,
-    np.uint32,
-    np.uint64,
-]
+FloatNumber = Union[float, np.float16, np.float32, np.float64, ]
 
-FloatNumber = Union[
-    float,
-    np.float16,
-    np.float32,
-    np.float64,
-]
-
-Number = Union[
-    IntNumber, FloatNumber
-]
+Number = Union[IntNumber, FloatNumber]
 
 Shape = Optional[Tuple[IntNumber, IntNumber]]
 
@@ -56,26 +37,17 @@ MultiArrayLike = Union[List[ArrayLike], Tuple[ArrayLike]]
 
 Edge = Union[List[List], ArrayLike2D, Tuple[ArrayLike1D, ArrayLike1D]]
 
-AcceptableTransform = Optional[Union[TransformType, str, Callable]]
+AcceptableTransform = Optional[Union["Transform", str, Callable]]
 # AcceptableTransform = Optional[Union[TransformType, str, Callable]]
 
 ListLike = Union[List, Tuple]
 
-TFTensor = Union[
-    tf.Tensor,
-    tf.sparse.SparseTensor,
-    tf.Variable,
-    tf.RaggedTensor
-]
+TFTensor = Union[tf.Tensor, tf.sparse.SparseTensor, tf.Variable,
+                 tf.RaggedTensor]
 
 TorchTensor = torch.Tensor
-TensorLike = Union[List[Union[Number, list]],
-                   tuple,
-                   Number,
-                   ArrayLike,
-                   TFTensor,
-                   TorchTensor]
-
+TensorLike = Union[List[Union[Number, list]], tuple, Number, ArrayLike,
+                   TFTensor, TorchTensor]
 
 NxGraph = Union[nx.Graph, nx.DiGraph]
 

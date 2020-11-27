@@ -175,9 +175,11 @@ class TUDataset(InMemoryDataset):
 
 
 def genfromtxt(path, sep=',', start=0, end=None, dtype=None, device=None):
-    with open(path, 'r') as f:
-        src = f.read().split('\n')[:-1]
+    # with open(path, 'r') as f:
+    #     src = f.read().split('\n')[:-1]
 
-    src = [[float(x) for x in line.split(sep)[start:end]] for line in src]
-    src = np.asarray(src, dtype=dtype).squeeze()
-    return src
+    # src = [[float(x) for x in line.split(sep)[start:end]] for line in src]
+    # src = np.asarray(src, dtype=dtype).squeeze()
+
+    # # return src
+    return np.loadtxt(path, delimiter=sep).astype(dtype).squeeze()
