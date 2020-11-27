@@ -5,7 +5,7 @@ import graphgallery as gg
 from typing import Union, Optional
 
 from .to_adj import edge_transpose
-from ..ops import get_length
+from ..functions import get_length
 
 
 __all__ = ['add_selfloops_edge', 'normalize_edge', 'augment_edge']

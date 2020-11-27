@@ -3,12 +3,13 @@ import scipy.sparse as sp
 import graphgallery as gg
 
 from ..transforms import Transform
-from ..ops import repeat
+from ..functions import repeat
 from ..decorators import multiple
 
 
 class AddSelfLoops(Transform):
     """Add self loops for adjacency matrix."""
+
     def __init__(self, fill_weight: float = 1.0):
         """
         Parameters

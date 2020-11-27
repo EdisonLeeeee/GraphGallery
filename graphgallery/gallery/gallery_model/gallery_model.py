@@ -204,6 +204,7 @@ class GalleryModel(GraphModel):
                              "'verbose=4': Progbar(multi line, omitted), "
                              f"but got {verbose}")
         model = self.model
+
         # Check if model has been built
         if model is None:
             raise RuntimeError(
@@ -466,14 +467,14 @@ class GalleryModel(GraphModel):
     def predict_step(self, sequence):
         return self.predict_step_fn(self.model, sequence)
 
-    def train_sequence(self, index):
+    def train_sequence(self, inputs):
         """
         Construct the training sequence.
         """
 
         raise NotImplementedError
 
-    def test_sequence(self, index):
+    def test_sequence(self, inputs):
         """
         Construct the testing sequence.
 
@@ -481,16 +482,16 @@ class GalleryModel(GraphModel):
         ----------
         If not implemented, this method will call `train_sequence` automatically.
         """
-        return self.train_sequence(index)
+        return self.train_sequence(inputs)
 
-    def predict_sequence(self, index):
+    def predict_sequence(self, inputs):
         """
         Construct the prediction sequence.
         Note:
         ----------
         If not implemented, this method will call `train_sequence` automatically.        
         """
-        return self.test_sequence(index)
+        return self.test_sequence(inputs)
 
     def _test_predict(self, index):
         logit = self.predict(index)

@@ -3,7 +3,7 @@ import inspect
 
 import graphgallery as gg
 from typing import Callable, Any, List
-from .ops import get_length, repeat
+from .functions import get_length, repeat
 
 __all__ = ['Multiple', 'multiple', 'Equal', 'equal']
 

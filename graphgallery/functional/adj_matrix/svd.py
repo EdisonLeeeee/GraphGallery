@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.sparse as sp
 from ..transforms import Transform
-from ..ops import repeat
+from ..functions import repeat
 
 
 class SVD(Transform):

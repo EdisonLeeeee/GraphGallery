@@ -3,12 +3,13 @@ import scipy.sparse as sp
 import graphgallery as gg
 
 from ..transforms import Transform
-from ..ops import repeat
+from ..functions import repeat
 from ..decorators import multiple
 
 
 class NormalizeAdj(Transform):
     """Normalize adjacency matrix."""
+
     def __init__(self, rate=-0.5, fill_weight=1.0):
         """
         # return a normalized adjacency matrix

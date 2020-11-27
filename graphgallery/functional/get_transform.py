@@ -15,7 +15,7 @@ from graphgallery.functional import SparseAdjToEdge
 from graphgallery.functional import SparseReshape
 
 from .transforms import *
-from .ops import *
+from .functions import *
 
 __all__ = ['get', 'Compose']
 
