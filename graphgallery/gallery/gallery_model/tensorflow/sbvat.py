@@ -20,6 +20,7 @@ class SBVAT(GalleryModel):
 
 
     """
+
     def __init__(self,
                  *graph,
                  n_samples=50,
@@ -151,7 +152,7 @@ class SBVAT(GalleryModel):
                 gradients = tape.gradient(loss, trainable_variables)
                 optimizer.apply_gradients(zip(gradients, trainable_variables))
 
-            return loss, metric.result()
+            return {"loss": loss, "accuracy": metric.result()}
 
     def virtual_adversarial_loss(self, x, adj, logit, adv_mask):
         d = tf.random.normal(shape=tf.shape(x), dtype=self.floatx)

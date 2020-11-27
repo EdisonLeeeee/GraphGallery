@@ -178,7 +178,7 @@ class SAT(GalleryModel):
 
         grads = tape.gradient(loss, model.trainable_variables)
         optimizer.apply_gradients(zip(grads, model.trainable_variables))
-        return loss, metric.result()
+        return {"loss": loss, "accuracy": metric.result()}
 
     def train_sequence(self, index):
         labels = self.graph.node_label[index]

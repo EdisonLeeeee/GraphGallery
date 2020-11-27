@@ -16,10 +16,10 @@ from tensorflow.keras.callbacks import History
 from tensorflow.python.keras.utils.generic_utils import Progbar
 
 import graphgallery as gg
+from graphgallery.functional import Bunch
 from graphgallery.nn.functions import softmax
 from graphgallery.data.io import makedirs_from_filepath
 from graphgallery.data import BaseGraph
-from graphgallery.functional import asintarr
 from graphgallery.utils.raise_error import raise_if_kwargs
 from graphgallery.utils import trainer
 from graphgallery.gallery import GraphModel
@@ -138,7 +138,7 @@ class GalleryModel(GraphModel):
               save_best=True,
               ckpt_path=None,
               as_model=False,
-              monitor='val_acc',
+              monitor='val_accuracy',
               early_stop_metric='val_loss',
               callbacks=None,
               **kwargs):
@@ -204,13 +204,15 @@ class GalleryModel(GraphModel):
                              "'verbose=4': Progbar(multi line, omitted), "
                              f"but got {verbose}")
         model = self.model
-
         # Check if model has been built
         if model is None:
             raise RuntimeError(
                 'You must compile your model before training/testing/predicting. Use `model.build()`.'
             )
 
+        metrics_names = getattr(model, "metrics_names", None)
+        if not metrics_names:
+            raise RuntimeError(f"Please specify the attribute 'metrics_names' for the model.")
         if not isinstance(train_data, Sequence):
             train_data = self.train_sequence(train_data)
 
@@ -222,8 +224,7 @@ class GalleryModel(GraphModel):
             if not isinstance(val_data, Sequence):
                 val_data = self.test_sequence(val_data)
             self.val_data = val_data
-        else:
-            monitor = 'acc' if monitor[:3] == 'val' else monitor
+            metrics_names = metrics_names + ["val_" + metric for metric in metrics_names]
 
         if not isinstance(callbacks, callbacks_module.CallbackList):
             callbacks = callbacks_module.CallbackList(callbacks)
@@ -258,19 +259,19 @@ class GalleryModel(GraphModel):
 
         callbacks.set_model(model)
         model.stop_training = False
-        callbacks.on_train_begin()
 
+        metrics_names = metrics_names + ["Duration"]
         if verbose:
-            stateful_metrics = {
-                "acc", 'loss', 'val_acc', 'val_loss', 'duration'
-            }
+            stateful_metrics = set(metrics_names)
             if verbose <= 2:
                 progbar = Progbar(target=epochs,
                                   verbose=verbose,
                                   stateful_metrics=stateful_metrics)
             print("Training...")
 
+        logs = Bunch()
         begin_time = time.perf_counter()
+        callbacks.on_train_begin()
         try:
             for epoch in range(epochs):
                 if verbose > 2:
@@ -280,30 +281,27 @@ class GalleryModel(GraphModel):
 
                 callbacks.on_epoch_begin(epoch)
                 callbacks.on_train_batch_begin(0)
-                loss, accuracy = self.train_step(train_data)
-
-                training_logs = {'loss': loss, 'acc': accuracy}
-                if validation:
-                    val_loss, val_accuracy = self.test_step(val_data)
-                    training_logs.update({
-                        'val_loss': val_loss,
-                        'val_acc': val_accuracy
-                    })
-                    val_data.on_epoch_end()
-
-                callbacks.on_train_batch_end(len(train_data), training_logs)
-                callbacks.on_epoch_end(epoch, training_logs)
-
+                train_logs = self.train_step(train_data)
                 train_data.on_epoch_end()
 
-                if verbose:
-                    time_passed = time.perf_counter() - begin_time
-                    training_logs.update({'duration': time_passed})
-                    if verbose > 2:
-                        print(f"Epoch {epoch+1}/{epochs}")
-                        progbar.update(len(train_data), training_logs.items())
-                    else:
-                        progbar.update(epoch + 1, training_logs.items())
+                logs.update(train_logs)
+
+                if validation:
+                    valid_logs = self.test_step(val_data)
+                    logs.update({("val_" + k): v for k, v in train_logs.items()})
+                    val_data.on_epoch_end()
+
+                callbacks.on_train_batch_end(len(train_data), logs)
+                callbacks.on_epoch_end(epoch, logs)
+
+                time_passed = time.perf_counter() - begin_time
+                logs["Duration"] = time_passed
+
+                if verbose > 2:
+                    print(f"Epoch {epoch+1}/{epochs}")
+                    progbar.update(len(train_data), logs.items())
+                else:
+                    progbar.update(epoch + 1, logs.items())
 
                 if model.stop_training:
                     print(f"Early Stopping in Epoch {epoch}", file=sys.stderr)
@@ -354,17 +352,17 @@ class GalleryModel(GraphModel):
         if verbose:
             print("Testing...")
 
-        stateful_metrics = {"test_acc", 'test_loss', 'duration'}
+        metrics_names = self.model.metrics_names + ["Duration"]
+
         progbar = Progbar(target=len(test_data),
                           verbose=verbose,
-                          stateful_metrics=stateful_metrics)
+                          stateful_metrics=set(metrics_names))
         begin_time = time.perf_counter()
-        loss, accuracy = self.test_step(test_data)
+        logs = Bunch(**self.test_step(test_data))
         time_passed = time.perf_counter() - begin_time
-        progbar.update(len(test_data), [('test_loss', loss),
-                                        ('test_acc', accuracy),
-                                        ('duration', time_passed)])
-        return loss, accuracy
+        logs["Duration"] = time_passed
+        progbar.update(len(test_data), logs.items())
+        return logs
 
     def train_step(self, sequence):
         """

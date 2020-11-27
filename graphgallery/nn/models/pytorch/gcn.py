@@ -6,6 +6,7 @@ from torch import optim
 
 from graphgallery.nn.models import TorchKeras
 from graphgallery.nn.layers.pytorch import GraphConvolution
+from graphgallery.nn.metrics.pytorch import Accuracy
 
 
 class GCN(TorchKeras):
@@ -34,10 +35,10 @@ class GCN(TorchKeras):
         self.layers.append(layer)
         # do not use weight_decay in the final layer
         paras.append(dict(params=layer.parameters(), weight_decay=0.))
-
+        self.compile(loss=torch.nn.CrossEntropyLoss(),
+                     optimizer=optim.Adam(paras, lr=lr),
+                     metrics=Accuracy())
         self.dropout = Dropout(dropout)
-        self.optimizer = optim.Adam(paras, lr=lr)
-        self.loss_fn = torch.nn.CrossEntropyLoss()
 
     def forward(self, inputs):
         x, adj, idx = inputs

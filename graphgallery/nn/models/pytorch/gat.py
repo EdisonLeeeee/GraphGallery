@@ -6,6 +6,7 @@ from torch import optim
 
 from graphgallery.nn.models import TorchKeras
 from graphgallery.nn.layers.pytorch import GraphAttention, SparseGraphAttention
+from graphgallery.nn.metrics.pytorch import Accuracy
 
 
 class GAT(TorchKeras):
@@ -37,9 +38,10 @@ class GAT(TorchKeras):
         paras.append(dict(params=layer.parameters(), weight_decay=0.))
 
         self.layers = layers
-        self.optimizer = optim.Adam(paras, lr=lr)
-        self.loss_fn = torch.nn.CrossEntropyLoss()
         self.dropout = Dropout(dropout)
+        self.compile(loss=torch.nn.CrossEntropyLoss(),
+                     optimizer=optim.Adam(paras, lr=lr),
+                     metrics=Accuracy())
 
     def forward(self, inputs):
         x, adj, idx = inputs

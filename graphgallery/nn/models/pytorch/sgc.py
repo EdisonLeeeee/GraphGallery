@@ -6,6 +6,7 @@ from torch import optim
 
 from graphgallery.nn.models import TorchKeras
 from graphgallery.nn.layers.pytorch.get_activation import get_activation
+from graphgallery.nn.metrics.pytorch import Accuracy
 
 
 class SGC(TorchKeras):
@@ -41,8 +42,9 @@ class SGC(TorchKeras):
         self.layers = layers
         self.acts = acts
         self.dropout = Dropout(dropout)
-        self.optimizer = optim.Adam(paras, lr=lr)
-        self.loss_fn = torch.nn.CrossEntropyLoss()
+        self.compile(loss=torch.nn.CrossEntropyLoss(),
+                     optimizer=optim.Adam(paras, lr=lr),
+                     metrics=Accuracy())
 
     def forward(self, inputs):
         x = inputs
