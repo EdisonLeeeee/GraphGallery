@@ -6,17 +6,17 @@ import numpy as np
 from tensorflow.keras.utils import get_file
 from typing import List
 
-__all__ = ['download_file', 'files_exist', 'makedirs',
-           'makedirs_from_filepath',
-           'extract_zip', 'clean', 'load_npz']
+__all__ = [
+    'download_file', 'files_exist', 'makedirs', 'makedirs_from_filepath',
+    'extract_zip', 'clean', 'load_npz'
+]
 
 
-def download_file(raw_paths: List[str],
-                  urls: List[str]) -> None:
+def download_file(raw_paths: List[str], urls: List[str]) -> None:
     if isinstance(raw_paths, str):
-        raw_paths = (raw_paths,)
+        raw_paths = (raw_paths, )
     if isinstance(urls, str):
-        urls = (urls,)
+        urls = (urls, )
 
     assert len(raw_paths) == len(urls)
 
@@ -55,13 +55,14 @@ def extract_zip(filename, folder=None):
 
 def clean(filepaths: List[str]):
     if isinstance(filepaths, str):
-        filepaths = (filepaths,)
+        filepaths = (filepaths, )
     for path in filepaths:
         if osp.exists(path):
             os.unlink(path)
 
 
 def files_exist(files: List[str]) -> bool:
+    if not files: return False
     if isinstance(files, (list, tuple)):
         return len(files) != 0 and all([osp.exists(f) for f in files])
     else:

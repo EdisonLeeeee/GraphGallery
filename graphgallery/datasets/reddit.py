@@ -26,6 +26,10 @@ class Reddit(InMemoryDataset):
                  verbose: bool = True):
         super().__init__("reddit", root, url, transform, verbose)
 
+    @staticmethod
+    def available_datasets():
+        return "reddit"
+
     def _process(self) -> None:
 
         data = np.load(osp.join(self.download_dir, 'reddit_data.npz'))

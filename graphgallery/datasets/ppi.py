@@ -25,15 +25,20 @@ class PPI(InMemoryDataset):
     The original url is: <https://data.dgl.ai/dataset/ppi.zip>
     """
 
-#     _url = "https://raw.githubusercontent.com/EdisonLeeeee/"
-#     "GraphData/master/datasets/ppi/ppi.zip"
+    #     _url = "https://raw.githubusercontent.com/EdisonLeeeee/"
+    #     "GraphData/master/datasets/ppi/ppi.zip"
     _url = 'https://data.dgl.ai/dataset/ppi.zip'
 
-    def __init__(self, root: Optional[str] = None,
+    def __init__(self,
+                 root: Optional[str] = None,
                  url: Optional[str] = None,
                  transform: Optional[Transform] = None,
                  verbose: bool = True):
         super().__init__("PPI", root, url, transform, verbose)
+
+    @staticmethod
+    def available_datasets():
+        return "PPI"
 
     def _process(self) -> None:
 
@@ -66,22 +71,27 @@ class PPI(InMemoryDataset):
             cache[split] = slice(last, now)
             last = now
 
-        graph = MultiGraph(adj_matrices, node_attrs, node_labels, graph_label=graph_labels)
+        graph = MultiGraph(adj_matrices,
+                           node_attrs,
+                           node_labels,
+                           graph_label=graph_labels)
         cache['graph'] = graph
         with open(self.processed_path, 'wb') as f:
             pkl.dump(cache, f)
         return cache
 
-    def split_graphs(self, train_size=None,
+    def split_graphs(self,
+                     train_size=None,
                      val_size=None,
                      test_size=None,
                      split_by=None,
                      random_state: Optional[int] = None):
         loader = self.split_cache
         graph = self.graph
-        self.splits.update(dict(train_graphs=graph[loader['train']],
-                                val_graphs=graph[loader['valid']],
-                                test_graphs=graph[loader['test']]))
+        self.splits.update(
+            dict(train_graphs=graph[loader['train']],
+                 val_graphs=graph[loader['valid']],
+                 test_graphs=graph[loader['test']]))
         return self.splits
 
     @property
@@ -89,7 +99,7 @@ class PPI(InMemoryDataset):
         return self._url
 
     @property
-    def processed_filename(self):
+    def processed_filename(self) -> str:
         return f'{self.name}.pkl'
 
     @property
@@ -99,9 +109,12 @@ class PPI(InMemoryDataset):
         return ['{}_{}'.format(s, f) for s, f in product(splits, files)]
 
     @property
-    def download_paths(self):
+    def download_paths(self) -> str:
         return [osp.join(self.download_dir, self.name + '.zip')]
 
     @property
     def raw_paths(self) -> List[str]:
-        return [osp.join(self.download_dir, raw_filename) for raw_filename in self.raw_filenames]
+        return [
+            osp.join(self.download_dir, raw_filename)
+            for raw_filename in self.raw_filenames
+        ]
