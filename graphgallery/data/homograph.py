@@ -8,9 +8,10 @@ import scipy.sparse as sp
 from typing import Union, Optional, List, Tuple, Any, Callable
 
 from .base_graph import BaseGraph
-from .preprocess import largest_connected_components, create_subgraph
+from .preprocess import create_subgraph
 
 from ..data_type import is_multiobjects
+from graphgallery import functional as F
 
 
 class HomoGraph(BaseGraph):
@@ -119,16 +120,6 @@ class HomoGraph(BaseGraph):
             # in-degree and out-degree
             return self.adj_matrix.sum(0).A1, self.adj_matrix.sum(1).A1
 
-    def neighbors(self, idx):
-        """Get the indices of neighbors of a given node.
-
-        Parameters
-        ----------
-        idx : int
-            Index of the node whose neighbors are of interest.
-        """
-        return self.adj_matrix[idx].indices
-
     def to_undirected(self):
         """Convert to an undirected graph (make adjacency matrix symmetric)."""
         if self.is_weighted():
@@ -204,9 +195,7 @@ class HomoGraph(BaseGraph):
         """Select the LCC of the unweighted/undirected/no-self-loop graph.
         All changes are done inplace.
         """
-        G = self.to_unweighted().to_undirected().eliminate_selfloops()
-        G = largest_connected_components(G, 1)
-        return G
+        return F.Standardize()(self)
 
     def nxgraph(self, directed: bool = True):
         """Get the network graph from adj_matrix."""

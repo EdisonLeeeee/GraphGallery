@@ -102,7 +102,7 @@ def create_subgraph(graph: "Graph", *,
         nodes_to_keep = np.sort(nodes_to_keep)
     else:
         raise RuntimeError("This should never happen.")
-
+    # TODO: multiple graph
     graph = graph.copy()
 
     adj_matrix, node_attr, node_label = graph('adj_matrix',

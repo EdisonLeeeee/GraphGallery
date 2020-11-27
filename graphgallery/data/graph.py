@@ -16,3 +16,13 @@ class Graph(HomoGraph):
 
     def to_EdgeGraph(self):
         raise NotImplementedError
+
+    def neighbors(self, idx):
+        """Get the indices of neighbors of a given node.
+
+        Parameters
+        ----------
+        idx : int
+            Index of the node whose neighbors are of interest.
+        """
+        return self.adj_matrix[idx].indices
