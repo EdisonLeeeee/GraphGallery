@@ -5,6 +5,7 @@ from torch.nn import Module, ModuleList, Dropout
 
 from graphgallery.nn.models import TorchKeras
 from graphgallery.nn.layers.pytorch.get_activation import get_activation
+from graphgallery.nn.metrics.pytorch import Accuracy
 
 from torch_geometric.nn import GCNConv
 
@@ -40,8 +41,9 @@ class GCN(TorchKeras):
         self.acts = acts
         self.layers = layers
         self.dropout = Dropout(dropout)
-        self.optimizer = optim.Adam(paras, lr=lr)
-        self.loss_fn = torch.nn.CrossEntropyLoss()
+        self.compile(loss=torch.nn.CrossEntropyLoss(),
+                     optimizer=optim.Adam(paras, lr=lr),
+                     metrics=Accuracy())
 
     def forward(self, inputs):
         x, edge_index, edge_weight, idx = inputs

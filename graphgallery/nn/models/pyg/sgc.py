@@ -5,6 +5,7 @@ from torch.nn import Module, ModuleList, Dropout
 
 from graphgallery.nn.models import TorchKeras
 from graphgallery.nn.layers.pytorch.get_activation import get_activation
+from graphgallery.nn.metrics.pytorch import Accuracy
 
 from torch_geometric.nn import SGConv
 
@@ -27,8 +28,9 @@ class SGC(TorchKeras):
         conv = SGConv(in_channels, out_channels, bias=use_bias, K=K, cached=True, add_self_loops=True)
         self.conv = conv
         self.dropout = Dropout(dropout)
-        self.optimizer = optim.Adam(conv.parameters(), lr=lr, weight_decay=weight_decay)
-        self.loss_fn = torch.nn.CrossEntropyLoss()
+        self.compile(loss=torch.nn.CrossEntropyLoss(),
+                     optimizer=optim.Adam(conv.parameters(), lr=lr, weight_decay=weight_decay),
+                     metrics=Accuracy())
 
     def forward(self, inputs):
         x, edge_index, edge_weight, idx = inputs

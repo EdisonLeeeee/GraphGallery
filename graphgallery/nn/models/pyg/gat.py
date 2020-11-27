@@ -7,6 +7,7 @@ from torch_geometric.nn import GATConv
 
 from graphgallery.nn.models import TorchKeras
 from graphgallery.nn.layers.pytorch.get_activation import get_activation
+from graphgallery.nn.metrics.pytorch import Accuracy
 
 
 class GAT(TorchKeras):
@@ -34,7 +35,7 @@ class GAT(TorchKeras):
             inc = hidden
             pre_head = n_head
 
-        layer = GATConv(inc * pre_head, out_channels, heads=1, 
+        layer = GATConv(inc * pre_head, out_channels, heads=1,
                         bias=use_bias, concat=False,
                         dropout=dropout)
         layers.append(layer)
@@ -42,15 +43,16 @@ class GAT(TorchKeras):
         paras.append(dict(params=layer.parameters(), weight_decay=0.))
 
         self.acts = acts
-        self.layers = layers        
-        self.optimizer = optim.Adam(paras, lr=lr)
-        self.loss_fn = torch.nn.CrossEntropyLoss()
+        self.layers = layers
         self.dropout = Dropout(dropout)
+        self.compile(loss=torch.nn.CrossEntropyLoss(),
+                     optimizer=optim.Adam(paras, lr=lr),
+                     metrics=Accuracy())
 
     def forward(self, inputs):
         x, edge_index, edge_weight, idx = inputs
         x = self.dropout(x)
-        
+
         for layer, act in zip(self.layers, self.acts):
             x = act(layer(x, edge_index))
             x = self.dropout(x)

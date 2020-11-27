@@ -5,6 +5,7 @@ from torch.nn import Module, ModuleList, Dropout
 
 from graphgallery.nn.models import TorchKeras
 from graphgallery.nn.layers.pytorch.get_activation import get_activation
+from graphgallery.nn.metrics.pytorch import Accuracy
 
 from dgl.nn.pytorch import GraphConv
 
@@ -23,8 +24,8 @@ class GCN(TorchKeras):
 
         inc = in_channels
         for hidden, activation in zip(hiddens, activations):
-            layer = GraphConv(inc, hidden, 
-                              activation=get_activation(activation), 
+            layer = GraphConv(inc, hidden,
+                              activation=get_activation(activation),
                               bias=use_bias)
             self.layers.append(layer)
             inc = hidden
@@ -32,9 +33,10 @@ class GCN(TorchKeras):
         self.layers.append(GraphConv(inc, out_channels))
 
         self.dropout = Dropout(p=dropout)
-        self.loss_fn = torch.nn.CrossEntropyLoss()
-        self.optimizer = optim.Adam(self.parameters(), lr=lr,
-                                    weight_decay=weight_decay)
+        self.compile(loss=torch.nn.CrossEntropyLoss(),
+                     optimizer=optim.Adam(self.parameters(), lr=lr,
+                                          weight_decay=weight_decay),
+                     metrics=Accuracy())
 
     def forward(self, inputs):
         x, g, indx = inputs

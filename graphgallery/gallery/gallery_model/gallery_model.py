@@ -211,6 +211,8 @@ class GalleryModel(GraphModel):
             )
 
         metrics_names = getattr(model, "metrics_names", None)
+        # FIXME: This would be return '[]' for tensorflow>=2.2.0
+        # See <https://github.com/tensorflow/tensorflow/issues/37990>
         if not metrics_names:
             raise RuntimeError(f"Please specify the attribute 'metrics_names' for the model.")
         if not isinstance(train_data, Sequence):
@@ -288,7 +290,7 @@ class GalleryModel(GraphModel):
 
                 if validation:
                     valid_logs = self.test_step(val_data)
-                    logs.update({("val_" + k): v for k, v in train_logs.items()})
+                    logs.update({("val_" + k): v for k, v in valid_logs.items()})
                     val_data.on_epoch_end()
 
                 callbacks.on_train_batch_end(len(train_data), logs)

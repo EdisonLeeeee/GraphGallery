@@ -4,8 +4,9 @@ from torch.nn import Module, ModuleList, Dropout
 
 from graphgallery.nn.models import TorchKeras
 from graphgallery.nn.layers.pytorch.get_activation import get_activation
-from dgl.nn.pytorch import GATConv
+from graphgallery.nn.metrics.pytorch import Accuracy
 
+from dgl.nn.pytorch import GATConv
 
 
 class GAT(TorchKeras):
@@ -38,15 +39,16 @@ class GAT(TorchKeras):
         paras.append(dict(params=layer.parameters(), weight_decay=0.))
 
         self.layers = layers
-        self.optimizer = optim.Adam(paras, lr=lr)
-        self.loss_fn = torch.nn.CrossEntropyLoss()
         self.dropout = Dropout(dropout)
+        self.compile(loss=torch.nn.CrossEntropyLoss(),
+                     optimizer=optim.Adam(paras, lr=lr),
+                     metrics=Accuracy())
 
     def forward(self, inputs):
         x, g, idx = inputs
         for layer in self.layers[:-1]:
             x = layer(g, x).flatten(1)
             x = self.dropout(x)
-            
+
         x = self.layers[-1](g, x).mean(1)
         return x[idx]
