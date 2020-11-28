@@ -11,7 +11,6 @@ from graphgallery.utils import saver
 
 class TorchKeras(nn.Module):
     """Keras like PyTorch Model."""
-
     def __init__(self, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
@@ -25,36 +24,49 @@ class TorchKeras(nn.Module):
         self.optimizer = None
         self.metrics = None
         self.loss = None
-        self.metrics_names = None
 
     def build(self, inputs):
         # TODO
         pass
 
-    def compile(self, loss=None,
-                optimizer=None,
-                metrics=None):
-        self.optimizer = optimizer
-        self.metrics = metrics
+    def compile(self, loss=None, optimizer=None, metrics=None):
         self.loss = loss
-        self.metrics_names = ['loss', self.metrics.name]
+        self.optimizer = optimizer
+        if not isinstance(metrics, (list, tuple)):
+            metrics = [metrics]
+        self.metrics = metrics
 
     def reset_metrics(self):
         assert self.metrics is not None
-        self.metrics.reset_states()
+        for metric in self.metrics:
+            metric.reset_states()
+
+    @property
+    def metrics_names(self):
+        assert self.metrics is not None
+        return ['loss'] + [metric.name for metric in self.metrics]
 
     def summary(self):
         # TODO
         pass
 
-    def save_weights(self, filepath, overwrite=True,
-                     save_format=None, **kwargs):
-        saver.save_torch_weights(self, filepath, overwrite=overwrite,
-                                 save_format=save_format, **kwargs)
+    def save_weights(self,
+                     filepath,
+                     overwrite=True,
+                     save_format=None,
+                     **kwargs):
+        saver.save_torch_weights(self,
+                                 filepath,
+                                 overwrite=overwrite,
+                                 save_format=save_format,
+                                 **kwargs)
 
     def save(self, filepath, overwrite=True, save_format=None, **kwargs):
-        saver.save_torch_model(self, filepath, overwrite=overwrite,
-                               save_format=save_format, **kwargs)
+        saver.save_torch_model(self,
+                               filepath,
+                               overwrite=overwrite,
+                               save_format=save_format,
+                               **kwargs)
 
     def reset_parameters(self):
         for layer in self.layers:

@@ -11,12 +11,16 @@ from graphgallery.nn.metrics.pytorch import Accuracy
 
 
 class GAT(TorchKeras):
-
-    def __init__(self, in_channels,
-                 out_channels, hiddens=[8],
-                 n_heads=[8], activations=['elu'],
-                 dropout=0.6, weight_decay=5e-4,
-                 lr=0.01, use_bias=True):
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 hiddens=[8],
+                 n_heads=[8],
+                 activations=['elu'],
+                 dropout=0.6,
+                 weight_decay=5e-4,
+                 lr=0.01,
+                 use_bias=True):
 
         super().__init__()
 
@@ -27,16 +31,23 @@ class GAT(TorchKeras):
         inc = in_channels
         pre_head = 1
         for hidden, n_head, activation in zip(hiddens, n_heads, activations):
-            layer = GATConv(inc * pre_head, hidden, heads=n_head,
-                            bias=use_bias, dropout=dropout)
+            layer = GATConv(inc * pre_head,
+                            hidden,
+                            heads=n_head,
+                            bias=use_bias,
+                            dropout=dropout)
             layers.append(layer)
             acts.append(get_activation(activation))
-            paras.append(dict(params=layer.parameters(), weight_decay=weight_decay))
+            paras.append(
+                dict(params=layer.parameters(), weight_decay=weight_decay))
             inc = hidden
             pre_head = n_head
 
-        layer = GATConv(inc * pre_head, out_channels, heads=1,
-                        bias=use_bias, concat=False,
+        layer = GATConv(inc * pre_head,
+                        out_channels,
+                        heads=1,
+                        bias=use_bias,
+                        concat=False,
                         dropout=dropout)
         layers.append(layer)
         # do not use weight_decay in the final layer
@@ -47,7 +58,7 @@ class GAT(TorchKeras):
         self.dropout = Dropout(dropout)
         self.compile(loss=torch.nn.CrossEntropyLoss(),
                      optimizer=optim.Adam(paras, lr=lr),
-                     metrics=Accuracy())
+                     metrics=[Accuracy()])
 
     def forward(self, inputs):
         x, edge_index, edge_weight, idx = inputs

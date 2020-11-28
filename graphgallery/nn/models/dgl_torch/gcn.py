@@ -11,12 +11,15 @@ from dgl.nn.pytorch import GraphConv
 
 
 class GCN(TorchKeras):
-    def __init__(self, in_channels, out_channels,
+    def __init__(self,
+                 in_channels,
+                 out_channels,
                  hiddens=[16],
                  activations=['relu'],
                  dropout=0.5,
                  weight_decay=5e-4,
-                 lr=0.01, use_bias=True):
+                 lr=0.01,
+                 use_bias=True):
 
         super().__init__()
 
@@ -24,7 +27,8 @@ class GCN(TorchKeras):
 
         inc = in_channels
         for hidden, activation in zip(hiddens, activations):
-            layer = GraphConv(inc, hidden,
+            layer = GraphConv(inc,
+                              hidden,
                               activation=get_activation(activation),
                               bias=use_bias)
             self.layers.append(layer)
@@ -34,9 +38,10 @@ class GCN(TorchKeras):
 
         self.dropout = Dropout(p=dropout)
         self.compile(loss=torch.nn.CrossEntropyLoss(),
-                     optimizer=optim.Adam(self.parameters(), lr=lr,
+                     optimizer=optim.Adam(self.parameters(),
+                                          lr=lr,
                                           weight_decay=weight_decay),
-                     metrics=Accuracy())
+                     metrics=[Accuracy()])
 
     def forward(self, inputs):
         x, g, indx = inputs
