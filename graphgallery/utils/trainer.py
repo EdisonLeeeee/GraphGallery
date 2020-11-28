@@ -8,10 +8,12 @@ def train_step_tf(model, sequence, device):
 
     with tf.device(device):
         for inputs, labels in sequence:
-            results = model.train_on_batch(
-                x=inputs, y=labels, reset_metrics=False)
+            results = model.train_on_batch(x=inputs,
+                                           y=labels,
+                                           reset_metrics=False)
 
     return dict(zip(model.metrics_names, results))
+
 
 # def train_step_tf(model, sequence, device):
 #     model.reset_metrics()
@@ -38,7 +40,7 @@ def train_step_torch(model, sequence):
     model.train()
     optimizer = model.optimizer
     loss_fn = model.loss
-    metric = model.metrics
+    metrics = model.metrics
     model.reset_metrics()
 
     loss = torch.tensor(0.)
@@ -50,9 +52,11 @@ def train_step_torch(model, sequence):
         optimizer.step()
         with torch.no_grad():
             loss += _loss.data
-            metric.update_state(labels, output)
+            for metric in metrics:
+                metric.update_state(labels, output)
 
-    results = (loss.detach().item(), metric.result().item())
+    results = [loss.detach().item()
+               ] + [metric.result().item() for metric in metrics]
     return dict(zip(model.metrics_names, results))
 
 
@@ -61,10 +65,12 @@ def test_step_tf(model, sequence, device):
 
     with tf.device(device):
         for inputs, labels in sequence:
-            results = model.test_on_batch(
-                x=inputs, y=labels, reset_metrics=False)
+            results = model.test_on_batch(x=inputs,
+                                          y=labels,
+                                          reset_metrics=False)
 
     return dict(zip(model.metrics_names, results))
+
 
 # def test_step_tf(model, sequence, device):
 #     model.reset_metrics()
@@ -87,7 +93,7 @@ def test_step_torch(model, sequence):
     model.eval()
     optimizer = model.optimizer
     loss_fn = model.loss
-    metric = model.metrics
+    metrics = model.metrics
     model.reset_metrics()
     loss = torch.tensor(0.)
 
@@ -95,9 +101,11 @@ def test_step_torch(model, sequence):
         output = model(inputs)
         _loss = loss_fn(output, labels)
         loss += _loss.data
-        metric.update_state(labels, output)
+        for metric in metrics:
+            metric.update_state(labels, output)
 
-    results = (loss.detach().item(), metric.result().item())
+    results = [loss.detach().item()
+               ] + [metric.result().item() for metric in metrics]
     return dict(zip(model.metrics_names, results))
 
 
@@ -130,6 +138,7 @@ def predict_step_tf(model, sequence, device):
 #         logits = logits[0]
 
 #     return logits.numpy()
+
 
 @torch.no_grad()
 def predict_step_torch(model, sequence):

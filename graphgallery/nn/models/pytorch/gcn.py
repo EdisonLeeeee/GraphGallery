@@ -10,13 +10,15 @@ from graphgallery.nn.metrics.pytorch import Accuracy
 
 
 class GCN(TorchKeras):
-
-    def __init__(self, in_channels, out_channels,
+    def __init__(self,
+                 in_channels,
+                 out_channels,
                  hiddens=[16],
                  activations=['relu'],
                  dropout=0.5,
                  weight_decay=5e-4,
-                 lr=0.01, use_bias=False):
+                 lr=0.01,
+                 use_bias=False):
 
         super().__init__()
 
@@ -26,9 +28,13 @@ class GCN(TorchKeras):
         # use ModuleList to create layers with different size
         inc = in_channels
         for hidden, activation in zip(hiddens, activations):
-            layer = GraphConvolution(inc, hidden, activation=activation, use_bias=use_bias)
+            layer = GraphConvolution(inc,
+                                     hidden,
+                                     activation=activation,
+                                     use_bias=use_bias)
             self.layers.append(layer)
-            paras.append(dict(params=layer.parameters(), weight_decay=weight_decay))
+            paras.append(
+                dict(params=layer.parameters(), weight_decay=weight_decay))
             inc = hidden
 
         layer = GraphConvolution(inc, out_channels, use_bias=use_bias)
@@ -37,7 +43,7 @@ class GCN(TorchKeras):
         paras.append(dict(params=layer.parameters(), weight_decay=0.))
         self.compile(loss=torch.nn.CrossEntropyLoss(),
                      optimizer=optim.Adam(paras, lr=lr),
-                     metrics=Accuracy())
+                     metrics=[Accuracy()])
         self.dropout = Dropout(dropout)
 
     def forward(self, inputs):
