@@ -49,6 +49,7 @@ class Planetoid(InMemoryDataset):
         return _DATASETS
 
     def _download(self):
+        print(self.download_paths)
         makedirs(self.download_dir)
         download_file(self.download_paths, self.urls)
 

@@ -27,7 +27,7 @@ class Dataset:
             root = 'dataset'
 
         if isinstance(root, str):
-            root = osp.abspath(osp.expanduser(osp.realpath(root)))
+            root = osp.abspath(osp.expanduser(root))
         else:
             raise ValueError(root)
 
