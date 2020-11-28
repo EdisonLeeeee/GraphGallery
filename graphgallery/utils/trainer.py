@@ -51,9 +51,9 @@ def train_step_torch(model, sequence):
         _loss.backward()
         optimizer.step()
         with torch.no_grad():
-            loss += _loss.data
+            loss += _loss.data.cpu()
             for metric in metrics:
-                metric.update_state(labels, output)
+                metric.update_state(labels.detach().cpu(), output.detach().cpu())
 
     results = [loss.detach().item()
                ] + [metric.result().item() for metric in metrics]
@@ -100,9 +100,9 @@ def test_step_torch(model, sequence):
     for inputs, labels in sequence:
         output = model(inputs)
         _loss = loss_fn(output, labels)
-        loss += _loss.data
+        loss += _loss.data.cpu()
         for metric in metrics:
-            metric.update_state(labels, output)
+            metric.update_state(labels.detach().cpu(), output.detach().cpu())
 
     results = [loss.detach().item()
                ] + [metric.result().item() for metric in metrics]

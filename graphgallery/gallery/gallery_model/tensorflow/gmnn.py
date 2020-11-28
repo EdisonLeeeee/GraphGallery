@@ -146,11 +146,11 @@ class GMNN(GalleryModel):
               pre_train_epochs=100,
               epochs=100,
               early_stopping=None,
-              verbose=None,
+              verbose=1,
               save_best=True,
               ckpt_path=None,
               as_model=False,
-              monitor='val_acc',
+              monitor='val_accuracy',
               early_stop_metric='val_loss'):
 
         histories = []
