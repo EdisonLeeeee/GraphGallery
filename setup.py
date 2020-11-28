@@ -37,7 +37,7 @@ setup(
         'geometric-deep-learning',
         'graph-neural-networks',
     ],
-    python_requires='>=3.7',
+    python_requires='>=3.6',
     license="MIT LICENSE",
     install_requires=install_requires,
     setup_requires=setup_requires,
