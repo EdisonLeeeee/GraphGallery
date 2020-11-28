@@ -303,7 +303,7 @@ class GalleryModel(GraphModel):
                 if verbose > 2:
                     print(f"Epoch {epoch+1}/{epochs}")
                     progbar.update(len(train_data), logs.items())
-                else:
+                elif verbose:
                     progbar.update(epoch + 1, logs.items())
 
                 if model.stop_training:

@@ -45,6 +45,7 @@ def edge_to_sparse_adj(edge: np.ndarray,
     scipy.sparse.csr_matrix
 
     """
+    
     edge = edge_transpose(edge)
 
     if edge_weight is None:

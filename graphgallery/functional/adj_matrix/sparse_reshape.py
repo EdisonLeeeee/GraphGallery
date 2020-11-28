@@ -62,5 +62,5 @@ def sparse_reshape(adj_matrix: sp.csr_matrix, shape: tuple = None) -> sp.csr_mat
         M1, N1 = shape
         M2, N2 = adj_matrix.shape
         assert (M1 >= M2) and (N1 >= N2)
-        edge_index, edge_weight = F.sparse_adj_to_edge(adj_matrix)
+        edge_index, edge_weight = sparse_adj_to_edge(adj_matrix)
         return sp.csr_matrix((edge_weight, edge_index), shape=shape)

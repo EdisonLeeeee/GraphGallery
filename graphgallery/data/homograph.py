@@ -4,7 +4,6 @@ import networkx as nx
 import os.path as osp
 import scipy.sparse as sp
 
-
 from typing import Union, Optional, List, Tuple, Any, Callable
 
 from .base_graph import BaseGraph
@@ -18,9 +17,11 @@ class HomoGraph(BaseGraph):
     """Homogeneous graph stored in sparse matrix form."""
     multiple = False
 
-    def __init__(self, adj_matrix=None,
+    def __init__(self,
+                 adj_matrix=None,
                  node_attr=None,
-                 node_label=None, *,
+                 node_label=None,
+                 *,
                  node_graph_label=None,
                  graph_attr=None,
                  graph_label=None,
@@ -56,7 +57,7 @@ class HomoGraph(BaseGraph):
         del collects['self']
         super().__init__(**collects)
 
-    @ property
+    @property
     def num_nodes(self) -> int:
         """Get the number of nodes in the graph."""
         return get_num_nodes(self.adj_matrix)
@@ -68,20 +69,30 @@ class HomoGraph(BaseGraph):
         """
         return get_num_edges(self.adj_matrix, self.is_directed())
 
-    @ property
+    @property
     def num_graphs(self) -> int:
         """Get the number of graphs."""
         return get_num_graphs(self.adj_matrix)
 
-    @ property
+    @property
     def num_node_attrs(self) -> int:
         """Get the number of attribute dimensions of the nodes."""
         return get_num_node_attrs(self.node_attr)
 
-    @ property
+    @property
     def num_node_classes(self) -> int:
         """Get the number of classes node_label of the nodes."""
         return get_num_node_classes(self.node_label)
+
+    @property
+    def num_attrs(self) -> int:
+        """Alias of num_node_attrs."""
+        return self.num_node_attrs
+
+    @property
+    def num_classes(self) -> int:
+        """Alias of num_node_classes."""
+        return self.num_node_classes
 
     @property
     def A(self):
@@ -110,7 +121,7 @@ class HomoGraph(BaseGraph):
             adj_matrix = adj_matrix[0]
         return (adj_matrix != adj_matrix.T).sum() != 0
 
-    @ property
+    @property
     def degrees(self):
         assert self.adj_matrix is not None
 
@@ -124,7 +135,8 @@ class HomoGraph(BaseGraph):
         """Convert to an undirected graph (make adjacency matrix symmetric)."""
         if self.is_weighted():
             raise ValueError(
-                "Convert to unweighted graph first. Using 'graph.to_unweighted()'.")
+                "Convert to unweighted graph first. Using 'graph.to_unweighted()'."
+            )
         else:
             G = self.copy()
             A = G.adj_matrix
@@ -170,7 +182,9 @@ class HomoGraph(BaseGraph):
         if removed > 0:
             G = self.subgraph(nodes_to_remove=nodes_to_remove)
             mapping = dict(zip(left, range(self.num_node_classes - removed)))
-            G.node_label = np.asarray(list(map(lambda key: mapping[key], G.node_label)), dtype=np.int32)
+            G.node_label = np.asarray(list(
+                map(lambda key: mapping[key], G.node_label)),
+                                      dtype=np.int32)
             return G
         else:
             return self
@@ -203,10 +217,13 @@ class HomoGraph(BaseGraph):
             create_using = nx.DiGraph
         else:
             create_using = nx.Graph
-        return nx.from_scipy_sparse_matrix(self.adj_matrix, create_using=create_using)
+        return nx.from_scipy_sparse_matrix(self.adj_matrix,
+                                           create_using=create_using)
 
     def subgraph(self, *, nodes_to_remove=None, nodes_to_keep=None):
-        return create_subgraph(self, nodes_to_remove=nodes_to_remove, nodes_to_keep=nodes_to_keep)
+        return create_subgraph(self,
+                               nodes_to_remove=nodes_to_remove,
+                               nodes_to_keep=nodes_to_keep)
 
     def is_singleton(self) -> bool:
         """Check if the input adjacency matrix has singletons."""
@@ -291,7 +308,8 @@ def get_num_node_classes(node_labels, fn=max):
         return 0
 
     if is_multiobjects(node_labels):
-        return fn(get_num_node_classes(node_label) for node_label in node_labels)
+        return fn(
+            get_num_node_classes(node_label) for node_label in node_labels)
 
     if node_labels.ndim == 1:
         return node_labels.max() + 1
