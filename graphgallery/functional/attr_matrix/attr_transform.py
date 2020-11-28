@@ -4,6 +4,7 @@ import scipy.sparse as sp
 from sklearn import preprocessing
 from typing import Union
 
+import graphgallery as gg
 from ..transforms import Transform
 from ..decorators import multiple
 
@@ -33,7 +34,7 @@ def augment_attr(node_attr: np.ndarray,
 
 
     """
-    if is_scalar(fill_weight):
+    if gg.is_scalar(fill_weight):
         M = np.zeros([N, node_attr.shape[1]],
                      dtype=node_attr.dtype) + fill_weight
     elif isinstance(fill_weight, (list, np.ndarray)):
