@@ -51,7 +51,7 @@ def astensor(x, *, dtype=None, device=None, backend=None, escape=None):
         return th_tensor.astensor(x, dtype=dtype, device=device, escape=escape)
 
 
-_astensors_fn = F.Multiple(type_check=False)(astensor)
+_astensors_fn = F.multiple(type_check=False)(astensor)
 
 
 def astensors(*xs, dtype=None, device=None, backend=None, escape=None):

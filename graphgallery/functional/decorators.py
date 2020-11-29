@@ -5,7 +5,7 @@ import graphgallery as gg
 from typing import Callable, Any, List
 from .functions import get_length, repeat
 
-__all__ = ['Multiple', 'multiple', 'Equal', 'equal']
+__all__ = ['multiple', 'equal']
 
 
 def cal_outpus(func: Callable,
@@ -23,10 +23,10 @@ def cal_outpus(func: Callable,
     return func(args, **kwargs)
 
 
-class Multiple:
+class multiple:
 
     wrapper_doc = """NOTE: This method is decorated by 
-    'graphgallery.functional.Multiple',
+    'graphgallery.functional.multiple',
     which takes multi inputs and yields multi outputs.
     """
 
@@ -74,7 +74,7 @@ def assert_same_type(*inputs) -> bool:
 _BASE_VARS = ['hiddens', 'activations']
 
 
-class Equal:
+class equal:
     """
     A decorator class which makes the values of the variables 
     equal in max-length. variables consist of 'hiddens', 'activations'
@@ -136,7 +136,3 @@ class Equal:
     @staticmethod
     def base_vars() -> List[str]:
         return _BASE_VARS
-
-
-equal = Equal()
-multiple = Multiple()

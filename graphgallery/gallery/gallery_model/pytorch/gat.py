@@ -72,7 +72,7 @@ class GAT(GalleryModel):
         self.feature_inputs, self.structure_inputs = F.astensors(
             node_attr, adj_matrix, device=self.device)
 
-    @F.Equal(include=["n_heads"])
+    @F.equal(include=["n_heads"])
     def build(self,
               hiddens=[8],
               n_heads=[8],
