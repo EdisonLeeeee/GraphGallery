@@ -24,6 +24,3 @@ class NullTransform(Transform):
 
     def __call__(self, inputs: Any) -> Any:
         return inputs
-
-    def __repr__(self) -> str:
-        return "NullTransform()"

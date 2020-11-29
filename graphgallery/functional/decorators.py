@@ -25,9 +25,9 @@ def cal_outpus(func: Callable,
 
 class multiple:
 
-    wrapper_doc = """NOTE: This method is decorated by 
+    wrapper_doc = """This method is decorated by 
     'graphgallery.functional.multiple',
-    which takes multi inputs and yields multi outputs.
+    which takes multiple inputs and yields multiple outputs.
     """
 
     def __init__(self, *, type_check: bool = True):
@@ -66,7 +66,7 @@ def assert_same_type(*inputs) -> bool:
         if not isinstance(obj, _class):
             raise TypeError(f"Input types don't agree. "
                             f"Type of the first input: {type(first)}, "
-                            f"{ix+1}-th input: {type(obj)}")
+                            f"but {ix+1}-th input: {type(obj)}")
 
     return True
 
@@ -76,15 +76,16 @@ _BASE_VARS = ['hiddens', 'activations']
 
 class equal:
     """
-    A decorator class which makes the values of the variables 
-    equal in max-length. variables consist of 'hiddens', 'activations'
-    and other custom ones in `include`.
+    A decorator class which makes the values of the 'variables' 
+    equal in 'max-length'. 'Variables' consist of 'hiddens', 
+    'activations' and other custom ones in `include`.
 
     """
+
     def __init__(self,
                  *,
-                 include: list = [],
-                 exclude: list = [],
+                 include: List[str] = [],
+                 exclude: List[str] = [],
                  length_as: str = 'hiddens'):
         """
         Parameters
@@ -96,7 +97,7 @@ class equal:
             the excluded variable names, by default []
         length_as : str, optional
             the variable name whose length is used for all variables,
-            by default ['hiddens']
+            by default 'hiddens'
         """
         _vars = list(include) + self.base_vars()
         _vars = list(set(_vars) - set(list(exclude)))

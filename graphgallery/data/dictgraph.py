@@ -6,7 +6,7 @@ import scipy.sparse as sp
 
 from typing import Union, Optional, List, Tuple, Any, Callable
 from .base_graph import BaseGraph
-from graphgallery import functional as F
+from graphgallery import functional as gf
 
 
 class DictGraph(BaseGraph):
@@ -16,7 +16,7 @@ class DictGraph(BaseGraph):
     def __init__(self, metadata: Any = None,
                  copy: bool = True,
                  **dict_graphs):
-        dict_graphs = F.Bunch(**dict_graphs)
+        dict_graphs = gf.Bunch(**dict_graphs)
         collects = locals()
         del collects['self']
         super().__init__(**collects)

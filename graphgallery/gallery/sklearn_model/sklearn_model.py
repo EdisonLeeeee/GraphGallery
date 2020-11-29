@@ -3,11 +3,12 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 
 from graphgallery.gallery import GraphModel
-from graphgallery.functional import asintarr, Bunch
+from graphgallery.functional import asarray, Bunch
 
 
 class SklearnModel(GraphModel):
     """Sklean based model for unsupervised learning."""
+
     def __init__(self, *graph, device='cpu:0', seed=None, name=None, **kwargs):
         r"""Create an Sklean based model 
         Parameters:
@@ -41,17 +42,17 @@ class SklearnModel(GraphModel):
         return self._embeddings
 
     def train(self, index):
-        index = asintarr(index)
+        index = asarray(index)
         self.classifier.fit(self.embeddings[index],
                             self.graph.node_label[index])
 
     def predict(self, index):
-        index = asintarr(index)
+        index = asarray(index)
         logit = self.classifier.predict_proba(self.embeddings[index])
         return logit
 
     def test(self, index):
-        index = asintarr(index)
+        index = asarray(index)
         y_true = self.graph.node_label[index]
         y_pred = self.classifier.predict(self.embeddings[index])
         accuracy = accuracy_score(y_true, y_pred)

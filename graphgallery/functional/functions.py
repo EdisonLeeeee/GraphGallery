@@ -10,13 +10,14 @@ from typing import Any, Optional
 from numbers import Number
 
 import graphgallery as gg
+from graphgallery import functional as gf
 
-__all__ = ['asintarr', 'indices2mask',
+__all__ = ['asarray', 'indices2mask',
            'repeat', 'get_length', 'onehot',
            'nx_graph_to_sparse_adj', 'Bunch']
 
 
-def asintarr(x: Any, dtype: Optional[str] = None) -> np.ndarray:
+def asarray(x: Any, dtype: Optional[str] = None) -> np.ndarray:
     """Convert `x` to interger Numpy array.
 
     Parameters:
@@ -32,13 +33,13 @@ def asintarr(x: Any, dtype: Optional[str] = None) -> np.ndarray:
     if dtype is None:
         dtype = gg.intx()
 
-    if gg.is_tensor(x, backend="tensorflow"):
+    if gf.is_tensor(x, backend="tensorflow"):
         if x.dtype != dtype:
             return tf.cast(x, dtype=dtype)
         else:
             return x
 
-    if gg.is_tensor(x, backend="torch"):
+    if gf.is_tensor(x, backend="torch"):
         if x.dtype != dtype:
             return x.to(getattr(torch, dtype))
         else:
@@ -88,12 +89,12 @@ def onehot(label):
     if label.ndim == 1:
         return np.eye(label.max() + 1, dtype=label.dtype)[label]
     else:
-        raise ValueError(f"label must be a 1D array!")
+        raise ValueError(f"label must be a 1D array, but got {label.ndim}D array.")
 
 
 def nx_graph_to_sparse_adj(graph):
     num_nodes = graph.number_of_nodes()
-    data = np.asarray(list(graph.edges().data('weight', default=1)))
+    data = np.asarray(list(graph.edges().data('weight', default=1.0)))
     edge_index = data[:, :2].T.astype(np.int64)
     edge_weight = data[:, -1].T.astype(np.float32)
     adj_matrix = sp.csr_matrix((edge_weight, edge_index), shape=(num_nodes, num_nodes))

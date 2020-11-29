@@ -10,7 +10,7 @@ class LGConvolution(Layer):
         Tensorflow 1.x implementation: https://github.com/divelab/lgcn
 
         `LGConvolution` implements the operation:
-        `output = Conv1d(Conv1d(x))`, where `x` is the input node node attribute matrix, 
+        `output = Conv1d(Conv1d(x))`, where `x` is the input node attribute matrix, 
         and the dropout will be used in `x` and hidden outpus.
 
 

@@ -6,7 +6,7 @@ from graphgallery.sequence import SAGEMiniBatchSequence
 
 from graphgallery.nn.models.tensorflow import GraphSAGE as tfGraphSAGE
 
-from graphgallery import functional as F
+from graphgallery import functional as gf
 
 
 class GraphSAGE(GalleryModel):
@@ -16,6 +16,7 @@ class GraphSAGE(GalleryModel):
         Tensorflow 1.x implementation: <https://github.com/williamleif/GraphSAGE>
         Pytorch implementation: <https://github.com/williamleif/graphsage-simple/>
     """
+
     def __init__(self,
                  *graph,
                  n_samples=(15, 5),
@@ -69,8 +70,8 @@ class GraphSAGE(GalleryModel):
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
         self.n_samples = n_samples
-        self.adj_transform = F.get(adj_transform)
-        self.attr_transform = F.get(attr_transform)
+        self.adj_transform = gf.get(adj_transform)
+        self.attr_transform = gf.get(attr_transform)
         self.process()
 
     def process_step(self):
@@ -84,11 +85,11 @@ class GraphSAGE(GalleryModel):
             [node_attr,
              np.zeros(node_attr.shape[1], dtype=self.floatx)])
 
-        self.feature_inputs, self.structure_inputs = F.astensors(
+        self.feature_inputs, self.structure_inputs = gf.astensors(
             node_attr, device=self.device), adj_matrix
 
     # use decorator to make sure all list arguments have the same length
-    @F.equal()
+    @gf.equal()
     def build(self,
               hiddens=[32],
               activations=['relu'],

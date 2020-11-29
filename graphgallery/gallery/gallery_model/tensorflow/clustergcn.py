@@ -5,7 +5,7 @@ from graphgallery.gallery import GalleryModel
 from graphgallery.sequence import MiniBatchSequence
 
 from graphgallery.nn.models.tensorflow import GCN as tfGCN
-from graphgallery import functional as F
+from graphgallery import functional as gf
 
 
 class ClusterGCN(GalleryModel):
@@ -21,6 +21,7 @@ class ClusterGCN(GalleryModel):
 
 
     """
+
     def __init__(self,
                  *graph,
                  n_clusters=None,
@@ -76,25 +77,25 @@ class ClusterGCN(GalleryModel):
             n_clusters = self.graph.num_node_classes
 
         self.n_clusters = n_clusters
-        self.adj_transform = F.get(adj_transform)
-        self.attr_transform = F.get(attr_transform)
+        self.adj_transform = gf.get(adj_transform)
+        self.attr_transform = gf.get(attr_transform)
         self.process()
 
     def process_step(self):
         graph = self.graph
         node_attr = self.attr_transform(graph.node_attr)
 
-        batch_adj, batch_x, self.cluster_member = F.graph_partition(
+        batch_adj, batch_x, self.cluster_member = gf.graph_partition(
             graph.adj_matrix, node_attr, n_clusters=self.n_clusters)
 
         batch_adj = self.adj_transform(*batch_adj)
 
-        (self.batch_adj, self.batch_x) = F.astensors(batch_adj,
-                                                     batch_x,
-                                                     device=self.device)
+        (self.batch_adj, self.batch_x) = gf.astensors(batch_adj,
+                                                      batch_x,
+                                                      device=self.device)
 
     # use decorator to make sure all list arguments have the same length
-    @F.equal()
+    @gf.equal()
     def build(self,
               hiddens=[32],
               activations=['relu'],
@@ -116,7 +117,7 @@ class ClusterGCN(GalleryModel):
 
     def train_sequence(self, index):
 
-        mask = F.indices2mask(index, self.graph.num_nodes)
+        mask = gf.indices2mask(index, self.graph.num_nodes)
         labels = self.graph.node_label
 
         batch_idx, batch_labels = [], []
@@ -141,7 +142,7 @@ class ClusterGCN(GalleryModel):
 
     def predict(self, index):
 
-        mask = F.indices2mask(index, self.graph.num_nodes)
+        mask = gf.indices2mask(index, self.graph.num_nodes)
 
         orders_dict = {idx: order for order, idx in enumerate(index)}
         batch_idx, orders = [], []
@@ -161,7 +162,7 @@ class ClusterGCN(GalleryModel):
 
         logit = np.zeros((index.size, self.graph.num_node_classes),
                          dtype=self.floatx)
-        batch_data = F.astensors(batch_data, device=self.device)
+        batch_data = gf.astensors(batch_data, device=self.device)
 
         model = self.model
         with tf.device(self.device):

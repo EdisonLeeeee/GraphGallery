@@ -6,7 +6,7 @@ from graphgallery.sequence import FullBatchNodeSequence
 
 from graphgallery.nn.models.tensorflow import LGCN as tfLGCN
 
-from graphgallery import functional as F
+from graphgallery import functional as gf
 
 
 class LGCN(GalleryModel):
@@ -15,6 +15,7 @@ class LGCN(GalleryModel):
         `Large-Scale Learnable Graph Convolutional Networks <https://arxiv.org/abs/1808.03965>`
         Tensorflow 1.x implementation: <https://github.com/divelab/lgcn>
     """
+
     def __init__(self,
                  *graph,
                  adj_transform="normalize_adj",
@@ -62,8 +63,8 @@ class LGCN(GalleryModel):
         """
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
-        self.adj_transform = F.get(adj_transform)
-        self.attr_transform = F.get(attr_transform)
+        self.adj_transform = gf.get(adj_transform)
+        self.attr_transform = gf.get(attr_transform)
         self.process()
 
     def process_step(self):
@@ -73,7 +74,7 @@ class LGCN(GalleryModel):
 
         self.feature_inputs, self.structure_inputs = node_attr, adj_matrix
 
-    # @F.equal()
+    # @gf.equal()
     def build(self,
               hiddens=[32],
               n_filters=[8, 8],
@@ -102,7 +103,7 @@ class LGCN(GalleryModel):
 
     def train_sequence(self, index, batch_size=np.inf):
 
-        mask = F.indices2mask(index, self.graph.num_nodes)
+        mask = gf.indices2mask(index, self.graph.num_nodes)
         index = get_indice_graph(self.structure_inputs, index, batch_size)
         while index.size < self.K:
             index = get_indice_graph(self.structure_inputs, index)

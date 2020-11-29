@@ -15,7 +15,7 @@ class MedianAggregator(Layer):
 
         `MedianAggregator` implements the operation:
         `output = activation(Concat(x @ kernel_0, Median(neigh_x) @ kernel_1) + bias)`
-        where `x` is the node node attribute matrix, `neigh_x` is the node node attribute matrix of neighbors,
+        where `x` is the node attribute matrix, `neigh_x` is the node attribute matrix of neighbors,
         `Agg` is the operation of aggregation (`mean`, `sum`, `max`, `min`) along the last dimension,
         `Concat` is the operation of concatenation between transformed node attributes and neighbor attributes,
         and it could be replaced with `Add` operation.
@@ -48,7 +48,7 @@ class MedianAggregator(Layer):
         Input shape:
           tuple/list with two tensor: 2-D Tensor `x` and 3-D Tensor `neigh_x`: 
           `[(batch_num_nodes, num_node_attrs), (batch_num_nodes, n_samples, num_node_attrs)]`.
-          The former one is the node attribute matrix (Tensor) and the last is the neighbor node node attribute matrix (Tensor).
+          The former one is the node attribute matrix (Tensor) and the last is the neighbor node attribute matrix (Tensor).
 
         Output shape:
           2-D tensor with shape: `(batch_num_nodes, units)` or `(batch_num_nodes, units * 2)`,
@@ -175,7 +175,7 @@ class MedianGCNAggregator(Layer):
 
         `GCNAggregator` implements the operation:
         `output = activation(Agg(Concat(neigh_x, x)) @ kernel) + bias)`
-        where `x` is the node node attribute matrix, `neigh_x` is the node node attribute matrix of neighbors,
+        where `x` is the node attribute matrix, `neigh_x` is the node attribute matrix of neighbors,
         `Agg` is the operation of aggregation (`mean`, `sum`, `max`, `min`) along the last dimension,
         `activation` is the element-wise activation function
         passed as the `activation` argument, `kernel` is a weights matrix
@@ -203,7 +203,7 @@ class MedianGCNAggregator(Layer):
         Input shape:
           tuple/list with two tensor: 2-D Tensor `x` and 3-D Tensor `neigh_x`: 
           `[(batch_num_nodes, num_node_attrs), (batch_num_nodes, n_samples, num_node_attrs)]`.
-          The former one is the node attribute matrix (Tensor) and the last is the neighbor node node attribute matrix (Tensor).
+          The former one is the node attribute matrix (Tensor) and the last is the neighbor node attribute matrix (Tensor).
 
         Output shape:
           2-D tensor with shape: `(batch_num_nodes, units)` or `(batch_num_nodes, units * 2)`,

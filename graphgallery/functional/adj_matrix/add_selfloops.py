@@ -9,6 +9,7 @@ from ..decorators import multiple
 
 class AddSelfLoops(Transform):
     """Add self loops for adjacency matrix."""
+
     def __init__(self, fill_weight: float = 1.0):
         """
         Parameters
@@ -27,7 +28,7 @@ class AddSelfLoops(Transform):
             Single or a list of Scipy sparse matrices or Numpy arrays.
 
         Returns
-        ----------
+        -------
         Single or a list of Scipy sparse matrix or Numpy matrices.
 
         See also
@@ -36,8 +37,8 @@ class AddSelfLoops(Transform):
         """
         return add_selfloops(*adj_matrix, fill_weight=self.fill_weight)
 
-    def __repr__(self):
-        return f"{self.__class__.__name__}(fill_weight={self.fill_weight})"
+    def extra_repr(self):
+        return f"fill_weight={self.fill_weight}"
 
 
 @multiple()
@@ -57,7 +58,7 @@ def add_selfloops(adj_matrix: sp.csr_matrix, fill_weight: float = 1.0):
         weight of self loops for the adjacency matrix.
 
     Returns
-    ----------
+    -------
     Single or a list of Scipy sparse matrix or Numpy matrices.
 
     See also

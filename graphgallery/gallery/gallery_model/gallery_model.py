@@ -50,7 +50,7 @@ class GalleryModel(GraphModel):
 
     def process(self, graph=None, updates=None, **kwargs):
         """pre-process for the input graph, including manipulations
-        on adjacency matrix and node node attribute matrix, and finally convert
+        on adjacency matrix and node attribute matrix, and finally convert
         them into tensor (optional).
 
         Note:

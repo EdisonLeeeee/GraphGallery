@@ -11,7 +11,7 @@ from graphgallery.gallery import GalleryModel
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.bvat_utils import kl_divergence_with_logit, entropy_y_x
 
-from graphgallery import functional as F
+from graphgallery import functional as gf
 
 
 class OBVAT(GalleryModel):
@@ -23,6 +23,7 @@ class OBVAT(GalleryModel):
         Tensorflow 1.x implementation: <https://github.com/thudzj/BVAT>
 
     """
+
     def __init__(self,
                  *graph,
                  adj_transform="normalize_adj",
@@ -69,8 +70,8 @@ class OBVAT(GalleryModel):
         """
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
-        self.adj_transform = F.get(adj_transform)
-        self.attr_transform = F.get(attr_transform)
+        self.adj_transform = gf.get(adj_transform)
+        self.attr_transform = gf.get(attr_transform)
         self.process()
 
     def process_step(self):
@@ -78,11 +79,11 @@ class OBVAT(GalleryModel):
         adj_matrix = self.adj_transform(graph.adj_matrix)
         node_attr = self.attr_transform(graph.node_attr)
 
-        self.feature_inputs, self.structure_inputs = F.astensors(
+        self.feature_inputs, self.structure_inputs = gf.astensors(
             node_attr, adj_matrix, device=self.device)
 
     # use decorator to make sure all list arguments have the same length
-    @F.equal()
+    @gf.equal()
     def build(self,
               hiddens=[16],
               activations=['relu'],
@@ -135,7 +136,7 @@ class OBVAT(GalleryModel):
 
             self.r_vadv = tf.Variable(TruncatedNormal(stddev=0.01)(
                 shape=[self.graph.num_nodes, self.graph.num_node_attrs]),
-                                      name="r_vadv")
+                name="r_vadv")
             entropy_loss = entropy_y_x(logit)
             vat_loss = self.virtual_adversarial_loss(x, adj, logit)
             model.add_loss(p1 * vat_loss + p2 * entropy_loss)

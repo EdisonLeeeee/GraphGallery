@@ -8,7 +8,7 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy
 from graphgallery.nn.layers.tensorflow import GraphConvolution, Gather
 from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.bvat_utils import kl_divergence_with_logit, entropy_y_x, get_normalized_vector
-from graphgallery import functional as F
+from graphgallery import functional as gf
 from ..obvat import OBVAT
 
 
@@ -20,6 +20,7 @@ class SimplifiedOBVAT(OBVAT):
 
 
     """
+
     def __init__(self,
                  *graph,
                  adj_transform="normalize_adj",
@@ -76,7 +77,7 @@ class SimplifiedOBVAT(OBVAT):
                          **kwargs)
 
     # use decorator to make sure all list arguments have the same length
-    @F.equal()
+    @gf.equal()
     def build(self,
               hiddens=[16],
               activations=['relu'],

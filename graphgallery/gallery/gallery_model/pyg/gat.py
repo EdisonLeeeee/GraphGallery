@@ -1,7 +1,7 @@
 from graphgallery.gallery import GalleryModel
 from graphgallery.nn.models.pyg import GAT as pygGAT
 from graphgallery.sequence import FullBatchNodeSequence
-from graphgallery import functional as F
+from graphgallery import functional as gf
 
 
 class GAT(GalleryModel):
@@ -13,6 +13,7 @@ class GAT(GalleryModel):
         Keras implementation: <https://github.com/danielegrattarola/keras-gat>
 
     """
+
     def __init__(self,
                  *graph,
                  adj_transform="add_selfloops",
@@ -58,21 +59,21 @@ class GAT(GalleryModel):
         """
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
-        self.adj_transform = F.get(adj_transform)
-        self.attr_transform = F.get(attr_transform)
+        self.adj_transform = gf.get(adj_transform)
+        self.attr_transform = gf.get(attr_transform)
         self.process()
 
     def process_step(self):
         graph = self.graph
         adj_matrix = self.adj_transform(graph.adj_matrix)
         node_attr = self.attr_transform(graph.node_attr)
-        edge_index, edge_weight = F.sparse_adj_to_edge(adj_matrix)
+        edge_index, edge_weight = gf.sparse_adj_to_edge(adj_matrix)
 
-        self.feature_inputs, self.structure_inputs = F.astensors(
+        self.feature_inputs, self.structure_inputs = gf.astensors(
             node_attr, (edge_index, edge_weight), device=self.device)
 
     # use decorator to make sure all list arguments have the same length
-    @F.equal(include=["n_heads"])
+    @gf.equal(include=["n_heads"])
     def build(self,
               hiddens=[8],
               n_heads=[8],

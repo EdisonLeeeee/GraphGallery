@@ -9,7 +9,7 @@ import os.path as osp
 
 from typing import Union, Optional, List, Tuple, Callable
 
-from graphgallery import functional as F
+from graphgallery import functional as gf
 from ..data.preprocess import train_val_test_split_tabular, get_train_val_test_split
 
 Transform = Union[List, Tuple, str, List, Tuple, Callable]
@@ -39,8 +39,8 @@ class Dataset:
 
         self.graph = None
         self.split_cache = None
-        self.splits = F.Bunch()
-        self.transform = F.get(transform)
+        self.splits = gf.Bunch()
+        self.transform = gf.get(transform)
 
     @property
     def g(self):

@@ -13,7 +13,7 @@ class GINConvolution(Layer):
 
         `GraphConvolution` implements the operation:
         `output = activation(((1+eps) * x + adj @ x) @ kernel + bias)`
-        where `x` is the node node attribute matrix, `adj` is the adjacency matrix,
+        where `x` is the node attribute matrix, `adj` is the adjacency matrix,
         `activation` is the element-wise activation function
         passed as the `activation` argument, `kernel` is a weights matrix
         created by the layer, and `bias` is a bias vector created by the layer
@@ -40,7 +40,7 @@ class GINConvolution(Layer):
 
         Input shape:
           tuple/list with two 2-D tensor: Tensor `x` and SparseTensor `adj`: `[(num_nodes, num_node_attrs), (num_nodes, num_nodes)]`.
-          The former one is the node node attribute matrix (Tensor) and the last is adjacency matrix (SparseTensor).
+          The former one is the node attribute matrix (Tensor) and the last is adjacency matrix (SparseTensor).
 
         Output shape:
           2-D tensor with shape: `(num_nodes, units)`.       

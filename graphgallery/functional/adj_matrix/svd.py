@@ -17,8 +17,8 @@ class SVD(Transform):
                    threshold=self.threshold,
                    binaryzation=self.binaryzation)
 
-    def __repr__(self):
-        return f"{self.__class__.__name__}(k={self.k}, threshold={self.threshold}, binaryzation={self.binaryzation})"
+    def extra_repr(self):
+        return f"k={self.k}, threshold={self.threshold}, binaryzation={self.binaryzation}"
 
 
 def svd(adj_matrix, k=50, threshold=0.01, binaryzation=False):

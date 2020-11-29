@@ -5,7 +5,7 @@ from graphgallery.sequence import FullBatchNodeSequence
 
 from graphgallery.nn.models.tensorflow import ChebyNet as tfChebyNet
 
-from graphgallery import functional as F
+from graphgallery import functional as gf
 
 
 class ChebyNet(GalleryModel):
@@ -16,6 +16,7 @@ class ChebyNet(GalleryModel):
         Keras implementation: <https://github.com/aclyde11/ChebyGCN>
 
     """
+
     def __init__(self,
                  *graph,
                  adj_transform="cheby_basis",
@@ -61,8 +62,8 @@ class ChebyNet(GalleryModel):
         """
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
-        self.adj_transform = F.get(adj_transform)
-        self.attr_transform = F.get(attr_transform)
+        self.adj_transform = gf.get(adj_transform)
+        self.attr_transform = gf.get(attr_transform)
         self.process()
 
     def process_step(self):
@@ -70,11 +71,11 @@ class ChebyNet(GalleryModel):
         adj_matrix = self.adj_transform(graph.adj_matrix)
         node_attr = self.attr_transform(graph.node_attr)
 
-        self.feature_inputs, self.structure_inputs = F.astensors(
+        self.feature_inputs, self.structure_inputs = gf.astensors(
             node_attr, adj_matrix, device=self.device)
 
     # use decorator to make sure all list arguments have the same length
-    @F.equal()
+    @gf.equal()
     def build(self,
               hiddens=[16],
               activations=['relu'],

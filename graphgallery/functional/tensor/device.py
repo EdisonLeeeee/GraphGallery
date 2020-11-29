@@ -12,21 +12,23 @@ __all__ = ['device']
 
 def device(device: Device = None, backend: Backend = None) -> Device:
     """
-    Specify the device for corresponding backend 
+    Specify the device for the corresponding backend 
 
     Parameters
     ----------
-    device : (string, tf.device, torch.device, None) 
+    device: (string, tf.device, torch.device, None) 
         device name such as 'cpu', 'gpu', 'cuda'
-        or an instance of tf.device/torch.device
+        or an instance of 'tf.device'/'torch.device'
     backend: String or 'BackendModule', optional.
-     `'tensorflow'`, `'torch'`, TensorFlowBackend, PyTorchBackend, etc.
-     if not specified, return the current default backend module. 
+    `'tensorflow'`, `'torch'`, 'TensorFlowBackend', 
+    'PyTorchBackend', etc. if not specified, 
+    return the current backend module. 
 
     Returns
     -------
-    return 'string' for tensorflow backend,
-    or 'torch.device' instance for pytorch backend
+    device:
+    - 'string' for tensorflow backend,
+    - 'torch.device' instance for pytorch backend
     """
     backend = gg.backend(backend)
 
@@ -52,7 +54,7 @@ def device(device: Device = None, backend: Backend = None) -> Device:
 
     if not _device in {"cpu", "cuda", "gpu"}:
         raise RuntimeError(
-            f" Expected one of cpu (CPU), cuda (CUDA), gpu (GPU) at the start of device string, but got {device}."
+            f"Expected one of cpu (CPU), cuda (CUDA), gpu (GPU) at the start of device string, but got {device}."
         )
     if not _device_id:
         _device_id = 0
@@ -62,7 +64,7 @@ def device(device: Device = None, backend: Backend = None) -> Device:
         except ValueError as e:
             raise ValueError(f"Invalid device id in {device}.")
 
-    # pytorch return torch.device
+    # pytorch backend returns 'torch.device'
     if backend == "torch":
         if _device == "cpu":
             return th_device.cpu(_device_id)
@@ -74,7 +76,7 @@ def device(device: Device = None, backend: Backend = None) -> Device:
             torch.cuda.empty_cache()
             return th_device.gpu(_device_id)
 
-    # tensorflow return string
+    # tensorflow backend returns 'string'
     if _device == "cpu":
         return tf_device.cpu(_device_id)
     elif not tf.config.list_physical_devices('GPU'):

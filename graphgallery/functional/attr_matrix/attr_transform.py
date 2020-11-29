@@ -14,7 +14,7 @@ __all__ = ['augment_attr', 'normalize_attr', 'NormalizeAttr']
 def augment_attr(node_attr: np.ndarray,
                  N: int,
                  fill_weight: Union[float, list, np.ndarray] = 0.):
-    """Augment a specified node node attribute matrix.
+    """Augment a specified node attribute matrix.
 
     Examples
     ----------
@@ -48,7 +48,8 @@ def augment_attr(node_attr: np.ndarray,
 
 
 class NormalizeAttr(Transform):
-    """Normalize the node node attribute matrix with given type."""
+    """Normalize the node attribute matrix with given type."""
+
     def __init__(self, norm='l1'):
         """
         Parameters
@@ -63,30 +64,30 @@ class NormalizeAttr(Transform):
             None: return the copy of `x`
 
         Returns
-        ----------
-            A normalized node node attribute matrix.
+        -------
+            A normalized node attribute matrix.
         """
         super().__init__()
         self.norm = norm
 
-    def __call__(self, node_attr):
+    def __call__(self, x):
         """
         Parameters
         ----------
-        node_attr: [N, M], Numpy array-like matrix
+        x: [N, M], Numpy array-like matrix
 
         Returns
-        ----------
-        A Normalized node node attribute matrix.
+        -------
+        A Normalized attribute matrix.
 
         See also
         ----------
         graphgallery.functional.normalize_attr
         """
-        return normalize_attr(node_attr, norm=self.norm)
+        return normalize_attr(x, norm=self.norm)
 
-    def __repr__(self):
-        return f"{self.__class__.__name__}(norm={self.norm})"
+    def extra_repr(self):
+        return f"norm={self.norm}"
 
 
 @multiple()
@@ -99,15 +100,15 @@ def normalize_attr(x, norm='l1'):
     norm: The specified type for the normalization.
         'l1': l1-norm for axis 1, from `sklearn.preprocessing`.
         'l1_0': l1-norm for axis 0, from `sklearn.preprocessing`.
-        'scale': standard scale for axis 0, from 
-            `sklearn.preprocessing.scale`
-        'robust_scale', robust scale for axis 0, from 
-            `sklearn.preprocessing.robust_scale`
+        'scale': standard scale for axis 0, 
+            from `sklearn.preprocessing.scale`
+        'robust_scale', robust scale for axis 0, 
+            from `sklearn.preprocessing.robust_scale`
         None: return the copy of `x`
 
     Returns
-    ----------
-    A normalized matrix.
+    -------
+    A normalized attribute matrix in Numpy format.
     """
     if norm not in {'l1', 'l1_0', 'scale', 'robust_scale', None}:
         raise ValueError(f'{norm} is not a supported norm.')

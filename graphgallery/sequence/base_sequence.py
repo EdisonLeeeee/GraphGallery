@@ -6,7 +6,7 @@ from tensorflow.keras.utils import Sequence as tf_Sequence
 from torch.nn import Module
 from functools import partial
 
-from graphgallery import functional as F
+from graphgallery import functional as gf
 
 
 class Sequence(tf_Sequence):
@@ -15,8 +15,8 @@ class Sequence(tf_Sequence):
         device = kwargs.pop('device', 'cpu')
         escape = kwargs.pop('escape', None)
         super().__init__(*args, **kwargs)
-        self.astensor = partial(F.astensor, device=device, escape=escape)
-        self.astensors = partial(F.astensors, device=device, escape=escape)
+        self.astensor = partial(gf.astensor, device=device, escape=escape)
+        self.astensors = partial(gf.astensors, device=device, escape=escape)
         self.device = device
 
     def __len__(self):

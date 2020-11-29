@@ -15,7 +15,7 @@ class GraphEdgeConvolution(Layer):
 
         `GraphEdgeConvolution` implements the operation using message passing framework:
         `output = activation(adj @ x @ kernel + bias)`
-        where `x` is the node node attribute matrix, `adj` is the adjacency matrix,
+        where `x` is the node attribute matrix, `adj` is the adjacency matrix,
         `activation` is the element-wise activation function
         passed as the `activation` argument, `kernel` is a weights matrix
         created by the layer, and `bias` is a bias vector created by the layer
@@ -48,7 +48,7 @@ class GraphEdgeConvolution(Layer):
         Input shape:
             tuple/list with three tensor: Tensor `x`, `edge_index` and `edge_weight`: 
                 `[(num_nodes, num_node_attrs), (num_edges, 2), (num_edges,)]`. The former one is the 
-                node node attribute matrix (Tensor) and the last two are edge index and edge weight of 
+                node attribute matrix (Tensor) and the last two are edge index and edge weight of 
                 the adjacency matrix.
 
         Output shape:

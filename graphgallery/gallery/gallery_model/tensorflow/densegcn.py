@@ -6,7 +6,7 @@ from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.nn.models.pytorch import GCN as pyGCN
 from graphgallery.nn.models.tensorflow import DenseGCN as tfGCN
 
-from graphgallery import functional as F
+from graphgallery import functional as gf
 
 
 class DenseGCN(GalleryModel):
@@ -17,6 +17,7 @@ class DenseGCN(GalleryModel):
         Pytorch `Sparse version` implementation: <https://github.com/tkipf/pygcn>
 
     """
+
     def __init__(self,
                  *graph,
                  adj_transform="normalize_adj",
@@ -64,8 +65,8 @@ class DenseGCN(GalleryModel):
         """
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
-        self.adj_transform = F.get(adj_transform)
-        self.attr_transform = F.get(attr_transform)
+        self.adj_transform = gf.get(adj_transform)
+        self.attr_transform = gf.get(attr_transform)
         self.process()
 
     def process_step(self):
@@ -73,11 +74,11 @@ class DenseGCN(GalleryModel):
         adj_matrix = self.adj_transform(graph.adj_matrix).toarray()
         node_attr = self.attr_transform(graph.node_attr)
 
-        self.feature_inputs, self.structure_inputs = F.astensors(
+        self.feature_inputs, self.structure_inputs = gf.astensors(
             node_attr, adj_matrix, device=self.device)
 
     # use decorator to make sure all list arguments have the same length
-    @F.equal()
+    @gf.equal()
     def build(self,
               hiddens=[16],
               activations=['relu'],

@@ -3,7 +3,7 @@ import numpy as np
 import scipy.sparse as sp
 import graphgallery as gg
 
-from graphgallery import functional as F
+from graphgallery import functional as gf
 from typing import Any
 
 
@@ -14,7 +14,7 @@ def sparse_edge_to_sparse_tensor(edge_index: np.ndarray,
     edge_index: shape [2, M]
     edge_weight: shape [M,]
     """
-    edge_index = F.edge_transpose(edge_index)
+    edge_index = gf.edge_transpose(edge_index)
 
     if edge_weight is None:
         edge_weight = tf.ones(edge_index.shape[1], dtype=gg.floatx())
@@ -48,7 +48,7 @@ def sparse_adj_to_sparse_tensor(x: sp.csr_matrix, dtype=None):
     elif dtype is None:
         dtype = gg.gg.infer_type(x)
 
-    edge_index, edge_weight = F.sparse_adj_to_edge(x)
+    edge_index, edge_weight = gf.sparse_adj_to_edge(x)
     return sparse_edge_to_sparse_tensor(edge_index,
                                         edge_weight.astype(dtype, copy=False),
                                         x.shape)

@@ -10,7 +10,7 @@ from typing import Optional, List, Tuple, Callable, Union
 
 from .in_memory_dataset import InMemoryDataset
 from ..data.multi_graph import MultiGraph
-from graphgallery import functional as F
+from graphgallery import functional as gf
 
 Transform = Union[List, Tuple, str, List, Tuple, Callable]
 
@@ -58,7 +58,7 @@ class PPI(InMemoryDataset):
             with open(nx_graph_path, "r", encoding="utf-8") as f:
                 G = nx.DiGraph(nx.json_graph.node_link_graph(json.load(f)))
 
-            G = F.nx_graph_to_sparse_adj(G)
+            G = gf.nx_graph_to_sparse_adj(G)
             idx = idx - idx.min()
             for i in range(idx.max() + 1):
                 mask = idx == i

@@ -15,8 +15,8 @@ class ChebyBasis(Transform):
     def __call__(self, adj_matrix):
         return cheby_basis(adj_matrix, order=self.order, rate=self.rate)
 
-    def __repr__(self):
-        return f"{self.__class__.__name__}(order={self.order}, rate={self.rate})"
+    def extra_repr(self):
+        return f"order={self.order}, rate={self.rate}"
 
 
 @multiple()

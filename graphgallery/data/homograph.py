@@ -10,7 +10,7 @@ from .base_graph import BaseGraph
 from .preprocess import create_subgraph
 
 from ..data_type import is_multiobjects
-from graphgallery import functional as F
+from graphgallery import functional as gf
 
 
 class HomoGraph(BaseGraph):
@@ -184,7 +184,7 @@ class HomoGraph(BaseGraph):
             mapping = dict(zip(left, range(self.num_node_classes - removed)))
             G.node_label = np.asarray(list(
                 map(lambda key: mapping[key], G.node_label)),
-                                      dtype=np.int32)
+                dtype=np.int32)
             return G
         else:
             return self
@@ -209,7 +209,7 @@ class HomoGraph(BaseGraph):
         """Select the LCC of the unweighted/undirected/no-self-loop graph.
         All changes are done inplace.
         """
-        return F.Standardize()(self)
+        return gf.Standardize()(self)
 
     def nxgraph(self, directed: bool = True):
         """Get the network graph from adj_matrix."""

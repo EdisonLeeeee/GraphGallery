@@ -4,7 +4,7 @@ from graphgallery.gallery import GalleryModel
 from graphgallery.sequence import FullBatchNodeSequence
 
 from graphgallery.nn.models.tensorflow import RobustGCN as tfRobustGCN
-from graphgallery import functional as F
+from graphgallery import functional as gf
 
 
 class RobustGCN(GalleryModel):
@@ -15,9 +15,10 @@ class RobustGCN(GalleryModel):
         Tensorflow 1.x implementation: <https://github.com/thumanlab/nrlweb/blob/master/static/assets/download/RGCN.zip>
 
     """
+
     def __init__(self,
                  *graph,
-                 adj_transform=F.NormalizeAdj(rate=[-0.5, -1.0]),
+                 adj_transform=gf.NormalizeAdj(rate=[-0.5, -1.0]),
                  attr_transform=None,
                  device='cpu:0',
                  seed=None,
@@ -60,8 +61,8 @@ class RobustGCN(GalleryModel):
         """
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
-        self.adj_transform = F.get(adj_transform)
-        self.attr_transform = F.get(attr_transform)
+        self.adj_transform = gf.get(adj_transform)
+        self.attr_transform = gf.get(attr_transform)
         self.process()
 
     def process_step(self):
@@ -69,11 +70,11 @@ class RobustGCN(GalleryModel):
         adj_matrix = self.adj_transform(graph.adj_matrix)
         node_attr = self.attr_transform(graph.node_attr)
 
-        self.feature_inputs, self.structure_inputs = F.astensors(
+        self.feature_inputs, self.structure_inputs = gf.astensors(
             node_attr, adj_matrix, device=self.device)
 
     # use decorator to make sure all list arguments have the same length
-    @F.equal()
+    @gf.equal()
     def build(self,
               hiddens=[64],
               activations=['relu'],

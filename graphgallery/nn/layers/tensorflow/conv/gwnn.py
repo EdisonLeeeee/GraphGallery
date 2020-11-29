@@ -14,7 +14,7 @@ class WaveletConvolution(Layer):
 
         `WaveletConvolution` implements the operation:
         `output = activation(wavelet @ filter @ inverse_wavelet @ x @ kernel + bias)`
-        where `x` is the node node attribute matrix, `wavelet` is the wavelet matrix,
+        where `x` is the node attribute matrix, `wavelet` is the wavelet matrix,
         `inverse_wavelet` is the inversed wavelet matrix, filter is the trainable diagnal matrix.
         `activation` is the element-wise activation function
         passed as the `activation` argument, `kernel` is a weights matrix
@@ -41,7 +41,7 @@ class WaveletConvolution(Layer):
 
         Input shape:
           tuple/list with three 2-D tensor: Tensor `x`, SparseTensor `wavelet` and inverse_wavelet: `[(num_nodes, num_node_attrs), (num_nodes, num_nodes), (num_nodes, num_nodes)]`.
-          The former one is the node node attribute matrix (Tensor) and the others is wavelet matrix (SparseTensor) and inversed wavelet matrix (SparseTensor).
+          The former one is the node attribute matrix (Tensor) and the others is wavelet matrix (SparseTensor) and inversed wavelet matrix (SparseTensor).
 
         Output shape:
           2-D tensor with shape: `(num_nodes, units)`.       

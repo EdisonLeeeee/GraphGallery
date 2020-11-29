@@ -10,7 +10,7 @@ class SGConvolution(Layer):
 
         `SGConvolution` implements the operation:
         `output = x @ adj^{order}`
-        where `x` is the node node attribute matrix, `adj` is the adjacency matrix.
+        where `x` is the node attribute matrix, `adj` is the adjacency matrix.
 
         Note:
           This `SGConvolution` layer has NOT any trainable parameters.
@@ -21,7 +21,7 @@ class SGConvolution(Layer):
 
         Input shape:
           tuple/list with two 2-D tensor: Tensor `x` and SparseTensor `adj`: `[(num_nodes, num_node_attrs), (num_nodes, num_nodes)]`.
-          The former one is the node node attribute matrix (Tensor) and the other is adjacency matrix (SparseTensor).
+          The former one is the node attribute matrix (Tensor) and the other is adjacency matrix (SparseTensor).
 
         Output shape:
           2-D tensor with shape: `(num_nodes, num_node_attrs)`.       

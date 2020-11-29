@@ -102,8 +102,8 @@ class WaveletBasis(Transform):
                              threshold=self.threshold,
                              wavelet_normalize=self.wavelet_normalize)
 
-    def __repr__(self):
-        return f"{self.__class__.__name__}(order={self.order}, wavelet_s={self.wavelet_s}, threshold={self.threshold}, wavelet_normalize={self.wavelet_normalize})"
+    def extra_repr(self):
+        return f"order={self.order}, wavelet_s={self.wavelet_s}, threshold={self.threshold}, wavelet_normalize={self.wavelet_normalize}"
 
 
 def laplacian(adj_matrix, normalized=True):

@@ -25,7 +25,7 @@ class SparseReshape(Transform):
             Single or a list of Scipy sparse matrices or Numpy arrays.
 
         Returns
-        ----------
+        -------
         Single or a list of Scipy sparse matrix or Numpy matrices.
 
         See also
@@ -34,8 +34,8 @@ class SparseReshape(Transform):
         """
         return sparse_reshape(*adj_matrix, shape=self.shape)
 
-    def __repr__(self):
-        return f"{self.__class__.__name__}(shape={self.shape})"
+    def extra_repr(self):
+        return f"shape={self.shape}"
 
 
 def sparse_reshape(adj_matrix: sp.csr_matrix, shape: tuple = None) -> sp.csr_matrix:
@@ -48,7 +48,7 @@ def sparse_reshape(adj_matrix: sp.csr_matrix, shape: tuple = None) -> sp.csr_mat
         shape: new shape.
 
     Returns
-    ----------
+    -------
         Single or a list of Scipy sparse matrix or Numpy matrices.
 
     See also

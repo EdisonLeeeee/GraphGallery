@@ -88,10 +88,10 @@ class GraphAttention(Module):
 
             zero_vec = -9e15 * torch.ones_like(e)
             attention = torch.where(dense_adj > 0, e, zero_vec)
-            attention = F.softmax(attention, dim=1)
-            attention = F.dropout(attention,
-                                  self.dropout,
-                                  training=self.training)
+            attention = gf.softmax(attention, dim=1)
+            attention = gf.dropout(attention,
+                                   self.dropout,
+                                   training=self.training)
             h_prime = torch.matmul(attention, Wh)
 
             if self.use_bias:
@@ -147,6 +147,7 @@ class SparseGraphAttention(Module):
     """
     Sparse version GAT layer, similar to https://arxiv.org/abs/1710.10903
     """
+
     def __init__(self,
                  in_channels,
                  out_channels,

@@ -4,21 +4,22 @@ from graphgallery.gallery import GalleryModel
 from graphgallery.sequence import FullBatchNodeSequence
 
 from graphgallery.nn.models.tensorflow import GCNA as tfGCNA
-from graphgallery import functional as F
+from graphgallery import functional as gf
 from ..gcn import GCN
 
 
 class GCNA(GCN):
     """
-    GCN + node node attribute matrix
+    GCN + node attribute matrix
 
-    Implementation of Graph Convolutional Networks(GCN) concated with node node attribute matrix.
+    Implementation of Graph Convolutional Networks(GCN) concated with node attribute matrix.
     `Semi - Supervised Classification with Graph Convolutional Networks 
     <https://arxiv.org/abs/1609.02907>`
     GCN Tensorflow 1.x implementation: <https://github.com/tkipf/gcn>
     GCN Pytorch implementation: <https://github.com/tkipf/pygcn>
 
     """
+
     def __init__(self,
                  *graph,
                  adj_transform="normalize_adj",
@@ -28,7 +29,7 @@ class GCNA(GCN):
                  name=None,
                  **kwargs):
         r"""Create a Graph Convolutional Networks(GCN) model 
-            concated with node node attribute matrix (GCNA).
+            concated with node attribute matrix (GCNA).
 
         This can be instantiated in several ways:
 
@@ -72,7 +73,7 @@ class GCNA(GCN):
                          **kwargs)
 
     # use decorator to make sure all list arguments have the same length
-    @F.equal()
+    @gf.equal()
     def build(self,
               hiddens=[16],
               activations=['relu'],

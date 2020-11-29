@@ -16,15 +16,6 @@ def edge_transpose(edge):
         edge = edge.T
     return edge
 
-# from ..transforms import Transform
-# class EdgeToSparseAdj(Transform):
-#     def __call__(self, edge_index: np.ndarray, edge_weight: Optional[np.ndarray] = None,
-#                  shape: Optional[tuple] = None) -> sp.csr_matrix:
-#         return sparse_adj_to_edge(edge_index=edge_index, edge_weight=edge_weight, shape=shape)
-
-#     def __repr__(self):
-#         return f"{self.__class__.__name__}()"
-
 
 def edge_to_sparse_adj(edge: np.ndarray,
                        edge_weight: Optional[np.ndarray] = None,
@@ -45,7 +36,7 @@ def edge_to_sparse_adj(edge: np.ndarray,
     scipy.sparse.csr_matrix
 
     """
-    
+
     edge = edge_transpose(edge)
 
     if edge_weight is None:

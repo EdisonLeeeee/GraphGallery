@@ -30,8 +30,8 @@ class GDC(Transform):
                    k=self.k,
                    which=self.which)
 
-    def __repr__(self):
-        return f"{self.__class__.__name__}(alpha={self.alpha}, t={self.t}, eps={self.eps}, k={self.k}, which={self.which})"
+    def extra_repr(self):
+        return f"alpha={self.alpha}, t={self.t}, eps={self.eps}, k={self.k}, which={self.which}"
 
 
 @multiple()

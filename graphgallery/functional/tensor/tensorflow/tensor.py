@@ -5,7 +5,7 @@ import graphgallery as gg
 import tensorflow.keras.backend as K
 
 from typing import Any
-from graphgallery import functional as F
+from graphgallery import functional as gf
 from .ops import sparse_adj_to_sparse_tensor
 
 _TYPE = {
@@ -83,8 +83,8 @@ def astensor(x, *, dtype=None, device=None, escape=None):
             else:
                 return sparse_adj_to_sparse_tensor(x, dtype=dtype)
         elif isinstance(
-                x,
-            (np.ndarray, np.matrix)) or gg.is_listlike(x) or gg.is_scalar(x):
+            x,
+                (np.ndarray, np.matrix)) or gg.is_listlike(x) or gg.is_scalar(x):
             return tf.convert_to_tensor(x, dtype=dtype)
         else:
             raise TypeError(

@@ -1,4 +1,4 @@
-from typing import Union, List, Tuple
+from typing import Union, List, Tuple, Any, Callable, Optional
 
 import graphgallery as gg
 from graphgallery.functional import GDC
@@ -11,7 +11,6 @@ from graphgallery.functional import ChebyBasis
 from graphgallery.functional import NeighborSampler
 from graphgallery.functional import GraphPartition
 from graphgallery.functional import SparseAdjToEdge
-# from graphgallery.functional import EdgeToSparseAdj
 from graphgallery.functional import SparseReshape
 
 from .transforms import *
@@ -29,17 +28,17 @@ _TRANSFORMS = {"gdc": GDC,
                "neighbor_sampler": NeighborSampler,
                "graph_partition": GraphPartition,
                "sparse_adj_to_edge": SparseAdjToEdge,
-               #                 "edge_to_sparse_adj": EdgeToSparseAdj,
                "sparse_reshape": SparseReshape}
 
 _ALLOWED = set(list(_TRANSFORMS.keys()))
 
 
 class Compose(Transform):
-    def __init__(self, *transforms, **kwargs):
+    def __init__(self, *transforms: Union[str, Transform, None, List, Tuple, "Compose"],
+                 **kwargs):
         self.transforms = [get(transform) for transform in transforms]
 
-    def __call__(self, inputs):
+    def __call__(self, inputs: Any):
         for transform in self.transforms:
             if isinstance(inputs, tuple):
                 inputs = transform(*inputs)
@@ -48,19 +47,21 @@ class Compose(Transform):
 
         return inputs
 
-    def add(self, transform):
+    def add(self, transform: Union[str, Transform, None, List, Tuple, "Compose"]):
         self.transforms.append(get(transform))
 
-    def __repr__(self):
-        format_string = self.__class__.__name__ + '('
+    def pop(self, index: int = -1) -> Transform:
+        """Remove and return 'transforms' at index (default last)."""
+        return self.transforms.pop(index=-1)
+
+    def extra_repr(self):
+        format_string = ""
         for t in self.transforms:
-            format_string += '\n'
-            format_string += '    {0}'.format(t)
-        format_string += '\n)'
+            format_string += f'\n    {t}'
         return format_string
 
 
-def get(transform: Union[str, Transform, None, List, Tuple, Compose]) -> Transform:
+def get(transform: Union[str, Transform, None, List, Tuple, "Compose"]) -> Transform:
     if gg.is_listlike(transform):
         return Compose(*transform)
 
@@ -72,5 +73,5 @@ def get(transform: Union[str, Transform, None, List, Tuple, Compose]) -> Transfo
     _transform = _TRANSFORMS.get(_transform, None)
     if _transform is None:
         raise ValueError(
-            f"Unknown transform: '{transform}', expected string, callable function or None.")
+            f"Unknown transform: '{transform}', expected a string, callable function or None.")
     return _transform()

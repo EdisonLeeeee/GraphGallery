@@ -2,7 +2,7 @@ from graphgallery.nn.models.dgl_torch import SGC as dglSGC
 from graphgallery.gallery import GalleryModel
 from graphgallery.sequence import FullBatchNodeSequence
 
-from graphgallery import functional as F
+from graphgallery import functional as gf
 
 
 class SGC(GalleryModel):
@@ -12,6 +12,7 @@ class SGC(GalleryModel):
         Pytorch implementation: <https://github.com/Tiiiger/SGC>
 
     """
+
     def __init__(self,
                  *graph,
                  order=2,
@@ -63,8 +64,8 @@ class SGC(GalleryModel):
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
         self.order = order
-        self.adj_transform = F.get(adj_transform)
-        self.attr_transform = F.get(attr_transform)
+        self.adj_transform = gf.get(adj_transform)
+        self.attr_transform = gf.get(attr_transform)
         self.process()
 
     def process_step(self):
@@ -72,11 +73,11 @@ class SGC(GalleryModel):
         adj_matrix = self.adj_transform(graph.adj_matrix)
         node_attr = self.attr_transform(graph.node_attr)
 
-        self.feature_inputs, self.structure_inputs = F.astensors(
+        self.feature_inputs, self.structure_inputs = gf.astensors(
             node_attr, adj_matrix, device=self.device)
 
     # use decorator to make sure all list arguments have the same length
-    @F.equal()
+    @gf.equal()
     def build(self,
               hiddens=[],
               activations=[],

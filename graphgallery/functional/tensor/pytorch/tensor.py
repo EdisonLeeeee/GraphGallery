@@ -4,7 +4,7 @@ import scipy.sparse as sp
 import graphgallery as gg
 from typing import Any
 
-from graphgallery import functional as F
+from graphgallery import functional as gf
 from .ops import sparse_adj_to_sparse_tensor
 
 _TYPE = {
@@ -73,8 +73,8 @@ def astensor(x, *, dtype=None, device=None, escape=None):
             tensor = sparse_adj_to_sparse_tensor(x, dtype=dtype)
 
     elif isinstance(
-            x,
-        (np.ndarray, np.matrix)) or gg.is_listlike(x) or gg.is_scalar(x):
+        x,
+            (np.ndarray, np.matrix)) or gg.is_listlike(x) or gg.is_scalar(x):
         tensor = torch.tensor(x, dtype=getattr(torch, dtype), device=device)
     else:
         raise TypeError(

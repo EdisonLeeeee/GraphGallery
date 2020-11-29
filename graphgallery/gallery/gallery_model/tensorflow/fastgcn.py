@@ -5,7 +5,7 @@ from graphgallery.sequence import FastGCNBatchSequence
 
 from graphgallery.nn.models.tensorflow import FastGCN as tfFastGCN
 
-from graphgallery import functional as F
+from graphgallery import functional as gf
 
 
 class FastGCN(GalleryModel):
@@ -16,6 +16,7 @@ class FastGCN(GalleryModel):
         Tensorflow 1.x implementation: <https://github.com/matenure/FastGCN>
 
     """
+
     def __init__(self,
                  *graph,
                  batch_size=256,
@@ -71,8 +72,8 @@ class FastGCN(GalleryModel):
 
         self.rank = rank
         self.batch_size = batch_size
-        self.adj_transform = F.get(adj_transform)
-        self.attr_transform = F.get(attr_transform)
+        self.adj_transform = gf.get(adj_transform)
+        self.attr_transform = gf.get(attr_transform)
         self.process()
 
     def process_step(self):
@@ -82,11 +83,11 @@ class FastGCN(GalleryModel):
 
         node_attr = adj_matrix @ node_attr
 
-        self.feature_inputs, self.structure_inputs = F.astensor(
+        self.feature_inputs, self.structure_inputs = gf.astensor(
             node_attr, device=self.device), adj_matrix
 
     # use decorator to make sure all list arguments have the same length
-    @F.equal()
+    @gf.equal()
     def build(self,
               hiddens=[32],
               activations=['relu'],

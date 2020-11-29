@@ -5,7 +5,7 @@ from graphgallery.gallery import GalleryModel
 from graphgallery.sequence import SBVATSampleSequence, FullBatchNodeSequence
 from graphgallery.utils.bvat_utils import get_normalized_vector, kl_divergence_with_logit, entropy_y_x
 
-from graphgallery import functional as F
+from graphgallery import functional as gf
 
 from graphgallery.nn.models.tensorflow import GCN as tfGCN
 
@@ -20,6 +20,7 @@ class SBVAT(GalleryModel):
 
 
     """
+
     def __init__(self,
                  *graph,
                  n_samples=50,
@@ -71,8 +72,8 @@ class SBVAT(GalleryModel):
         """
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
-        self.adj_transform = F.get(adj_transform)
-        self.attr_transform = F.get(attr_transform)
+        self.adj_transform = gf.get(adj_transform)
+        self.attr_transform = gf.get(attr_transform)
         self.n_samples = n_samples
         self.process()
 
@@ -80,13 +81,13 @@ class SBVAT(GalleryModel):
         graph = self.graph
         adj_matrix = self.adj_transform(graph.adj_matrix)
         node_attr = self.attr_transform(graph.node_attr)
-        self.neighbors = F.find_4o_nbrs(adj_matrix)
+        self.neighbors = gf.find_4o_nbrs(adj_matrix)
 
-        self.feature_inputs, self.structure_inputs = F.astensors(
+        self.feature_inputs, self.structure_inputs = gf.astensors(
             node_attr, adj_matrix, device=self.device)
 
     # use decorator to make sure all list arguments have the same length
-    @F.equal()
+    @gf.equal()
     def build(self,
               hiddens=[16],
               activations=['relu'],

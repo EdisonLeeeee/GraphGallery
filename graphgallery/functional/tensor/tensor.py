@@ -4,7 +4,7 @@ import scipy.sparse as sp
 from typing import Any, Optional
 
 import graphgallery as gg
-from graphgallery import functional as F
+from graphgallery import functional as gf
 
 from . import tensorflow
 from . import pytorch
@@ -119,7 +119,7 @@ def astensor(x, *, dtype=None, device=None, backend=None, escape=None):
         3. 'graphgallery.boolx()' if 'x' is boolean.
     """
     backend = gg.backend(backend)
-    device = F.device(device, backend)
+    device = gf.device(device, backend)
 
     if backend == "tensorflow":
         return tensorflow.astensor(x,
@@ -130,7 +130,7 @@ def astensor(x, *, dtype=None, device=None, backend=None, escape=None):
         return pytorch.astensor(x, dtype=dtype, device=device, escape=escape)
 
 
-_astensors_fn = F.multiple(type_check=False)(astensor)
+_astensors_fn = gf.multiple(type_check=False)(astensor)
 
 
 def astensors(*xs, dtype=None, device=None, backend=None, escape=None):
@@ -158,7 +158,7 @@ def astensors(*xs, dtype=None, device=None, backend=None, escape=None):
         3. 'graphgallery.boolx()' if 'x' is boolean.
     """
     backend = gg.backend(backend)
-    device = F.device(device, backend)
+    device = gf.device(device, backend)
     # escape
     return _astensors_fn(*xs,
                          dtype=dtype,
@@ -172,11 +172,11 @@ def tensor2tensor(tensor, *, device=None):
     """
     if tensorflow.is_tensor(tensor):
         m = tensoras(tensor)
-        device = F.device(device, backend="torch")
+        device = gf.device(device, backend="torch")
         return astensor(m, device=device, backend="torch")
     elif pytorch.is_tensor(tensor):
         m = tensoras(tensor)
-        device = F.device(device, backend="tensorflow")
+        device = gf.device(device, backend="tensorflow")
         return astensor(m, device=device, backend="tensorflow")
     else:
         raise ValueError(

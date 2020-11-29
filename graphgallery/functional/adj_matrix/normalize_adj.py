@@ -9,6 +9,7 @@ from ..decorators import multiple
 
 class NormalizeAdj(Transform):
     """Normalize adjacency matrix."""
+
     def __init__(self, rate=-0.5, fill_weight=1.0):
         """
         # return a normalized adjacency matrix
@@ -36,7 +37,7 @@ class NormalizeAdj(Transform):
                 Single or a list of Scipy sparse matrices or Numpy arrays.
 
         Returns
-        ----------
+        -------
             Single or a list of Scipy sparse matrix or Numpy matrices.
 
         See also
@@ -47,8 +48,8 @@ class NormalizeAdj(Transform):
                              rate=self.rate,
                              fill_weight=self.fill_weight)
 
-    def __repr__(self):
-        return f"{self.__class__.__name__}(normalize rate={self.rate}, fill_weight={self.fill_weight})"
+    def extra_repr(self):
+        return f"normalize rate={self.rate}, fill_weight={self.fill_weight}"
 
 
 @multiple()

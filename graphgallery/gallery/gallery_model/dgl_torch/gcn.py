@@ -1,7 +1,7 @@
 from graphgallery.gallery import GalleryModel
 from graphgallery.nn.models.dgl_torch import GCN as dglGCN
 from graphgallery.sequence import FullBatchNodeSequence
-from graphgallery import functional as F
+from graphgallery import functional as gf
 
 
 class GCN(GalleryModel):
@@ -13,6 +13,7 @@ class GCN(GalleryModel):
         Pytorch implementation: <https://github.com/tkipf/pygcn>
 
     """
+
     def __init__(self,
                  *graph,
                  adj_transform="add_selfloops",
@@ -59,8 +60,8 @@ class GCN(GalleryModel):
         """
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
-        self.adj_transform = F.get(adj_transform)
-        self.attr_transform = F.get(attr_transform)
+        self.adj_transform = gf.get(adj_transform)
+        self.attr_transform = gf.get(attr_transform)
         self.process()
 
     def process_step(self):
@@ -68,10 +69,10 @@ class GCN(GalleryModel):
         adj_matrix = self.adj_transform(graph.adj_matrix)
         node_attr = self.attr_transform(graph.node_attr)
 
-        self.feature_inputs, self.structure_inputs = F.astensors(
+        self.feature_inputs, self.structure_inputs = gf.astensors(
             node_attr, adj_matrix, device=self.device)
 
-    @F.equal()
+    @gf.equal()
     def build(self,
               hiddens=[16],
               activations=['relu'],

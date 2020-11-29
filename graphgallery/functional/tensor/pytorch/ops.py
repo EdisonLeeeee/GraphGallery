@@ -4,7 +4,7 @@ import scipy.sparse as sp
 import graphgallery as gg
 from typing import Any
 
-from graphgallery import functional as F
+from graphgallery import functional as gf
 
 __all__ = [
     "sparse_adj_to_sparse_tensor", "sparse_tensor_to_sparse_adj",
@@ -38,7 +38,7 @@ def sparse_edge_to_sparse_tensor(edge_index: np.ndarray,
     edge_index: shape [2, M]
     edge_weight: shape [M,]
     """
-    edge_index = F.edge_transpose(edge_index)
+    edge_index = gf.edge_transpose(edge_index)
     edge_index = torch.LongTensor(edge_index)
 
     if edge_weight is None:
@@ -48,7 +48,7 @@ def sparse_edge_to_sparse_tensor(edge_index: np.ndarray,
         edge_weight = torch.tensor(edge_weight)
 
     if shape is None:
-        shape = F.maybe_shape(edge_index)
+        shape = gf.maybe_shape(edge_index)
 
     shape = torch.Size(shape)
     dtype = str(edge_weight.dtype)
@@ -80,7 +80,7 @@ def sparse_adj_to_sparse_tensor(x, dtype=None):
     elif dtype is None:
         dtype = gg.infer_type(x)
 
-    edge_index, edge_weight = F.sparse_adj_to_edge(x)
+    edge_index, edge_weight = gf.sparse_adj_to_edge(x)
 
     return sparse_edge_to_sparse_tensor(edge_index,
                                         edge_weight.astype(dtype, copy=False),

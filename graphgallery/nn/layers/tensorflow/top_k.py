@@ -11,14 +11,14 @@ class Top_k_features(Layer):
 
         `Top_k_features` implements the operation:
         Select the top-K attributes for each node and each attribute dimension.
-        And finally the selected attributes will concatenated with the input node node attribute matrix along last dimension.
+        And finally the selected attributes will concatenated with the input node attribute matrix along last dimension.
 
         Parameters:
           K: Positive Integer, Number of top elements to look for.
 
         Input shape:
           tuple/list with two 2-D tensor: Tensor `x` and SparseTensor `adj`: `[(num_nodes, num_node_attrs), (num_nodes, num_nodes)]`.
-          The former one is the node node attribute matrix (Tensor) and the other is adjacency matrix (SparseTensor).
+          The former one is the node attribute matrix (Tensor) and the other is adjacency matrix (SparseTensor).
 
         Output shape:
           3-D tensor with shape: `(num_nodes, K+1, num_node_attrs)`.

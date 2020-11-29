@@ -17,8 +17,8 @@ class NeighborSampler(Transform):
         return neighbor_sampler(adj_matrix, max_degree=self.max_degree,
                                 selfloop=self.selfloop)
 
-    def __repr__(self):
-        return f"{self.__class__.__name__}(max_degree={self.max_degree}, selfloop={self.selfloop})"
+    def extra_repr(self):
+        return f"max_degree={self.max_degree}, selfloop={self.selfloop}"
 
 
 def neighbor_sampler(adj_matrix: sp.csr_matrix, max_degree: int = 25,
