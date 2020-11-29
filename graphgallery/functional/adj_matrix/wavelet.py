@@ -139,7 +139,7 @@ def compute_cheb_coeff_basis(scale, order):
     return coeffs
 
 
-@multiple
+@multiple()
 def wavelet_basis(adj_matrix,
                   order=3,
                   wavelet_s=1.0,

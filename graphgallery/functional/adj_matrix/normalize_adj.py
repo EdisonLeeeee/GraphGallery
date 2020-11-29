@@ -9,7 +9,6 @@ from ..decorators import multiple
 
 class NormalizeAdj(Transform):
     """Normalize adjacency matrix."""
-
     def __init__(self, rate=-0.5, fill_weight=1.0):
         """
         # return a normalized adjacency matrix
@@ -52,7 +51,7 @@ class NormalizeAdj(Transform):
         return f"{self.__class__.__name__}(normalize rate={self.rate}, fill_weight={self.fill_weight})"
 
 
-@multiple
+@multiple()
 def normalize_adj(adj_matrix, rate=-0.5, fill_weight=1.0):
     """Normalize adjacency matrix.
 

@@ -86,7 +86,7 @@ class FastGCN(GalleryModel):
             node_attr, device=self.device), adj_matrix
 
     # use decorator to make sure all list arguments have the same length
-    @F.equal
+    @F.equal()
     def build(self,
               hiddens=[32],
               activations=['relu'],

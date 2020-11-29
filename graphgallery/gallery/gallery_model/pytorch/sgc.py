@@ -83,7 +83,7 @@ class SGC(GalleryModel):
         self.feature_inputs, self.structure_inputs = feature_inputs, structure_inputs
 
     # use decorator to make sure all list arguments have the same length
-    @F.equal
+    @F.equal()
     def build(self,
               hiddens=[],
               activations=[],

@@ -19,7 +19,7 @@ class ChebyBasis(Transform):
         return f"{self.__class__.__name__}(order={self.order}, rate={self.rate})"
 
 
-@multiple
+@multiple()
 def cheby_basis(adj_matrix, order=2, rate=-0.5):
     """Calculate Chebyshev polynomials up to order k. Return a list of sparse matrices (tuple representation)."""
 

@@ -77,7 +77,7 @@ class SGC(GalleryModel):
             node_attr, (edge_index, edge_weight), device=self.device)
 
     # use decorator to make sure all list arguments have the same length
-    @F.equal
+    @F.equal()
     def build(self,
               hiddens=[],
               activations=[],

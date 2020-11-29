@@ -72,7 +72,7 @@ class GCNA(GCN):
                          **kwargs)
 
     # use decorator to make sure all list arguments have the same length
-    @F.equal
+    @F.equal()
     def build(self,
               hiddens=[16],
               activations=['relu'],

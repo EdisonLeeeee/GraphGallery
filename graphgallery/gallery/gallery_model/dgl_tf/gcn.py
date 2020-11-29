@@ -74,7 +74,7 @@ class GCN(GalleryModel):
         self.feature_inputs, self.structure_inputs = F.astensors(
             node_attr, adj_matrix, device=self.device)
 
-    @F.equal
+    @F.equal()
     def build(self,
               hiddens=[16],
               activations=['relu'],
