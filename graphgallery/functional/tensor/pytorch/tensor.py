@@ -46,7 +46,8 @@ def astensor(x, *, dtype=None, device=None, escape=None):
 
     if dtype is None:
         dtype = gf.infer_type(x)
-    elif isinstance(dtype, (np.dtype, str)):
+
+    if isinstance(dtype, (np.dtype, str)):
         dtype = data_type_dict().get(str(dtype), dtype)
     elif not isinstance(dtype, torch.dtype):
         raise TypeError(

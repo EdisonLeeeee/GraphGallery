@@ -11,7 +11,6 @@ class SGC(GalleryModel):
         Pytorch implementation: <https://github.com/Tiiiger/SGC>
 
     """
-
     def __init__(self,
                  *graph,
                  order=2,
@@ -72,10 +71,9 @@ class SGC(GalleryModel):
         graph = self.graph
         adj_matrix = self.adj_transform(graph.adj_matrix)
         node_attr = self.attr_transform(graph.node_attr)
-        edge_index, edge_weight = gf.sparse_adj_to_edge(adj_matrix)
 
         self.feature_inputs, self.structure_inputs = gf.astensors(
-            node_attr, (edge_index, edge_weight), device=self.device)
+            node_attr, adj_matrix, device=self.device)
 
     # use decorator to make sure all list arguments have the same length
     @gf.equal()
