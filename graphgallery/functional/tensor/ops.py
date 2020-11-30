@@ -21,9 +21,9 @@ def get_module(backend: Optional[Backend] = None):
     Parameters
     ----------
     backend: String or BackendModule, optional.
-    'tensorflow', 'torch', TensorFlowBackend, 
-    PyTorchBackend, etc. if not specified, 
-    return the current backend module. 
+        'tensorflow', 'torch', TensorFlowBackend, 
+        PyTorchBackend, etc. if not specified, 
+        return the current backend module. 
 
     Returns
     -------
@@ -105,9 +105,9 @@ def sparse_adj_to_sparse_tensor(x, *, backend: Optional[Backend] = None):
     x: Scipy sparse matrix
         Matrix in Scipy sparse format.
     backend: String or BackendModule, optional.
-    'tensorflow', 'torch', TensorFlowBackend, 
-    PyTorchBackend, etc. if not specified, 
-    return the current backend module. 
+        'tensorflow', 'torch', TensorFlowBackend, 
+        PyTorchBackend, etc. if not specified, 
+        return the current backend module. 
 
     Returns
     -------
@@ -129,16 +129,16 @@ def sparse_edge_to_sparse_tensor(edge_index: np.ndarray,
                                  shape: tuple = None,
                                  backend: Optional[Backend] = None):
     module = get_module(backend)
-    return module.sparse_edge_to_sparse_tensor(edge_index, edge_weight,
-                                               shape)
+    return module.sparse_edge_to_sparse_tensor(edge_index, edge_weight, shape)
 
 
 #### only works for tensorflow backend now #####################################
-def normalize_adj_tensor(adj, rate=-0.5, fill_weight=1.0, backend: Optional[Backend] = None):
+def normalize_adj_tensor(adj,
+                         rate=-0.5,
+                         fill_weight=1.0,
+                         backend: Optional[Backend] = None):
     module = get_module(backend)
-    return module.normalize_adj_tensor(adj,
-                                       rate=rate,
-                                       fill_weight=fill_weight)
+    return module.normalize_adj_tensor(adj, rate=rate, fill_weight=fill_weight)
 
 
 def add_selfloops_edge(edge_index,

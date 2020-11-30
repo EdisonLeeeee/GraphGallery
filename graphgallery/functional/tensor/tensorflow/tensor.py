@@ -46,24 +46,23 @@ def astensor(x, *, dtype=None, device=None, escape=None):
             return x
     except TypeError:
         raise TypeError(f"argument 'escape' must be a type or tuple of types.")
-
     if dtype is None:
         dtype = gf.infer_type(x)
     elif isinstance(dtype, tf.dtypes.DType):
         dtype = dtype.name
+    elif isinstance(dtype, (np.dtype, str)):
+        dtype = str(dtype)
     else:
         raise TypeError(
-            f"argument 'dtype' must be tensorflow.dtypes.DType or str, but got {type(dtype).__name__}."
+            f"argument 'dtype' must be tf.dtypes.DType, np.dtype or str, but got {type(dtype)}."
         )
-    assert isinstance(dtype, str)
-    dtype = data_type_dict().get(dtype, None)
-    assert dtype is not None
 
     with tf.device(device):
         if is_tensor(x):
             if x.dtype != dtype:
-                x = tf.cast(x, dtype=dtype)
-            return x
+                return tf.cast(x, dtype=dtype)
+            else:
+                return tf.identity(x)
         elif gf.is_tensor(x, backend='torch'):
             return astensor(gf.tensoras(x),
                             dtype=dtype,
@@ -71,19 +70,15 @@ def astensor(x, *, dtype=None, device=None, escape=None):
                             escape=escape)
         elif sp.isspmatrix(x):
             if gg.backend() == "dgl_tf":
-                try:
-                    import dgl
-                    return dgl.from_scipy(x, idtype=getattr(tf,
-                                                            gg.intx())).to(device)
-                except ImportError:
-                    return sparse_adj_to_sparse_tensor(x, dtype=dtype)
+                import dgl
+                return dgl.from_scipy(x, idtype=getattr(tf,
+                                                        gg.intx())).to(device)
             else:
                 return sparse_adj_to_sparse_tensor(x, dtype=dtype)
-        elif any((isinstance(x, (np.ndarray, np.matrix)),
-                  gg.is_listlike(x),
+        elif any((isinstance(x, (np.ndarray, np.matrix)), gg.is_listlike(x),
                   gg.is_scalar(x))):
             return tf.convert_to_tensor(x, dtype=dtype)
         else:
             raise TypeError(
-                f"Invalid type of inputs. Allowed data type(Tensor, SparseTensor, Numpy array, Scipy sparse matrix, None), but got {type(x).__name__}."
+                f"Invalid type of inputs. Allowed data type(Tensor, SparseTensor, Numpy array, Scipy sparse matrix, None), but got {type(x)}."
             )
