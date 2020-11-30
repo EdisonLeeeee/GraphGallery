@@ -61,8 +61,7 @@ def astensor(x, *, dtype=None, device=None, escape=None):
         if is_tensor(x):
             if x.dtype != dtype:
                 return tf.cast(x, dtype=dtype)
-            else:
-                return tf.identity(x)
+            return tf.identity(x)
         elif gf.is_tensor(x, backend='torch'):
             return astensor(gf.tensoras(x),
                             dtype=dtype,
