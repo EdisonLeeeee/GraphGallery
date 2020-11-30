@@ -20,37 +20,24 @@ def sparse_edge_to_sparse_tensor(edge_index: np.ndarray,
         edge_weight = tf.ones(edge_index.shape[1], dtype=gg.floatx())
 
     if shape is None:
-        N = (edge_index).max + 1
-        shape = (N, N)
+        shape = gf.maybe_shape(edge_index)
 
     return tf.SparseTensor(edge_index.T, edge_weight, shape)
 
 
 def sparse_adj_to_sparse_tensor(x: sp.csr_matrix, dtype=None):
-    """Converts a Scipy sparse matrix to a tensorflow SparseTensor.
 
-    Parameters
-    ----------
-    x: scipy.sparse_matrix
-        Matrix in Scipy sparse format.
-
-    dtype: The type of sparse matrix `x`, if not specified,
-        it will automatically using appropriate data type.
-        See `graphgallery.infer_type`.            
-    Returns
-    -------
-    S: tf.sparse.SparseTensor
-        Matrix as a sparse tensor.
-    """
-
-    if isinstance(dtype, tf.dtypes.DType):
+    if dtype is None:
+        dtype = gf.infer_type(x)
+    elif isinstance(dtype, tf.dtypes.DType):
         dtype = dtype.name
-    elif dtype is None:
-        dtype = gg.gg.infer_type(x)
+    if not isinstance(dtype, str):
+        raise TypeError(dtype)
 
     edge_index, edge_weight = gf.sparse_adj_to_edge(x)
+    edge_weight = edge_weight.astype(dtype, copy=False)
     return sparse_edge_to_sparse_tensor(edge_index,
-                                        edge_weight.astype(dtype, copy=False),
+                                        edge_weight,
                                         x.shape)
 
 

@@ -1,7 +1,7 @@
 import torch
 import tensorflow as tf
 import graphgallery as gg
-from typing import Optional
+from typing import Optional, Union
 from graphgallery.typing import Device, Backend
 
 from .tensorflow import device as tf_device
@@ -12,17 +12,17 @@ __all__ = ['device']
 
 def device(device: Device = None, backend: Backend = None) -> Device:
     """
-    Specify the device for the corresponding backend 
+    Specify the device for the corresponding backend
 
     Parameters
     ----------
-    device: (string, tf.device, torch.device, None) 
+    device: (string, tf.device, torch.device, None)
         device name such as 'cpu', 'gpu', 'cuda'
         or an instance of 'tf.device'/'torch.device'
     backend: String or 'BackendModule', optional.
-    `'tensorflow'`, `'torch'`, 'TensorFlowBackend', 
-    'PyTorchBackend', etc. if not specified, 
-    return the current backend module. 
+    `'tensorflow'`, `'torch'`, 'TensorFlowBackend',
+    'PyTorchBackend', etc. if not specified,
+    return the current backend module.
 
     Returns
     -------

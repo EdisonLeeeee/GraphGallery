@@ -24,9 +24,9 @@ _DTYPE_TO_CLASS = {
 }
 
 
-def dtype_to_tensor_class(dtype):
+def dtype_to_tensor_class(dtype: str):
     tensor_class = _DTYPE_TO_CLASS.get(str(dtype), None)
-    if tensor_class is None:
+    if not tensor_class:
         raise ValueError(f"Invalid dtype '{dtype}'!")
     return tensor_class
 
@@ -58,32 +58,19 @@ def sparse_edge_to_sparse_tensor(edge_index: np.ndarray,
 
 
 def sparse_adj_to_sparse_tensor(x, dtype=None):
-    """Converts a Scipy sparse matrix to a tensorflow SparseTensor.
 
-    Parameters
-    ----------
-    x: scipy.sparse_matrix
-        Matrix in Scipy sparse format.
-
-    dtype: The type of sparse matrix `x`, if not specified,
-        it will automatically using appropriate data type.
-        See `graphgallery.infer_type`.
-
-    Returns
-    -------
-    S: torch.sparse.FloatTensor
-        Matrix as a sparse FloatTensor.
-    """
-
-    if isinstance(dtype, torch.dtype):
+    if dtype is None:
+        dtype = gf.infer_type(x)
+    elif isinstance(dtype, torch.dtype):
         dtype = str(dtype).split('.')[-1]
-    elif dtype is None:
-        dtype = gg.infer_type(x)
+
+    if not isinstance(dtype, str):
+        raise TypeError(dtype)
 
     edge_index, edge_weight = gf.sparse_adj_to_edge(x)
-
+    edge_weight = edge_weight.astype(dtype, copy=False)
     return sparse_edge_to_sparse_tensor(edge_index,
-                                        edge_weight.astype(dtype, copy=False),
+                                        edge_weight,
                                         x.shape)
 
 
@@ -97,6 +84,7 @@ def sparse_tensor_to_sparse_adj(x: torch.sparse.Tensor) -> sp.csr_matrix:
 
 
 def normalize_adj_tensor(adj, rate=-0.5, fill_weight=1.0):
+    # TODO
     ...
 
 
@@ -104,7 +92,7 @@ def add_selfloops_edge(edge_index,
                        edge_weight,
                        num_nodes=None,
                        fill_weight=1.0):
-
+    # TODO
     ...
 
 
@@ -113,5 +101,5 @@ def normalize_edge_tensor(edge_index,
                           num_nodes=None,
                           fill_weight=1.0,
                           rate=-0.5):
-
+    # TODO
     ...

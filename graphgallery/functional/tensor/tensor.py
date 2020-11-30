@@ -5,21 +5,19 @@ from typing import Any, Optional
 
 import graphgallery as gg
 from graphgallery import functional as gf
+from graphgallery.typing import Device, Backend
 
 from . import tensorflow
 from . import pytorch
+from .ops import get_module
 
 
-def data_type_dict(backend: Optional[str] = None) -> dict:
-    backend = gg.backend(backend)
-
-    if backend == 'tensorflow':
-        return tensorflow.data_type_dict()
-    else:
-        return pytorch.data_type_dict()
+def data_type_dict(backend: Optional[Backend] = None) -> dict:
+    module = get_module(backend)
+    return module.data_type_dict()
 
 
-def is_sparse(x: Any, backend: Optional[str] = None) -> bool:
+def is_sparse(x: Any, backend: Optional[Backend] = None) -> bool:
     """Check whether 'x' is a sparse Tensor.
 
     Parameters:
@@ -33,15 +31,11 @@ def is_sparse(x: Any, backend: Optional[str] = None) -> bool:
     ----------
     'True' iff 'x' is a (tf or torch) sparse-tensor.
     """
-    backend = gg.backend(backend)
-
-    if backend == 'tensorflow':
-        return tensorflow.is_sparse(x)
-    else:
-        return pytorch.is_sparse(x)
+    module = get_module(backend)
+    return module.is_sparse(x)
 
 
-def is_dense(x: Any, backend: Optional[str] = None) -> bool:
+def is_dense(x: Any, backend: Optional[Backend] = None) -> bool:
     """Check whether 'x' is a strided (dense) Tensor.
 
     Parameters:
@@ -57,15 +51,11 @@ def is_dense(x: Any, backend: Optional[str] = None) -> bool:
     'True' iff 'x' is a (tf or torch) strided (dense) Tensor.
     """
 
-    backend = gg.backend(backend)
-
-    if backend == 'tensorflow':
-        return tensorflow.is_dense(x)
-    else:
-        return pytorch.is_dense(x)
+    module = get_module(backend)
+    return module.is_dense(x)
 
 
-def is_tensor(x: Any, backend: Optional[str] = None) -> bool:
+def is_tensor(x: Any, backend: Optional[Backend] = None) -> bool:
     """Check whether 'x' is 
         tf.Tensor,
         tf.Variable,
@@ -84,15 +74,12 @@ def is_tensor(x: Any, backend: Optional[str] = None) -> bool:
     ----------
     'True' iff 'x' is a (tf or torch) (sparse-)tensor.
     """
-    backend = gg.backend(backend)
-
-    if backend == 'tensorflow':
-        return tensorflow.is_tensor(x)
-    else:
-        return pytorch.is_tensor(x)
+    module = get_module(backend)
+    return module.is_tensor(x)
 
 
-def astensor(x, *, dtype=None, device=None, backend=None, escape=None):
+def astensor(x, *, dtype=None, device: Optional[Device] = None,
+             backend: Optional[Backend] = None, escape=None):
     """Convert input object to Tensor or SparseTensor.
 
     Parameters:
@@ -118,22 +105,20 @@ def astensor(x, *, dtype=None, device=None, backend=None, escape=None):
         2. 'graphgallery.intx()' if 'x' is integer.
         3. 'graphgallery.boolx()' if 'x' is boolean.
     """
+
     backend = gg.backend(backend)
     device = gf.device(device, backend)
-
-    if backend == "tensorflow":
-        return tensorflow.astensor(x,
-                                   dtype=dtype,
-                                   device=device,
-                                   escape=escape)
-    else:
-        return pytorch.astensor(x, dtype=dtype, device=device, escape=escape)
+    module = get_module(backend)
+    return module.astensor(x, dtype=dtype,
+                           device=device,
+                           escape=escape)
 
 
 _astensors_fn = gf.multiple(type_check=False)(astensor)
 
 
-def astensors(*xs, dtype=None, device=None, backend=None, escape=None):
+def astensors(*xs, dtype=None, device: Optional[Device] = None,
+              backend: Optional[Backend] = None, escape=None):
     """Convert input matrices to Tensor(s) or SparseTensor(s).
 
     Parameters:
@@ -145,12 +130,13 @@ def astensors(*xs, dtype=None, device=None, backend=None, escape=None):
     device: tf.device, optional. the desired device of returned tensor.
         Default: if 'None', uses the CPU device for the default tensor type.     
     backend: String or 'BackendModule', optional.
-         ''tensorflow'', ''torch'', TensorFlowBackend, PyTorchBackend, etc.
+         'tensorflow', 'torch', TensorFlowBackend, PyTorchBackend, etc.
          if not specified, return the current default backend module.    
-    escape: a Class or a tuple of Classes,  'astensor' will disabled if
-         'isinstance(x, escape)'.
+    escape: a Class or a tuple of Classes,  `astensor` will disabled if
+         `isinstance(x, escape)`.
+
     Returns:
-    ----------      
+    -------     
     Tensor(s) or SparseTensor(s) with dtype. If dtype is 'None', 
     dtype will be one of the following:       
         1. 'graphgallery.floatx()' if 'x' is floating.
@@ -159,7 +145,6 @@ def astensors(*xs, dtype=None, device=None, backend=None, escape=None):
     """
     backend = gg.backend(backend)
     device = gf.device(device, backend)
-    # escape
     return _astensors_fn(*xs,
                          dtype=dtype,
                          device=device,
@@ -167,7 +152,7 @@ def astensors(*xs, dtype=None, device=None, backend=None, escape=None):
                          escape=escape)
 
 
-def tensor2tensor(tensor, *, device=None):
+def tensor2tensor(tensor, *, device: Optional[Device] = None):
     """Convert a TensorFLow tensor to PyTorch Tensor, or vice versa.
     """
     if tensorflow.is_tensor(tensor):
@@ -180,7 +165,7 @@ def tensor2tensor(tensor, *, device=None):
         return astensor(m, device=device, backend="tensorflow")
     else:
         raise ValueError(
-            f"The input must be a TensorFlow or PyTorch Tensor, buf got {type(tensor)}"
+            f"The input must be a TensorFlow or PyTorch Tensor, buf got {type(tensor).__name__}"
         )
 
 

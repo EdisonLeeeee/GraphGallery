@@ -92,7 +92,7 @@ class NormalizeAttr(Transform):
 
 @multiple()
 def normalize_attr(x, norm='l1'):
-    """Normalize a matrix with given type.
+    """Normalize attribute matrix with given type.
 
     Parameters
     ----------

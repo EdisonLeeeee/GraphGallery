@@ -38,30 +38,33 @@ def is_dense(x: Any) -> bool:
 
 def astensor(x, *, dtype=None, device=None, escape=None):
 
-    if x is None:
-        return x
-    if escape is not None and isinstance(x, escape):
-        return x
+    try:
+        if x is None or (escape is not None and isinstance(x, escape)):
+            return x
+    except TypeError:
+        raise TypeError(f"argument 'escape' must be a type or tuple of types.")
 
     if dtype is None:
-        from ..ops import infer_type
-        dtype = infer_type(x)
-    elif isinstance(dtype, str):
-        ...
-        # TODO
-    elif isinstance(dtype, torch.dtype):
-        dtype = str(dtype).split('.')[-1]
-    else:
+        dtype = gf.infer_type(x)
+
+    if not isinstance(dtype, (torch.dtype, str)):
         raise TypeError(
             f"argument 'dtype' must be torch.dtype or str, not {type(dtype).__name__}."
         )
 
+    if isinstance(dtype, str):
+        _dtype = data_type_dict().get(dtype, None)
+        if not _dtype:
+            raise TypeError(dtype)
+        dtype = _dtype
+
     if is_tensor(x):
-        tensor = x.to(getattr(torch, dtype))
-    # TODO
-    # elif gg.is_tensor(x, backend='tensorflow'):
-    #     from ..tensor import tensoras
-    #     return astensor(tensoras(x), dtype=dtype, device=device, escape=escape)
+        tensor = x.to(dtype)
+    elif gf.is_tensor(x, backend='tensorflow'):
+        return astensor(gf.tensoras(x),
+                        dtype=dtype,
+                        device=device,
+                        escape=escape)
     elif sp.isspmatrix(x):
         if gg.backend() == "dgl_torch":
             try:
@@ -72,12 +75,12 @@ def astensor(x, *, dtype=None, device=None, escape=None):
         else:
             tensor = sparse_adj_to_sparse_tensor(x, dtype=dtype)
 
-    elif isinstance(
-        x,
-            (np.ndarray, np.matrix)) or gg.is_listlike(x) or gg.is_scalar(x):
-        tensor = torch.tensor(x, dtype=getattr(torch, dtype), device=device)
+    elif any((isinstance(x, (np.ndarray, np.matrix)),
+              gg.is_listlike(x),
+              gg.is_scalar(x))):
+        tensor = torch.tensor(x, dtype=dtype, device=device)
     else:
         raise TypeError(
-            f'Invalid type of inputs data. Allowed data type `(Tensor, SparseTensor, Numpy array, Scipy sparse tensor, None)`, but got {type(x)}.'
+            f"Invalid type of inputs. Allowed data type (Tensor, SparseTensor, Numpy array, Scipy sparse tensor, None), but got {type(x).__name__}."
         )
     return tensor.to(device)

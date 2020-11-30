@@ -11,9 +11,6 @@ class SparseAdjToEdge(Transform):
     def __call__(self, adj_matrix: sp.csr_matrix) -> Tuple[np.ndarray]:
         return sparse_adj_to_edge(adj_matrix)
 
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__}()"
-
 
 def sparse_adj_to_edge(adj_matrix: sp.csr_matrix) -> Tuple[np.ndarray]:
     """Convert a Scipy sparse matrix to (edge_index, edge_weight) representation

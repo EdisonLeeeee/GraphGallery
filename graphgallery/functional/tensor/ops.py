@@ -2,16 +2,17 @@ import torch
 import numpy as np
 import tensorflow as tf
 import scipy.sparse as sp
-from typing import Any
+from typing import Any, Union, Optional
 
 import graphgallery as gg
 from graphgallery import functional as gf
+from graphgallery.typing import Device, Backend
 
 from . import tensorflow
 from . import pytorch
 
 
-def get_module(backend=None):
+def get_module(backend: Optional[Backend] = None):
     """get the module of eigher
     'graphgallery.functional.tensor.tensorflow'
     or 'graphgallery.functional.tensor.pytorch'
@@ -19,10 +20,10 @@ def get_module(backend=None):
 
     Parameters
     ----------
-    backend : String or 'BackendModule', optional
-    `'tensorflow'`, `'torch'`, 'TensorFlowBackend', 
-    'PyTorchBackend', etc. if not specified, 
-    return the current backend module.
+    backend: String or BackendModule, optional.
+    'tensorflow', 'torch', TensorFlowBackend, 
+    PyTorchBackend, etc. if not specified, 
+    return the current backend module. 
 
     Returns
     -------
@@ -63,7 +64,7 @@ def infer_type(x: Any) -> str:
         elif 'int' in str(x.dtype):
             return gg.intx()
         else:
-            raise TypeError(f"Invalid type of TorchTensor: '{type(x)}'")
+            raise TypeError(f"Invalid type of pytorch Tensor: '{type(x)}'")
 
     elif tensorflow.is_tensor(x):
         if x.dtype.is_floating:
@@ -73,7 +74,7 @@ def infer_type(x: Any) -> str:
         elif x.dtype.is_bool:
             return gg.boolx()
         else:
-            raise TypeError(f"Invalid type of TFTensor: '{type(x)}'")
+            raise TypeError(f"Invalid type of tensorflow Tensor: '{type(x)}'")
 
     _x = x
     if not hasattr(_x, 'dtype'):
@@ -88,19 +89,24 @@ def infer_type(x: Any) -> str:
     elif _x.dtype.kind == 'O':
         raise TypeError(f"Invalid inputs of '{x}'.")
     else:
-        raise TypeError(f"Invalid input of '{type(x)}'.")
+        raise TypeError(f"Invalid input of '{type(x).__name__}'.")
 
 
-def sparse_adj_to_sparse_tensor(x, *, backend=None):
+def to(tensor, device_or_dtype: Union[Device, str]):
+    # TODO
+    raise NotImplemented
+
+
+def sparse_adj_to_sparse_tensor(x, *, backend: Optional[Backend] = None):
     """Converts a Scipy sparse matrix to a TensorFlow/PyTorch SparseTensor.
 
     Parameters
     ----------
     x: Scipy sparse matrix
         Matrix in Scipy sparse format.
-    backend: String or 'BackendModule', optional.
-    `'tensorflow'`, `'torch'`, 'TensorFlowBackend', 
-    'PyTorchBackend', etc. if not specified, 
+    backend: String or BackendModule, optional.
+    'tensorflow', 'torch', TensorFlowBackend, 
+    PyTorchBackend, etc. if not specified, 
     return the current backend module. 
 
     Returns
@@ -112,7 +118,7 @@ def sparse_adj_to_sparse_tensor(x, *, backend=None):
     return module.sparse_adj_to_sparse_tensor(x)
 
 
-def sparse_tensor_to_sparse_adj(x, *, backend=None):
+def sparse_tensor_to_sparse_adj(x, *, backend: Optional[Backend] = None):
     """Converts a SparseTensor to a Scipy sparse matrix (CSR matrix)."""
     module = get_module(backend)
     return module.sparse_tensor_to_sparse_adj(x)
@@ -121,14 +127,14 @@ def sparse_tensor_to_sparse_adj(x, *, backend=None):
 def sparse_edge_to_sparse_tensor(edge_index: np.ndarray,
                                  edge_weight: np.ndarray = None,
                                  shape: tuple = None,
-                                 backend=None):
+                                 backend: Optional[Backend] = None):
     module = get_module(backend)
     return module.sparse_edge_to_sparse_tensor(edge_index, edge_weight,
                                                shape)
 
 
 #### only works for tensorflow backend now #####################################
-def normalize_adj_tensor(adj, rate=-0.5, fill_weight=1.0, backend=None):
+def normalize_adj_tensor(adj, rate=-0.5, fill_weight=1.0, backend: Optional[Backend] = None):
     module = get_module(backend)
     return module.normalize_adj_tensor(adj,
                                        rate=rate,
@@ -139,7 +145,7 @@ def add_selfloops_edge(edge_index,
                        edge_weight,
                        num_nodes=None,
                        fill_weight=1.0,
-                       backend=None):
+                       backend: Optional[Backend] = None):
     module = get_module(backend)
     return module.add_selfloops_edge(edge_index,
                                      edge_weight,
@@ -152,7 +158,7 @@ def normalize_edge_tensor(edge_index,
                           num_nodes=None,
                           fill_weight=1.0,
                           rate=-0.5,
-                          backend=None):
+                          backend: Optional[Backend] = None):
     module = get_module(backend)
     return module.normalize_edge_tensor(edge_index,
                                         edge_weight,
