@@ -13,6 +13,19 @@ from .ops import get_module
 
 
 def data_type_dict(backend: Optional[Backend] = None) -> dict:
+    """get the data type dict of the corresponding backend.
+
+    Parameters
+    ----------
+    backend: String or BackendModule, optional.    
+        'tensorflow', 'torch', TensorFlowBackend, PyTorchBackend, etc.    
+        if not specified, return the current default backend module. 
+
+    Returns
+    -------
+    dict
+        data type dict of the corresponding backend.
+    """
     module = get_module(backend)
     return module.data_type_dict()
 
@@ -24,11 +37,12 @@ def is_sparse(x: Any, backend: Optional[Backend] = None) -> bool:
     ----------
     x: A python object to check.
 
-    backend: String or 'BackendModule', optional.    
-     ''tensorflow'', ''torch'', TensorFlowBackend, PyTorchBackend, etc.    
-     if not specified, return the current default backend module. 
+    backend: String or BackendModule, optional.    
+        'tensorflow', 'torch', TensorFlowBackend, PyTorchBackend, etc.    
+        if not specified, return the current default backend module. 
+
     Returns:
-    ----------
+    -------
     'True' iff 'x' is a (tf or torch) sparse-tensor.
     """
     module = get_module(backend)
@@ -41,10 +55,9 @@ def is_dense(x: Any, backend: Optional[Backend] = None) -> bool:
     Parameters:
     ----------
     x: A python object to check.
-
-    backend: String or 'BackendModule', optional.    
-     ''tensorflow'', ''torch'', TensorFlowBackend, PyTorchBackend, etc.    
-     if not specified, return the current default backend module. 
+    backend: String or BackendModule, optional.    
+        'tensorflow', 'torch', TensorFlowBackend, PyTorchBackend, etc.    
+        if not specified, return the current default backend module. 
 
     Returns:
     ----------
@@ -66,13 +79,13 @@ def is_tensor(x: Any, backend: Optional[Backend] = None) -> bool:
     Parameters:
     ----------
     x: A python object to check.
+    backend: String or BackendModule, optional.    
+        'tensorflow', 'torch', TensorFlowBackend, PyTorchBackend, etc.    
+        if not specified, return the current default backend module.  
 
-    backend: String or 'BackendModule', optional.    
-     ''tensorflow'', ''torch'', TensorFlowBackend, PyTorchBackend, etc.    
-     if not specified, return the current default backend module.    
     Returns:
-    ----------
-    'True' iff 'x' is a (tf or torch) (sparse-)tensor.
+    -------
+    `True` iff x is a (tf or torch) (sparse-)tensor.
     """
     module = get_module(backend)
     return module.is_tensor(x)
@@ -91,14 +104,14 @@ def astensor(x, *, dtype=None, device: Optional[Device] = None,
         See 'graphgallery.infer_type'.
     device: tf.device, optional. the desired device of returned tensor.
         Default: if 'None', uses the CPU device for the default tensor type.
-    backend: String or 'BackendModule', optional.
-         ''tensorflow'', ''torch'', TensorFlowBackend, PyTorchBackend, etc.
+    backend: String or BackendModule, optional.
+         'tensorflow', 'torch', TensorFlowBackend, PyTorchBackend, etc.
          if not specified, return the current default backend module. 
     escape: a Class or a tuple of Classes,  'astensor' will disabled if
          'isinstance(x, escape)'.
 
     Returns:
-    ----------      
+    -------    
     Tensor or SparseTensor with dtype. If dtype is 'None', 
     dtype will be one of the following:       
         1. 'graphgallery.floatx()' if 'x' is floating.
@@ -129,11 +142,11 @@ def astensors(*xs, dtype=None, device: Optional[Device] = None,
         See 'graphgallery.infer_type'.
     device: tf.device, optional. the desired device of returned tensor.
         Default: if 'None', uses the CPU device for the default tensor type.     
-    backend: String or 'BackendModule', optional.
-         'tensorflow', 'torch', TensorFlowBackend, PyTorchBackend, etc.
-         if not specified, return the current default backend module.    
-    escape: a Class or a tuple of Classes,  `astensor` will disabled if
-         `isinstance(x, escape)`.
+    backend: String or BackendModule, optional.
+        'tensorflow', 'torch', TensorFlowBackend, PyTorchBackend, etc.
+        if not specified, return the current default backend module.    
+    escape: a Class or a tuple of Classes, `astensor` will disabled if
+        `isinstance(x, escape)`.
 
     Returns:
     -------     
@@ -170,6 +183,9 @@ def tensor2tensor(tensor, *, device: Optional[Device] = None):
 
 
 def tensoras(tensor):
+    """Convert a TensorFLow tensor or PyTorch Tensor
+        to Numpy array or Scipy sparse matrix.
+    """
     if tensorflow.is_dense(tensor):
         m = tensor.numpy()
     elif tensorflow.is_sparse(tensor):

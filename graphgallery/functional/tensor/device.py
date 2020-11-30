@@ -19,10 +19,10 @@ def device(device: Device = None, backend: Backend = None) -> Device:
     device: (string, tf.device, torch.device, None)
         device name such as 'cpu', 'gpu', 'cuda'
         or an instance of 'tf.device'/'torch.device'
-    backend: String or 'BackendModule', optional.
-    `'tensorflow'`, `'torch'`, 'TensorFlowBackend',
-    'PyTorchBackend', etc. if not specified,
-    return the current backend module.
+    backend: String or BackendModule, optional.
+        'tensorflow', 'torch', TensorFlowBackend,
+        PyTorchBackend, etc. if not specified,
+        return the current backend module.
 
     Returns
     -------
