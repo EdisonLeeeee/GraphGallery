@@ -3,12 +3,12 @@ import scipy.sparse as sp
 from typing import Union, Optional, List, Tuple, Any
 from ..data_type import is_multiobjects
 
-__all__ = ['sparse_collate', 'check_and_convert', 'index_select']
+__all__ = ['sparse_apply', 'check_and_convert', 'index_select']
 
 _SPARSE_THRESHOLD = 0.5
 
 
-def sparse_collate(key, val):
+def sparse_apply(key, val):
     # TODO: multiple graph
     if is_multiobjects(val):
         return key, val

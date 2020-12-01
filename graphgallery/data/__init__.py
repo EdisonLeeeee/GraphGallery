@@ -7,5 +7,5 @@ from .multi_graph import MultiGraph
 from .multi_edge_graph import MultiEdgeGraph
 from .listgraph import ListGraph
 from .dictgraph import DictGraph
-from .collate import *
+from .apply import *
 from .io import *

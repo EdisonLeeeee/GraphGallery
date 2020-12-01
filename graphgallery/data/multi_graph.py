@@ -11,7 +11,7 @@ from typing import Union, Optional, List, Tuple, Any
 
 from .homograph import HomoGraph
 from .graph import Graph
-from .collate import index_select
+from .apply import index_select
 from ..data_type import is_intscalar
 
 
@@ -50,8 +50,8 @@ class MultiGraph(HomoGraph):
             return super().__getitem__(index)
         else:
             try:
-                collate_fn = partial(index_select, index=index)
-                collects = self.dicts(collate_fn=collate_fn)
+                apply_fn = partial(index_select, index=index)
+                collects = self.dicts(apply_fn=apply_fn)
                 if is_intscalar(index):
                     # Single graph
                     return Graph(**collects)

@@ -5,7 +5,7 @@ from functools import partial
 from copy import copy as _copy, deepcopy as _deepcopy
 from typing import Union, Tuple, List
 
-from .collate import check_and_convert, sparse_collate
+from .apply import check_and_convert, sparse_apply
 from .io import load_npz
 
 
@@ -86,14 +86,14 @@ class BaseGraph:
         keys = {key for key in self.__dict__.keys() if self[key] is not None and not key.startswith("_")}
         return sorted(keys)
 
-    def items(self, collate_fn=None):
-        if callable(collate_fn):
-            return tuple(collate_fn(key, self[key]) for key in self.keys())
+    def items(self, apply_fn=None):
+        if callable(apply_fn):
+            return tuple(apply_fn(key, self[key]) for key in self.keys())
         else:
             return tuple((key, self[key]) for key in self.keys())
 
-    def dicts(self, collate_fn=None):
-        return dict(self.items(collate_fn=collate_fn))
+    def dicts(self, apply_fn=None):
+        return dict(self.items(apply_fn=apply_fn))
 
     @ classmethod
     def from_dict(cls, dictionary: dict):
@@ -108,24 +108,24 @@ class BaseGraph:
         loader = load_npz(filepath)
         return cls(copy=False, **loader)
 
-    def to_npz(self, filepath: str, collate_fn=sparse_collate):
+    def to_npz(self, filepath: str, apply_fn=sparse_apply):
 
         filepath = osp.abspath(osp.expanduser(osp.realpath(filepath)))
 
-        data_dict = {k: v for k, v in self.items(collate_fn=collate_fn) if v is not None}
+        data_dict = {k: v for k, v in self.items(apply_fn=apply_fn) if v is not None}
         np.savez_compressed(filepath, **data_dict)
         print(f"Save to {filepath}.", file=sys.stderr)
 
         return filepath
 
-    def update(self, *, collate_fn=None, copy=False, **collects):
-        if collate_fn is None:
-            collate_fn = partial(check_and_convert,
+    def update(self, *, apply_fn=None, copy=False, **collects):
+        if apply_fn is None:
+            apply_fn = partial(check_and_convert,
                                  multiple=self.multiple,
                                  copy=copy)
 
         for k, v in collects.items():
-            k, v = collate_fn(k, v)
+            k, v = apply_fn(k, v)
             self[k] = v
 
     def copy(self, deepcopy: bool = False):
