@@ -1,5 +1,5 @@
 import tensorflow as tf
-from tensorflow.keras import Model, Input
+from tensorflow.keras import Input
 from tensorflow.keras.layers import Dropout
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
@@ -7,9 +7,10 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 from graphgallery.nn.layers.tensorflow import GaussionConvolution_F, GaussionConvolution_D, Sample, Gather
 from graphgallery import floatx, intx
+from graphgallery.nn.models import TFKeras
 
 
-class RobustGCN(Model):
+class RobustGCN(TFKeras):
 
     def __init__(self, in_channels, out_channels,
                  hiddens=[64],

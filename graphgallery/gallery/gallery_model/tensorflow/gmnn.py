@@ -1,6 +1,6 @@
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras import Model, Input
+from tensorflow.keras import Input
 from tensorflow.keras.layers import Dropout
 from tensorflow.keras.optimizers import RMSprop, Adam
 from tensorflow.keras import regularizers
@@ -12,6 +12,7 @@ from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.gallery import GalleryModel
 
 from graphgallery import functional as gf
+from graphgallery.nn.models import TFKeras
 
 
 class GMNN(GalleryModel):
@@ -127,7 +128,7 @@ class GMNN(GalleryModel):
                                      use_bias=use_bias)([h, adj])
                 h = Gather()([h, index])
 
-                model = Model(inputs=[x, adj, index], outputs=h)
+                model = TFKeras(inputs=[x, adj, index], outputs=h)
                 model.compile(loss=CategoricalCrossentropy(from_logits=True),
                               optimizer=RMSprop(lr=lr),
                               metrics=['accuracy'])

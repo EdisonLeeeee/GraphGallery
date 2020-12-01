@@ -1,5 +1,5 @@
 import tensorflow as tf
-from tensorflow.keras import Model, Input
+from tensorflow.keras import Input
 from tensorflow.keras.layers import Dropout, Dense
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
@@ -7,6 +7,7 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 from graphgallery.nn.layers.tensorflow import MeanAggregator, GCNAggregator, MedianAggregator, MedianGCNAggregator
 from graphgallery import floatx, intx
+from graphgallery.nn.models import TFKeras
 
 
 _AGG = {'mean': MeanAggregator,
@@ -16,7 +17,7 @@ _AGG = {'mean': MeanAggregator,
         }
 
 
-class GraphSAGE(Model):
+class GraphSAGE(TFKeras):
 
     def __init__(self, in_channels, out_channels,
                  hiddens=[32], activations=['relu'], dropout=0.5,

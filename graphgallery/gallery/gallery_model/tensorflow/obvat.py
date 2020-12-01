@@ -1,5 +1,5 @@
 import tensorflow as tf
-from tensorflow.keras import Model, Input
+from tensorflow.keras import Input
 from tensorflow.keras.layers import Dropout
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
@@ -12,6 +12,7 @@ from graphgallery.sequence import FullBatchNodeSequence
 from graphgallery.utils.bvat_utils import kl_divergence_with_logit, entropy_y_x
 
 from graphgallery import functional as gf
+from graphgallery.nn.models import TFKeras
 
 
 class OBVAT(GalleryModel):
@@ -129,7 +130,7 @@ class OBVAT(GalleryModel):
             logit = self.forward(x, adj)
             output = Gather()([logit, index])
 
-            model = Model(inputs=[x, adj, index], outputs=output)
+            model = TFKeras(inputs=[x, adj, index], outputs=output)
             model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
                           optimizer=Adam(lr=lr),
                           metrics=['accuracy'])

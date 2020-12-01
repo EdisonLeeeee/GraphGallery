@@ -1,15 +1,15 @@
-from tensorflow.keras import Model, Input
+from tensorflow.keras import Input
 from tensorflow.keras.layers import Dropout, BatchNormalization, Concatenate
 from tensorflow.keras.optimizers import Nadam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 from graphgallery.nn.layers.tensorflow import Top_k_features, LGConvolution, DenseConvolution, Mask
-
 from graphgallery import floatx, intx
+from graphgallery.nn.models import TFKeras
 
 
-class LGCN(Model):
+class LGCN(TFKeras):
 
     def __init__(self, in_channels, out_channels,
                  hiddens=[32], n_filters=[8, 8],
