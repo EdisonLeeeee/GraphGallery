@@ -16,7 +16,7 @@ class DictGraph(BaseGraph):
     def __init__(self, metadata: Any = None,
                  copy: bool = True,
                  **dict_graphs):
-        dict_graphs = gf.Bunch(**dict_graphs)
+        dict_graphs = gf.BunchDict(**dict_graphs)
         collects = locals()
         del collects['self']
         super().__init__(**collects)

@@ -3,7 +3,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 
 from graphgallery.gallery import GraphModel
-from graphgallery.functional import asarray, Bunch
+from graphgallery.functional import asarray, BunchDict
 
 
 class SklearnModel(GraphModel):
@@ -56,7 +56,7 @@ class SklearnModel(GraphModel):
         y_true = self.graph.node_label[index]
         y_pred = self.classifier.predict(self.embeddings[index])
         accuracy = accuracy_score(y_true, y_pred)
-        return Bunch(loss=None, accuracy=accuracy)
+        return BunchDict(loss=None, accuracy=accuracy)
 
     @staticmethod
     def normalize_embedding(embeddings):

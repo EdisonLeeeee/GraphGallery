@@ -39,7 +39,7 @@ class Dataset:
 
         self.graph = None
         self.split_cache = None
-        self.splits = gf.Bunch()
+        self.splits = gf.BunchDict()
         self.transform = gf.get(transform)
 
     @property

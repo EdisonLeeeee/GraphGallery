@@ -16,7 +16,7 @@ from tensorflow.keras.callbacks import History
 from tensorflow.python.keras.utils.generic_utils import Progbar
 
 import graphgallery as gg
-from graphgallery.functional import Bunch
+from graphgallery.functional import BunchDict
 from graphgallery.nn.functions import softmax
 from graphgallery.data.io import makedirs_from_filepath
 from graphgallery.data import BaseGraph
@@ -272,7 +272,7 @@ class GalleryModel(GraphModel):
                                   stateful_metrics=stateful_metrics)
             print("Training...")
 
-        logs = Bunch()
+        logs = BunchDict()
         begin_time = time.perf_counter()
         callbacks.on_train_begin()
         try:
@@ -361,7 +361,7 @@ class GalleryModel(GraphModel):
                           verbose=verbose,
                           stateful_metrics=set(metrics_names))
         begin_time = time.perf_counter()
-        logs = Bunch(**self.test_step(test_data))
+        logs = BunchDict(**self.test_step(test_data))
         time_passed = time.perf_counter() - begin_time
         logs["Duration"] = time_passed
         progbar.update(len(test_data), logs.items())
