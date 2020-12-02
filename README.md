@@ -25,14 +25,14 @@
 </p>
 
 - [GraphGallery](#graphgallery)
-- [👀 What's important](#whats-important)
-- [🚀 Installation](#installation)
-- [🤖 Implementations](#implementations)
+- [👀 What's important](#-whats-important)
+- [🚀 Installation](#-installation)
+- [🤖 Implementations](#-implementations)
   - [Semi-supervised models](#semi-supervised-models)
     - [General models](#general-models)
     - [Defense models](#defense-models)
   - [Unsupervised models](#unsupervised-models)
-- [⚡ Quick Start](#quick-start)
+- [⚡ Quick Start](#-quick-start)
   - [Datasets](#datasets)
     - [Planetoid](#planetoid)
     - [NPZDataset](#npzdataset)
@@ -42,12 +42,12 @@
   - [Visualization](#visualization)
   - [Using TensorFlow/PyTorch Backend](#using-tensorflowpytorch-backend)
     - [GCN using PyTorch backend](#gcn-using-pytorch-backend)
-- [❓ How to add your datasets](#how-to-add-your-datasets)
-- [❓ How to define your models](#how-to-define-your-models)
+- [❓ How to add your datasets](#-how-to-add-your-datasets)
+- [❓ How to define your models](#-how-to-define-your-models)
     - [GCN using PyG backend](#gcn-using-pyg-backend)
-- [😎 More Examples](#more-examples)
-- [⭐ Road Map](#road-map)
-- [😘 Acknowledgement](#acknowledgement)
+- [😎 More Examples](#-more-examples)
+- [⭐ Road Map](#-road-map)
+- [😘 Acknowledgement](#-acknowledgement)
 
 # GraphGallery
 GraphGallery is a gallery for benchmarking Graph Neural Networks (GNNs) with [TensorFlow 2.x](https://github.com/tensorflow/tensorflow) and [PyTorch](https://github.com/pytorch/pytorch) backend. GraphGallery 0.5.x is a total re-write from previous versions, and some things have changed. 
@@ -269,36 +269,38 @@ more details please refer to [GraphData](https://github.com/EdisonLeeeee/GraphDa
 ### Planetoid
 fixed datasets
 ```python
-from graphgallery.data import Planetoid
+from graphgallery.datasets import Planetoid
 # set `verbose=False` to avoid additional outputs 
 data = Planetoid('cora', verbose=False)
 graph = data.graph
-idx_train, idx_val, idx_test = data.split_nodes()
-# idx_train:  training indices: 1D Numpy array
-# idx_val:  validation indices: 1D Numpy array
-# idx_test:  testing indices: 1D Numpy array
+# here `splits` is a dict like instance
+splits = data.split_nodes()
+# splits.train_nodes:  training indices: 1D Numpy array
+# splits.val_nodes:  validation indices: 1D Numpy array
+# splits.test_nodes:  testing indices: 1D Numpy array
 >>> graph
 Graph(adj_matrix(2708, 2708), attr_matrix(2708, 2708), labels(2708,))
 ```
-currently the supported datasets are:
+currently the available datasets are:
 ```python
->>> data.supported_datasets
+>>> data.available_datasets()
 ('citeseer', 'cora', 'pubmed')
 ```
 ### NPZDataset
 more scalable datasets (stored with `.npz`)
 ```python
-from graphgallery.data import NPZDataset;
+from graphgallery.datasets import NPZDataset;
 # set `verbose=False` to avoid additional outputs
 data = NPZDataset('cora', verbose=False, standardize=False)
 graph = data.graph
-idx_train, idx_val, idx_test = data.split_nodes(random_state=42)
+# here `splits` is a dict like instance
+splits = data.split_nodes(random_state=42)
 >>> graph
 Graph(adj_matrix(2708, 2708), attr_matrix(2708, 2708), labels(2708,))
 ```
-currently the supported datasets are:
+currently the available datasets are:
 ```python
->>> data.supported_datasets
+>>> data.available_datasets()
 ('citeseer','citeseer_full','cora','cora_ml','cora_full',
  'amazon_cs','amazon_photo','coauthor_cs','coauthor_phy', 
  'polblogs', 'pubmed', 'flickr','blogcatalog','dblp')
@@ -310,9 +312,9 @@ currently the supported datasets are:
 >>> backend()
 TensorFlow 2.1.2 Backend
 
->>> from graphgallery import functional as F
+>>> from graphgallery import functional as gf
 >>> arr = [1, 2, 3]
->>> F.astensor(arr)
+>>> gf.astensor(arr)
 <tf.Tensor: shape=(3,), dtype=int32, numpy=array([1, 2, 3], dtype=int32)>
 
 ```
@@ -322,7 +324,7 @@ TensorFlow 2.1.2 Backend
 ```python
 >>> import scipy.sparse as sp
 >>> sp_matrix = sp.eye(3)
->>> F.astensor(sp_matrix)
+>>> gf.astensor(sp_matrix)
 <tensorflow.python.framework.sparse_tensor.SparseTensor at 0x7f1bbc205dd8>
 ```
 
@@ -333,10 +335,10 @@ TensorFlow 2.1.2 Backend
 >>> set_backend('torch') # torch, pytorch or th
 PyTorch 1.6.0+cu101 Backend
 
->>> F.astensor(arr)
+>>> gf.astensor(arr)
 tensor([1, 2, 3])
 
->>> F.astensor(sp_matrix)
+>>> gf.astensor(sp_matrix)
 tensor(indices=tensor([[0, 1, 2],
                        [0, 1, 2]]),
        values=tensor([1., 1., 1.]),
@@ -345,28 +347,28 @@ tensor(indices=tensor([[0, 1, 2],
 
 + To Numpy or Scipy sparse matrix
 ```python
->>> tensor = F.astensor(arr)
->>> F.tensoras(tensor)
+>>> tensor = gf.astensor(arr)
+>>> gf.tensoras(tensor)
 array([1, 2, 3])
 
->>> sp_tensor = F.astensor(sp_matrix)
->>> F.tensoras(sp_tensor)
+>>> sp_tensor = gf.astensor(sp_matrix)
+>>> gf.tensoras(sp_tensor)
 <3x3 sparse matrix of type '<class 'numpy.float32'>'
     with 3 stored elements in Compressed Sparse Row format>
 ```
 
 + Or even convert one Tensor to another
 ```python
->>> tensor = F.astensor(arr, backend="tensorflow") # or "tf" in short
+>>> tensor = gf.astensor(arr, backend="tensorflow") # or "tf" in short
 >>> tensor
 <tf.Tensor: shape=(3,), dtype=int64, numpy=array([1, 2, 3])>
->>> F.tensor2tensor(tensor)
+>>> gf.tensor2tensor(tensor)
 tensor([1, 2, 3])
 
->>> sp_tensor = F.astensor(sp_matrix, backend="tensorflow") # set backend="tensorflow" to convert to tensorflow tensor
+>>> sp_tensor = gf.astensor(sp_matrix, backend="tensorflow") # set backend="tensorflow" to convert to tensorflow tensor
 >>> sp_tensor
 <tensorflow.python.framework.sparse_tensor.SparseTensor at 0x7efb6836a898>
->>> F.tensor2tensor(sp_tensor)
+>>> gf.tensor2tensor(sp_tensor)
 tensor(indices=tensor([[0, 1, 2],
                        [0, 1, 2]]),
        values=tensor([1., 1., 1.]),
@@ -376,18 +378,18 @@ tensor(indices=tensor([[0, 1, 2],
 
 ## Example of GCN model
 ```python
-from graphgallery.nn.gallery import GCN
+from graphgallery.gallery import GCN
 
 model = GCN(graph, attr_transform="normalize_attr", device="CPU", seed=123)
 # build your GCN model with default hyper-parameters
 model.build()
-# train your model. here idx_train and idx_val are numpy arrays
+# train your model. here splits.train_nodes and splits.val_nodes are numpy arrays
 # verbose takes 0, 1, 2, 3, 4
-his = model.train(idx_train, idx_val, verbose=1, epochs=100)
+history = model.train(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
 # test your model
 # verbose takes 0, 1, 2
-loss, accuracy = model.test(idx_test, verbose=1)
-print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
+results = model.test(splits.test_nodes, verbose=1)
+print(f'Test loss {results.loss:.5}, Test accuracy {results.accuracy:.2%}')
 ```
 On `Cora` dataset:
 ```
@@ -414,18 +416,18 @@ you can use the following statement to build your model
 + Train your model
 ```python
 # train with validation
->>> his = model.train(idx_train, idx_val, verbose=1, epochs=100)
+>>> history = model.train(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
 # train without validation
->>> his = model.train(idx_train, verbose=1, epochs=100)
+>>> history = model.train(splits.train_nodes, verbose=1, epochs=100)
 ```
-here `his` is a tensorflow `History` instance.
+here `history` is a tensorflow `History` instance.
 
 + Test you model
 ```python
->>> loss, accuracy = model.test(idx_test, verbose=1)
+>>> results = model.test(splits.test_nodes, verbose=1)
 Testing...
 1/1 [==============================] - 0s 62ms/step - test_loss: 1.4123 - test_acc: 0.8120 - time: 0.0620
->>> print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
+>>> print(f'Test loss {results.loss:.5}, Test accuracy {results.accuracy:.2%}')
 Test loss 1.4123, Test accuracy 81.20%
 ```
 
@@ -436,15 +438,15 @@ NOTE: you must install [SciencePlots](https://github.com/garrettj403/SciencePlot
 import matplotlib.pyplot as plt
 with plt.style.context(['science', 'no-latex']):
     fig, axes = plt.subplots(1, 2, figsize=(15, 5))
-    axes[0].plot(his.history['acc'], label='Training accuracy', linewidth=3)
-    axes[0].plot(his.history['val_acc'], label='Validation accuracy', linewidth=3)
+    axes[0].plot(history.history['acc'], label='Training accuracy', linewidth=3)
+    axes[0].plot(history.history['val_acc'], label='Validation accuracy', linewidth=3)
     axes[0].legend(fontsize=20)
     axes[0].set_title('Accuracy', fontsize=20)
     axes[0].set_xlabel('Epochs', fontsize=20)
     axes[0].set_ylabel('Accuracy', fontsize=20)
 
-    axes[1].plot(his.history['loss'], label='Training loss', linewidth=3)
-    axes[1].plot(his.history['val_loss'], label='Validation loss', linewidth=3)
+    axes[1].plot(history.history['loss'], label='Training loss', linewidth=3)
+    axes[1].plot(history.history['val_loss'], label='Validation loss', linewidth=3)
     axes[1].legend(fontsize=20)
     axes[1].set_title('Loss', fontsize=20)
     axes[1].set_xlabel('Epochs', fontsize=20)
@@ -469,16 +471,16 @@ PyTorch 1.6.0+cu101 Backend
 ```python
 
 # The following codes are the same with TensorFlow Backend
->>> from graphgallery.nn.gallery import GCN
+>>> from graphgallery.gallery import GCN
 >>> model = GCN(graph, attr_transform="normalize_attr", device="GPU", seed=123);
 >>> model.build()
->>> his = model.train(idx_train, idx_val, verbose=1, epochs=100)
+>>> history = model.train(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
 Training...
 100/100 [==============================] - 0s 5ms/step - loss: 0.6813 - acc: 0.9214 - val_loss: 1.0506 - val_acc: 0.7820 - time: 0.4734
->>> loss, accuracy = model.test(idx_test, verbose=1)
+>>> results = model.test(splits.test_nodes, verbose=1)
 Testing...
 1/1 [==============================] - 0s 1ms/step - test_loss: 1.0131 - test_acc: 0.8220 - time: 0.0013
->>> print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
+>>> print(f'Test loss {results.loss:.5}, Test accuracy {results.accuracy:.2%}')
 Test loss 1.0131, Test accuracy 82.20%
 
 ```
@@ -502,7 +504,7 @@ mydataset = Graph.from_npz('path/to/mydataset.npz')
 
 # ❓ How to define your models
 
-You can follow the codes in the folder `graphgallery.nn.gallery` and write you models based on:
+You can follow the codes in the folder `graphgallery.gallery` and write you models based on:
 
 + TensorFlow
 + PyTorch
@@ -521,16 +523,16 @@ PyTorch Geometric 1.6.1 (PyTorch 1.6.0+cu101) Backend
 
 ```python
 # The following codes are the same with TensorFlow or PyTorch Backend
->>> from graphgallery.nn.gallery import GCN
+>>> from graphgallery.gallery import GCN
 >>> model = GCN(graph, attr_transform="normalize_attr", device="GPU", seed=123);
 >>> model.build()
->>> his = model.train(idx_train, idx_val, verbose=1, epochs=100)
+>>> history = model.train(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
 Training...
 100/100 [==============================] - 0s 3ms/step - loss: 0.5325 - acc: 0.9643 - val_loss: 1.0034 - val_acc: 0.7980 - time: 0.3101
->>> loss, accuracy = model.test(idx_test, verbose=1)
+>>> results = model.test(splits.test_nodes, verbose=1)
 Testing...
 1/1 [==============================] - 0s 834us/step - test_loss: 0.9733 - test_acc: 0.8130 - time: 8.2737e-04
->>> print(f'Test loss {loss:.5}, Test accuracy {accuracy:.2%}')
+>>> print(f'Test loss {results.loss:.5}, Test accuracy {results.accuracy:.2%}')
 Test loss 0.97332, Test accuracy 81.30%
 ```
 
@@ -544,7 +546,7 @@ Please refer to the [examples](https://github.com/EdisonLeeeee/GraphGallery/blob
 - [x] Add other frameworks (PyG and DGL) support
 - [ ] Add more GNN models (TF and Torch backend)
 - [ ] Support for more tasks, e.g., `graph Classification` and `link prediction`
-- [ ] Support for more types of graphs, e.g., Heterogeneous graph
+- [x] Support for more types of graphs, e.g., Heterogeneous graph
 - [ ] Add Docstrings and Documentation (Building)
 
 
