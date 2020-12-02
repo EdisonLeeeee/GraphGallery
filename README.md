@@ -50,7 +50,7 @@
 - [😘 Acknowledgement](#-acknowledgement)
 
 # GraphGallery
-GraphGallery is a gallery for benchmarking Graph Neural Networks (GNNs) with [TensorFlow 2.x](https://github.com/tensorflow/tensorflow) and [PyTorch](https://github.com/pytorch/pytorch) backend. GraphGallery 0.5.x is a total re-write from previous versions, and some things have changed. 
+GraphGallery is a gallery for benchmarking Graph Neural Networks (GNNs) with [TensorFlow 2.x](https://github.com/tensorflow/tensorflow) and [PyTorch](https://github.com/pytorch/pytorch) backend. GraphGallery 0.6.x is a total re-write from previous versions, and some things have changed. 
 
 NEWS: [PyG](https://github.com/rusty1s/pytorch_geometric) backend and [DGL](https://github.com/dmlc/dgl) backend now are supported in GraphGallery!
 
@@ -279,7 +279,11 @@ splits = data.split_nodes()
 # splits.val_nodes:  validation indices: 1D Numpy array
 # splits.test_nodes:  testing indices: 1D Numpy array
 >>> graph
-Graph(adj_matrix(2708, 2708), attr_matrix(2708, 2708), labels(2708,))
+
+Graph(adj_matrix(2708, 2708),
+      node_attr(2708, 1433),
+      node_label(2708,),
+      metadata=None, multiple=False)
 ```
 currently the available datasets are:
 ```python
@@ -296,7 +300,10 @@ graph = data.graph
 # here `splits` is a dict like instance
 splits = data.split_nodes(random_state=42)
 >>> graph
-Graph(adj_matrix(2708, 2708), attr_matrix(2708, 2708), labels(2708,))
+Graph(adj_matrix(2708, 2708),
+      node_attr(2708, 1433),
+      node_label(2708,),
+      metadata=None, multiple=False)
 ```
 currently the available datasets are:
 ```python
