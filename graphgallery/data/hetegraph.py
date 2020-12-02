@@ -12,9 +12,12 @@ from .base_graph import BaseGraph
 class HeteGraph(BaseGraph):
     """Heterogeneous graph stored in Numpy array form."""
     multiple = False
+    # TODO: to be develop
 
-    def __init__(self, edge_index=None, edge_weight=None,
-                 edge_attr=None, edge_label=None, *,
+    def __init__(self,
+                 edge_index=None, edge_weight=None,
+                 edge_attr=None, edge_label=None,
+                 *,
                  edge_graph_label=None,
                  node_attr=None, node_label=None,
                  node_graph_label=None,

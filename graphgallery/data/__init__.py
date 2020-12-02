@@ -9,3 +9,4 @@ from .listgraph import ListGraph
 from .dictgraph import DictGraph
 from .apply import *
 from .io import *
+from .utils import *

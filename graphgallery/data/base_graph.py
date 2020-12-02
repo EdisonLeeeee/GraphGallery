@@ -123,6 +123,8 @@ class BaseGraph:
             apply_fn = partial(check_and_convert,
                                multiple=self.multiple,
                                copy=copy)
+        else:
+            assert callable(apply_fn)
 
         for k, v in collects.items():
             k, v = apply_fn(k, v)

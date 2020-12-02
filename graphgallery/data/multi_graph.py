@@ -20,20 +20,42 @@ class MultiGraph(HomoGraph):
         sparse matrices form."""
     multiple = True
 
-    def __init__(self, adj_matrix=None,
-                 node_attr=None,
-                 node_label=None, *,
-                 edge_attr=None,
-                 edge_label=None,
-                 graph_attr=None,
-                 graph_label=None,
-                 mapping=None,
-                 metadata: Any = None,
-                 copy: bool = True):
-        r"""Create a multiple (un)dirtected (attributed and labeled) graph."""
-        collects = locals()
-        del collects['self']
-        self.update(**collects)
+    def to_undirected(self):
+        """Convert to an undirected graph (make adjacency matrix symmetric)."""
+        raise NotImplementedError
+
+    def to_unweighted(self):
+        """Convert to an unweighted graph (set all edge weights to 1)."""
+        raise NotImplementedError
+
+    def eliminate_selfloops(self):
+        """Remove self-loops from the adjacency matrix."""
+        raise NotImplementedError
+
+    def eliminate_classes(self, threshold=0):
+        """Remove nodes from graph that correspond to a class of which there are less
+        or equal than 'threshold'. Those classes would otherwise break the training procedure.
+        """
+        raise NotImplementedError
+
+    def eliminate_singleton(self):
+        raise NotImplementedError
+
+    def add_selfloops(self, value=1.0):
+        """Set the diagonal."""
+        raise NotImplementedError
+
+    def standardize(self):
+        """Select the largest connected components (LCC) of 
+        the unweighted/undirected/no-self-loop graph."""
+        raise NotImplementedError
+
+    def nxgraph(self, directed: bool = True):
+        """Get the network graph from adj_matrix."""
+        raise NotImplementedError
+
+    def subgraph(self, *, nodes_to_remove=None, nodes_to_keep=None):
+        raise NotImplementedError
 
     def extra_repr(self):
         excluded = {"metadata", "mapping"}

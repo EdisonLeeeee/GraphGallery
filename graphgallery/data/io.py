@@ -34,7 +34,7 @@ def download_file(raw_paths: List[str], urls: List[str]) -> None:
 
 
 def extract_zip(filename, folder=None):
-    r"""Extracts a zip archive to a specific folder.
+    """Extracts a zip archive to a specific folder.
 
     Parameters:
     -----------
@@ -62,7 +62,8 @@ def clean(filepaths: List[str]):
 
 
 def files_exist(files: List[str]) -> bool:
-    if not files: return False
+    if not files:
+        return False
     if isinstance(files, (list, tuple)):
         return len(files) != 0 and all([osp.exists(f) for f in files])
     else:

@@ -1,6 +1,8 @@
 import numpy as np
 import scipy.sparse as sp
 from typing import Union, Optional, List, Tuple, Any
+from graphgallery import functional as gf
+
 from ..data_type import is_multiobjects
 
 __all__ = ['sparse_apply', 'check_and_convert', 'index_select']
@@ -116,7 +118,7 @@ def _check_dict_graphs(graphs, copy=False):
     for g in graphs.values():
         if not isinstance(g, BaseGraph):
             raise ValueError(f"graphs should be instances of 'BaseGraph', got ({type(g)} instead).")
-    return {k: g.copy() if copy else g for k, g in graphs.items()}
+    return gf.BunchDict({k: g.copy() if copy else g for k, g in graphs.items()})
 
 
 _KEYS = ('adj_matrix', 'node_attr', 'node_label', 'node_graph_label',
