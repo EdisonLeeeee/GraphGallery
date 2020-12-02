@@ -28,10 +28,6 @@
 - [👀 What's important](#-whats-important)
 - [🚀 Installation](#-installation)
 - [🤖 Implementations](#-implementations)
-  - [Semi-supervised models](#semi-supervised-models)
-    - [General models](#general-models)
-    - [Defense models](#defense-models)
-  - [Unsupervised models](#unsupervised-models)
 - [⚡ Quick Start](#-quick-start)
   - [Datasets](#datasets)
     - [Planetoid](#planetoid)
@@ -52,7 +48,9 @@
 # GraphGallery
 GraphGallery is a gallery for benchmarking Graph Neural Networks (GNNs) with [TensorFlow 2.x](https://github.com/tensorflow/tensorflow) and [PyTorch](https://github.com/pytorch/pytorch) backend. GraphGallery 0.6.x is a total re-write from previous versions, and some things have changed. 
 
-NEWS: [PyG](https://github.com/rusty1s/pytorch_geometric) backend and [DGL](https://github.com/dmlc/dgl) backend now are supported in GraphGallery!
+NEWS: 
++ [PyG](https://github.com/rusty1s/pytorch_geometric) backend and [DGL](https://github.com/dmlc/dgl) backend now are available in GraphGallery
++ GraphGallery now supports Multiple Graph for different tasks
 
 
 # 👀 What's important
@@ -75,7 +73,6 @@ pip install -U graphgallery
 ```
 # 🤖 Implementations
 Please refer to [examples](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples)
-
 
 
 # ⚡ Quick Start
