@@ -46,18 +46,15 @@ class MultiGraph(HomoGraph):
         return string
 
     def __getitem__(self, index):
-        if isinstance(index, str):
-            return super().__getitem__(index)
-        else:
-            try:
-                apply_fn = partial(index_select, index=index)
-                collects = self.dicts(apply_fn=apply_fn)
-                if is_intscalar(index):
-                    # Single graph
-                    return Graph(**collects)
-                else:
-                    G = self.copy()
-                    G.update(**collects)
-                    return G
-            except IndexError as e:
-                raise IndexError(f"Invalid index {index}.")
+        try:
+            apply_fn = partial(index_select, index=index)
+            collects = self.dicts(apply_fn=apply_fn)
+            if is_intscalar(index):
+                # Single graph
+                return Graph(**collects)
+            else:
+                G = self.copy()
+                G.update(**collects)
+                return G
+        except IndexError as e:
+            raise IndexError(f"Invalid index {index}.")

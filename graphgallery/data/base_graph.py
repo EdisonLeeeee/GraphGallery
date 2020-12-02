@@ -83,14 +83,14 @@ class BaseGraph:
 
     def keys(self):
         # maybe using `tuple`?
-        keys = {key for key in self.__dict__.keys() if self[key] is not None and not key.startswith("_")}
+        keys = {key for key in self.__dict__.keys() if getattr(self, key, None) and not key.startswith("_")}
         return sorted(keys)
 
     def items(self, apply_fn=None):
         if callable(apply_fn):
-            return tuple(apply_fn(key, self[key]) for key in self.keys())
+            return tuple(apply_fn(key, getattr(self, key, None)) for key in self.keys())
         else:
-            return tuple((key, self[key]) for key in self.keys())
+            return tuple((key, getattr(self, key, None)) for key in self.keys())
 
     def dicts(self, apply_fn=None):
         return dict(self.items(apply_fn=apply_fn))
@@ -121,8 +121,8 @@ class BaseGraph:
     def update(self, *, apply_fn=None, copy=False, **collects):
         if apply_fn is None:
             apply_fn = partial(check_and_convert,
-                                 multiple=self.multiple,
-                                 copy=copy)
+                               multiple=self.multiple,
+                               copy=copy)
 
         for k, v in collects.items():
             k, v = apply_fn(k, v)
@@ -143,13 +143,7 @@ class BaseGraph:
 
     def __call__(self, *keys):
         for key in keys:
-            yield self[key]
-
-    def __getitem__(self, key):
-        return getattr(self, key, None)
-
-    def __setitem__(self, key, value):
-        setattr(self, key, value)
+            yield getattr(self, key, None)
 
     def __dir__(self):
         return self.keys()
