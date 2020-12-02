@@ -10,7 +10,7 @@ from .base_graph import BaseGraph
 
 class DictGraph(BaseGraph):
     """A dict of Homogeneous or Heterogeneous graph."""
-    multiple = False
+    multiple = None
 
     def __init__(self, metadata: Any = None,
                  copy: bool = True,
@@ -26,6 +26,13 @@ class DictGraph(BaseGraph):
     @property
     def g(self):
         return self.graphs
+
+    @ classmethod
+    def from_npz(cls, filepath: str):
+        raise NotImplementedError
+
+    def to_npz(self, filepath: str, apply_fn=None):
+        raise NotImplementedError
 
     def __len__(self):
         return len(self.graphs.keys()) if self.graphs else 0

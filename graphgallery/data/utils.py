@@ -110,14 +110,14 @@ def is_selfloops(A) -> bool:
     return A.diagonal().sum() != 0
 
 
-def is_binary(self) -> bool:
+def is_binary(A) -> bool:
     assert A is not None
     if is_multiobjects(A):
         return all(is_binary(adj) for adj in A)
     return np.all(np.unique(A) == (0, 1))
 
 
-def is_weighted(self) -> bool:
+def is_weighted(A) -> bool:
     assert A is not None
     if is_multiobjects(A):
         return any(is_weighted(adj) for adj in A)

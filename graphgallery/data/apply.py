@@ -1,3 +1,4 @@
+import warnings
 import numpy as np
 import scipy.sparse as sp
 from typing import Union, Optional, List, Tuple, Any
@@ -11,9 +12,8 @@ _SPARSE_THRESHOLD = 0.5
 
 
 def sparse_apply(key, val):
-    # TODO: multiple graph
     if is_multiobjects(val):
-        return key, val
+        return key, tuple(sparse_apply(key, v)[1] for v in val)
 
     if isinstance(val, np.ndarray) and val.ndim == 2:
         # one-hot like matrix stored with 1D array
@@ -152,7 +152,8 @@ def check_and_convert(key, value, multiple=False, copy=False) -> dict:
     if value is not None:
         check_fn = _check_fn_dict.get(key, None)
         if not check_fn:
-            raise ValueError(f"Unrecognized key {key}.")
+            warnings.warn(f"Unrecognized key {key}.")
+            return key, value
 
         if multiple:
             if is_multiobjects(value):

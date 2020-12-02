@@ -83,7 +83,7 @@ class BaseGraph:
 
     def keys(self):
         # maybe using `tuple`?
-        keys = {key for key in self.__dict__.keys() if getattr(self, key, None) and not key.startswith("_")}
+        keys = {key for key in self.__dict__.keys() if getattr(self, key, None) is not None and not key.startswith("_")}
         return sorted(keys)
 
     def items(self, apply_fn=None):
@@ -105,16 +105,19 @@ class BaseGraph:
 
     @ classmethod
     def from_npz(cls, filepath: str):
+        filepath = osp.abspath(osp.expanduser(filepath))
         loader = load_npz(filepath)
+        loader.pop("__class__", None)
+        print(f"Load from {filepath}", file=sys.stderr)
         return cls(copy=False, **loader)
 
     def to_npz(self, filepath: str, apply_fn=sparse_apply):
 
-        filepath = osp.abspath(osp.expanduser(osp.realpath(filepath)))
-
+        filepath = osp.abspath(osp.expanduser(filepath))
         data_dict = {k: v for k, v in self.items(apply_fn=apply_fn) if v is not None}
+        data_dict["__class__"] = str(self.__class__.__name__)
         np.savez_compressed(filepath, **data_dict)
-        print(f"Save to {filepath}.", file=sys.stderr)
+        print(f"Save to {filepath}", file=sys.stderr)
 
         return filepath
 
@@ -166,7 +169,7 @@ class BaseGraph:
 
     def __repr__(self):
         return f"{self.__class__.__name__}({self.extra_repr()}" \
-            + f"metadata={tuple(self.metadata.keys()) if isinstance(self.metadata, dict) else self.metadata})"
+            + f"metadata={tuple(self.metadata.keys()) if isinstance(self.metadata, dict) else self.metadata}, multiple={self.multiple})"
 
     def extra_repr(self):
         return ""

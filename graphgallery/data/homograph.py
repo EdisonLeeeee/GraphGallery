@@ -134,13 +134,13 @@ class HomoGraph(BaseGraph):
         """Check if the input Scipy sparse adjacency matrix has self loops."""
         return is_selfloops(self.adj_matrix)
 
-    def is_binary(self) -> bool:
-        """Check if the node attribute matrix has binary attributes."""
-        return is_binary(self.adj_matrix)
-
     def is_weighted(self) -> bool:
         """Check if the graph is weighted (edge weights other than 1)."""
         return is_weighted(self.adj_matrix)
+
+    def is_binary(self) -> bool:
+        """Check if the node attribute matrix has binary attributes."""
+        return is_binary(self.node_attr)
 
     def extra_repr(self) -> str:
         excluded = {"metadata", "mapping"}

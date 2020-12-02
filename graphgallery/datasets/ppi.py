@@ -34,11 +34,11 @@ class PPI(InMemoryDataset):
                  url: Optional[str] = None,
                  transform: Optional[Transform] = None,
                  verbose: bool = True):
-        super().__init__("PPI", root, url, transform, verbose)
+        super().__init__("ppi", root, url, transform, verbose)
 
     @staticmethod
     def available_datasets():
-        return "PPI"
+        return "ppi"
 
     def _process(self) -> dict:
 

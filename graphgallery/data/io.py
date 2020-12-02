@@ -47,7 +47,7 @@ def extract_zip(filename, folder=None):
         return
 
     if folder is None:
-        folder = osp.realpath(osp.expanduser(osp.dirname(filename)))
+        folder = osp.dirname(osp.realpath(osp.expanduser(filename)))
 
     with zipfile.ZipFile(filename, 'r') as f:
         f.extractall(folder)
@@ -79,12 +79,12 @@ def makedirs(path: str) -> None:
 
 
 def makedirs_from_filepath(filepath: str, verbose: bool = True) -> None:
-    folder = osp.realpath(osp.expanduser(osp.dirname(filepath)))
+    folder = osp.dirname(osp.realpath(osp.expanduser(filepath)))
     makedirs(folder)
 
 
 def load_npz(filepath):
-    filepath = osp.abspath(osp.expanduser(osp.realpath(filepath)))
+    filepath = osp.abspath(osp.expanduser(filepath))
 
     if not filepath.endswith('.npz'):
         filepath = filepath + '.npz'
@@ -92,7 +92,7 @@ def load_npz(filepath):
         with np.load(filepath, allow_pickle=True) as loader:
             loader = dict(loader)
             for k, v in loader.items():
-                if v.dtype.kind == 'O':
+                if v.dtype.kind in {'O', 'U'}:
                     loader[k] = v.tolist()
             return loader
     else:
