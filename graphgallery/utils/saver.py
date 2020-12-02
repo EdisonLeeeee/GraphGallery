@@ -5,8 +5,6 @@ import tensorflow as tf
 
 import graphgallery as gg
 
-from graphgallery.nn.models import TFKeras
-
 
 def save_tf_model(model, filepath, overwrite=True, save_format=None, **kwargs):
 
@@ -88,7 +86,7 @@ def load_tf_model(filepath, custom_objects=None, **kwargs):
         filepath = filepath + ext
         
     if custom_objects:
-        custom_objects['TFKeras'] = TFKeras
+        custom_objects['TFKeras'] = gg.nn.models.TFKeras
         
     return tf.keras.models.load_model(filepath,
                                       custom_objects=custom_objects, **kwargs)
