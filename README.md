@@ -445,8 +445,8 @@ NOTE: you must install [SciencePlots](https://github.com/garrettj403/SciencePlot
 import matplotlib.pyplot as plt
 with plt.style.context(['science', 'no-latex']):
     fig, axes = plt.subplots(1, 2, figsize=(15, 5))
-    axes[0].plot(history.history['acc'], label='Training accuracy', linewidth=3)
-    axes[0].plot(history.history['val_acc'], label='Validation accuracy', linewidth=3)
+    axes[0].plot(history.history['accuracy'], label='Training accuracy', linewidth=3)
+    axes[0].plot(history.history['val_accuracy'], label='Validation accuracy', linewidth=3)
     axes[0].legend(fontsize=20)
     axes[0].set_title('Accuracy', fontsize=20)
     axes[0].set_xlabel('Epochs', fontsize=20)
