@@ -62,15 +62,13 @@ def indices2mask(indices: np.ndarray, shape: tuple) -> np.ndarray:
 
 
 def repeat(src: Any, length: int) -> Any:
-    if src is None:
-        return [None for _ in range(length)]
     if src == [] or src == ():
         return []
-    if isinstance(src, (Number, str)):
+    if any((gg.is_scalar(src), isinstance(src, str), src is None)):
         return list(itertools.repeat(src, length))
-    if (len(src) > length):
+    if len(src) > length:
         return src[:length]
-    if (len(src) < length):
+    if len(src) < length:
         return list(src) + list(itertools.repeat(src[-1], length - len(src)))
     return src
 
