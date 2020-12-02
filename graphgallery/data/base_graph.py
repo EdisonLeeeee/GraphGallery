@@ -64,22 +64,22 @@ class BaseGraph:
         raise NotImplementedError
 
     def is_node_attributed(self) -> bool:
-        return self.node_attr is not None
+        return hasattr(self, "node_attr") and self.node_attr is not None
 
     def is_edge_attributed(self) -> bool:
-        return self.edge_attr is not None
+        return hasattr(self, "edge_attr") and self.edge_attr is not None
 
     def is_graph_attributed(self) -> bool:
-        return self.graph_attr is not None
+        return hasattr(self, "graph_attr") and self.graph_attr is not None
 
     def is_node_labeled(self) -> bool:
-        return self.node_label is not None
+        return hasattr(self, "node_label") and self.node_label is not None
 
     def is_edge_labeled(self) -> bool:
-        return self.edge_label is not None
+        return hasattr(self, "edge_label") and self.edge_label is not None
 
     def is_graph_labeled(self) -> bool:
-        return self.graph_label is not None
+        return hasattr(self, "graph_label") and self.graph_label is not None
 
     def keys(self):
         # maybe using `tuple`?
@@ -111,12 +111,16 @@ class BaseGraph:
         print(f"Load from {filepath}", file=sys.stderr)
         return cls(copy=False, **loader)
 
-    def to_npz(self, filepath: str, apply_fn=sparse_apply):
+    def to_npz(self, filepath: str, apply_fn=sparse_apply, compressed=True):
 
         filepath = osp.abspath(osp.expanduser(filepath))
         data_dict = {k: v for k, v in self.items(apply_fn=apply_fn) if v is not None}
         data_dict["__class__"] = str(self.__class__.__name__)
-        np.savez_compressed(filepath, **data_dict)
+        if compressed:
+            save_fn = np.savez_compressed
+        else:
+            save_fn = np.savez
+        save_fn(filepath, **data_dict)
         print(f"Save to {filepath}", file=sys.stderr)
 
         return filepath

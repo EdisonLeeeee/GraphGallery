@@ -1,4 +1,5 @@
-import os
+import sys
+import glob
 import numpy as np
 import networkx as nx
 import os.path as osp
@@ -6,6 +7,12 @@ import scipy.sparse as sp
 
 from typing import Union, Optional, List, Tuple, Any, Callable
 from .base_graph import BaseGraph
+from .graph import Graph
+from .edge_graph import EdgeGraph
+from .multi_graph import MultiGraph
+from .multi_edge_graph import MultiEdgeGraph
+from .apply import sparse_apply
+from .io import load_npz, makedirs
 
 
 class DictGraph(BaseGraph):
@@ -29,21 +36,34 @@ class DictGraph(BaseGraph):
 
     @ classmethod
     def from_npz(cls, filepath: str):
-        raise NotImplementedError
+        assert not filepath.endswith(".npz")
+        filepath = osp.abspath(osp.expanduser(filepath))
+        graphs = {}
+        paths = glob.glob(osp.join(filepath, "*.npz"))
+        if not paths:
+            raise RuntimeError("no files found!")
 
-    def to_npz(self, filepath: str, apply_fn=None):
-        raise NotImplementedError
+        for path in paths:
+            loader = load_npz(path)
+            graph_cls = loader.pop("__class__", "Graph")
+            assert graph_cls in {"Graph", "MultiGraph", "EdgeGraph", "MultiEdgeGraph"}
+            graph_name = osp.split(path)[1][:-4]
+            graphs[graph_name] = eval(graph_cls)(**loader, copy=False)
+        print(f"Load all the graphs from {filepath} (identified by its file name)", file=sys.stderr)
+        return cls(**graphs, copy=True)
+
+    def to_npz(self, filepath: str, apply_fn=sparse_apply):
+        assert not filepath.endswith(".npz")
+        filepath = osp.abspath(osp.expanduser(filepath))
+        makedirs(filepath)
+        for graph_name, graph in self.graphs.items():
+            path = osp.join(filepath, f"{graph_name}")
+            graph.to_npz(path)
+        print(f"All the graphs are saved to {filepath} (identified by its name)", file=sys.stderr)
+        return filepath
 
     def __len__(self):
         return len(self.graphs.keys()) if self.graphs else 0
-
-    def __getitem__(self, key):
-        # to avoid value is 'None'
-        v = self.graphs.get(key, "NAN")
-        if v != "NAN":
-            return v
-        else:
-            return super().__getitem__(key)
 
     def __iter__(self):
         yield from self.graphs.items()

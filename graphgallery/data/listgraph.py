@@ -1,4 +1,3 @@
-import os
 import sys
 import numpy as np
 import networkx as nx
@@ -56,7 +55,7 @@ class ListGraph(BaseGraph):
         if i == 0:
             raise RuntimeError("no files found!")
         print(f"Load all the graphs from {filepath} (identified from 0 to {i-1})", file=sys.stderr)
-        return cls(*graphs, copy=False)
+        return cls(*graphs, copy=True)
 
     def to_npz(self, filepath: str, apply_fn=sparse_apply):
         assert not filepath.endswith(".npz")
