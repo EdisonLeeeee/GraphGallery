@@ -128,7 +128,7 @@ class BaseGraph:
 
         for k, v in collects.items():
             k, v = apply_fn(k, v)
-            self[k] = v
+            setattr(self, k, v)
 
     def copy(self, deepcopy: bool = False):
         if deepcopy:
