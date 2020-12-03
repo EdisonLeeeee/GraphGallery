@@ -32,7 +32,7 @@
   - [Datasets](#datasets)
     - [Planetoid](#planetoid)
     - [NPZDataset](#npzdataset)
-  - [Tensor](#tensor)
+  - [Framework-neutral Tensor](#framework-neutra-tensor)
   - [Example of GCN model](#example-of-gcn-model)
   - [Customization](#customization)
   - [Visualization](#visualization)
@@ -41,7 +41,6 @@
 - [❓ How to add your datasets](#-how-to-add-your-datasets)
 - [❓ How to define your models](#-how-to-define-your-models)
     - [GCN using PyG backend](#gcn-using-pyg-backend)
-- [😎 More Examples](#-more-examples)
 - [⭐ Road Map](#-road-map)
 - [😘 Acknowledgement](#-acknowledgement)
 
@@ -72,8 +71,7 @@ python setup.py install
 pip install -U graphgallery
 ```
 # 🤖 Implementations
-Please refer to [examples](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples)
-
+Please refer to the [examples](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples) directory.
 
 # ⚡ Quick Start
 ## Datasets
@@ -87,7 +85,7 @@ data = Planetoid('cora', verbose=False)
 graph = data.graph
 # here `splits` is a dict like instance
 splits = data.split_nodes()
-# splits.train_nodes:  training indices: 1D Numpy array
+# splits.trainum_nodes:  training indices: 1D Numpy array
 # splits.val_nodes:  validation indices: 1D Numpy array
 # splits.nodes:  testing indices: 1D Numpy array
 >>> graph
@@ -106,7 +104,7 @@ more scalable datasets (stored with `.npz`)
 ```python
 from graphgallery.datasets import NPZDataset;
 # set `verbose=False` to avoid additional outputs
-data = NPZDataset('cora', verbose=False, standardize=False)
+data = NPZDataset('cora', verbose=False)
 graph = data.graph
 # here `splits` is a dict like instance
 splits = data.split_nodes(random_state=42)
@@ -124,7 +122,7 @@ currently the available datasets are:
  'polblogs', 'pubmed', 'flickr','blogcatalog','dblp')
 ```
 
-## Tensor
+## Framework-neutral Tensor
 + Strided (dense) Tensor 
 ```python
 >>> backend()
@@ -201,9 +199,9 @@ from graphgallery.gallery import GCN
 model = GCN(graph, attr_transform="normalize_attr", device="CPU", seed=123)
 # build your GCN model with default hyper-parameters
 model.build()
-# train your model. here splits.train_nodes and splits.val_nodes are numpy arrays
+# train your model. here splits.trainum_nodes and splits.val_nodes are numpy arrays
 # verbose takes 0, 1, 2, 3, 4
-history = model.train(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
+history = model.train(splits.trainum_nodes, splits.val_nodes, verbose=1, epochs=100)
 # test your model
 # verbose takes 0, 1, 2
 results = model.test(splits.nodes, verbose=1)
@@ -234,9 +232,9 @@ you can use the following statement to build your model
 + Train your model
 ```python
 # train with validation
->>> history = model.train(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
+>>> history = model.train(splits.trainum_nodes, splits.val_nodes, verbose=1, epochs=100)
 # train without validation
->>> history = model.train(splits.train_nodes, verbose=1, epochs=100)
+>>> history = model.train(splits.trainum_nodes, verbose=1, epochs=100)
 ```
 here `history` is a tensorflow `History` instance.
 
@@ -292,7 +290,7 @@ PyTorch 1.6.0+cu101 Backend
 >>> from graphgallery.gallery import GCN
 >>> model = GCN(graph, attr_transform="normalize_attr", device="GPU", seed=123);
 >>> model.build()
->>> history = model.train(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
+>>> history = model.train(splits.trainum_nodes, splits.val_nodes, verbose=1, epochs=100)
 Training...
 100/100 [==============================] - 0s 5ms/step - loss: 0.6813 - acc: 0.9214 - val_loss: 1.0506 - val_acc: 0.7820 - time: 0.4734
 >>> results = model.test(splits.nodes, verbose=1)
@@ -309,11 +307,11 @@ This is motivated by [gnn-benchmark](https://github.com/shchur/gnn-benchmark/)
 from graphgallery.data import Graph
 
 # Load the adjacency matrix A, attribute matrix X and labels vector y
-# A - scipy.sparse.csr_matrix of shape [n_nodes, n_nodes]
-# X - scipy.sparse.csr_matrix or np.ndarray of shape [n_nodes, n_atts]
-# y - np.ndarray of shape [n_nodes]
+# A - scipy.sparse.csr_matrix of shape [num_nodes, num_nodes]
+# X - scipy.sparse.csr_matrix or np.ndarray of shape [num_nodes, num_attrs]
+# y - np.ndarray of shape [num_nodes]
 
-mydataset = Graph(adj_matrix=A, attr_matrix=X, labels=y)
+mydataset = Graph(adj_matrix=A, node_attr=X, node_label=y)
 # save dataset
 mydataset.to_npz('path/to/mydataset.npz')
 # load dataset
@@ -344,7 +342,7 @@ PyTorch Geometric 1.6.1 (PyTorch 1.6.0+cu101) Backend
 >>> from graphgallery.gallery import GCN
 >>> model = GCN(graph, attr_transform="normalize_attr", device="GPU", seed=123);
 >>> model.build()
->>> history = model.train(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
+>>> history = model.train(splits.trainum_nodes, splits.val_nodes, verbose=1, epochs=100)
 Training...
 100/100 [==============================] - 0s 3ms/step - loss: 0.5325 - acc: 0.9643 - val_loss: 1.0034 - val_acc: 0.7980 - time: 0.3101
 >>> results = model.test(splits.nodes, verbose=1)
@@ -353,11 +351,12 @@ Testing...
 >>> print(f'Test loss {results.loss:.5}, Test accuracy {results.accuracy:.2%}')
 Test loss 0.97332, Test accuracy 81.30%
 ```
+similarly, you can use DGL backend just by:
+```python
+>>> graphgallery.set_backend("dgl")
+```
 
 
-
-# 😎 More Examples
-Please refer to the [examples](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples) directory.
 
 # ⭐ Road Map
 - [x] Add PyTorch models support
