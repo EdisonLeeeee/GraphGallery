@@ -20,7 +20,7 @@
     <img src="https://badge.fury.io/py/graphgallery.svg" alt="pypi">
   </a>       
   <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/LICENSE">
-    <img src="https://img.shields.io/github/license/EdisonLeeeee/GraphGallery" alt="pypi">
+    <img src="https://img.shields.io/github/license/EdisonLeeeee/GraphGallery" alt="license">
   </a>       
 </p>
 
