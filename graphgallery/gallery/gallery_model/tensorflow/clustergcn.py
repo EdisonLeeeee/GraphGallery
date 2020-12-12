@@ -73,9 +73,6 @@ class ClusterGCN(GalleryModel):
         """
         super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
 
-        if not n_clusters:
-            n_clusters = self.graph.num_node_classes
-
         self.n_clusters = n_clusters
         self.adj_transform = gf.get(adj_transform)
         self.attr_transform = gf.get(attr_transform)
@@ -86,7 +83,7 @@ class ClusterGCN(GalleryModel):
         node_attr = self.attr_transform(graph.node_attr)
 
         batch_adj, batch_x, self.cluster_member = gf.graph_partition(
-            graph.adj_matrix, node_attr, n_clusters=self.n_clusters)
+            graph, n_clusters=self.n_clusters)
 
         batch_adj = self.adj_transform(*batch_adj)
 

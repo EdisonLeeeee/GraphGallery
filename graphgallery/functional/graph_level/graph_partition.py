@@ -28,7 +28,7 @@ def random_clustering(num_nodes, n_clusters):
 @Transformers.register()
 class GraphPartition(Transform):
     def __init__(self, n_clusters: int = None, metis_partition: bool = True):
-        self.n_clusters = on_clustersrder
+        self.n_clusters = n_clusters
         self.metis_partition = metis_partition
 
     def __call__(self, graph):
@@ -40,6 +40,11 @@ class GraphPartition(Transform):
 
 # TODO: accept a Graph and output a MultiGraph
 def graph_partition(graph, n_clusters: int = None, metis_partition: bool = True):
+    adj_matrix = graph.adj_matrix
+    node_attr = graph.node_attr
+    if n_clusters is None:
+        n_clusters = graph.num_node_classes
+
     # partition graph
     if metis_partition:
         assert metis, "Please install `metis` package!"

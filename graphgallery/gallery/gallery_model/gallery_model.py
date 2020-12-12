@@ -64,12 +64,12 @@ class GalleryModel(GraphModel):
         updates: dict, the updates for the graph
         kwargs: other custom keyword parameters for 'process_step'.
         """
-        assert not graph or isinstance(graph, BaseGraph)
+        assert isinstance(graph, BaseGraph) or graph is None, type(graph)
         if graph is not None:
-            assert isinstance(graph, BaseGraph)
+            assert isinstance(graph, BaseGraph), type(graph)
             self.graph = graph
         if updates is not None:
-            assert isinstance(updates, dict)
+            assert isinstance(updates, dict), type(updates)
             self.graph.update(**updates)
 
         return self.process_step(**kwargs)
