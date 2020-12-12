@@ -16,6 +16,7 @@ class Transform:
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self.extra_repr()})"
+    __str__ = __repr__
 
 
 class NullTransform(Transform):

@@ -9,7 +9,7 @@ from graphgallery import backend
 from typing import Tuple
 from fvcore.common.registry import Registry
 
-__all__ = ['Model']
+__all__ = ["Gallery", "Model"]
 
 Gallery = None
 

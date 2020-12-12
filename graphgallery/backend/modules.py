@@ -30,11 +30,9 @@ class BackendModule:
     def __eq__(self, value) -> bool:
         return str(value).lower() in self.acceptable_names
 
-    def __str__(self) -> str:
-        return f"{self.name} {self.extra_repr()} Backend"
-
     def __repr__(self) -> str:
-        return self.__str__()
+        return f"{self.name} {self.extra_repr()} Backend"
+    __str__ = __repr__
 
     def extra_repr(self):
         return self.version

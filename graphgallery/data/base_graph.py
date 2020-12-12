@@ -174,6 +174,7 @@ class BaseGraph:
     def __repr__(self):
         return f"{self.__class__.__name__}({self.extra_repr()}" \
             + f"metadata={tuple(self.metadata.keys()) if isinstance(self.metadata, dict) else self.metadata}, multiple={self.multiple})"
+    __str__ = __repr__
 
     def extra_repr(self):
         return ""

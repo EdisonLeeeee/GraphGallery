@@ -19,6 +19,7 @@ from .model import Model
 
 class GraphModel(Model):
     """Base model for Graph Neural Network (GNNs)."""
+
     def __init__(self, *graph, device="cpu:0", seed=None, name=None, **kwargs):
         r"""Create a base model for Graph Neural Network (GNNs).
 
@@ -152,3 +153,4 @@ class GraphModel(Model):
 
     def __repr__(self):
         return f"{self.name}(device={self.device}, backend={self.backend})"
+    __str__ = __repr__
