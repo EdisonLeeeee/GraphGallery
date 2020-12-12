@@ -30,9 +30,8 @@ def asedge(edge, shape="col_wise"):
     edge = np.asarray(edge, dtype='int64')
     assert edge.ndim == 2 and 2 in edge.shape, edge.shape
     N, M = edge.shape
-    if not (N == M == 2) and
-            ((shape == "col_wise" and N != 2)
-             or (shape == "row_wise" and M != 2)):
+    if not (N == M == 2) and ((shape == "col_wise" and N != 2)
+                              or (shape == "row_wise" and M != 2)):
         edge = edge.T
 
     return edge

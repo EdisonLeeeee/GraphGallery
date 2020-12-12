@@ -40,7 +40,8 @@ class Compose(Transform):
         return format_string
 
 
-def get(transform: Union[str, Transform, None, List, Tuple, "Compose"]) -> Transform:
+def get(transform: Union[str, Transform, None, List, Tuple, "Compose"],
+        **transform_para) -> Transform:
     if gg.is_listlike(transform):
         return Compose(*transform)
 
@@ -48,5 +49,6 @@ def get(transform: Union[str, Transform, None, List, Tuple, "Compose"]) -> Trans
         return transform
     elif transform is None:
         return NullTransform()
-    else:
-        return Transformers.get(transform)
+    assert isinstance(transform, str), transform
+    name = "".join(map(lambda s: s.title(), transform.split("_")))
+    return Transformers.get(name)(**transform_para)

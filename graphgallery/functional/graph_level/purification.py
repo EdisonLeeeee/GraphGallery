@@ -7,7 +7,7 @@ from ..get_transform import Transformers
 from ..edge_level import filter_singletons
 import graphgallery as gg
 
-__all__ = ["JaccardDetection", "CosineDetection", "SVD"
+__all__ = ["JaccardDetection", "CosineDetection", "SVD",
            "jaccard_detection", "cosine_detection", "svd"]
 
 
