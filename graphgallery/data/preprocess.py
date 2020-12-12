@@ -55,6 +55,7 @@ def largest_connected_components(graph: "Graph", n_components: int = 1) -> "Grap
     graph : Graph
         Subgraph of the input graph where only the nodes in largest n_components are kept.
     """
+    assert n_components == 1, "Not support for n_components>1"
     _, component_indices = sp.csgraph.connected_components(
         graph.adj_matrix)
     component_sizes = np.bincount(component_indices)

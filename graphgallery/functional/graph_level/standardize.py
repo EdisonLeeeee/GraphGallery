@@ -11,6 +11,7 @@ class Standardize(Transform):
 
     def __call__(self, graph):
         # TODO: multiple graph
+        assert not graph.multiple
         graph = graph.to_unweighted().to_undirected().eliminate_selfloops()
-        graph = largest_connected_components(graph, 1)
+        graph = largest_connected_components(graph)
         return graph
