@@ -7,8 +7,11 @@ import sys
 import importlib
 from graphgallery import backend
 from typing import Tuple
+from fvcore.common.registry import Registry
 
 __all__ = ['Model']
+
+Gallery = None
 
 _GALLERY_MODELS = {
     "GCN",
@@ -55,11 +58,15 @@ def load_models(backend_name=None):
     thismod = sys.modules[__name__]
     mod = importlib.import_module(f".gallery_model.{_backend.abbr}", __name__)
 
+    global Gallery
+    Gallery = Registry("GraphGalleryModels")
+
     for model in _GALLERY_MODELS:
         _model_class = mod.__dict__.get(model, None)
 
         if _model_class is not None:
             _enabled_models.add(model)
+            Gallery.register(_model_class)
             setattr(thismod, model, _model_class)
         else:
             setattr(thismod, model, _gen_missing_model(model, _backend))
@@ -71,6 +78,7 @@ def load_models(backend_name=None):
 
         if _model_class is not None:
             _enabled_models.add(model)
+            Gallery.register(_model_class)
             setattr(thismod, model, _model_class)
         else:
             setattr(thismod, model, _gen_missing_model(model, _backend))
