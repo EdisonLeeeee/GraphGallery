@@ -2,13 +2,12 @@ import warnings
 import numpy as np
 import scipy.sparse as sp
 
-
 from ..transforms import Transform
 from ..edge_level import filter_singletons
 import graphgallery as gg
 
-__all__ = ["JaccardDetection", "CosineDetection",
-           "jaccard_detection", "cosine_detection"]
+__all__ = ["JaccardDetection", "CosineDetection", "SVD"
+           "jaccard_detection", "cosine_detection", "svd"]
 
 
 def jaccard_similarity(A, B):
@@ -23,14 +22,14 @@ def cosine_similarity(A, B):
     return C
 
 
-def filter_edges_by_similarity(adj_matrix, x,
+def filter_edges_by_similarity(adj_matrix, node_attr,
                                similarity_fn, threshold=0.01,
                                allow_singleton=False):
 
     rows, cols = adj_matrix.nonzero()
 
-    A = x[rows]
-    B = x[cols]
+    A = node_attr[rows]
+    B = node_attr[cols]
     S = similarity_fn(A, B)
     idx = np.where(S <= threshold)[0]
     flips = np.vstack([rows[idx], cols[idx]])
@@ -39,14 +38,16 @@ def filter_edges_by_similarity(adj_matrix, x,
     return flips
 
 
-def jaccard_detection(adj_matrix, x, threshold=0.01, allow_singleton=False):
-    return filter_edges_by_similarity(adj_matrix, x, similarity_fn=jaccard_similarity,
+def jaccard_detection(adj_matrix, node_attr, threshold=0.01, allow_singleton=False):
+    return filter_edges_by_similarity(adj_matrix, node_attr,
+                                      similarity_fn=jaccard_similarity,
                                       threshold=threshold,
                                       allow_singleton=allow_singleton)
 
 
-def cosine_detection(adj_matrix, x, threshold=0.01, allow_singleton=False):
-    return filter_edges_by_similarity(adj_matrix, x, similarity_fn=cosine_similarity,
+def cosine_detection(adj_matrix, node_attr, threshold=0.01, allow_singleton=False):
+    return filter_edges_by_similarity(adj_matrix, node_attr,
+                                      similarity_fn=cosine_similarity,
                                       threshold=threshold,
                                       allow_singleton=allow_singleton)
 
@@ -93,3 +94,45 @@ class CosineDetection(Transform):
 
     def extra_repr(self):
         return f"threshold={self.threshold}, allow_singleton={self.allow_singleton}"
+
+
+class SVD(Transform):
+
+    def __init__(self, k=50, threshold=0.01, binaryzation=False):
+        super().__init__()
+        self.k = k
+        self.threshold = threshold
+        self.binaryzation = binaryzation
+
+    def __call__(self, graph):
+        assert isinstance(graph, gg.data.HomoGraph), type(graph)
+        # TODO: multiple graph
+        assert not graph.multiple
+        graph = graph.copy()
+        adj_matrix = svd(graph, k=self.k,
+                         threshold=self.threshold,
+                         binaryzation=self.binaryzation)
+        graph.update(adj_matrix=adj_matrix)
+        return graph
+
+    def extra_repr(self):
+        return f"k={self.k}, threshold={self.threshold}, binaryzation={self.binaryzation}"
+
+
+def svd(adj_matrix, k=50, threshold=0.01, binaryzation=False):
+    adj_matrix = adj_matrix.asfptype()
+
+    U, S, V = sp.linalg.svds(adj_matrix, k=k)
+    adj_matrix = (U * S) @ V
+
+    if threshold is not None:
+        # sparsification
+        adj_matrix[adj_matrix <= threshold] = 0.
+
+    adj_matrix = sp.csr_matrix(adj_matrix)
+
+    if binaryzation:
+        # TODO
+        adj_matrix.data[adj_matrix.data > 0] = 1.0
+
+    return adj_matrix

@@ -26,7 +26,6 @@ class SAT(GalleryModel):
         r"""Create a Graph Convolutional Networks (GCN) model
             using Spetral Adversarial Training (SAT) defense strategy.
 
-
         This can be instantiated in several ways:
 
             model = SAT(graph)
