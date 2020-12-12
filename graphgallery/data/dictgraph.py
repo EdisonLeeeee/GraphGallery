@@ -36,7 +36,7 @@ class DictGraph(BaseGraph):
 
     @ classmethod
     def from_npz(cls, filepath: str):
-        assert not filepath.endswith(".npz")
+        assert not filepath.endswith(".npz"), filepath
         filepath = osp.abspath(osp.expanduser(filepath))
         graphs = {}
         paths = glob.glob(osp.join(filepath, "*.npz"))
@@ -46,14 +46,14 @@ class DictGraph(BaseGraph):
         for path in paths:
             loader = load_npz(path)
             graph_cls = loader.pop("__class__", "Graph")
-            assert graph_cls in {"Graph", "MultiGraph", "EdgeGraph", "MultiEdgeGraph"}
+            assert graph_cls in {"Graph", "MultiGraph", "EdgeGraph", "MultiEdgeGraph"}, graph_cls
             graph_name = osp.split(path)[1][:-4]
             graphs[graph_name] = eval(graph_cls)(**loader, copy=False)
-        print(f"Load all the graphs from {filepath} (identified by its file name)", file=sys.stderr)
+        print(f"All the graphs are loaded from {filepath} (identified by its file name)", file=sys.stderr)
         return cls(**graphs, copy=True)
 
     def to_npz(self, filepath: str, apply_fn=sparse_apply):
-        assert not filepath.endswith(".npz")
+        assert not filepath.endswith(".npz"), filepath
         filepath = osp.abspath(osp.expanduser(filepath))
         makedirs(filepath)
         for graph_name, graph in self.graphs.items():

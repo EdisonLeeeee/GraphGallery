@@ -26,7 +26,7 @@ def asedge(edge, shape="col_wise"):
     np.ndarray
         edge array
     """
-    assert shape in ["row_wise", "col_wise"]
+    assert shape in ["row_wise", "col_wise"], shape
     edge = np.asarray(edge, dtype='int64')
     assert edge.ndim == 2 and 2 in edge.shape, edge.shape
     N, M = edge.shape

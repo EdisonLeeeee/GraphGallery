@@ -55,17 +55,17 @@ def augment_edge(edge_index: np.ndarray, nodes: np.ndarray,
                  nbrs_to_link: Optional[np.ndarray] = None,
                  common_nbrs: Optional[np.ndarray] = None,
                  fill_weight: float = 1.0) -> tuple:
-    """Augment a set of edges by linking nodes to
-        each element in `nbrs_to_link`.
+    """Augment a set of edges by connecting nodes to
+        element in ``nbrs_to_link``.
 
 
     Parameters
     ----------
-    edge_index: shape [M, 2] or [2, M] -> [2, M]
-            edge indices of a Scipy sparse adjacency matrix.
+    edge_index: shape [M, 2] or [2, M]
+        edge indices of a Scipy sparse adjacency matrix.
     nodes: the nodes that will be linked to the graph.
         list or np.array: the nodes connected to `nbrs_to_link`
-        int: new added nodes connected to `nbrs_to_link`, 
+        int: new added nodes connected to ``nbrs_to_link``, 
             node ids [num_nodes, ..., num_nodes+nodes-1].            
     edge_weight: shape [M,]
         edge weights of a Scipy sparse adjacency matrix.
@@ -78,11 +78,11 @@ def augment_edge(edge_index: np.ndarray, nodes: np.ndarray,
     fill_weight: edge weight for the augmented edges.
 
     NOTE:
-    ----------
-    Both `nbrs_to_link` and `common_nbrs` should not be specified together.
+    -----
+    Both ``nbrs_to_link`` and ``common_nbrs`` should NOT be specified together.
 
     See Also
-    ----------
+    --------
     graphgallery.functional.augment_adj
 
     """

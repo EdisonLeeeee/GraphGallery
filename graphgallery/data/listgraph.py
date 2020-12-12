@@ -39,7 +39,7 @@ class ListGraph(BaseGraph):
 
     @ classmethod
     def from_npz(cls, filepath: str):
-        assert not filepath.endswith(".npz")
+        assert not filepath.endswith(".npz"), filepath
         filepath = osp.abspath(osp.expanduser(filepath))
         name = osp.split(filepath)[1]
         graphs = []
@@ -48,17 +48,17 @@ class ListGraph(BaseGraph):
         while osp.exists(path):
             loader = load_npz(path)
             graph_cls = loader.pop("__class__", "Graph")
-            assert graph_cls in {"Graph", "MultiGraph", "EdgeGraph", "MultiEdgeGraph"}
+            assert graph_cls in {"Graph", "MultiGraph", "EdgeGraph", "MultiEdgeGraph"}, graph_cls
             graphs.append(eval(graph_cls)(**loader, copy=False))
             i += 1
             path = osp.join(filepath, f"{name}_{str(i)}.npz")
         if i == 0:
             raise RuntimeError("no files found!")
-        print(f"Load all the graphs from {filepath} (identified from 0 to {i-1})", file=sys.stderr)
+        print(f"All the graphs are loaded from {filepath} (identified from 0 to {i-1})", file=sys.stderr)
         return cls(*graphs, copy=True)
 
     def to_npz(self, filepath: str, apply_fn=sparse_apply):
-        assert not filepath.endswith(".npz")
+        assert not filepath.endswith(".npz"), filepath
         filepath = osp.abspath(osp.expanduser(filepath))
         makedirs(filepath)
         name = osp.split(filepath)[1]

@@ -108,7 +108,7 @@ class BaseGraph:
         filepath = osp.abspath(osp.expanduser(filepath))
         loader = load_npz(filepath)
         loader.pop("__class__", None)
-        print(f"Load from {filepath}", file=sys.stderr)
+        print(f"Loading from {filepath}", file=sys.stderr)
         return cls(copy=False, **loader)
 
     def to_npz(self, filepath: str, apply_fn=sparse_apply, compressed=True):
@@ -121,7 +121,7 @@ class BaseGraph:
         else:
             save_fn = np.savez
         save_fn(filepath, **data_dict)
-        print(f"Save to {filepath}", file=sys.stderr)
+        print(f"Saving to {filepath}", file=sys.stderr)
 
         return filepath
 
