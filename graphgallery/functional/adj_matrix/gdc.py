@@ -6,8 +6,10 @@ from scipy.linalg import expm
 from .normalize_adj import normalize_adj
 from ..transforms import Transform
 from ..decorators import multiple
+from ..get_transform import Transformers
 
 
+@Transformers.register()
 class GDC(Transform):
     def __init__(self,
                  alpha: float = 0.3,

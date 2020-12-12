@@ -1,36 +1,15 @@
 from typing import Union, List, Tuple, Any, Callable, Optional
+from fvcore.common.registry import Registry
 
 import graphgallery as gg
-from graphgallery.functional import GDC
-from graphgallery.functional import SVD
-from graphgallery.functional import NormalizeAdj
-from graphgallery.functional import AddSelfLoops
-from graphgallery.functional import NormalizeAttr
-from graphgallery.functional import WaveletBasis
-from graphgallery.functional import ChebyBasis
-from graphgallery.functional import NeighborSampler
-from graphgallery.functional import GraphPartition
-from graphgallery.functional import SparseAdjToEdge
-from graphgallery.functional import SparseReshape
 
 from .transforms import *
 from .functions import *
 
-__all__ = ['get', 'Compose']
+__all__ = ["get", "Compose", "Transformers"]
 
-_TRANSFORMS = {"gdc": GDC,
-               "svd": SVD,
-               "normalize_adj": NormalizeAdj,
-               "normalize_attr": NormalizeAttr,
-               "add_selfloops": AddSelfLoops,
-               "wavelet_basis": WaveletBasis,
-               "cheby_basis": ChebyBasis,
-               "neighbor_sampler": NeighborSampler,
-               "graph_partition": GraphPartition,
-               "sparse_adj_to_edge": SparseAdjToEdge,
-               "sparse_reshape": SparseReshape}
 
-_ALLOWED = set(list(_TRANSFORMS.keys()))
+Transformers = Registry("Transformers")
 
 
 class Compose(Transform):
@@ -69,9 +48,5 @@ def get(transform: Union[str, Transform, None, List, Tuple, "Compose"]) -> Trans
         return transform
     elif transform is None:
         return NullTransform()
-    _transform = str(transform).lower()
-    _transform = _TRANSFORMS.get(_transform, None)
-    if _transform is None:
-        raise ValueError(
-            f"Unknown transform: '{transform}', expected a string, callable function or None.")
-    return _transform()
+    else:
+        return Transformers.get(transform)

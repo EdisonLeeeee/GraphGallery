@@ -5,6 +5,7 @@ from sklearn.preprocessing import normalize
 
 from ..transforms import Transform
 from ..decorators import multiple
+from ..get_transform import Transformers
 
 # Version: Compute the exact signature
 # def laplacian(W, normalized=True):
@@ -83,6 +84,7 @@ from ..decorators import multiple
 # Version: Approximate with Chebychev polynomial
 
 
+@Transformers.register()
 class WaveletBasis(Transform):
     def __init__(self,
                  order=3,

@@ -5,8 +5,10 @@ import graphgallery as gg
 from ..transforms import Transform
 from ..functions import repeat
 from ..decorators import multiple
+from ..get_transform import Transformers
 
 
+@Transformers.register()
 class NormalizeAdj(Transform):
     """Normalize adjacency matrix."""
 

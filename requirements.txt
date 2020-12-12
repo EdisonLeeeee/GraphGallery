@@ -10,3 +10,4 @@ scikit_learn==0.22
 tqdm>=4.32.1
 texttable>=1.6.2
 torch==1.6.0
+fvcore==0.1.2

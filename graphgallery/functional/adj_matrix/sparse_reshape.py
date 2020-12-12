@@ -3,8 +3,10 @@ import scipy.sparse as sp
 
 from ..transforms import Transform
 from .to_edge import sparse_adj_to_edge
+from ..get_transform import Transformers
 
 
+@Transformers.register()
 class SparseReshape(Transform):
     """Add self loops for adjacency matrix."""
 

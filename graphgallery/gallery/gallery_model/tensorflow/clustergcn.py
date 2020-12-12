@@ -117,7 +117,7 @@ class ClusterGCN(GalleryModel):
 
     def train_sequence(self, index):
 
-        mask = gf.indices2mask(index, self.graph.num_nodes)
+        mask = gf.index_to_mask(index, self.graph.num_nodes)
         labels = self.graph.node_label
 
         batch_idx, batch_labels = [], []
@@ -142,7 +142,7 @@ class ClusterGCN(GalleryModel):
 
     def predict(self, index):
 
-        mask = gf.indices2mask(index, self.graph.num_nodes)
+        mask = gf.index_to_mask(index, self.graph.num_nodes)
 
         orders_dict = {idx: order for order, idx in enumerate(index)}
         batch_idx, orders = [], []

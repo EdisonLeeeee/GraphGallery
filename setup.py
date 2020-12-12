@@ -10,6 +10,7 @@ install_requires = [
     'tqdm',
     'scipy',
     'numpy',
+    'fvcore',
     'scikit_learn',
     'tensorflow>=2.1.0',
     'networkx>=2.3',

@@ -12,7 +12,7 @@ from numbers import Number
 import graphgallery as gg
 from graphgallery import functional as gf
 
-__all__ = ['asarray', 'indices2mask',
+__all__ = ['asarray', 'index_to_mask',
            'repeat', 'get_length', 'onehot',
            'nx_graph_to_sparse_adj']
 
@@ -55,7 +55,7 @@ def asarray(x: Any, dtype: Optional[str] = None) -> np.ndarray:
     return x
 
 
-def indices2mask(indices: np.ndarray, shape: tuple) -> np.ndarray:
+def index_to_mask(indices: np.ndarray, shape: tuple) -> np.ndarray:
     mask = np.zeros(shape, dtype=gg.boolx())
     mask[indices] = True
     return mask
@@ -97,5 +97,3 @@ def nx_graph_to_sparse_adj(graph):
     edge_weight = data[:, -1].T.astype(np.float32)
     adj_matrix = sp.csr_matrix((edge_weight, edge_index), shape=(num_nodes, num_nodes))
     return adj_matrix
-
-

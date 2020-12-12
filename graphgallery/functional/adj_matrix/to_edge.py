@@ -3,10 +3,12 @@ import scipy.sparse as sp
 
 from typing import Tuple
 from ..transforms import Transform
+from ..get_transform import Transformers
 
 __all__ = ['SparseAdjToEdge', 'sparse_adj_to_edge']
 
 
+@Transformers.register()
 class SparseAdjToEdge(Transform):
     def __call__(self, adj_matrix: sp.csr_matrix) -> Tuple[np.ndarray]:
         return sparse_adj_to_edge(adj_matrix)

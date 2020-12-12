@@ -4,8 +4,10 @@ import numpy as np
 from .normalize_adj import normalize_adj
 from ..transforms import Transform
 from ..decorators import multiple
+from ..get_transform import Transformers
 
 
+@Transformers.register()
 class ChebyBasis(Transform):
     def __init__(self, order=2, rate=-0.5):
         super().__init__()

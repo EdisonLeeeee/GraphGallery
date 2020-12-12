@@ -3,6 +3,7 @@ import numpy as np
 import scipy.sparse as sp
 
 from ..transforms import Transform
+from ..get_transform import Transformers
 from ..edge_level import filter_singletons
 import graphgallery as gg
 
@@ -52,6 +53,7 @@ def cosine_detection(adj_matrix, node_attr, threshold=0.01, allow_singleton=Fals
                                       allow_singleton=allow_singleton)
 
 
+@Transformers.register()
 class JaccardDetection(Transform):
 
     def __init__(self, threshold=0.01, allow_singleton=False):
@@ -74,6 +76,7 @@ class JaccardDetection(Transform):
         return f"threshold={self.threshold}, allow_singleton={self.allow_singleton}"
 
 
+@Transformers.register()
 class CosineDetection(Transform):
 
     def __init__(self, threshold=0.01, allow_singleton=False):
@@ -96,6 +99,7 @@ class CosineDetection(Transform):
         return f"threshold={self.threshold}, allow_singleton={self.allow_singleton}"
 
 
+@Transformers.register()
 class SVD(Transform):
 
     def __init__(self, k=50, threshold=0.01, binaryzation=False):

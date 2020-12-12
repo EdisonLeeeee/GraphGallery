@@ -2,9 +2,11 @@ import numpy as np
 import scipy.sparse as sp
 
 from ..transforms import Transform
+from ..get_transform import Transformers
 from graphgallery import intx
 
 
+@Transformers.register()
 class NeighborSampler(Transform):
 
     def __init__(self, max_degree: int = 25,

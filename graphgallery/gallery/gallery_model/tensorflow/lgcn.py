@@ -103,7 +103,7 @@ class LGCN(GalleryModel):
 
     def train_sequence(self, index, batch_size=np.inf):
 
-        mask = gf.indices2mask(index, self.graph.num_nodes)
+        mask = gf.index_to_mask(index, self.graph.num_nodes)
         index = get_indice_graph(self.structure_inputs, index, batch_size)
         while index.size < self.K:
             index = get_indice_graph(self.structure_inputs, index)
