@@ -38,7 +38,7 @@ def sparse_edge_to_sparse_tensor(edge_index: np.ndarray,
     edge_index: shape [2, M]
     edge_weight: shape [M,]
     """
-    edge_index = gf.edge_transpose(edge_index)
+    edge_index = gf.asedge(edge_index)
     edge_index = torch.LongTensor(edge_index)
 
     if edge_weight is None:

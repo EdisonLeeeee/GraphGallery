@@ -11,18 +11,18 @@ def sparse_edge_to_sparse_tensor(edge_index: np.ndarray,
                                  edge_weight: np.ndarray = None,
                                  shape: tuple = None) -> tf.SparseTensor:
     """
-    edge_index: shape [2, M]
+    edge_index: shape [M, 2] or [2, M]
     edge_weight: shape [M,]
     """
-    edge_index = gf.edge_transpose(edge_index)
+    edge_index = gf.asedge(edge_index, shape="row_wise")
 
     if edge_weight is None:
-        edge_weight = tf.ones(edge_index.shape[1], dtype=gg.floatx())
+        edge_weight = tf.ones(edge_index.shape[0], dtype=gg.floatx())
 
     if shape is None:
         shape = gf.maybe_shape(edge_index)
 
-    return tf.SparseTensor(edge_index.T, edge_weight, shape)
+    return tf.SparseTensor(edge_index, edge_weight, shape)
 
 
 def sparse_adj_to_sparse_tensor(x: sp.csr_matrix, dtype=None):
