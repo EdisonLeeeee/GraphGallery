@@ -67,24 +67,24 @@ class GMNN(GalleryModel):
         kwargs: other custom keyword parameters.
 
         """
-        self.register_cache("label_onehot", gf.onehot(self.graph.node_label)
-        self.custom_objects={
-            'GraphConvolution': GraphConvolution,
-            'Gather': Gather
-        }
 
         super().__init__(graph, device=device, seed=seed, name=name,
                          adj_transform=adj_transform,
                          attr_transform=attr_transform,
                          graph_transform=graph_transform,
                          **kwargs)
+        self.register_cache("label_onehot", gf.onehot(self.graph.node_label))
+        self.custom_objects = {
+            'GraphConvolution': GraphConvolution,
+            'Gather': Gather
+        }
 
     def process_step(self):
-        graph=self.transform.graph_transform(self.graph)
-        adj_matrix=self.transform.adj_transform(graph.adj_matrix)
-        node_attr=self.transform.attr_transform(graph.node_attr)
+        graph = self.transform.graph_transform(self.graph)
+        adj_matrix = self.transform.adj_transform(graph.adj_matrix)
+        node_attr = self.transform.attr_transform(graph.node_attr)
 
-        X, A=gf.astensors(node_attr, adj_matrix, device=self.device)
+        X, A = gf.astensors(node_attr, adj_matrix, device=self.device)
 
         # ``A`` and ``X`` are cached for later use
         self.register_cache("X", X)
@@ -101,48 +101,48 @@ class GMNN(GalleryModel):
               use_bias=False):
 
         with tf.device(self.device):
-            x_p=Input(batch_shape=[None, self.graph.num_node_classes],
+            x_p = Input(batch_shape=[None, self.graph.num_node_classes],
                         dtype=self.floatx,
                         name='input_p')
-            x_q=Input(batch_shape=[None, self.graph.num_node_attrs],
+            x_q = Input(batch_shape=[None, self.graph.num_node_attrs],
                         dtype=self.floatx,
                         name='input_q')
-            adj=Input(batch_shape=[None, None],
+            adj = Input(batch_shape=[None, None],
                         dtype=self.floatx,
                         sparse=True,
                         name='adj_matrix')
-            index=Input(batch_shape=[None],
+            index = Input(batch_shape=[None],
                           dtype=self.intx,
                           name='node_index')
 
             def build_GCN(x):
-                h=x
+                h = x
                 for hidden, activation in zip(hiddens, activations):
-                    h=GraphConvolution(
+                    h = GraphConvolution(
                         hidden,
                         use_bias=use_bias,
                         activation=activation,
                         kernel_regularizer=regularizers.l2(weight_decay))(
                             [h, adj])
-                    h=Dropout(rate=dropout)(h)
+                    h = Dropout(rate=dropout)(h)
 
-                h=GraphConvolution(self.graph.num_node_classes,
+                h = GraphConvolution(self.graph.num_node_classes,
                                      use_bias=use_bias)([h, adj])
-                h=Gather()([h, index])
+                h = Gather()([h, index])
 
-                model=TFKeras(inputs=[x, adj, index], outputs=h)
+                model = TFKeras(inputs=[x, adj, index], outputs=h)
                 model.compile(loss=CategoricalCrossentropy(from_logits=True),
                               optimizer=RMSprop(lr=lr),
                               metrics=['accuracy'])
                 return model
 
             # model_p
-            model_p=build_GCN(x_p)
+            model_p = build_GCN(x_p)
             # model_q
-            model_q=build_GCN(x_q)
+            model_q = build_GCN(x_q)
 
-            self.model_p, self.model_q=model_p, model_q
-            self.model=self.model_q
+            self.model_p, self.model_q = model_p, model_q
+            self.model = self.model_q
 
     def train(self,
               idx_train,
@@ -157,12 +157,12 @@ class GMNN(GalleryModel):
               monitor='val_accuracy',
               early_stop_metric='val_loss'):
 
-        histories=[]
-        index_all=tf.range(self.graph.num_nodes, dtype=self.intx)
+        histories = []
+        index_all = tf.range(self.graph.num_nodes, dtype=self.intx)
 
         # pre train model_q
-        self.model=self.model_q
-        history=super().train(idx_train,
+        self.model = self.model_q
+        history = super().train(idx_train,
                                 idx_val,
                                 epochs=pre_train_epochs,
                                 early_stopping=early_stopping,
@@ -174,25 +174,25 @@ class GMNN(GalleryModel):
                                 early_stop_metric=early_stop_metric)
         histories.append(history)
 
-        label_predict=self.predict(index_all).argmax(1)
-        label_predict[idx_train]=self.graph.node_label[idx_train]
-        label_predict=tf.one_hot(label_predict,
+        label_predict = self.predict(index_all).argmax(1)
+        label_predict[idx_train] = self.graph.node_label[idx_train]
+        label_predict = tf.one_hot(label_predict,
                                    depth=self.graph.num_node_classes)
         # train model_p fitst
-        train_sequence=FullBatchSequence(
+        train_sequence = FullBatchSequence(
             [label_predict, self.cache.A, index_all],
             label_predict,
             device=self.device)
         if idx_val is not None:
-            val_sequence=FullBatchSequence(
+            val_sequence = FullBatchSequence(
                 [label_predict, self.cache.A, idx_val],
                 self.cache.label_onehot[idx_val],
                 device=self.device)
         else:
-            val_sequence=None
+            val_sequence = None
 
-        self.model=self.model_p
-        history=super().train(train_sequence,
+        self.model = self.model_p
+        history = super().train(train_sequence,
                                 val_sequence,
                                 epochs=epochs,
                                 early_stopping=early_stopping,
@@ -205,24 +205,24 @@ class GMNN(GalleryModel):
         histories.append(history)
 
         # then train model_q again
-        label_predict=self.model.predict_on_batch(
+        label_predict = self.model.predict_on_batch(
             gf.astensors(label_predict,
                          self.cache.A,
                          index_all,
                          device=self.device))
 
-        label_predict=softmax(label_predict)
+        label_predict = softmax(label_predict)
         if tf.is_tensor(label_predict):
-            label_predict=label_predict.numpy()
+            label_predict = label_predict.numpy()
 
-        label_predict[idx_train]=self.cache.label_onehot[idx_train]
+        label_predict[idx_train] = self.cache.label_onehot[idx_train]
 
-        self.model=self.model_q
-        train_sequence=FullBatchSequence(
+        self.model = self.model_q
+        train_sequence = FullBatchSequence(
             [self.cache.X, self.cache.A, index_all],
             label_predict,
             device=self.device)
-        history=super().train(train_sequence,
+        history = super().train(train_sequence,
                                 idx_val,
                                 epochs=epochs,
                                 early_stopping=early_stopping,
@@ -240,8 +240,8 @@ class GMNN(GalleryModel):
     def train_sequence(self, index):
 
         # if the graph is changed?
-        labels=self.cache.label_onehot[index]
-        sequence=FullBatchSequence(
+        labels = self.cache.label_onehot[index]
+        sequence = FullBatchSequence(
             [self.cache.X, self.cache.A, index],
             labels,
             device=self.device)

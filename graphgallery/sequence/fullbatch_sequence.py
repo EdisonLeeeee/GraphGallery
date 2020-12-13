@@ -1,7 +1,7 @@
 from graphgallery.sequence.base_sequence import Sequence
 
 
-class FullBatchNodeSequence(Sequence):
+class FullBatchSequence(Sequence):
 
     def __init__(self, x, y=None, *args, **kwargs):
         super().__init__(*args, **kwargs)

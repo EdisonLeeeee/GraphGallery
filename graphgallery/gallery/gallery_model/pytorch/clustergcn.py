@@ -13,9 +13,9 @@ class ClusterGCN(GalleryModel):
 
         `Cluster-GCN: An Efficient Algorithm for Training Deep and Large Graph Convolutional Networks
         <https://arxiv.org/abs/1905.07953>`
-        Tensorflow 1.x implementation: 
+        Tensorflow 1.x implementation:
         <https://github.com/google-research/google-research/tree/master/cluster_gcn>
-        Pytorch implementation: 
+        Pytorch implementation:
         <https://github.com/benedekrozemberczki/ClusterGCN>
 
 
@@ -44,55 +44,53 @@ class ClusterGCN(GalleryModel):
         graph: An instance of `graphgallery.data.Graph`.
             A sparse, attributed, labeled graph.
         n_clusters: integer. optional
-            The number of clusters that the graph being seperated, 
-            if not specified (`None`), it will be set to the number 
-            of classes automatically. (default :obj: `None`).            
+            The number of clusters that the graph being seperated,
+            if not specified (`None`), it will be set to the number
+            of classes automatically. (default :obj: `None`).
         adj_transform: string, `transform`, or None. optional
             How to transform the adjacency matrix. See `graphgallery.functional`
             (default: :obj:`'normalize_adj'` with normalize rate `-0.5`.
-            i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
+            i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}})
         attr_transform: string, `transform`, or None. optional
             How to transform the node attribute matrix. See `graphgallery.functional`
             (default :obj: `None`)
         graph_transform: string, `transform` or None. optional
             How to transform the graph, by default None.
         device: string. optional
-            The device where the model is running on. 
-            You can specified ``CPU``, ``GPU`` or ``cuda``  
+            The device where the model is running on.
+            You can specified ``CPU``, ``GPU`` or ``cuda``
             for the model. (default: :str: `cpu`, i.e., running on the `CPU`)
-        seed: interger scalar. optional 
-            Used in combination with `tf.random.set_seed` & `np.random.seed` 
-            & `random.seed` to create a reproducible sequence of tensors across 
+        seed: interger scalar. optional
+            Used in combination with `tf.random.set_seed` & `np.random.seed`
+            & `random.seed` to create a reproducible sequence of tensors across
             multiple calls. (default :obj: `None`, i.e., using random seed)
         name: string. optional
             Specified name for the model. (default: :str: `class.__name__`)
         kwargs: other custom keyword parameters.
         """
+        self.register_cache("n_clusters", n_clusters)
         super().__init__(graph, device=device, seed=seed, name=name,
                          adj_transform=adj_transform,
                          attr_transform=attr_transform,
                          graph_transform=graph_transform,
                          **kwargs)
 
-        if not n_clusters:
-            n_clusters = self.graph.num_node_classes
-
-        self.n_clusters = n_clusters
-
-        self.process()
-
     def process_step(self):
-        graph = self.graph
-        node_attr = self.attr_transform(graph.node_attr)
+        graph = self.transform.graph_transform(self.graph)
+        node_attr = self.transform.attr_transform(graph.node_attr)
 
-        batch_adj, batch_x, self.cluster_member = gf.graph_partition(
-            graph.adj_matrix, node_attr, n_clusters=self.n_clusters)
+        X, A = gf.astensors(node_attr, adj_matrix, device=self.device)
 
-        batch_adj = self.adj_transform(*batch_adj)
+        batch_adj, batch_x, cluster_member = gf.graph_partition(
+            graph, n_clusters=self.cache.n_clusters)
 
-        (self.batch_adj, self.batch_x) = gf.astensors(batch_adj,
-                                                      batch_x,
-                                                      device=self.device)
+        batch_adj = self.transform.adj_transform(*batch_adj)
+        batch_adj, batch_x = gf.astensors(batch_adj, batch_x, device=self.device)
+
+        # ``A`` and ``X`` and ``cluster_member`` are cached for later use
+        self.register_cache("batch_x", batch_x)
+        self.register_cache("batch_adj", batch_adj)
+        self.register_cache("cluster_member", cluster_member)
 
     # use decorator to make sure all list arguments have the same length
     @gf.equal()
@@ -120,16 +118,16 @@ class ClusterGCN(GalleryModel):
 
         batch_idx, batch_labels = [], []
         batch_x, batch_adj = [], []
-        for cluster in range(self.n_clusters):
-            nodes = self.cluster_member[cluster]
-            mini_mask = mask[nodes]
-            mini_labels = labels[nodes][mini_mask]
-            if mini_labels.size == 0:
+        for cluster in range(self.cache.n_clusters):
+            nodes = self.cache.cluster_member[cluster]
+            batch_mask = mask[nodes]
+            batch_labels = labels[nodes][batch_mask]
+            if batch_labels.size == 0:
                 continue
-            batch_x.append(self.batch_x[cluster])
-            batch_adj.append(self.batch_adj[cluster])
-            batch_idx.append(np.where(mini_mask)[0])
-            batch_labels.append(mini_labels)
+            batch_x.append(self.cache.batch_x[cluster])
+            batch_adj.append(self.cache.batch_adj[cluster])
+            batch_idx.append(np.where(batch_mask)[0])
+            batch_labels.append(batch_labels)
 
         batch_data = tuple(zip(batch_x, batch_adj, batch_idx))
 
@@ -145,15 +143,15 @@ class ClusterGCN(GalleryModel):
         orders_dict = {idx: order for order, idx in enumerate(index)}
         batch_idx, orders = [], []
         batch_x, batch_adj = [], []
-        for cluster in range(self.n_clusters):
-            nodes = self.cluster_member[cluster]
-            mini_mask = mask[nodes]
-            batch_nodes = np.asarray(nodes)[mini_mask]
+        for cluster in range(self.cache.n_clusters):
+            nodes = self.cache.cluster_member[cluster]
+            batch_mask = mask[nodes]
+            batch_nodes = np.asarray(nodes)[batch_mask]
             if batch_nodes.size == 0:
                 continue
-            batch_x.append(self.batch_x[cluster])
-            batch_adj.append(self.batch_adj[cluster])
-            batch_idx.append(np.where(mini_mask)[0])
+            batch_x.append(self.cache.batch_x[cluster])
+            batch_adj.append(self.cache.batch_adj[cluster])
+            batch_idx.append(np.where(batch_mask)[0])
             orders.append([orders_dict[n] for n in batch_nodes])
 
         batch_data = tuple(zip(batch_x, batch_adj, batch_idx))

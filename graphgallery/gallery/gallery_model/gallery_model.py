@@ -91,7 +91,7 @@ class GalleryModel(GraphModel):
         return self.process_step(**kwargs)
 
     def process_step(self):
-        raise NotImplementedError, "You must implement this method!"
+        raise NotImplementedError("You must implement this method!")
 
     def build(self):
         """Build the model using custom hyperparameters.

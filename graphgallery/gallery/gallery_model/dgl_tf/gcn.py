@@ -66,15 +66,16 @@ class GCN(GalleryModel):
                          graph_transform=graph_transform,
                          **kwargs)
 
-        self.process()
-
     def process_step(self):
-        graph = self.graph
-        adj_matrix = self.adj_transform(graph.adj_matrix)
-        node_attr = self.attr_transform(graph.node_attr)
+        graph = self.transform.graph_transform(self.graph)
+        adj_matrix = self.transform.adj_transform(graph.adj_matrix)
+        node_attr = self.transform.attr_transform(graph.node_attr)
 
-        self.cache.X, self.cache.A = gf.astensors(
-            node_attr, adj_matrix, device=self.device)
+        X, G = gf.astensors(node_attr, adj_matrix, device=self.device)
+
+        # ``G`` and ``X`` are cached for later use
+        self.register_cache("X", X)
+        self.register_cache("G", G)
 
     @gf.equal()
     def build(self,
@@ -117,12 +118,13 @@ class GCN(GalleryModel):
                     optimizer.apply_gradients(
                         zip(grads, model.trainable_weights))
 
-        return loss.numpy().item(), metric.result().numpy().item()
+        # TODO: multiple metrics
+        return gf.BunchDict(loss=loss.numpy().item(), accuracy=metric.result().numpy().item())
 
     def test_step(self, sequence):
 
         model = self.model
-        weight_decay = getattr(model, "weight_decay", 0)
+        weight_decay = getattr(model, "weight_decay", 0.)
         loss_fn = model.loss
         metric = model.metric
         model.reset_metrics()
@@ -136,13 +138,14 @@ class GCN(GalleryModel):
                 for weight in model.trainable_weights:
                     loss += weight_decay * tf.nn.l2_loss(weight)
 
-        return loss.numpy().item(), metric.result().numpy().item()
+        # TODO: multiple metrics
+        return gf.BunchDict(loss=loss.numpy().item(), accuracy=metric.result().numpy().item())
 
     def train_sequence(self, index):
         labels = self.graph.node_label[index]
         sequence = FullBatchSequence(
-            [self.cache.X, self.cache.A, index],
+            [self.cache.X, self.cache.G, index],
             labels,
             device=self.device,
-            escape=type(self.cache.A))
+            escape=type(self.cache.G))
         return sequence

@@ -72,17 +72,16 @@ class SGC(GalleryModel):
         self.process()
 
     def process_step(self):
-        graph = self.graph
-        adj_matrix = self.adj_transform(graph.adj_matrix)
-        node_attr = self.attr_transform(graph.node_attr)
+        graph = self.transform.graph_transform(self.graph)
+        adj_matrix = self.transform.adj_transform(graph.adj_matrix)
+        node_attr = self.transform.attr_transform(graph.node_attr)
 
-        feature_inputs, structure_inputs = gf.astensors(node_attr,
-                                                        adj_matrix,
-                                                        device=self.device)
+        X, A = gf.astensors(node_attr, adj_matrix, device=self.device)
 
-        feature_inputs = SGConvolution(order=self.order)(
-            [feature_inputs, structure_inputs])
-        self.cache.X, self.cache.A = feature_inputs, structure_inputs
+        X = SGConvolution(order=self.order)([X, A])
+        # ``A`` and ``X`` are cached for later use
+        self.register_cache("X", X)
+        self.register_cache("A", A)
 
     # use decorator to make sure all list arguments have the same length
     @gf.equal()
@@ -104,11 +103,8 @@ class SGC(GalleryModel):
                            use_bias=use_bias).to(self.device)
 
     def train_sequence(self, index):
-        index = gf.astensor(index)
         labels = self.graph.node_label[index]
 
-        feature_inputs = self.cache.X[index]
-        sequence = FullBatchSequence(feature_inputs,
-                                     labels,
-                                     device=self.device)
+        X = self.cache.X[index]
+        sequence = FullBatchSequence(X, labels, device=self.device)
         return sequence

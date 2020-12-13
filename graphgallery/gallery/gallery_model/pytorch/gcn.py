@@ -64,15 +64,16 @@ class GCN(GalleryModel):
                          graph_transform=graph_transform,
                          **kwargs)
 
-        self.process()
-
     def process_step(self):
-        graph = self.graph
-        adj_matrix = self.adj_transform(graph.adj_matrix)
-        node_attr = self.attr_transform(graph.node_attr)
+        graph = self.transform.graph_transform(self.graph)
+        adj_matrix = self.transform.adj_transform(graph.adj_matrix)
+        node_attr = self.transform.attr_transform(graph.node_attr)
 
-        self.cache.X, self.cache.A = gf.astensors(
-            node_attr, adj_matrix, device=self.device)
+        X, A = gf.astensors(node_attr, adj_matrix, device=self.device)
+
+        # ``A`` and ``X`` are cached for later use
+        self.register_cache("X", X)
+        self.register_cache("A", A)
 
     # use decorator to make sure all list arguments have the same length
     @gf.equal()

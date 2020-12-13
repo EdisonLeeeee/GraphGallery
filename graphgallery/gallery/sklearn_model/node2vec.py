@@ -47,7 +47,6 @@ class Node2vec(SklearnModel):
         """
         super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
 
-        self.walker = None
         self.nxgraph = self.graph.nxgraph()
 
     def build(self,

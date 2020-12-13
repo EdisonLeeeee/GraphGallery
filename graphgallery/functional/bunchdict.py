@@ -1,4 +1,6 @@
 from collections import OrderedDict
+from tabulate import tabulate
+
 
 class BunchDict(OrderedDict):
     """Container object for datasets
@@ -32,6 +34,19 @@ class BunchDict(OrderedDict):
         except KeyError:
             raise AttributeError(key)
 
-    def show(self):
-        # TODO: improve it using texttable
-        return f"{self.__class__.__name__}({tuple(self.keys())})"
+    def __repr__(self):
+        table_headers = ["Names", "Objects"]
+        items = tuple(map(prettify, self.items()))
+        table = tabulate(
+            items, headers=table_headers, tablefmt="fancy_grid"
+        )
+        return "Objects in BunchDict:\n" + table
+
+    __str__ = __repr__
+
+
+def prettify(item):
+    key, val = item
+    if hasattr(val, "shape"):
+        val = f"{type(val)}, shape={val.shape}"
+    return key, val

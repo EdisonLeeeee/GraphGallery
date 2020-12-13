@@ -1,13 +1,10 @@
-try:
-    import texttable
-except ImportError:
-    texttable = None
 import os
 import glob
 import numpy as np
 import os.path as osp
 
 from typing import Union, Optional, List, Tuple, Callable
+from tabulate import tabulate
 
 from graphgallery import functional as gf
 from ..data.preprocess import train_val_test_split_tabular, get_train_val_test_split
@@ -127,13 +124,12 @@ class Dataset:
         if not filepaths:
             filepaths = self.list_files()
 
-        if not texttable:
-            print(filepaths)
-        else:
-            t = texttable.Texttable()
-            items = [osp.split(path) for path in filepaths]
-            t.add_rows([['File Path', 'File Name'], *items])
-            print(t.draw())
+        table_headers = ["File Path", "File Name"]
+        items = [osp.split(path) for path in filepaths]
+        table = tabulate(items, headers=table_headers,
+                         tablefmt="fancy_grid"
+                         )
+        print(f"Files in dataset {self.__class__.__name__}:\n" + table)
 
     def list_files(self):
         return glob.glob(osp.join(self.download_dir, '*'))

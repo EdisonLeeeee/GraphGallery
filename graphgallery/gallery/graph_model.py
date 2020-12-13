@@ -19,15 +19,15 @@ from graphgallery import functional as gf
 from .model import Model
 
 
-def cache_transform(transform, transform_kwargs):
+def cache_transform(transform_kwargs):
+    graph_transform = gf.get(transform_kwargs.pop("graph_transform", None))
     adj_transform = gf.get(transform_kwargs.pop("adj_transform", None))
     attr_transform = gf.get(transform_kwargs.pop("attr_transform", None))
-    graph_transform = gf.get(transform_kwargs.pop("graph_transform", None))
     label_transform = gf.get(transform_kwargs.pop("label_transform", None))
 
-    return gf.BunchDict(adj_transform=adj_transform,
+    return gf.BunchDict(graph_transform=graph_transform,
+                        adj_transform=adj_transform,
                         attr_transform=attr_transform,
-                        graph_transform=graph_transform,
                         label_transform=label_transform)
 
 
@@ -53,6 +53,7 @@ class GraphModel(Model):
             ``label_transform``, ``graph_transform``, etc.
 
         """
+        self.transform = cache_transform(kwargs)
         super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
 
         self.train_data = None
@@ -68,8 +69,6 @@ class GraphModel(Model):
         # add random integer to avoid duplication
         _id = np.random.RandomState(None).randint(100)
         self.ckpt_path = osp.join(os.getcwd(), f"{self.name}_checkpoint_{_id}{gg.file_ext()}")
-
-        self.transform = cache_transform(kwargs)
 
     def save(self,
              path=None,

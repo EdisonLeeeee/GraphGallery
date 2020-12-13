@@ -83,20 +83,18 @@ class ClusterGCN(GalleryModel):
 
         X, A = gf.astensors(node_attr, adj_matrix, device=self.device)
 
-        batch_adj, batch_x, self.cluster_member = gf.graph_partition(
+        batch_adj, batch_x, cluster_member = gf.graph_partition(
             graph, n_clusters=self.cache.n_clusters)
 
         batch_adj = self.transform.adj_transform(*batch_adj)
+        batch_adj, batch_x = gf.astensors(batch_adj, batch_x, device=self.device)
 
-        (self.batch_adj, self.batch_x) = gf.astensors(batch_adj,
-                                                      batch_x,
-                                                      device=self.device)
+        # ``A`` and ``X`` and ``cluster_member`` are cached for later use
+        self.register_cache("batch_x", batch_x)
+        self.register_cache("batch_adj", batch_adj)
+        self.register_cache("cluster_member", cluster_member)
 
-        # ``A`` and ``X`` are cached for later use
-        self.register_cache("X", X)
-        self.register_cache("A", A)
     # use decorator to make sure all list arguments have the same length
-
     @gf.equal()
     def build(self,
               hiddens=[32],
@@ -125,15 +123,15 @@ class ClusterGCN(GalleryModel):
         batch_idx, batch_labels = [], []
         batch_x, batch_adj = [], []
         for cluster in range(self.cache.n_clusters):
-            nodes = self.cluster_member[cluster]
-            mini_mask = mask[nodes]
-            mini_labels = labels[nodes][mini_mask]
-            if mini_labels.size == 0:
+            nodes = self.cache.cluster_member[cluster]
+            batch_mask = mask[nodes]
+            batch_labels = labels[nodes][batch_mask]
+            if batch_labels.size == 0:
                 continue
-            batch_x.append(self.batch_x[cluster])
-            batch_adj.append(self.batch_adj[cluster])
-            batch_idx.append(np.where(mini_mask)[0])
-            batch_labels.append(mini_labels)
+            batch_x.append(self.cache.batch_x[cluster])
+            batch_adj.append(self.cache.batch_adj[cluster])
+            batch_idx.append(np.where(batch_mask)[0])
+            batch_labels.append(batch_labels)
 
         batch_data = tuple(zip(batch_x, batch_adj, batch_idx))
 
@@ -150,14 +148,14 @@ class ClusterGCN(GalleryModel):
         batch_idx, orders = [], []
         batch_x, batch_adj = [], []
         for cluster in range(self.cache.n_clusters):
-            nodes = self.cluster_member[cluster]
-            mini_mask = mask[nodes]
-            batch_nodes = np.asarray(nodes)[mini_mask]
+            nodes = self.cache.cluster_member[cluster]
+            batch_mask = mask[nodes]
+            batch_nodes = np.asarray(nodes)[batch_mask]
             if batch_nodes.size == 0:
                 continue
-            batch_x.append(self.batch_x[cluster])
-            batch_adj.append(self.batch_adj[cluster])
-            batch_idx.append(np.where(mini_mask)[0])
+            batch_x.append(self.cache.batch_x[cluster])
+            batch_adj.append(self.cache.batch_adj[cluster])
+            batch_idx.append(np.where(batch_mask)[0])
             orders.append([orders_dict[n] for n in batch_nodes])
 
         batch_data = tuple(zip(batch_x, batch_adj, batch_idx))

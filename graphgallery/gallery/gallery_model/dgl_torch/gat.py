@@ -60,15 +60,16 @@ class GAT(GalleryModel):
                          graph_transform=graph_transform,
                          **kwargs)
 
-        self.process()
-
     def process_step(self):
-        graph = self.graph
-        adj_matrix = self.adj_transform(graph.adj_matrix)
-        node_attr = self.attr_transform(graph.node_attr)
+        graph = self.transform.graph_transform(self.graph)
+        adj_matrix = self.transform.adj_transform(graph.adj_matrix)
+        node_attr = self.transform.attr_transform(graph.node_attr)
 
-        self.cache.X, self.cache.A = gf.astensors(
-            node_attr, adj_matrix, device=self.device)
+        X, G = gf.astensors(node_attr, adj_matrix, device=self.device)
+
+        # ``G`` and ``X`` are cached for later use
+        self.register_cache("X", X)
+        self.register_cache("G", G)
 
     # use decorator to make sure all list arguments have the same length
     @gf.equal(include=["n_heads"])
@@ -93,8 +94,8 @@ class GAT(GalleryModel):
 
         labels = self.graph.node_label[index]
         sequence = FullBatchSequence(
-            [self.cache.X, self.cache.A, index],
+            [self.cache.X, self.cache.G, index],
             labels,
             device=self.device,
-            escape=type(self.cache.A))
+            escape=type(self.cache.G))
         return sequence
