@@ -14,7 +14,7 @@ install_requires = [
     'scikit_learn',
     'tensorflow>=2.1.0',
     'networkx>=2.3',
-    'gensim>=3.8.0',
+    'gensim>=4.0.0b0',
     'numba>=0.46.0',
 ]
 
@@ -44,8 +44,7 @@ setup(
     setup_requires=setup_requires,
     tests_require=tests_require,
     extras_require={'test': tests_require},
-    packages=find_packages(exclude=("examples", "imgs", "scripts",
-                                    "benchmark")),
+    packages=find_packages(exclude=("examples", "imgs", "benchmark")),
     classifiers=[
         'Development Status :: 3 - Alpha',
         "Programming Language :: Python :: 3",
