@@ -8,7 +8,6 @@ import numpy as np
 import tensorflow as tf
 import scipy.sparse as sp
 from functools import partial
-from fvcore.common.registry import Registry
 
 from tensorflow.keras.utils import Sequence
 from tensorflow.python.keras import callbacks as callbacks_module

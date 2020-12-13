@@ -1,3 +1,5 @@
+from .bunchdict import BunchDict
+from .registry import Registry
 from .transforms import *
 from .decorators import *
 from .functions import *
@@ -7,4 +9,3 @@ from .attr_matrix import *
 from .graph_level import *
 from .get_transform import *
 from .tensor import *
-from .bunchdict import BunchDict

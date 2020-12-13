@@ -9,7 +9,6 @@ import os.path as osp
 import scipy.sparse as sp
 
 from tensorflow.keras import backend as K
-from fvcore.common.registry import Registry
 
 import graphgallery as gg
 from graphgallery.data.io import makedirs_from_filepath

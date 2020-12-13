@@ -5,13 +5,13 @@ from .sklearn_model.sklearn_model import SklearnModel
 
 import sys
 import importlib
-from graphgallery import backend
 from typing import Tuple
-from fvcore.common.registry import Registry
+from graphgallery import backend
+from graphgallery import functional as gf
 
 __all__ = ["Gallery", "Model"]
 
-Gallery = None
+Gallery = gf.Registry("GraphGalleryModels")
 
 _GALLERY_MODELS = {
     "GCN",
@@ -41,7 +41,6 @@ _SKLEARN_MODELS = {
     "Node2vec",
     "Deepwalk",
 }
-_enabled_models = set()
 
 
 def _gen_missing_model(model, backend):
@@ -59,13 +58,12 @@ def load_models(backend_name=None):
     mod = importlib.import_module(f".gallery_model.{_backend.abbr}", __name__)
 
     global Gallery
-    Gallery = Registry("GraphGalleryModels")
+    Gallery = gf.Registry("GraphGalleryModels")
 
     for model in _GALLERY_MODELS:
         _model_class = mod.__dict__.get(model, None)
 
         if _model_class is not None:
-            _enabled_models.add(model)
             Gallery.register(_model_class)
             setattr(thismod, model, _model_class)
         else:
@@ -77,7 +75,6 @@ def load_models(backend_name=None):
         _model_class = mod.__dict__.get(model, None)
 
         if _model_class is not None:
-            _enabled_models.add(model)
             Gallery.register(_model_class)
             setattr(thismod, model, _model_class)
         else:
@@ -97,7 +94,7 @@ def is_enabled(model: str) -> bool:
     bool
         True if the model is enabled by the current backend.
     """
-    return model in _enabled_models
+    return model in Gallery
 
 
 def enabled_models() -> Tuple[str]:
@@ -108,7 +105,7 @@ def enabled_models() -> Tuple[str]:
     tuple
         A list of models enabled by the current backend.
     """
-    return tuple(_enabled_models)
+    return tuple(Gallery.names())
 
 
 load_models()

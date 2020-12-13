@@ -1,7 +1,7 @@
 from typing import Union, List, Tuple, Any, Callable, Optional
-from fvcore.common.registry import Registry
 
 import graphgallery as gg
+from .registry import Registry
 
 from .transforms import *
 from .functions import *
