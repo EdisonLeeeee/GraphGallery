@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 from graphgallery.gallery import GalleryModel
-from graphgallery.sequence import FullBatchNodeSequence
+from graphgallery.sequence import FullBatchSequence
 
 from graphgallery.nn.models.tensorflow import RobustGCN as tfRobustGCN
 from graphgallery import functional as gf
@@ -33,7 +33,6 @@ class RobustGCN(GalleryModel):
                 with a `graphgallery.data.Graph` instance representing
                 A sparse, attributed, labeled graph.
 
-
         Parameters:
         ----------
         graph: An instance of `graphgallery.data.Graph`.
@@ -45,35 +44,36 @@ class RobustGCN(GalleryModel):
             How to transform the node attribute matrix. See `graphgallery.functional`
             (default :obj: `None`)               
         graph_transform: string, `transform` or None. optional
-            How to transform the graph, by default, the graph transform is used
-            before the other transform unless specify ``graph_first=False``
+            How to transform the graph, by default None.
         device: string. optional
-            The device where the model is running on. You can specified `CPU` or `GPU` 
-            for the model. (default: :str: `cpu`, i.e., running on the 0-th `CPU`)
+            The device where the model is running on. 
+            You can specified ``CPU``, ``GPU`` or ``cuda``  
+            for the model. (default: :str: `cpu`, i.e., running on the `CPU`)
         seed: interger scalar. optional 
             Used in combination with `tf.random.set_seed` & `np.random.seed` 
             & `random.seed` to create a reproducible sequence of tensors across 
             multiple calls. (default :obj: `None`, i.e., using random seed)
         name: string. optional
             Specified name for the model. (default: :str: `class.__name__`)
-        kwargs: keyword parameters for transform, 
-            e.g., ``graph_first`` argument indicating the graph transform is
-            used at the first or last, by default at the first.
+        kwargs: other custom keyword parameters.
 
         """
-        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
-
-        self.adj_transform = gf.get(adj_transform)
-        self.attr_transform = gf.get(attr_transform)
-        self.process()
+        super().__init__(graph, device=device, seed=seed, name=name,
+                         adj_transform=adj_transform,
+                         attr_transform=attr_transform,
+                         graph_transform=graph_transform,
+                         **kwargs)
 
     def process_step(self):
-        graph = self.graph
-        adj_matrix = self.adj_transform(graph.adj_matrix)
-        node_attr = self.attr_transform(graph.node_attr)
+        graph = self.transform.graph_transform(self.graph)
+        adj_matrix = self.transform.adj_transform(graph.adj_matrix)
+        node_attr = self.transform.attr_transform(graph.node_attr)
 
-        self.feature_inputs, self.structure_inputs = gf.astensors(
-            node_attr, adj_matrix, device=self.device)
+        X, A = gf.astensors(node_attr, adj_matrix, device=self.device)
+
+        # ``A`` and ``X`` are cached for later use
+        self.register_cache("X", X)
+        self.register_cache("A", A)
 
     # use decorator to make sure all list arguments have the same length
     @gf.equal()
@@ -105,8 +105,8 @@ class RobustGCN(GalleryModel):
     def train_sequence(self, index):
 
         labels = self.graph.node_label[index]
-        sequence = FullBatchNodeSequence(
-            [self.feature_inputs, *self.structure_inputs, index],
+        sequence = FullBatchSequence(
+            [self.cache.X, *self.cache.A, index],
             labels,
             device=self.device)
         return sequence

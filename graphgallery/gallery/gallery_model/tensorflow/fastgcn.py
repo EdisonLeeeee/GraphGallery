@@ -56,34 +56,35 @@ class FastGCN(GalleryModel):
             (default :obj: `None`)
         device: string. optional
             The device where the model is running on. You can specified `CPU` or `GPU`
-            for the model. (default: :str: `cpu`, i.e., running on the 0-th `CPU`)
+            for the model. (default: :str: `cpu`, i.e., running on the `CPU`)
         seed: interger scalar. optional 
             Used in combination with `tf.random.set_seed` & `np.random.seed` 
             & `random.seed` to create a reproducible sequence of tensors across 
             multiple calls. (default :obj: `None`, i.e., using random seed)
         name: string. optional
             Specified name for the model. (default: :str: `class.__name__`)
-        kwargs: keyword parameters for transform, 
-            e.g., ``graph_first`` argument indicating the graph transform is
-            used at the first or last, by default at the first.
+        kwargs: other custom keyword parameters.
         """
-        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
+        super().__init__(graph, device=device, seed=seed, name=name,
+                         adj_transform=adj_transform,
+                         attr_transform=attr_transform,
+                         graph_transform=graph_transform,
+                         **kwargs)
 
-        self.rank = rank
-        self.batch_size = batch_size
-        self.adj_transform = gf.get(adj_transform)
-        self.attr_transform = gf.get(attr_transform)
-        self.process()
+        self.register_cache("rank", rank)
+        self.register_cache("batch_size", batch_size)
 
     def process_step(self):
-        graph = self.graph
-        adj_matrix = self.adj_transform(graph.adj_matrix)
-        node_attr = self.attr_transform(graph.node_attr)
-
+        graph = self.transform.graph_transform(self.graph)
+        adj_matrix = self.transform.adj_transform(graph.adj_matrix)
+        node_attr = self.transform.attr_transform(graph.node_attr)
         node_attr = adj_matrix @ node_attr
 
-        self.feature_inputs, self.structure_inputs = gf.astensor(
-            node_attr, device=self.device), adj_matrix
+        X, A = gf.astensor(node_attr, device=self.device), adj_matrix
+
+        # ``A`` and ``X`` are cached for later use
+        self.register_cache("X", X)
+        self.register_cache("A", A)
 
     # use decorator to make sure all list arguments have the same length
     @gf.equal()
@@ -95,27 +96,24 @@ class FastGCN(GalleryModel):
               lr=0.01,
               use_bias=False):
 
-        if self.backend == "tensorflow":
-            with tf.device(self.device):
-                self.model = tfFastGCN(self.graph.num_node_attrs,
-                                       self.graph.num_node_classes,
-                                       hiddens=hiddens,
-                                       activations=activations,
-                                       dropout=dropout,
-                                       weight_decay=weight_decay,
-                                       lr=lr,
-                                       use_bias=use_bias)
-        else:
-            raise NotImplementedError
+        with tf.device(self.device):
+            self.model = tfFastGCN(self.graph.num_node_attrs,
+                                   self.graph.num_node_classes,
+                                   hiddens=hiddens,
+                                   activations=activations,
+                                   dropout=dropout,
+                                   weight_decay=weight_decay,
+                                   lr=lr,
+                                   use_bias=use_bias)
 
     def train_sequence(self, index):
 
         labels = self.graph.node_label[index]
         adj_matrix = self.graph.adj_matrix[index][:, index]
-        adj_matrix = self.adj_transform(adj_matrix)
+        adj_matrix = self.cache.adj_transform(adj_matrix)
 
-        feature_inputs = tf.gather(self.feature_inputs, index)
-        sequence = FastGCNBatchSequence([feature_inputs, adj_matrix],
+        X = tf.gather(self.cache.X, index)
+        sequence = FastGCNBatchSequence([X, adj_matrix],
                                         labels,
                                         batch_size=self.batch_size,
                                         rank=self.rank,
@@ -125,10 +123,10 @@ class FastGCN(GalleryModel):
     def test_sequence(self, index):
 
         labels = self.graph.node_label[index]
-        structure_inputs = self.structure_inputs[index]
+        A = self.cache.A[index]
 
         sequence = FastGCNBatchSequence(
-            [self.feature_inputs, structure_inputs],
+            [self.cache.X, A],
             labels,
             batch_size=None,
             rank=None,

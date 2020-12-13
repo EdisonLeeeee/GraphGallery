@@ -6,7 +6,7 @@ from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 from graphgallery.nn.layers.tensorflow import GraphConvolution, Gather
-from graphgallery.sequence import FullBatchNodeSequence
+from graphgallery.sequence import FullBatchSequence
 from graphgallery.utils.bvat_utils import kl_divergence_with_logit, entropy_y_x, get_normalized_vector
 from graphgallery import functional as gf
 from graphgallery.nn.models import TFKeras
@@ -57,16 +57,14 @@ class SimplifiedOBVAT(OBVAT):
             (default: obj: `None`)
         device: string. optional
             The device where the model is running on. You can specified `CPU` or `GPU`
-            for the model. (default:: str: `CPU: 0`, i.e., running on the 0-th `CPU`)
+            for the model. (default:: str: `CPU: 0`, i.e., running on the `CPU`)
         seed: interger scalar. optional
             Used in combination with `tf.random.set_seed` & `np.random.seed`
             & `random.seed` to create a reproducible sequence of tensors across
             multiple calls. (default: obj: `None`, i.e., using random seed)
         name: string. optional
             Specified name for the model. (default: : str: `class.__name__`)
-        kwargs: keyword parameters for transform, 
-            e.g., ``graph_first`` argument indicating the graph transform is
-            used at the first or last, by default at the first.
+        kwargs: other custom keyword parameters.
 
         Note:
         ----------

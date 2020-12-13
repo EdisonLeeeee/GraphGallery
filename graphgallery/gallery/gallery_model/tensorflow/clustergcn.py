@@ -56,42 +56,47 @@ class ClusterGCN(GalleryModel):
             How to transform the node attribute matrix. See `graphgallery.functional`
             (default :obj: `None`)
         graph_transform: string, `transform` or None. optional
-            How to transform the graph, by default, the graph transform is used
-            before the other transform unless specify ``graph_first=False``
+            How to transform the graph, by default None.
         device: string. optional
-            The device where the model is running on. You can specified `CPU` or `GPU` 
-            for the model. (default: :str: `cpu`, i.e., running on the 0-th `CPU`)
+            The device where the model is running on. 
+            You can specified ``CPU``, ``GPU`` or ``cuda``  
+            for the model. (default: :str: `cpu`, i.e., running on the `CPU`)
         seed: interger scalar. optional 
             Used in combination with `tf.random.set_seed` & `np.random.seed` 
             & `random.seed` to create a reproducible sequence of tensors across 
             multiple calls. (default :obj: `None`, i.e., using random seed)
         name: string. optional
             Specified name for the model. (default: :str: `class.__name__`)
-        kwargs: keyword parameters for transform, 
-            e.g., ``graph_first`` argument indicating the graph transform is
-            used at the first or last, by default at the first.
+        kwargs: other custom keyword parameters. 
         """
-        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
+        self.register_cache("n_clusters", n_clusters)
 
-        self.n_clusters = n_clusters
-        self.adj_transform = gf.get(adj_transform)
-        self.attr_transform = gf.get(attr_transform)
-        self.process()
+        super().__init__(graph, device=device, seed=seed, name=name,
+                         adj_transform=adj_transform,
+                         attr_transform=attr_transform,
+                         graph_transform=graph_transform,
+                         **kwargs)
 
     def process_step(self):
-        graph = self.graph
-        node_attr = self.attr_transform(graph.node_attr)
+        graph = self.transform.graph_transform(self.graph)
+        node_attr = self.transform.attr_transform(graph.node_attr)
+
+        X, A = gf.astensors(node_attr, adj_matrix, device=self.device)
 
         batch_adj, batch_x, self.cluster_member = gf.graph_partition(
-            graph, n_clusters=self.n_clusters)
+            graph, n_clusters=self.cache.n_clusters)
 
-        batch_adj = self.adj_transform(*batch_adj)
+        batch_adj = self.transform.adj_transform(*batch_adj)
 
         (self.batch_adj, self.batch_x) = gf.astensors(batch_adj,
                                                       batch_x,
                                                       device=self.device)
 
+        # ``A`` and ``X`` are cached for later use
+        self.register_cache("X", X)
+        self.register_cache("A", A)
     # use decorator to make sure all list arguments have the same length
+
     @gf.equal()
     def build(self,
               hiddens=[32],
@@ -119,7 +124,7 @@ class ClusterGCN(GalleryModel):
 
         batch_idx, batch_labels = [], []
         batch_x, batch_adj = [], []
-        for cluster in range(self.n_clusters):
+        for cluster in range(self.cache.n_clusters):
             nodes = self.cluster_member[cluster]
             mini_mask = mask[nodes]
             mini_labels = labels[nodes][mini_mask]
@@ -144,7 +149,7 @@ class ClusterGCN(GalleryModel):
         orders_dict = {idx: order for order, idx in enumerate(index)}
         batch_idx, orders = [], []
         batch_x, batch_adj = [], []
-        for cluster in range(self.n_clusters):
+        for cluster in range(self.cache.n_clusters):
             nodes = self.cluster_member[cluster]
             mini_mask = mask[nodes]
             batch_nodes = np.asarray(nodes)[mini_mask]

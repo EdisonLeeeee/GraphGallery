@@ -8,7 +8,7 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 from graphgallery.nn.layers.tensorflow import DenseConvolution, Gather
 from graphgallery.gallery import GalleryModel
-from graphgallery.sequence import FullBatchNodeSequence
+from graphgallery.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.nn.models import TFKeras
 
@@ -55,26 +55,26 @@ class SAT(GalleryModel):
             `k` must be smaller than N-1. It is not possible to compute all
             eigenvectors of an adjacency matrix.
         graph_transform: string, `transform` or None. optional
-            How to transform the graph, by default, the graph transform is used
-            before the other transform unless specify ``graph_first=False``
+            How to transform the graph, by default None.
         device: string. optional
-            The device where the model is running on. You can specified `CPU` or `GPU` 
-            for the model. (default: :str: `cpu`, i.e., running on the 0-th `CPU`)
+            The device where the model is running on. 
+            You can specified ``CPU``, ``GPU`` or ``cuda``  
+            for the model. (default: :str: `cpu`, i.e., running on the `CPU`)
         seed: interger scalar. optional 
             Used in combination with `tf.random.set_seed` & `np.random.seed` 
             & `random.seed` to create a reproducible sequence of tensors across 
             multiple calls. (default :obj: `None`, i.e., using random seed)
         name: string. optional
             Specified name for the model. (default: :str: `class.__name__`)
-        kwargs: keyword parameters for transform, 
-            e.g., ``graph_first`` argument indicating the graph transform is
-            used at the first or last, by default at the first.
+        kwargs: other custom keyword parameters.
         """
 
-        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
+        super().__init__(graph, device=device, seed=seed, name=name,
+                         adj_transform=adj_transform,
+                         attr_transform=attr_transform,
+                         graph_transform=graph_transform,
+                         **kwargs)
 
-        self.adj_transform = gf.get(adj_transform)
-        self.attr_transform = gf.get(attr_transform)
         self.k = k
         self.process()
 
@@ -93,7 +93,7 @@ class SAT(GalleryModel):
         adj_matrix = self.adj_transform(adj_matrix)
 
         with tf.device(self.device):
-            self.feature_inputs, self.structure_inputs, self.U, self.V = gf.astensors(
+            self.cache.X, self.cache.A, self.U, self.V = gf.astensors(
                 node_attr, adj_matrix, U, V, device=self.device)
 
     # use decorator to make sure all list arguments have the same length
@@ -189,6 +189,6 @@ class SAT(GalleryModel):
     def train_sequence(self, index):
         labels = self.graph.node_label[index]
         with tf.device(self.device):
-            sequence = FullBatchNodeSequence(
-                [self.feature_inputs, self.structure_inputs, index], labels)
+            sequence = FullBatchSequence(
+                [self.cache.X, self.cache.A, index], labels)
         return sequence

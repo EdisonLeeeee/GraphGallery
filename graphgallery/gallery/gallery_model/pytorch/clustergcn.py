@@ -55,29 +55,30 @@ class ClusterGCN(GalleryModel):
             How to transform the node attribute matrix. See `graphgallery.functional`
             (default :obj: `None`)
         graph_transform: string, `transform` or None. optional
-            How to transform the graph, by default, the graph transform is used
-            before the other transform unless specify ``graph_first=False``
+            How to transform the graph, by default None.
         device: string. optional
-            The device where the model is running on. You can specified `CPU` or `GPU` 
-            for the model. (default: :str: `cpu`, i.e., running on the 0-th `CPU`)
+            The device where the model is running on. 
+            You can specified ``CPU``, ``GPU`` or ``cuda``  
+            for the model. (default: :str: `cpu`, i.e., running on the `CPU`)
         seed: interger scalar. optional 
             Used in combination with `tf.random.set_seed` & `np.random.seed` 
             & `random.seed` to create a reproducible sequence of tensors across 
             multiple calls. (default :obj: `None`, i.e., using random seed)
         name: string. optional
             Specified name for the model. (default: :str: `class.__name__`)
-        kwargs: keyword parameters for transform, 
-            e.g., ``graph_first`` argument indicating the graph transform is
-            used at the first or last, by default at the first.
+        kwargs: other custom keyword parameters.
         """
-        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
+        super().__init__(graph, device=device, seed=seed, name=name,
+                         adj_transform=adj_transform,
+                         attr_transform=attr_transform,
+                         graph_transform=graph_transform,
+                         **kwargs)
 
         if not n_clusters:
             n_clusters = self.graph.num_node_classes
 
         self.n_clusters = n_clusters
-        self.adj_transform = gf.get(adj_transform)
-        self.attr_transform = gf.get(attr_transform)
+
         self.process()
 
     def process_step(self):

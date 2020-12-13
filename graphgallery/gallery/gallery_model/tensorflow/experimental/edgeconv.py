@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 from graphgallery.gallery import GalleryModel
-from graphgallery.sequence import FullBatchNodeSequence
+from graphgallery.sequence import FullBatchSequence
 
 from graphgallery.nn.models.tensorflow import EdgeGCN as tfEdgeGCN
 
@@ -55,20 +55,17 @@ class EdgeGCN(GalleryModel):
                 How to transform the node attribute matrix. See `graphgallery.functional`
                 (default :obj: `None`)
             graph_transform: string, `transform` or None. optional
-            How to transform the graph, by default, the graph transform is used
-            before the other transform unless specify ``graph_first=False``
+            How to transform the graph, by default None.
         device: string. optional
                 The device where the model is running on. You can specified `CPU` or `GPU` 
-                for the model. (default: :str: `cpu`, i.e., running on the 0-th `CPU`)
+                for the model. (default: :str: `cpu`, i.e., running on the `CPU`)
             seed: interger scalar. optional 
                 Used in combination with `tf.random.set_seed` & `np.random.seed` 
                 & `random.seed` to create a reproducible sequence of tensors across 
                 multiple calls. (default :obj: `None`, i.e., using random seed)
             name: string. optional
                 Specified name for the model. (default: :str: `class.__name__`)
-            kwargs: keyword parameters for transform, 
-            e.g., ``graph_first`` argument indicating the graph transform is
-            used at the first or last, by default at the first.
+            kwargs: other custom keyword parameters.
 
             Note:
             ----------
@@ -76,10 +73,12 @@ class EdgeGCN(GalleryModel):
                 framework, i.e., using Tensor `edge index` and `edge weight` of adjacency 
                 matrix to aggregate neighbors' message, instead of SparseTensor `adj`.       
             """
-        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
+        super().__init__(graph, device=device, seed=seed, name=name,
+                         adj_transform=adj_transform,
+                         attr_transform=attr_transform,
+                         graph_transform=graph_transform,
+                         **kwargs)
 
-        self.adj_transform = gf.get(adj_transform)
-        self.attr_transform = gf.get(attr_transform)
         self.process()
 
     def process_step(self):
@@ -88,7 +87,7 @@ class EdgeGCN(GalleryModel):
         node_attr = self.attr_transform(graph.node_attr)
         edge_index, edge_weight = gf.sparse_adj_to_edge(adj_matrix)
 
-        self.feature_inputs, self.structure_inputs = gf.astensors(
+        self.cache.X, self.cache.A = gf.astensors(
             node_attr, (edge_index.T, edge_weight), device=self.device)
 
     # use decorator to make sure all list arguments have the same length
@@ -114,8 +113,8 @@ class EdgeGCN(GalleryModel):
     def train_sequence(self, index):
 
         labels = self.graph.node_label[index]
-        sequence = FullBatchNodeSequence(
-            [self.feature_inputs, *self.structure_inputs, index],
+        sequence = FullBatchSequence(
+            [self.cache.X, *self.cache.A, index],
             labels,
             device=self.device)
         return sequence

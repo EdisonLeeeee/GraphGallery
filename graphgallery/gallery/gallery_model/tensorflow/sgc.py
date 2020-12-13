@@ -4,7 +4,7 @@ from graphgallery.nn.layers.tensorflow import SGConvolution
 from graphgallery.nn.models.tensorflow import SGC as tfSGC
 
 from graphgallery.gallery import GalleryModel
-from graphgallery.sequence import FullBatchNodeSequence
+from graphgallery.sequence import FullBatchSequence
 
 from graphgallery import functional as gf
 
@@ -51,50 +51,48 @@ class SGC(GalleryModel):
             How to transform the node attribute matrix. See `graphgallery.functional`
             (default :obj: `None`)
         graph_transform: string, `transform` or None. optional
-            How to transform the graph, by default, the graph transform is used
-            before the other transform unless specify ``graph_first=False``
+            How to transform the graph, by default None.
         device: string. optional
-            The device where the model is running on. You can specified `CPU` or `GPU` 
-            for the model. (default: :str: `cpu`, i.e., running on the 0-th `CPU`)
+            The device where the model is running on. 
+            You can specified ``CPU``, ``GPU`` or ``cuda``  
+            for the model. (default: :str: `cpu`, i.e., running on the `CPU`)
         seed: interger scalar. optional 
             Used in combination with `tf.random.set_seed` & `np.random.seed` 
             & `random.seed` to create a reproducible sequence of tensors across 
             multiple calls. (default :obj: `None`, i.e., using random seed)
         name: string. optional
             Specified name for the model. (default: :str: `class.__name__`)
-        kwargs: keyword parameters for transform, 
-            e.g., ``graph_first`` argument indicating the graph transform is
-            used at the first or last, by default at the first.
+        kwargs: other custom keyword parameters.
         """
-        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
-
-        self.order = order
-        self.adj_transform = gf.get(adj_transform)
-        self.attr_transform = gf.get(attr_transform)
-        self.process()
+        self.register_cache("order", order)
+        super().__init__(graph, device=device, seed=seed, name=name,
+                         adj_transform=adj_transform,
+                         attr_transform=attr_transform,
+                         graph_transform=graph_transform,
+                         **kwargs)
 
     def process_step(self):
-        graph = self.graph
-        adj_matrix = self.adj_transform(graph.adj_matrix)
-        node_attr = self.attr_transform(graph.node_attr)
 
-        feature_inputs, structure_inputs = gf.astensors(node_attr,
-                                                        adj_matrix,
-                                                        device=self.device)
+        graph = self.transform.graph_transform(self.graph)
+        adj_matrix = self.transform.adj_transform(graph.adj_matrix)
+        node_attr = self.transform.attr_transform(graph.node_attr)
+
+        X, A = gf.astensors(node_attr, adj_matrix, device=self.device)
 
         # To avoid this tensorflow error in large dataset:
         # InvalidArgumentError: Cannot use GPU when output.shape[1] * nnz(a) > 2^31 [Op:SparseTensorDenseMatMul]
-        if self.graph.num_node_attrs * adj_matrix.nnz > 2**31:
+        if X.shape[1] * adj_matrix.nnz > 2**31:
             device = "CPU"
         else:
             device = self.device
 
         with tf.device(device):
-            feature_inputs = SGConvolution(order=self.order)(
-                [feature_inputs, structure_inputs])
+            X = SGConvolution(order=self.order)([X, A])
 
         with tf.device(self.device):
-            self.feature_inputs, self.structure_inputs = feature_inputs, structure_inputs
+            # ``A`` and ``X`` are cached for later use
+            self.register_cache("X", X)
+            self.register_cache("A", A)
 
     # use decorator to make sure all list arguments have the same length
     @gf.equal()
@@ -120,8 +118,6 @@ class SGC(GalleryModel):
         index = gf.astensor(index)
         labels = self.graph.node_label[index]
 
-        feature_inputs = tf.gather(self.feature_inputs, index)
-        sequence = FullBatchNodeSequence(feature_inputs,
-                                         labels,
-                                         device=self.device)
+        X = tf.gather(self.cache.X, index)
+        sequence = FullBatchSequence(X, labels, device=self.device)
         return sequence

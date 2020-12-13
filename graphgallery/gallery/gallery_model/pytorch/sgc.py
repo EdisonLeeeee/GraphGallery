@@ -1,7 +1,7 @@
 from graphgallery.nn.layers.pytorch import SGConvolution
 from graphgallery.nn.models.pytorch import SGC as pySGC
 from graphgallery.gallery import GalleryModel
-from graphgallery.sequence import FullBatchNodeSequence
+from graphgallery.sequence import FullBatchSequence
 
 from graphgallery import functional as gf
 
@@ -48,26 +48,27 @@ class SGC(GalleryModel):
             How to transform the node attribute matrix. See `graphgallery.functional`
             (default :obj: `None`)
         graph_transform: string, `transform` or None. optional
-            How to transform the graph, by default, the graph transform is used
-            before the other transform unless specify ``graph_first=False``
+            How to transform the graph, by default None.
         device: string. optional
-            The device where the model is running on. You can specified `CPU` or `GPU` 
-            for the model. (default: :str: `cpu`, i.e., running on the 0-th `CPU`)
+            The device where the model is running on. 
+            You can specified ``CPU``, ``GPU`` or ``cuda``  
+            for the model. (default: :str: `cpu`, i.e., running on the `CPU`)
         seed: interger scalar. optional 
             Used in combination with `tf.random.set_seed` & `np.random.seed` 
             & `random.seed` to create a reproducible sequence of tensors across 
             multiple calls. (default :obj: `None`, i.e., using random seed)
         name: string. optional
             Specified name for the model. (default: :str: `class.__name__`)
-        kwargs: keyword parameters for transform, 
-            e.g., ``graph_first`` argument indicating the graph transform is
-            used at the first or last, by default at the first.
+        kwargs: other custom keyword parameters.
         """
-        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
+        super().__init__(graph, device=device, seed=seed, name=name,
+                         adj_transform=adj_transform,
+                         attr_transform=attr_transform,
+                         graph_transform=graph_transform,
+                         **kwargs)
 
         self.order = order
-        self.adj_transform = gf.get(adj_transform)
-        self.attr_transform = gf.get(attr_transform)
+
         self.process()
 
     def process_step(self):
@@ -81,7 +82,7 @@ class SGC(GalleryModel):
 
         feature_inputs = SGConvolution(order=self.order)(
             [feature_inputs, structure_inputs])
-        self.feature_inputs, self.structure_inputs = feature_inputs, structure_inputs
+        self.cache.X, self.cache.A = feature_inputs, structure_inputs
 
     # use decorator to make sure all list arguments have the same length
     @gf.equal()
@@ -106,8 +107,8 @@ class SGC(GalleryModel):
         index = gf.astensor(index)
         labels = self.graph.node_label[index]
 
-        feature_inputs = self.feature_inputs[index]
-        sequence = FullBatchNodeSequence(feature_inputs,
-                                         labels,
-                                         device=self.device)
+        feature_inputs = self.cache.X[index]
+        sequence = FullBatchSequence(feature_inputs,
+                                     labels,
+                                     device=self.device)
         return sequence

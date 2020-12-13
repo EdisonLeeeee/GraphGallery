@@ -14,8 +14,21 @@ from fvcore.common.registry import Registry
 import graphgallery as gg
 from graphgallery.data.io import makedirs_from_filepath
 from graphgallery.utils import saver
+from graphgallery import functional as gf
 
 from .model import Model
+
+
+def cache_transform(transform, transform_kwargs):
+    adj_transform = gf.get(transform_kwargs.pop("adj_transform", None))
+    attr_transform = gf.get(transform_kwargs.pop("attr_transform", None))
+    graph_transform = gf.get(transform_kwargs.pop("graph_transform", None))
+    label_transform = gf.get(transform_kwargs.pop("label_transform", None))
+
+    return gf.BunchDict(adj_transform=adj_transform,
+                        attr_transform=attr_transform,
+                        graph_transform=graph_transform,
+                        label_transform=label_transform)
 
 
 class GraphModel(Model):
@@ -36,8 +49,8 @@ class GraphModel(Model):
         name: string. optional
             Specified name for the model. (default: :str: `class.__name__`)
         kwargs: keyword parameters for transform, including:
-            ``adj_transform``, ``attr_transform``, ``graph_transform`` and 
-            ``graph_first``.
+            ``adj_transform``, ``attr_transform``, 
+            ``label_transform``, ``graph_transform``, etc.
 
         """
         super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
@@ -54,10 +67,9 @@ class GraphModel(Model):
         # checkpoint path
         # add random integer to avoid duplication
         _id = np.random.RandomState(None).randint(100)
-        self.ckpt_path = osp.join(
-            os.getcwd(), f"{self.name}_checkpoint_{_id}{gg.file_ext()}")
+        self.ckpt_path = osp.join(os.getcwd(), f"{self.name}_checkpoint_{_id}{gg.file_ext()}")
 
-        self.transform = Registry("transform")
+        self.transform = cache_transform(kwargs)
 
     def save(self,
              path=None,
@@ -145,17 +157,13 @@ class GraphModel(Model):
 
     @custom_objects.setter
     def custom_objects(self, objs):
-        assert isinstance(objs, dict)
+        assert isinstance(objs, dict), objs
         self._custom_objects = objs
 
     def close(self):
         """Close the session of model and empty cache."""
         gg.empty_cache()
-        self.model = None
+        self._model = None
 
     def __call__(self, *args, **kwargs):
         return self._model(*args, **kwargs)
-
-    def __repr__(self):
-        return f"{self.name}(device={self.device}, backend={self.backend})"
-    __str__ = __repr__

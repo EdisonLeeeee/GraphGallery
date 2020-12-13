@@ -35,8 +35,6 @@ class GraphSAGE(GalleryModel):
                 with a `graphgallery.data.Graph` instance representing
                 A sparse, attributed, labeled graph.
 
-
-
         Parameters:
         ----------
         graph: An instance of `graphgallery.data.Graph`.
@@ -52,43 +50,43 @@ class GraphSAGE(GalleryModel):
             How to transform the node attribute matrix. See `graphgallery.functional`
             (default :obj: `None`)
         graph_transform: string, `transform` or None. optional
-            How to transform the graph, by default, the graph transform is used
-            before the other transform unless specify ``graph_first=False``
+            How to transform the graph, by default None.
         device: string. optional
-            The device where the model is running on. You can specified `CPU` or `GPU` 
-            for the model. (default: :str: `cpu`, i.e., running on the 0-th `CPU`)
+            The device where the model is running on. 
+            You can specified ``CPU``, ``GPU`` or ``cuda``  
+            for the model. (default: :str: `cpu`, i.e., running on the `CPU`)
         seed: interger scalar. optional 
             Used in combination with `tf.random.set_seed` & `np.random.seed` 
             & `random.seed` to create a reproducible sequence of tensors across 
             multiple calls. (default :obj: `None`, i.e., using random seed)
         name: string. optional
             Specified name for the model. (default: :str: `class.__name__`)
-        kwargs: keyword parameters for transform, 
-            e.g., ``graph_first`` argument indicating the graph transform is
-            used at the first or last, by default at the first.
+        kwargs: other custom keyword parameters.
 
         """
 
-        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
+        super().__init__(graph, device=device, seed=seed, name=name,
+                         adj_transform=adj_transform,
+                         attr_transform=attr_transform,
+                         graph_transform=graph_transform,
+                         **kwargs)
 
-        self.n_samples = n_samples
-        self.adj_transform = gf.get(adj_transform)
-        self.attr_transform = gf.get(attr_transform)
-        self.process()
+        self.register_cache("n_samples", n_samples)
 
     def process_step(self):
-        graph = self.graph
+        graph = self.transform.graph_transform(self.graph)
         # Dense matrix, shape [num_nodes, max_degree]
-        adj_matrix = self.adj_transform(graph.adj_matrix)
-        node_attr = self.attr_transform(graph.node_attr)
-
+        adj_matrix = self.transform.adj_transform(graph.adj_matrix)
+        node_attr = self.transform.attr_transform(graph.node_attr)
         # pad with a dummy zero vector
-        node_attr = np.vstack(
-            [node_attr,
-             np.zeros(node_attr.shape[1], dtype=self.floatx)])
+        node_attr = np.vstack([node_attr, np.zeros(node_attr.shape[1],
+                                                   dtype=self.floatx)])
 
-        self.feature_inputs, self.structure_inputs = gf.astensors(
-            node_attr, device=self.device), adj_matrix
+        X, A = gf.astensor(node_attr, device=self.device), adj_matrix
+
+        # ``A`` and ``X`` are cached for later use
+        self.register_cache("X", X)
+        self.register_cache("A", A)
 
     # use decorator to make sure all list arguments have the same length
     @gf.equal()
@@ -114,7 +112,7 @@ class GraphSAGE(GalleryModel):
                                          use_bias=use_bias,
                                          aggregator=aggregator,
                                          output_normalize=output_normalize,
-                                         n_samples=self.n_samples)
+                                         n_samples=self.cache.n_samples)
         else:
             raise NotImplementedError
 
@@ -122,8 +120,8 @@ class GraphSAGE(GalleryModel):
 
         labels = self.graph.node_label[index]
         sequence = SAGEMiniBatchSequence(
-            [self.feature_inputs, self.structure_inputs, index],
+            [self.cache.X, self.cache.A, index],
             labels,
-            n_samples=self.n_samples,
+            n_samples=self.cache.n_samples,
             device=self.device)
         return sequence

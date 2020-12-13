@@ -49,8 +49,8 @@ class GalleryModel(GraphModel):
         name: string. optional
             Specified name for the model. (default: :str: `class.__name__`)
         kwargs: keyword parameters for transform, including:
-            ``adj_transform``, ``attr_transform``, ``graph_transform`` and 
-            ``graph_first``.
+            ``adj_transform``, ``attr_transform``, 
+            ``label_transform``, ``graph_transform``, etc.
         """
         super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
 
@@ -66,7 +66,9 @@ class GalleryModel(GraphModel):
             self.test_step_fn = trainer.test_step_torch
             self.predict_step_fn = trainer.predict_step_torch
 
-    def process(self, graph=None, updates=None, **kwargs):
+        self.process()
+
+    def process(self, graph=None, **kwargs):
         """pre-process for the input graph, including manipulations
         on adjacency matrix and node attribute matrix, and finally convert
         them into tensor (optional).
@@ -79,21 +81,17 @@ class GalleryModel(GraphModel):
         Parameters:
         ----------
         graph: An instance of graphgallery graph.
-        updates: dict, the updates for the graph
         kwargs: other custom keyword parameters for 'process_step'.
         """
         assert isinstance(graph, BaseGraph) or graph is None, type(graph)
         if graph is not None:
             assert isinstance(graph, BaseGraph), type(graph)
-            self.graph = graph
-        if updates is not None:
-            assert isinstance(updates, dict), type(updates)
-            self.graph.update(**updates)
+            self.graph = graph.copy()
 
         return self.process_step(**kwargs)
 
     def process_step(self):
-        raise NotImplementedError
+        raise NotImplementedError, "You must implement this method!"
 
     def build(self):
         """Build the model using custom hyperparameters.
@@ -106,22 +104,22 @@ class GalleryModel(GraphModel):
 
         Parameters:
         ----------
-            hiddens: `list` of integer or integer scalar
-                The number of hidden units of model. Note: the last hidden unit (`num_node_classes`)
-                aren't necessary to specified and it will be automatically added in the last
-                layer.
-            activations: `list` of string or string
-                The activation function of model. Note: the last activation function (`softmax`)
-                aren't necessary to specified and it will be automatically specified in the
-                final output.
-            dropout: float scalar
-                Dropout rate for the hidden outputs.
-            weight_decay:  float scalar
-                L2 normalize parameters for the hidden layers. (only used in the hidden layers)
-            lr: float scalar
-                Learning rate for the training model.
-            use_bias: bool
-                Whether to use bias in the hidden layers.
+        hiddens: `list` of integer or integer scalar
+            The number of hidden units of model. Note: the last hidden unit (`num_node_classes`)
+            aren't necessary to specified and it will be automatically added in the last
+            layer.
+        activations: `list` of string or string
+            The activation function of model. Note: the last activation function (`softmax`)
+            aren't necessary to specified and it will be automatically specified in the
+            final output.
+        dropout: float scalar
+            Dropout rate for the hidden outputs.
+        weight_decay:  float scalar
+            L2 normalize parameters for the hidden layers. (only used in the hidden layers)
+        lr: float scalar
+            Learning rate for the training model.
+        use_bias: bool
+            Whether to use bias in the hidden layers.
 
         """
         raise NotImplementedError
@@ -169,39 +167,41 @@ class GalleryModel(GraphModel):
         Parameters:
         ----------
         train_data: Numpy array-like, `list`, Integer scalar or `graphgallery.Sequence`
-            The index of nodes (or sequence) that will be used during training.
+            The index of objects (or sequence) that will be used during training.
         val_data: Numpy array-like, `list`, Integer scalar or
             `graphgallery.Sequence`, optional
-            The index of nodes (or sequence) that will be used for validation.
+            The index of objects (or sequence) that will be used for validation.
             (default :obj: `None`, i.e., do not use validation during training)
         epochs: Positive integer
             The number of epochs of training.(default :obj: `200`)
         early_stopping: Positive integer or None
-            The number of early stopping patience during training. (default :obj: `None`,
-            i.e., do not use early stopping during training)
+            The number of early stopping patience during training. 
+            (default :obj: `None`, i.e., do not use early stopping during training)
         verbose: int in {0, 1, 2, 3, 4}
-                'verbose=0': not verbose;
-                'verbose=1': Progbar (one line, detailed);
-                'verbose=2': Progbar (one line, omitted);
-                'verbose=3': Progbar (multi line, detailed);
-                'verbose=4': Progbar (multi line, omitted);
+            'verbose=0': not verbose;
+            'verbose=1': Progbar (one line, detailed);
+            'verbose=2': Progbar (one line, omitted);
+            'verbose=3': Progbar (multi line, detailed);
+            'verbose=4': Progbar (multi line, omitted);
             (default :obj: 1)
         save_best: bool
             Whether to save the best weights (accuracy of loss depend on `monitor`)
             of training or validation (depend on `validation` is `False` or `True`).
             (default :bool: `True`)
         ckpt_path: String or None
-            The path of saved weights/model. (default :obj: `None`, i.e.,
-            `./log/{self.name}_weights`)
+            The path of saved weights/model. 
+            (default to current path.)
         as_model: bool
             Whether to save the whole model or weights only, if `True`, the `self.custom_objects`
             must be speficied if you are using custom `layer` or `loss` and so on.
         monitor: String
-            One of (val_loss, val_acc, loss, acc), it determines which metric will be
-            used for `save_best`. (default :obj: `val_acc`)
+            One of evaluation metrics, e.g., val_loss, val_accuracy, loss, accuracy, 
+            it determines which metric will be used for `save_best`. 
+            (default :obj: `val_accuracy`)
         early_stop_metric: String
-            One of (val_loss, val_acc, loss, acc), it determines which metric will be
-            used for early stopping. (default :obj: `val_loss`)
+            One of evaluation metrics, e.g., val_loss, val_accuracy, loss, accuracy, 
+            it determines which metric will be used for early stopping. 
+            (default :obj: `val_loss`)
         callbacks: tensorflow.keras.callbacks. (default :obj: `None`)
         kwargs: other keyword Parameters.
 
@@ -347,7 +347,7 @@ class GalleryModel(GraphModel):
         Parameters:
         ----------
         data: Numpy array-like, `list` or `graphgallery.Sequence`
-            The index of nodes (or sequence) that will be tested.
+            The index of objects (or sequence) that will be tested.
 
 
         Return:
@@ -452,16 +452,17 @@ class GalleryModel(GraphModel):
         Parameters:
         ----------
         predict_data: Numpy 1D array, optional.
-            The indices of nodes to predict.
-            if None, predict the all nodes.
+            The indices of objects to predict.
+            if None, predict the all objects.
 
         return_prob: bool.
             whether to return the probability of prediction.
 
         Return:
         ----------
-        The predicted probability of each class for each node,
-            shape (num_nodes, num_node_classes).
+        The predicted probability of each class for each object,
+            for node classification task, it has shape 
+            (num_nodes, num_node_classes).
 
         """
 
@@ -494,20 +495,19 @@ class GalleryModel(GraphModel):
         raise NotImplementedError
 
     def test_sequence(self, inputs):
-        """
-        Construct the testing sequence.
+        """Construct the testing sequence.
 
         Note:
-        ----------
+        -----
         If not implemented, this method will call `train_sequence` automatically.
         """
         return self.train_sequence(inputs)
 
     def predict_sequence(self, inputs):
-        """
-        Construct the prediction sequence.
+        """Construct the prediction sequence.
+
         Note:
-        ----------
+        -----
         If not implemented, this method will call `train_sequence` automatically.        
         """
         return self.test_sequence(inputs)

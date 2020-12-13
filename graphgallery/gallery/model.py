@@ -5,6 +5,7 @@ import numpy as np
 import tensorflow as tf
 import scipy.sparse as sp
 import graphgallery as gg
+from graphgallery import functional as gf
 
 
 class Model:
@@ -22,27 +23,25 @@ class Model:
             across multiple calls.
         name: string. optional
             Specified name for the model. (default: :str: `class.__name__`)
-        kwargs: keyword parameters for transform, 
-            e.g., ``graph_first`` argument indicating the graph transform is
-            used at the first or last, by default at the first.
-
+        kwargs: other custom keyword arguments. 
         """
         if not isinstance(graph, gg.data.BaseGraph):
             raise ValueError(f"Unrecognized graph: {graph}.")
 
         _backend = gg.backend()
 
+        # It currently takes no keyword arguments
         gg.utils.raise_error.raise_if_kwargs(kwargs)
 
         if seed is not None:
             np.random.seed(seed)
             random.seed(seed)
-            if _backend == "torch":
+            if _backend == "tensorflow":
+                tf.random.set_seed(seed)
+            else:
                 torch.manual_seed(seed)
                 torch.cuda.manual_seed(seed)
                 # torch.cuda.manual_seed_all(seed)
-            else:
-                tf.random.set_seed(seed)
 
         if name is None:
             name = self.__class__.__name__
@@ -50,10 +49,23 @@ class Model:
         self.seed = seed
         self.name = name
         self.graph = graph.copy()
-        self.device = gg.functional.device(device, _backend)
+        self.device = gf.device(device, _backend)
         self.backend = _backend
 
         # data types, default: `float32`,`int32` and `bool`
         self.floatx = gg.floatx()
         self.intx = gg.intx()
         self.boolx = gg.boolx()
+        self._cache = gf.BunchDict()
+
+    @property
+    def cache(self):
+        return self._cache
+
+    def register_cache(self, name, value):
+        self._cache[name] = value
+
+    def __repr__(self):
+        return f"{self.name}(device={self.device}, backend={self.backend})"
+
+    __str__ = __repr__

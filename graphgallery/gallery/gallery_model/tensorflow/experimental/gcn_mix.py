@@ -6,7 +6,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 
 from graphgallery.nn.layers.tensorflow import GraphConvolution
-from graphgallery.sequence import FullBatchNodeSequence
+from graphgallery.sequence import FullBatchSequence
 from ..fastgcn import FastGCN
 
 
@@ -50,20 +50,18 @@ class GCN_MIX(FastGCN):
             How to transform the node attribute matrix. See `graphgallery.functional`
             (default :obj: `None`)
         graph_transform: string, `transform` or None. optional
-            How to transform the graph, by default, the graph transform is used
-            before the other transform unless specify ``graph_first=False``
+            How to transform the graph, by default None.
         device: string. optional
-            The device where the model is running on. You can specified `CPU` or `GPU` 
-            for the model. (default: :str: `cpu`, i.e., running on the 0-th `CPU`)
+            The device where the model is running on. 
+            You can specified ``CPU``, ``GPU`` or ``cuda``  
+            for the model. (default: :str: `cpu`, i.e., running on the `CPU`)
         seed: interger scalar. optional 
             Used in combination with `tf.random.set_seed` & `np.random.seed` 
             & `random.seed` to create a reproducible sequence of tensors across 
             multiple calls. (default :obj: `None`, i.e., using random seed)
         name: string. optional
             Specified name for the model. (default: :str: `class.__name__`)
-        kwargs: keyword parameters for transform, 
-            e.g., ``graph_first`` argument indicating the graph transform is
-            used at the first or last, by default at the first.
+        kwargs: other custom keyword parameters.
         """
         super().__init__(graph,
                          adj_transform=adj_transform, attr_transform=attr_transform,
@@ -72,6 +70,6 @@ class GCN_MIX(FastGCN):
     def train_sequence(self, index):
         labels = self.graph.node_label[index]
 
-        sequence = FullBatchNodeSequence(
-            [self.feature_inputs, self.structure_inputs[index]], labels, device=self.device)
+        sequence = FullBatchSequence(
+            [self.cache.X, self.cache.A[index]], labels, device=self.device)
         return sequence

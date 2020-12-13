@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 
 from graphgallery.gallery import GalleryModel
-from graphgallery.sequence import SBVATSampleSequence, FullBatchNodeSequence
+from graphgallery.sequence import SBVATSampleSequence, FullBatchSequence
 from graphgallery.utils.bvat_utils import get_normalized_vector, kl_divergence_with_logit, entropy_y_x
 
 from graphgallery import functional as gf
@@ -55,33 +55,39 @@ class SBVAT(GalleryModel):
             How to transform the node attribute matrix. See `graphgallery.functional`
             (default :obj: `None`)
         device: string. optional
-            The device where the model is running on. You can specified `CPU` or `GPU`
-            for the model. (default: :str: `cpu`, i.e., running on the 0-th `CPU`)
+            The device where the model is running on.
+            You can specified ``CPU``, ``GPU`` or ``cuda``
+            for the model. (default: :str: `cpu`, i.e., running on the `CPU`)
         seed: interger scalar. optional
             Used in combination with `tf.random.set_seed` & `np.random.seed`
             & `random.seed` to create a reproducible sequence of tensors across
             multiple calls. (default :obj: `None`, i.e., using random seed)
         name: string. optional
             Specified name for the model. (default: :str: `class.__name__`)
-        kwargs: keyword parameters for transform, 
-            e.g., ``graph_first`` argument indicating the graph transform is
-            used at the first or last, by default at the first.
+        kwargs: other custom keyword parameters.
         """
-        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
-
-        self.adj_transform = gf.get(adj_transform)
-        self.attr_transform = gf.get(attr_transform)
-        self.n_samples = n_samples
-        self.process()
+        super().__init__(graph, device=device, seed=seed, name=name,
+                         adj_transform=adj_transform,
+                         attr_transform=attr_transform,
+                         graph_transform=graph_transform,
+                         **kwargs)
+        self.register_cache("n_samples", n_samples)
 
     def process_step(self):
         graph = self.graph
         adj_matrix = self.adj_transform(graph.adj_matrix)
         node_attr = self.attr_transform(graph.node_attr)
-        self.neighbors = gf.find_4o_nbrs(adj_matrix)
 
-        self.feature_inputs, self.structure_inputs = gf.astensors(
-            node_attr, adj_matrix, device=self.device)
+        graph = self.transform.graph_transform(self.graph)
+        adj_matrix = self.transform.adj_transform(graph.adj_matrix)
+        node_attr = self.transform.attr_transform(graph.node_attr)
+
+        X, A = gf.astensors(node_attr, adj_matrix, device=self.device)
+
+        # ``A`` and ``X`` and ``neighbors`` are cached for later use
+        self.register_cache("X", X)
+        self.register_cache("A", A)
+        self.register_cache("neighbors", gf.find_4o_nbrs(adj_matrix))
 
     # use decorator to make sure all list arguments have the same length
     @gf.equal()
@@ -98,27 +104,24 @@ class SBVAT(GalleryModel):
               epsilon=0.03,
               xi=1e-6):
 
-        if self.backend == "tensorflow":
-            with tf.device(self.device):
-                self.model = tfGCN(self.graph.num_node_attrs,
-                                   self.graph.num_node_classes,
-                                   hiddens=hiddens,
-                                   activations=activations,
-                                   dropout=dropout,
-                                   weight_decay=weight_decay,
-                                   lr=lr,
-                                   use_bias=use_bias)
-                self.index_all = tf.range(self.graph.num_nodes,
-                                          dtype=self.intx)
-        else:
-            raise NotImplementedError
+        with tf.device(self.device):
+            self.model = tfGCN(self.graph.num_node_attrs,
+                               self.graph.num_node_classes,
+                               hiddens=hiddens,
+                               activations=activations,
+                               dropout=dropout,
+                               weight_decay=weight_decay,
+                               lr=lr,
+                               use_bias=use_bias)
+            self.register_cache("index_all", tf.range(self.graph.num_nodes,
+                                                      dtype=self.intx))
 
-        self.p1 = p1  # Alpha
-        self.p2 = p2  # Beta
-        self.xi = xi  # Small constant for finite difference
+        self.register_cache("p1", p1)  # Alpha
+        self.register_cache("p2", p2)  # Beta
+        self.register_cache("xi", xi)  # Small constant for finite difference
         # Norm length for (virtual) adversarial training
-        self.epsilon = epsilon
-        self.n_power_iterations = n_power_iterations  # Number of power iterations
+        self.register_cache("epsilon", epsilon)
+        self.register_cache("n_power_iterations", n_power_iterations)  # Number of power iterations
 
     @tf.function
     def train_step(self, sequence):
@@ -133,7 +136,7 @@ class SBVAT(GalleryModel):
             for inputs, labels in sequence:
                 x, adj, index, adv_mask = inputs
                 with tf.GradientTape() as tape:
-                    logit = model([x, adj, self.index_all], training=True)
+                    logit = model([x, adj, self.cache.index_all], training=True)
                     output = tf.gather(logit, index)
                     loss = loss_fn(labels, output)
                     entropy_loss = entropy_y_x(logit)
@@ -141,7 +144,7 @@ class SBVAT(GalleryModel):
                                                              adj,
                                                              logit=logit,
                                                              adv_mask=adv_mask)
-                    loss += self.p1 * vat_loss + self.p2 * entropy_loss
+                    loss += self.cache.p1 * vat_loss + self.cache.p2 * entropy_loss
 
                     metric.update_state(labels, output)
 
@@ -154,17 +157,17 @@ class SBVAT(GalleryModel):
     def virtual_adversarial_loss(self, x, adj, logit, adv_mask):
         d = tf.random.normal(shape=tf.shape(x), dtype=self.floatx)
         model = self.model
-        for _ in range(self.n_power_iterations):
-            d = get_normalized_vector(d) * self.xi
+        for _ in range(self.cache.n_power_iterations):
+            d = get_normalized_vector(d) * self.cache.xi
             logit_p = logit
             with tf.GradientTape() as tape:
                 tape.watch(d)
-                logit_m = model([x + d, adj, self.index_all], training=True)
+                logit_m = model([x + d, adj, self.cache.index_all], training=True)
                 dist = kl_divergence_with_logit(logit_p, logit_m, adv_mask)
             grad = tape.gradient(dist, d)
             d = tf.stop_gradient(grad)
 
-        r_vadv = get_normalized_vector(d) * self.epsilon
+        r_vadv = get_normalized_vector(d) * self.cache.epsilon
         logit_p = tf.stop_gradient(logit)
         logit_m = model([x + r_vadv, adj, self.index_all])
         loss = kl_divergence_with_logit(logit_p, logit_m, adv_mask)
@@ -175,9 +178,9 @@ class SBVAT(GalleryModel):
         labels = self.graph.node_label[index]
 
         sequence = SBVATSampleSequence(
-            [self.feature_inputs, self.structure_inputs, index],
+            [self.cache.X, self.cache.A, index],
             labels,
-            neighbors=self.neighbors,
+            neighbors=self.cache.neighbors,
             n_samples=self.n_samples,
             device=self.device)
 
@@ -186,8 +189,8 @@ class SBVAT(GalleryModel):
     def test_sequence(self, index):
 
         labels = self.graph.node_label[index]
-        sequence = FullBatchNodeSequence(
-            [self.feature_inputs, self.structure_inputs, index],
+        sequence = FullBatchSequence(
+            [self.cache.X, self.cache.A, index],
             labels,
             device=self.device)
 
