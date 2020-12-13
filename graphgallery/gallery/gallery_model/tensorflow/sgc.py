@@ -64,12 +64,14 @@ class SGC(GalleryModel):
             Specified name for the model. (default: :str: `class.__name__`)
         kwargs: other custom keyword parameters.
         """
-        self.register_cache("order", order)
         super().__init__(graph, device=device, seed=seed, name=name,
                          adj_transform=adj_transform,
                          attr_transform=attr_transform,
                          graph_transform=graph_transform,
                          **kwargs)
+
+        self.register_cache("order", order)
+        self.process()
 
     def process_step(self):
 
@@ -87,7 +89,7 @@ class SGC(GalleryModel):
             device = self.device
 
         with tf.device(device):
-            X = SGConvolution(order=self.order)([X, A])
+            X = SGConvolution(order=self.cache.order)([X, A])
 
         with tf.device(self.device):
             # ``A`` and ``X`` are cached for later use

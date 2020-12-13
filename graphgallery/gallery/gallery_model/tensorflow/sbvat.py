@@ -73,11 +73,9 @@ class SBVAT(GalleryModel):
                          **kwargs)
         self.register_cache("n_samples", n_samples)
 
-    def process_step(self):
-        graph = self.graph
-        adj_matrix = self.adj_transform(graph.adj_matrix)
-        node_attr = self.attr_transform(graph.node_attr)
+        self.process()
 
+    def process_step(self):
         graph = self.transform.graph_transform(self.graph)
         adj_matrix = self.transform.adj_transform(graph.adj_matrix)
         node_attr = self.transform.attr_transform(graph.node_attr)
@@ -169,7 +167,7 @@ class SBVAT(GalleryModel):
 
         r_vadv = get_normalized_vector(d) * self.cache.epsilon
         logit_p = tf.stop_gradient(logit)
-        logit_m = model([x + r_vadv, adj, self.index_all])
+        logit_m = model([x + r_vadv, adj, self.cache.index_all])
         loss = kl_divergence_with_logit(logit_p, logit_m, adv_mask)
         return loss
 
@@ -181,7 +179,7 @@ class SBVAT(GalleryModel):
             [self.cache.X, self.cache.A, index],
             labels,
             neighbors=self.cache.neighbors,
-            n_samples=self.n_samples,
+            n_samples=self.cache.n_samples,
             device=self.device)
 
         return sequence

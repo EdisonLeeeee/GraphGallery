@@ -68,18 +68,17 @@ class ClusterGCN(GalleryModel):
             Specified name for the model. (default: :str: `class.__name__`)
         kwargs: other custom keyword parameters.
         """
-        self.register_cache("n_clusters", n_clusters)
         super().__init__(graph, device=device, seed=seed, name=name,
                          adj_transform=adj_transform,
                          attr_transform=attr_transform,
                          graph_transform=graph_transform,
                          **kwargs)
+        self.register_cache("n_clusters", n_clusters)
+        self.process()
 
     def process_step(self):
         graph = self.transform.graph_transform(self.graph)
         node_attr = self.transform.attr_transform(graph.node_attr)
-
-        X, A = gf.astensors(node_attr, adj_matrix, device=self.device)
 
         batch_adj, batch_x, cluster_member = gf.graph_partition(
             graph, n_clusters=self.cache.n_clusters)

@@ -63,6 +63,8 @@ class ChebyNet(GalleryModel):
                          graph_transform=graph_transform,
                          **kwargs)
 
+        self.process()
+
     def process_step(self):
         graph = self.transform.graph_transform(self.graph)
         adj_matrix = self.transform.adj_transform(graph.adj_matrix)
@@ -84,19 +86,16 @@ class ChebyNet(GalleryModel):
               lr=0.01,
               use_bias=False):
 
-        if self.backend == "tensorflow":
-            with tf.device(self.device):
-                self.model = tfChebyNet(self.graph.num_node_attrs,
-                                        self.graph.num_node_classes,
-                                        hiddens=hiddens,
-                                        activations=activations,
-                                        dropout=dropout,
-                                        weight_decay=weight_decay,
-                                        order=self.adj_transform.order,
-                                        lr=lr,
-                                        use_bias=use_bias)
-        else:
-            raise NotImplementedError
+        with tf.device(self.device):
+            self.model = tfChebyNet(self.graph.num_node_attrs,
+                                    self.graph.num_node_classes,
+                                    hiddens=hiddens,
+                                    activations=activations,
+                                    dropout=dropout,
+                                    weight_decay=weight_decay,
+                                    order=self.transform.adj_transform.order,
+                                    lr=lr,
+                                    use_bias=use_bias)
 
     def train_sequence(self, index):
 

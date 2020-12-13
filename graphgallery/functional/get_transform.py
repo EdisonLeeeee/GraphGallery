@@ -40,15 +40,23 @@ class Compose(Transform):
         return format_string
 
 
-def get(transform: Union[str, Transform, None, List, Tuple, "Compose"],
-        **transform_para) -> Transform:
-    if gg.is_listlike(transform):
+def name_dict_tuple(transform):
+    return len(transform) == 2 and isinstance(transform[0], str) and isinstance(transform[1], dict)
+
+
+def get(transform: Union[str, Transform, None, List, Tuple, "Compose"]) -> Transform:
+    if gg.is_listlike(transform) and not name_dict_tuple(transform):
         return Compose(*transform)
 
     if isinstance(transform, Transform) or callable(transform):
         return transform
     elif transform is None:
         return NullTransform()
+
+    transform_para = {}
+    if isinstance(transform, tuple):
+        transform, transform_para = transform
+
     assert isinstance(transform, str), transform
     name = "".join(map(lambda s: s.title(), transform.split("_")))
     return Transformers.get(name)(**transform_para)

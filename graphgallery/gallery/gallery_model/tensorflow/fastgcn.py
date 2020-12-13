@@ -74,6 +74,8 @@ class FastGCN(GalleryModel):
         self.register_cache("rank", rank)
         self.register_cache("batch_size", batch_size)
 
+        self.process()
+
     def process_step(self):
         graph = self.transform.graph_transform(self.graph)
         adj_matrix = self.transform.adj_transform(graph.adj_matrix)
@@ -110,13 +112,13 @@ class FastGCN(GalleryModel):
 
         labels = self.graph.node_label[index]
         adj_matrix = self.graph.adj_matrix[index][:, index]
-        adj_matrix = self.cache.adj_transform(adj_matrix)
+        adj_matrix = self.transform.adj_transform(adj_matrix)
 
         X = tf.gather(self.cache.X, index)
         sequence = FastGCNBatchSequence([X, adj_matrix],
                                         labels,
-                                        batch_size=self.batch_size,
-                                        rank=self.rank,
+                                        batch_size=self.cache.batch_size,
+                                        rank=self.cache.rank,
                                         device=self.device)
         return sequence
 

@@ -18,25 +18,20 @@ class GCN_MIX(FastGCN):
 
     """
 
-    def __init__(self, graph, adj_transform="normalize_adj", attr_transform=None,
+    def __init__(self, graph,
+                 adj_transform="normalize_adj",
+                 attr_transform=None,
                  graph_transform=None,
                  device="cpu", seed=None, name=None, **kwargs):
         """Create Mixed Graph Convolutional Networks (GCN_MIX) occured in FastGCN.
 
         Calculating `A @ X` in advance to save time.
 
-
-        This can be instantiated in several ways:
+        This can be instantiated in the following way:
 
             model = GCN(graph)
                 with a `graphgallery.data.Graph` instance representing
                 A sparse, attributed, labeled graph.
-
-            model = GCN(adj_matrix, node_attr, labels)
-                where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
-                 `node_attr` is a 2D Numpy array-like matrix denoting the node 
-                 attributes, `labels` is a 1D Numpy array denoting the node labels.
-
 
         Parameters:
         ----------
@@ -63,9 +58,11 @@ class GCN_MIX(FastGCN):
             Specified name for the model. (default: :str: `class.__name__`)
         kwargs: other custom keyword parameters.
         """
-        super().__init__(graph,
-                         adj_transform=adj_transform, attr_transform=attr_transform,
-                         device=device, seed=seed, name=name, **kwargs)
+        super().__init__(graph, device=device, seed=seed, name=name,
+                         adj_transform=adj_transform,
+                         attr_transform=attr_transform,
+                         graph_transform=graph_transform,
+                         **kwargs)
 
     def train_sequence(self, index):
         labels = self.graph.node_label[index]

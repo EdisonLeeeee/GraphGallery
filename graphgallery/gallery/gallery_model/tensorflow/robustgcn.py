@@ -18,7 +18,7 @@ class RobustGCN(GalleryModel):
 
     def __init__(self,
                  graph,
-                 adj_transform=gf.NormalizeAdj(rate=[-0.5, -1.0]),
+                 adj_transform=("normalize_adj", dict(rate=[-0.5, -1.0])),
                  attr_transform=None,
                  graph_transform=None,
                  device="cpu",
@@ -63,6 +63,8 @@ class RobustGCN(GalleryModel):
                          attr_transform=attr_transform,
                          graph_transform=graph_transform,
                          **kwargs)
+
+        self.process()
 
     def process_step(self):
         graph = self.transform.graph_transform(self.graph)

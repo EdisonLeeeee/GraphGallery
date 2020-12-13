@@ -72,6 +72,7 @@ class GraphSAGE(GalleryModel):
                          **kwargs)
 
         self.register_cache("n_samples", n_samples)
+        self.process()
 
     def process_step(self):
         graph = self.transform.graph_transform(self.graph)

@@ -65,6 +65,8 @@ class GAT(GalleryModel):
 
         self.process()
 
+        self.process()
+
     def process_step(self):
         graph = self.transform.graph_transform(self.graph)
         adj_matrix = self.transform.adj_transform(graph.adj_matrix)

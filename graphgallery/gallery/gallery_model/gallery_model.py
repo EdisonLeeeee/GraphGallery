@@ -66,8 +66,6 @@ class GalleryModel(GraphModel):
             self.test_step_fn = trainer.test_step_torch
             self.predict_step_fn = trainer.predict_step_torch
 
-        self.process()
-
     def process(self, graph=None, **kwargs):
         """pre-process for the input graph, including manipulations
         on adjacency matrix and node attribute matrix, and finally convert

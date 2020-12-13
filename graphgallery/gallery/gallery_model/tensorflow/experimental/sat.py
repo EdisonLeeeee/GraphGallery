@@ -18,7 +18,7 @@ class SAT(GalleryModel):
                  graph,
                  adj_transform="normalize_adj",
                  attr_transform=None,
-                 k=35,
+                 K=35,
                  graph_transform=None,
                  device="cpu",
                  seed=None,
@@ -27,17 +27,11 @@ class SAT(GalleryModel):
         r"""Create a Graph Convolutional Networks (GCN) model
             using Spetral Adversarial Training (SAT) defense strategy.
 
-        This can be instantiated in several ways:
+        This can be instantiated in the following way:
 
             model = SAT(graph)
                 with a `graphgallery.data.Graph` instance representing
                 A sparse, attributed, labeled graph.
-
-            model = SAT(adj_matrix, node_attr, labels)
-                where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
-                 `node_attr` is a 2D Numpy array-like matrix denoting the node 
-                 attributes, `labels` is a 1D Numpy array denoting the node labels.
-
 
         Parameters:
         ----------
@@ -50,9 +44,9 @@ class SAT(GalleryModel):
         attr_transform: string, `transform`, or None. optional
             How to transform the node attribute matrix. See `graphgallery.functional`
             (default :obj: `None`)
-        k: integer. optional.
+        K: integer. optional.
             The number of eigenvalues and eigenvectors desired.
-            `k` must be smaller than N-1. It is not possible to compute all
+            `K` must be smaller than N-1. It is not possible to compute all
             eigenvectors of an adjacency matrix.
         graph_transform: string, `transform` or None. optional
             How to transform the graph, by default None.
@@ -75,28 +69,34 @@ class SAT(GalleryModel):
                          graph_transform=graph_transform,
                          **kwargs)
 
-        self.k = k
+        self.register_cache("K", K)
         self.process()
 
     def process_step(self, re_decompose=False):
-        graph = self.graph
-        adj_matrix = self.adj_transform(graph.adj_matrix)
-        node_attr = self.attr_transform(graph.node_attr)
+        graph = self.transform.graph_transform(self.graph)
+        adj_matrix = self.transform.adj_transform(graph.adj_matrix)
+        node_attr = self.transform.attr_transform(graph.node_attr)
 
-        if re_decompose or not hasattr(self, "U"):
-            V, U = sp.linalg.eigs(adj_matrix.astype('float64'), k=self.k)
+        if re_decompose or not "U" in self.cache:
+            V, U = sp.linalg.eigs(adj_matrix.astype('float64'), k=self.cache.K)
             U, V = U.real, V.real
         else:
-            U, V = self.U, self.V
+            U, V = self.cache.U, self.cache.V
 
         adj_matrix = (U * V) @ U.T
-        adj_matrix = self.adj_transform(adj_matrix)
+        adj_matrix = self.transform.adj_transform(adj_matrix)
 
         with tf.device(self.device):
-            self.cache.X, self.cache.A, self.U, self.V = gf.astensors(
-                node_attr, adj_matrix, U, V, device=self.device)
+            X, A, U, V = gf.astensors(node_attr, adj_matrix, U, V,
+                                      device=self.device)
+        # ``A`` , ``X`` , U`` and ``V`` are cached for later use
+        self.register_cache("X", X)
+        self.register_cache("A", A)
+        self.register_cache("U", U)
+        self.register_cache("V", V)
 
     # use decorator to make sure all list arguments have the same length
+
     @gf.equal()
     def build(self,
               hiddens=[32],
@@ -147,9 +147,9 @@ class SAT(GalleryModel):
 
     @tf.function
     def train_step(self, sequence):
-        (x_norm, A, idx), y = next(iter(sequence))
+        (X, A, idx), y = next(iter(sequence))
 
-        U, V = self.U, self.V
+        U, V = self.cache.U, self.cache.V
         model = self.model
         loss_fn = model.loss
         metric = model.metrics[0]
@@ -159,7 +159,7 @@ class SAT(GalleryModel):
         with tf.GradientTape() as tape:
             tape.watch([U, V])
             A0 = (U * V) @ tf.transpose(U)
-            output = model([x_norm, A0, idx])
+            output = model([X, A0, idx])
             loss = loss_fn(y, output)
 
         U_grad, V_grad = tape.gradient(loss, [U, V])
@@ -173,9 +173,9 @@ class SAT(GalleryModel):
             A1 = (U_hat * V) @ tf.transpose(U_hat)
             A2 = (U * V_hat) @ tf.transpose(U)
 
-            output0 = model([x_norm, A0, idx])
-            output1 = model([x_norm, A1, idx])
-            output2 = model([x_norm, A2, idx])
+            output0 = model([X, A0, idx])
+            output1 = model([X, A1, idx])
+            output2 = model([X, A2, idx])
 
             loss = loss_fn(y, output0) + tf.reduce_sum(model.losses)
             loss += self.lamb1 * loss_fn(y, output1) + self.lamb2 * loss_fn(
@@ -184,7 +184,8 @@ class SAT(GalleryModel):
 
         grads = tape.gradient(loss, model.trainable_variables)
         optimizer.apply_gradients(zip(grads, model.trainable_variables))
-        return {"loss": loss, "accuracy": metric.result()}
+
+        return gf.BunchDict(loss=loss, accuracy=metric.result())
 
     def train_sequence(self, index):
         labels = self.graph.node_label[index]

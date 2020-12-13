@@ -66,6 +66,7 @@ class SGC(GalleryModel):
                          **kwargs)
 
         self.register_cache("order", order)
+        self.process()
 
     def process_step(self):
         graph = self.transform.graph_transform(self.graph)

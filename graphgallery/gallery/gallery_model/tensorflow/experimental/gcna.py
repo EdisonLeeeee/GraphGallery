@@ -32,16 +32,11 @@ class GCNA(GCN):
         r"""Create a Graph Convolutional Networks(GCN) model 
             concated with node attribute matrix (GCNA).
 
-        This can be instantiated in several ways:
+        This can be instantiated in the following way:
 
             model = GCNA(graph)
                 with a `graphgallery.data.Graph` instance representing
                 A sparse, attributed, labeled graph.
-
-            model = GCNA(adj_matrix, node_attr, labels)
-                where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
-                 `node_attr` is a 2D Numpy array - like matrix denoting the node
-                 attributes, `labels` is a 1D Numpy array denoting the node labels.
 
         Parameters:
         ----------
@@ -65,12 +60,10 @@ class GCNA(GCN):
             Specified name for the model. (default:: str: `class.__name__`)
         kwargs: other custom keyword parameters.
         """
-        super().__init__(graph,
+        super().__init__(graph, device=device, seed=seed, name=name,
                          adj_transform=adj_transform,
                          attr_transform=attr_transform,
-                         device=device,
-                         seed=seed,
-                         name=name,
+                         graph_transform=graph_transform,
                          **kwargs)
 
     # use decorator to make sure all list arguments have the same length

@@ -9,7 +9,7 @@ from ..get_transform import Transformers
 
 
 @Transformers.register()
-class AddSelfLoops(Transform):
+class AddSelfloops(Transform):
     """Add self loops for adjacency matrix."""
 
     def __init__(self, fill_weight: float = 1.0):
@@ -65,7 +65,7 @@ def add_selfloops(adj_matrix: sp.csr_matrix, fill_weight: float = 1.0):
 
     See also
     ----------
-    graphgallery.functional.AddSelfLoops          
+    graphgallery.functional.AddSelfloops          
 
     """
     def _add_selfloops(adj, w):

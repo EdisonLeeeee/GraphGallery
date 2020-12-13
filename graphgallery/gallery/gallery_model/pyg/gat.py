@@ -60,6 +60,8 @@ class GAT(GalleryModel):
                          graph_transform=graph_transform,
                          **kwargs)
 
+        self.process()
+
     def process_step(self):
         graph = self.transform.graph_transform(self.graph)
         adj_matrix = self.transform.adj_transform(graph.adj_matrix)

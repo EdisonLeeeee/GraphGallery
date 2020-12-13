@@ -33,16 +33,11 @@ class SimplifiedOBVAT(OBVAT):
                  **kwargs):
         r"""Create a Simplified OBVAT model.
 
-        This can be instantiated in several ways:
+        This can be instantiated in the following way:
 
             model = SimplifiedOBVAT(graph)
                 with a `graphgallery.data.Graph` instance representing
                 A sparse, attributed, labeled graph.
-
-            model = SimplifiedOBVAT(adj_matrix, node_attr, labels)
-                where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
-                 `node_attr` is a 2D Numpy array - like matrix denoting the node
-                 attributes, `labels` is a 1D Numpy array denoting the node labels.
 
         Parameters:
         ----------
@@ -67,15 +62,13 @@ class SimplifiedOBVAT(OBVAT):
         kwargs: other custom keyword parameters.
 
         Note:
-        ----------
+        -----
         This is a simplified implementation of `OBVAT`.                
         """
-        super().__init__(graph,
+        super().__init__(graph, device=device, seed=seed, name=name,
                          adj_transform=adj_transform,
                          attr_transform=attr_transform,
-                         device=device,
-                         seed=seed,
-                         name=name,
+                         graph_transform=graph_transform,
                          **kwargs)
 
     # use decorator to make sure all list arguments have the same length

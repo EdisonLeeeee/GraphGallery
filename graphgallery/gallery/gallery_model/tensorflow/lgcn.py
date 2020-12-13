@@ -66,16 +66,16 @@ class LGCN(GalleryModel):
                          graph_transform=graph_transform,
                          **kwargs)
 
+        self.process()
+
     def process_step(self):
         graph = self.transform.graph_transform(self.graph)
         adj_matrix = self.transform.adj_transform(graph.adj_matrix).toarray()
         node_attr = self.transform.attr_transform(graph.node_attr)
 
-        X, A = gf.astensors(node_attr, adj_matrix, device=self.device)
-
         # ``A`` and ``X`` are cached for later use
-        self.register_cache("X", X)
-        self.register_cache("A", A)
+        self.register_cache("X", node_attr)
+        self.register_cache("A", adj_matrix)
 
     # @gf.equal()
     def build(self,
@@ -88,27 +88,24 @@ class LGCN(GalleryModel):
               use_bias=False,
               K=8):
 
-        if self.backend == "tensorflow":
-            with tf.device(self.device):
-                self.model = tfLGCN(self.graph.num_node_attrs,
-                                    self.graph.num_node_classes,
-                                    hiddens=hiddens,
-                                    activations=activations,
-                                    dropout=dropout,
-                                    weight_decay=weight_decay,
-                                    lr=lr,
-                                    use_bias=use_bias,
-                                    K=K)
-        else:
-            raise NotImplementedError
+        with tf.device(self.device):
+            self.model = tfLGCN(self.graph.num_node_attrs,
+                                self.graph.num_node_classes,
+                                hiddens=hiddens,
+                                activations=activations,
+                                dropout=dropout,
+                                weight_decay=weight_decay,
+                                lr=lr,
+                                use_bias=use_bias,
+                                K=K)
 
-        self.K = K
+        self.register_cache("K", K)
 
     def train_sequence(self, index, batch_size=np.inf):
 
         mask = gf.index_to_mask(index, self.graph.num_nodes)
         index = get_indice_graph(self.cache.A, index, batch_size)
-        while index.size < self.K:
+        while index.size < self.cache.K:
             index = get_indice_graph(self.cache.A, index)
 
         structure_inputs = self.cache.A[index][:, index]

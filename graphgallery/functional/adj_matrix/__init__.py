@@ -1,5 +1,5 @@
 from .normalize_adj import NormalizeAdj, normalize_adj
-from .add_selfloops import AddSelfLoops, add_selfloops
+from .add_selfloops import AddSelfloops, add_selfloops
 from .wavelet import WaveletBasis, wavelet_basis
 from .chebyshef import ChebyBasis, cheby_basis
 from .neighbor_sampler import NeighborSampler, neighbor_sampler
