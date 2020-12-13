@@ -555,6 +555,17 @@ class GalleryModel(GraphModel):
         if osp.exists(filepath):
             os.remove(filepath)
 
+    def __getattr__(self, attr):
+        ##### FIXME: This may cause ERROR ######
+        try:
+            return self.__dict__[attr]
+        except KeyError:
+            if hasattr(self, "_model") and hasattr(self._model, attr):
+                return getattr(self._model, attr)
+            raise AttributeError(
+                f"'{self.name}' and '{self.name}.model' objects have no attribute '{attr}'"
+            )
+
 
 def remove_extra_tf_files(filepath):
     # for tensorflow weights that saved without h5 formate

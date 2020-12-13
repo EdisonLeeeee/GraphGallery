@@ -127,17 +127,6 @@ class GraphModel(Model):
             else:
                 saver.load_torch_weights(self.model, path)
 
-    def __getattr__(self, attr):
-        ##### FIXME: This may cause ERROR ######
-        try:
-            return self.__dict__[attr]
-        except KeyError:
-            if hasattr(self, "_model") and hasattr(self._model, attr):
-                return getattr(self._model, attr)
-            raise AttributeError(
-                f"'{self.name}' and '{self.name}.model' objects have no attribute '{attr}'"
-            )
-
     @property
     def model(self):
         return self._model

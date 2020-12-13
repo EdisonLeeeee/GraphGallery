@@ -55,7 +55,7 @@ class Node2vec(SklearnModel):
               embedding_dim=64,
               window_size=5,
               workers=16,
-              iter=1,
+              epochs=1,
               num_neg_samples=1,
               p=0.5,
               q=0.5):
@@ -73,12 +73,12 @@ class Node2vec(SklearnModel):
         sentences = [list(map(str, walk)) for walk in walks]
 
         model = Word2Vec(sentences,
-                         size=embedding_dim,
+                         vector_size=embedding_dim,
                          window=window_size,
                          min_count=0,
                          sg=1,
                          workers=workers,
-                         iter=iter,
+                         epochs=epochs,
                          negative=num_neg_samples,
                          hs=0,
                          compute_loss=True)
@@ -115,7 +115,7 @@ class Node2vec(SklearnModel):
 
     def get_embeddings(self, norm=True):
         embeddings = self.model.wv.vectors[np.fromiter(
-            map(int, self.model.wv.index2word), np.int32).argsort()]
+            map(int, self.model.wv.index_to_key), np.int32).argsort()]
 
         if norm:
             embeddings = self.normalize_embedding(embeddings)
