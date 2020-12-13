@@ -8,17 +8,17 @@ def test_device():
 
     # tf
     assert isinstance(device("cpu", "tf"), str)
-    assert device() == 'CPU:0'
+    assert device() == 'cpu'
     assert device("cpu", "tf") == 'CPU'
-    assert device("cpu:0", "tf") == 'CPU:0'
-    assert device("device/cpu:0", "tf") == 'CPU:0'
+    assert device("cpu", "tf") == 'cpu'
+    assert device("device/cpu", "tf") == 'cpu'
 
     try:
         assert device("gpu", "tf") == 'GPU'
         assert device("cuda", "tf") == 'GPU'
     except RuntimeError:
         pass
-    device = tf.device("cpu:0")
+    device = tf.device("cpu")
     assert device(device, "tf") == device._device_name
 
     # ?? torch

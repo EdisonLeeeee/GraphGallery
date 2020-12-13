@@ -7,34 +7,13 @@ import scipy.sparse as sp
 import graphgallery as gg
 
 
-def parse_graph_inputs(*graph):
-    if not graph:
-        return None
-
-    if isinstance(graph[0], gg.data.BaseGraph):
-        ...
-    elif isinstance(graph[0], dict):
-        # TODO this could be a dict like
-        ...
-    elif sp.isspmatrix(graph[0]):
-        graph = gg.data.Graph(*graph)
-    elif gg.is_multiobjects(graph[0]):
-        graph = gg.data.MultiGraph(*graph)
-    else:
-        raise ValueError(f"Unrecognized inputs {graph[0]}.")
-
-    if len(graph) == 1:
-        graph, = graph
-    return graph
-
-
 class Model:
-    def __init__(self, *graph, device="cpu:0", seed=None, name=None, **kwargs):
+    def __init__(self, graph, device="cpu", seed=None, name=None, **kwargs):
         """
 
         Parameters:
         ----------
-            graph: Graph or MultiGraph, or a dict of them.
+            graph: Graph or MultiGraph.
             device: string. optional
                 The device where the model running on.
             seed: interger scalar. optional
@@ -46,7 +25,9 @@ class Model:
             kwargs: other custom keyword parameters.
 
         """
-        graph = parse_graph_inputs(*graph)
+        if not isinstance(graph, gg.data.BaseGraph):
+            raise ValueError(f"Unrecognized graph: {graph}.")
+
         _backend = gg.backend()
 
         gg.utils.raise_error.raise_if_kwargs(kwargs)

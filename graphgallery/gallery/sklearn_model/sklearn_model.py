@@ -9,15 +9,15 @@ from graphgallery.functional import asarray, BunchDict
 class SklearnModel(GraphModel):
     """Sklean based model for unsupervised learning."""
 
-    def __init__(self, *graph, device='cpu:0', seed=None, name=None, **kwargs):
+    def __init__(self, graph, device='cpu', seed=None, name=None, **kwargs):
         r"""Create an Sklean based model 
         Parameters:
         ----------
-        graph: An instance of `graphgallery.data.Graph` or a tuple (list) of inputs.
+        graph: An instance of graphgallery Graph.
             A sparse, attributed, labeled graph.
         device: string. optional 
             The device where the model is running on. You can specified `CPU` or `GPU` 
-            for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
+            for the model. (default: :str: `cpu`, i.e., running on the 0-th `CPU`)
         seed: interger scalar. optional 
             Used in combination with `tf.random.set_seed` & `np.random.seed` 
             & `random.seed` to create a reproducible sequence of tensors across 
@@ -26,7 +26,7 @@ class SklearnModel(GraphModel):
             Specified name for the model. (default: :str: `class.__name__`)        
 
         """
-        super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
+        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
 
     def build(self):
         self._embeddings = None

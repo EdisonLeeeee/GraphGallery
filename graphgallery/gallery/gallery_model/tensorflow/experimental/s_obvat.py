@@ -23,10 +23,10 @@ class SimplifiedOBVAT(OBVAT):
     """
 
     def __init__(self,
-                 *graph,
+                 graph,
                  adj_transform="normalize_adj",
                  attr_transform=None,
-                 device='cpu:0',
+                 device='cpu',
                  seed=None,
                  name=None,
                  **kwargs):
@@ -69,7 +69,7 @@ class SimplifiedOBVAT(OBVAT):
         ----------
         This is a simplified implementation of `OBVAT`.                
         """
-        super().__init__(*graph,
+        super().__init__(graph,
                          adj_transform=adj_transform,
                          attr_transform=attr_transform,
                          device=device,

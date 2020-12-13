@@ -21,10 +21,10 @@ class GCNA(GCN):
     """
 
     def __init__(self,
-                 *graph,
+                 graph,
                  adj_transform="normalize_adj",
                  attr_transform=None,
-                 device='cpu:0',
+                 device='cpu',
                  seed=None,
                  name=None,
                  **kwargs):
@@ -64,7 +64,7 @@ class GCNA(GCN):
             Specified name for the model. (default:: str: `class.__name__`)
         kwargs: other custom keyword parameters.
         """
-        super().__init__(*graph,
+        super().__init__(graph,
                          adj_transform=adj_transform,
                          attr_transform=attr_transform,
                          device=device,

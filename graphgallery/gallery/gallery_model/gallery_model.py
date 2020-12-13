@@ -8,6 +8,7 @@ import numpy as np
 import tensorflow as tf
 import scipy.sparse as sp
 from functools import partial
+from fvcore.common.registry import Registry
 
 from tensorflow.keras.utils import Sequence
 from tensorflow.python.keras import callbacks as callbacks_module
@@ -33,8 +34,8 @@ warnings.filterwarnings(
 
 
 class GalleryModel(GraphModel):
-    def __init__(self, *graph, device='cpu:0', seed=None, name=None, **kwargs):
-        super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
+    def __init__(self, graph, device='cpu', seed=None, name=None, **kwargs):
+        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
 
         if self.backend == "tensorflow":
             self.train_step_fn = partial(trainer.train_step_tf,

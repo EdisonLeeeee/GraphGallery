@@ -18,8 +18,8 @@ class GCN_MIX(FastGCN):
 
     """
 
-    def __init__(self, *graph, adj_transform="normalize_adj", attr_transform=None,
-                 device='cpu:0', seed=None, name=None, **kwargs):
+    def __init__(self, graph, adj_transform="normalize_adj", attr_transform=None,
+                 device='cpu', seed=None, name=None, **kwargs):
         """Create Mixed Graph Convolutional Networks (GCN_MIX) occured in FastGCN.
 
         Calculating `A @ X` in advance to save time.
@@ -39,7 +39,7 @@ class GCN_MIX(FastGCN):
 
         Parameters:
         ----------
-        graph: An instance of `graphgallery.data.Graph` or a tuple (list) of inputs.
+        graph: An instance of `graphgallery.data.Graph`.
             A sparse, attributed, labeled graph.
         adj_transform: string, `transform`, or None. optional
             How to transform the adjacency matrix. See `graphgallery.functional`
@@ -50,7 +50,7 @@ class GCN_MIX(FastGCN):
             (default :obj: `None`)
         device: string. optional 
             The device where the model is running on. You can specified `CPU` or `GPU` 
-            for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
+            for the model. (default: :str: `cpu`, i.e., running on the 0-th `CPU`)
         seed: interger scalar. optional 
             Used in combination with `tf.random.set_seed` & `np.random.seed` 
             & `random.seed` to create a reproducible sequence of tensors across 
@@ -59,7 +59,7 @@ class GCN_MIX(FastGCN):
             Specified name for the model. (default: :str: `class.__name__`)
         kwargs: other custom keyword parameters.
         """
-        super().__init__(*graph,
+        super().__init__(graph,
                          adj_transform=adj_transform, attr_transform=attr_transform,
                          device=device, seed=seed, name=name, **kwargs)
 

@@ -26,26 +26,22 @@ class OBVAT(GalleryModel):
     """
 
     def __init__(self,
-                 *graph,
+                 graph,
                  adj_transform="normalize_adj",
                  attr_transform=None,
-                 device='cpu:0',
+                 device='cpu',
                  seed=None,
                  name=None,
                  **kwargs):
         r"""Create an optimization - based Batch Virtual Adversarial Training
         Graph Convolutional Networks(OBVAT) model.
 
-        This can be instantiated in several ways:
+        This can be instantiated in the following way:
 
             model = OBVAT(graph)
                 with a `graphgallery.data.Graph` instance representing
                 A sparse, attributed, labeled graph.
 
-            model = OBVAT(adj_matrix, node_attr, labels)
-                where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
-                 `node_attr` is a 2D Numpy array - like matrix denoting the node
-                 attributes, `labels` is a 1D Numpy array denoting the node labels.
 
         Parameters:
         ----------
@@ -69,7 +65,7 @@ class OBVAT(GalleryModel):
             Specified name for the model. (default: : str: `class.__name__`)
         kwargs: other custom keyword parameters.
         """
-        super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
+        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
 
         self.adj_transform = gf.get(adj_transform)
         self.attr_transform = gf.get(attr_transform)

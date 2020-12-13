@@ -15,11 +15,11 @@ from graphgallery.nn.models import TFKeras
 
 class SAT(GalleryModel):
     def __init__(self,
-                 *graph,
+                 graph,
                  adj_transform="normalize_adj",
                  attr_transform=None,
                  k=35,
-                 device='cpu:0',
+                 device='cpu',
                  seed=None,
                  name=None,
                  **kwargs):
@@ -40,7 +40,7 @@ class SAT(GalleryModel):
 
         Parameters:
         ----------
-        graph: An instance of `graphgallery.data.Graph` or a tuple (list) of inputs.
+        graph: An instance of `graphgallery.data.Graph`.
             A sparse, attributed, labeled graph.
         adj_transform: string, `transform`, or None. optional
             How to transform the adjacency matrix. See `graphgallery.functional`
@@ -55,7 +55,7 @@ class SAT(GalleryModel):
             eigenvectors of an adjacency matrix.
         device: string. optional 
             The device where the model is running on. You can specified `CPU` or `GPU` 
-            for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
+            for the model. (default: :str: `cpu`, i.e., running on the 0-th `CPU`)
         seed: interger scalar. optional 
             Used in combination with `tf.random.set_seed` & `np.random.seed` 
             & `random.seed` to create a reproducible sequence of tensors across 
@@ -65,7 +65,7 @@ class SAT(GalleryModel):
         kwargs: other custom keyword parameters.
         """
 
-        super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
+        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
 
         self.adj_transform = gf.get(adj_transform)
         self.attr_transform = gf.get(attr_transform)

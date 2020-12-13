@@ -9,6 +9,7 @@ import os.path as osp
 import scipy.sparse as sp
 
 from tensorflow.keras import backend as K
+from fvcore.common.registry import Registry
 
 import graphgallery as gg
 from graphgallery.data.io import makedirs_from_filepath
@@ -20,7 +21,7 @@ from .model import Model
 class GraphModel(Model):
     """Base model for Graph Neural Network (GNNs)."""
 
-    def __init__(self, *graph, device="cpu:0", seed=None, name=None, **kwargs):
+    def __init__(self, graph, device="cpu", seed=None, name=None, **kwargs):
         r"""Create a base model for Graph Neural Network (GNNs).
 
         Parameters:
@@ -37,7 +38,7 @@ class GraphModel(Model):
             kwargs: other custom keyword parameters.
 
         """
-        super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
+        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
 
         self.train_data = None
         self.val_data = None
@@ -53,6 +54,8 @@ class GraphModel(Model):
         _id = np.random.RandomState(None).randint(100)
         self.ckpt_path = osp.join(
             os.getcwd(), f"{self.name}_checkpoint_{_id}{gg.file_ext()}")
+
+        self.transform = Registry("transform")
 
     def save(self,
              path=None,

@@ -11,33 +11,28 @@ class SGC(GalleryModel):
         Pytorch implementation: <https://github.com/Tiiiger/SGC>
 
     """
+
     def __init__(self,
-                 *graph,
+                 graph,
                  order=2,
                  adj_transform=None,
                  attr_transform=None,
-                 device='cpu:0',
+                 device='cpu',
                  seed=None,
                  name=None,
                  **kwargs):
         r"""Create a Simplifying Graph Convolutional Networks (SGC) model.
 
 
-        This can be instantiated in several ways:
+        This can be instantiated in the following way:
 
             model = SGC(graph)
                 with a `graphgallery.data.Graph` instance representing
                 A sparse, attributed, labeled graph.
 
-            model = SGC(adj_matrix, node_attr, labels)
-                where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
-                 `node_attr` is a 2D Numpy array-like matrix denoting the node 
-                 attributes, `labels` is a 1D Numpy array denoting the node labels.
-
-
         Parameters:
         ----------
-        graph: An instance of `graphgallery.data.Graph` or a tuple (list) of inputs.
+        graph: An instance of `graphgallery.data.Graph`.
             A sparse, attributed, labeled graph.
         order: positive integer. optional 
             The power (order) of adjacency matrix. (default :obj: `2`, i.e., 
@@ -51,7 +46,7 @@ class SGC(GalleryModel):
             (default :obj: `None`)
         device: string. optional 
             The device where the model is running on. You can specified `CPU` or `GPU` 
-            for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
+            for the model. (default: :str: `cpu`, i.e., running on the 0-th `CPU`)
         seed: interger scalar. optional 
             Used in combination with `tf.random.set_seed` & `np.random.seed` 
             & `random.seed` to create a reproducible sequence of tensors across 
@@ -60,7 +55,7 @@ class SGC(GalleryModel):
             Specified name for the model. (default: :str: `class.__name__`)
         kwargs: other custom keyword parameters.
         """
-        super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
+        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
 
         self.order = order
         self.adj_transform = gf.get(adj_transform)

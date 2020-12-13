@@ -15,26 +15,22 @@ class GAT(GalleryModel):
     """
 
     def __init__(self,
-                 *graph,
+                 graph,
                  adj_transform="add_selfloops",
                  attr_transform=None,
-                 device='cpu:0',
+                 device='cpu',
                  seed=None,
                  name=None,
                  **kwargs):
         r"""Create a Graph Attention Networks (GAT) model.
 
 
-        This can be instantiated in several ways:
+        This can be instantiated in the following way:
 
             model = GAT(graph)
                 with a `graphgallery.data.Graph` instance representing
                 A sparse, attributed, labeled graph.
 
-            model = GAT(adj_matrix, node_attr, labels)
-                where `adj_matrix` is a 2D Scipy sparse matrix denoting the graph,
-                 `node_attr` is a 2D Numpy array-like matrix denoting the node 
-                 attributes, `labels` is a 1D Numpy array denoting the node labels.
         Parameters:
         ----------
         graph: graphgallery.data.Graph, or `adj_matrix, node_attr and labels` triplets.
@@ -47,7 +43,7 @@ class GAT(GalleryModel):
             (default :obj: `None`)
         device: string. optional
             The device where the model is running on. You can specified `CPU` or `GPU`
-            for the model. (default: :str: `CPU:0`, i.e., running on the 0-th `CPU`)
+            for the model. (default: :str: `cpu`, i.e., running on the 0-th `CPU`)
         seed: interger scalar. optional 
             Used in combination with `tf.random.set_seed` & `np.random.seed` 
             & `random.seed` to create a reproducible sequence of tensors across 
@@ -57,7 +53,7 @@ class GAT(GalleryModel):
         kwargs: other custom keyword parameters.
 
         """
-        super().__init__(*graph, device=device, seed=seed, name=name, **kwargs)
+        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
 
         self.adj_transform = gf.get(adj_transform)
         self.attr_transform = gf.get(attr_transform)
