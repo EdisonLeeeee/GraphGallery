@@ -34,7 +34,24 @@ warnings.filterwarnings(
 
 
 class GalleryModel(GraphModel):
-    def __init__(self, graph, device='cpu', seed=None, name=None, **kwargs):
+    def __init__(self, graph, device="cpu", seed=None, name=None, **kwargs):
+        """Create a graphgallery model.
+
+        Parameters:
+        ----------
+        graph: Graph or MultiGraph.
+        device: string. optional
+            The device where the model running on.
+        seed: interger scalar. optional
+            Used in combination with `tf.random.set_seed` & `np.random.seed`
+            & `random.seed` to create a reproducible sequence of tensors
+            across multiple calls.
+        name: string. optional
+            Specified name for the model. (default: :str: `class.__name__`)
+        kwargs: keyword parameters for transform, including:
+            ``adj_transform``, ``attr_transform``, ``graph_transform`` and 
+            ``graph_first``.
+        """
         super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
 
         if self.backend == "tensorflow":

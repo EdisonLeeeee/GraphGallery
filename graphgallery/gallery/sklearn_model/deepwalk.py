@@ -13,7 +13,8 @@ class Deepwalk(SklearnModel):
         Implementation: <https://github.com/phanein/deepwalk>
     """
 
-    def __init__(self, graph, device='cpu', seed=None, name=None, **kwargs):
+    def __init__(self, graph, graph_transform=None,
+                 device="cpu", seed=None, name=None, **kwargs):
         r"""Create an unsupervised Deepwalk model.
 
         This can be instantiated in the following way:
@@ -26,7 +27,10 @@ class Deepwalk(SklearnModel):
         ----------
         graph: An instance of `graphgallery.data.Graph`.
             A sparse, labeled graph.
-        device: string. optional 
+        graph_transform: string, `transform` or None. optional
+            How to transform the graph, by default, the graph transform is used
+            before the other transform unless specify ``graph_first=False``
+        device: string. optional
             The device where the model is running on. You can specified `CPU` or `GPU` 
             for the model. (default: :str: `cpu`, i.e., running on the 0-th `CPU`)
         seed: interger scalar. optional 

@@ -19,7 +19,8 @@ class SAT(GalleryModel):
                  adj_transform="normalize_adj",
                  attr_transform=None,
                  k=35,
-                 device='cpu',
+                 graph_transform=None,
+                 device="cpu",
                  seed=None,
                  name=None,
                  **kwargs):
@@ -53,7 +54,10 @@ class SAT(GalleryModel):
             The number of eigenvalues and eigenvectors desired.
             `k` must be smaller than N-1. It is not possible to compute all
             eigenvectors of an adjacency matrix.
-        device: string. optional 
+        graph_transform: string, `transform` or None. optional
+            How to transform the graph, by default, the graph transform is used
+            before the other transform unless specify ``graph_first=False``
+        device: string. optional
             The device where the model is running on. You can specified `CPU` or `GPU` 
             for the model. (default: :str: `cpu`, i.e., running on the 0-th `CPU`)
         seed: interger scalar. optional 
@@ -62,7 +66,9 @@ class SAT(GalleryModel):
             multiple calls. (default :obj: `None`, i.e., using random seed)
         name: string. optional
             Specified name for the model. (default: :str: `class.__name__`)
-        kwargs: other custom keyword parameters.
+        kwargs: keyword parameters for transform, 
+            e.g., ``graph_first`` argument indicating the graph transform is
+            used at the first or last, by default at the first.
         """
 
         super().__init__(graph, device=device, seed=seed, name=name, **kwargs)

@@ -29,7 +29,8 @@ class OBVAT(GalleryModel):
                  graph,
                  adj_transform="normalize_adj",
                  attr_transform=None,
-                 device='cpu',
+                 graph_transform=None,
+                 device="cpu",
                  seed=None,
                  name=None,
                  **kwargs):
@@ -63,7 +64,9 @@ class OBVAT(GalleryModel):
             multiple calls. (default: obj: `None`, i.e., using random seed)
         name: string. optional
             Specified name for the model. (default: : str: `class.__name__`)
-        kwargs: other custom keyword parameters.
+        kwargs: keyword parameters for transform, 
+            e.g., ``graph_first`` argument indicating the graph transform is
+            used at the first or last, by default at the first.
         """
         super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
 

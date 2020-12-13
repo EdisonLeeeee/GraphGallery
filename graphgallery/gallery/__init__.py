@@ -45,7 +45,7 @@ _enabled_models = set()
 
 
 def _gen_missing_model(model, backend):
-    def _missing_model(*args, **kwargs):
+    def _missing_model(*args, **transform_kwargs):
         raise ImportError(f"model {model} is not supported by '{backend}'."
                           " You can switch to other backends by setting"
                           " the 'graphgallery.backend' environment.")

@@ -21,7 +21,8 @@ class ChebyNet(GalleryModel):
                  graph,
                  adj_transform="cheby_basis",
                  attr_transform=None,
-                 device='cpu',
+                 graph_transform=None,
+                 device="cpu",
                  seed=None,
                  name=None,
                  **kwargs):
@@ -53,7 +54,9 @@ class ChebyNet(GalleryModel):
             multiple calls. (default :obj: `None`, i.e., using random seed)
         name: string. optional
             Specified name for the model. (default: :str: `class.__name__`)
-        kwargs: other custom keyword parameters.
+        kwargs: keyword parameters for transform, 
+            e.g., ``graph_first`` argument indicating the graph transform is
+            used at the first or last, by default at the first.
 
         """
         super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
