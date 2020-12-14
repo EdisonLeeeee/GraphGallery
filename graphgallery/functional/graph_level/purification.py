@@ -5,6 +5,7 @@ import scipy.sparse as sp
 from ..transforms import Transform
 from ..get_transform import Transformers
 from ..edge_level import filter_singletons
+from ..adj_matrix import remove_edge
 import graphgallery as gg
 
 __all__ = ["JaccardDetection", "CosineDetection", "SVD",
@@ -71,6 +72,8 @@ class JaccardDetection(Transform):
         structure_flips = jaccard_detection(adj_matrix, node_attr,
                                             threshold=self.threshold,
                                             allow_singleton=self.allow_singleton)
+        graph.update(adj_matrix=remove_edge(adj_matrix, structure_flips))
+        return graph
 
     def extra_repr(self):
         return f"threshold={self.threshold}, allow_singleton={self.allow_singleton}"
@@ -94,6 +97,8 @@ class CosineDetection(Transform):
         structure_flips = cosine_detection(adj_matrix, node_attr,
                                            threshold=self.threshold,
                                            allow_singleton=self.allow_singleton)
+        graph.update(adj_matrix=remove_edge(adj_matrix, structure_flips))
+        return graph
 
     def extra_repr(self):
         return f"threshold={self.threshold}, allow_singleton={self.allow_singleton}"

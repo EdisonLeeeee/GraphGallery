@@ -96,7 +96,7 @@ def remove_edge(adj_matrix, edges, symmetric=True):
 
     adj_matrix = adj_matrix.tocoo(copy=True)
     edges = np.hstack([edges, [adj_matrix.row, adj_matrix.col]])
-    datas = np.hstack([adj_matrix.data, datas])
+    datas = -np.hstack([adj_matrix.data, datas])
     adj_matrix = sp.csr_matrix((datas, tuple(edges)), shape=adj_matrix.shape)
     adj_matrix[adj_matrix < 0] = 0.
     adj_matrix.eliminate_zeros()
