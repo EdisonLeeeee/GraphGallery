@@ -1,18 +1,13 @@
 #!/usr/bin/env python
 # coding: utf-8
-"""
-About
-Graph Diffusion Convolution, as proposed in "Diffusion Improves Graph Learning" (NeurIPS 2019)
-https://github.com/klicperajo/gdc
-"""
 
+import torch
+import dgl
 import graphgallery 
-import tensorflow as tf
-
-graphgallery.set_memory_growth()
 
 print("GraphGallery version: ", graphgallery.__version__)
-print("TensorFlow version: ", tf.__version__)
+print("Torch version: ", torch.__version__)
+print("DGL version: ", dgl.__version__)
 
 '''
 Load Datasets
@@ -23,8 +18,10 @@ data = Planetoid('cora', root="~/GraphData/datasets/", verbose=False)
 graph = data.graph
 splits = data.split_nodes()
 
+graphgallery.set_backend("dgl")
+
 from graphgallery.gallery import GCN
-model = GCN(graph, adj_transform="GDC", attr_transform="normalize_attr", device="gpu", seed=123)
+model = GCN(graph, attr_transform="normalize_attr", device="gpu", seed=123)
 model.build()
 his = model.train(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
 results = model.test(splits.test_nodes) 
