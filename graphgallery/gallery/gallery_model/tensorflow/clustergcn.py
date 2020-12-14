@@ -81,7 +81,7 @@ class ClusterGCN(GalleryModel):
 
     def process_step(self):
         graph = self.transform.graph_transform(self.graph)
-        node_attr = self.transform.attr_transform(graph.node_attr)
+        graph.node_attr = self.transform.attr_transform(graph.node_attr)
 
         batch_adj, batch_x, cluster_member = gf.graph_partition(
             graph, n_clusters=self.cache.n_clusters)
