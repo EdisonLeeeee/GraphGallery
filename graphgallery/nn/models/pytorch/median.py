@@ -5,11 +5,11 @@ from torch.nn import Module, ModuleList, Dropout
 from torch import optim
 
 from graphgallery.nn.models import TorchKeras
-from graphgallery.nn.layers.pytorch import GraphConvolution
+from graphgallery.nn.layers.pytorch import MedianConvolution
 from graphgallery.nn.metrics.pytorch import Accuracy
 
 
-class GCN(TorchKeras):
+class MedianGCN(TorchKeras):
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -28,7 +28,7 @@ class GCN(TorchKeras):
         # use ModuleList to create layers with different size
         inc = in_channels
         for hidden, activation in zip(hiddens, activations):
-            layer = GraphConvolution(inc,
+            layer = MedianConvolution(inc,
                                      hidden,
                                      activation=activation,
                                      use_bias=use_bias)
@@ -36,7 +36,7 @@ class GCN(TorchKeras):
             paras.append(dict(params=layer.parameters(), weight_decay=weight_decay))
             inc = hidden
 
-        layer = GraphConvolution(inc, out_channels, use_bias=use_bias)
+        layer = MedianConvolution(inc, out_channels, use_bias=use_bias)
         self.layers.append(layer)
         # do not use weight_decay in the final layer
         paras.append(dict(params=layer.parameters(), weight_decay=0.))
@@ -46,10 +46,10 @@ class GCN(TorchKeras):
         self.dropout = Dropout(dropout)
 
     def forward(self, inputs):
-        x, neighbors, idx = inputs
+        x, adj, idx = inputs
 
         for layer in self.layers:
             x = self.dropout(x)
-            x = layer([x, neighbors])
+            x = layer([x, adj])
 
         return x[idx]

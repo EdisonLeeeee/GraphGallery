@@ -34,7 +34,8 @@ _GALLERY_MODELS = {
     "SimplifiedOBVAT",
     "GCN_MIX",
     "GCNA",
-    "SAT"
+    "SAT",
+    "MedianGCN"    
 }
 
 _SKLEARN_MODELS = {
