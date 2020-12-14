@@ -8,9 +8,11 @@ from .shape import maybe_shape
 __all__ = ['asedge', 'edge_to_sparse_adj']
 
 
-def asedge(edge, shape="col_wise"):
+def asedge(edge, shape="col_wise", symmetric=False):
     """make sure the array as edge like,
     shape [M, 2] or [2, M] with dtype int64
+    if ``symmetric=True``, it wiil have shape
+    [2*M, 2] or [2, M*2].
 
     Parameters
     ----------
@@ -20,6 +22,12 @@ def asedge(edge, shape="col_wise"):
         row_wise: edge has shape [M, 2]
         col_wise: edge has shape [2, M]
         by default ``col_wise``
+    symmetric: bool, optional
+        if ``True``, the output edge will be 
+        symmectric, i.e., 
+        row_wise: edge has shape [2*M, 2]
+        col_wise: edge has shape [2, M*2]
+        by default ``False``
 
     Returns
     -------
@@ -33,6 +41,12 @@ def asedge(edge, shape="col_wise"):
     if not (N == M == 2) and ((shape == "col_wise" and N != 2)
                               or (shape == "row_wise" and M != 2)):
         edge = edge.T
+
+    if symmetric:
+        if shape == "col_wise":
+            edge = np.hstack([edge, edge[[1, 0]]])
+        else:
+            edge = np.vstack([edge, edge[:, [1, 0]]])
 
     return edge
 
