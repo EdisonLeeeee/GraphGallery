@@ -15,7 +15,7 @@ _DATASETS = {
     'pubmed', 'flickr', 'blogcatalog', 'dblp', 'acm', 'uai'
 }
 
-_DATASET_URL = "https://raw.githubusercontent.com/EdisonLeeeee/GraphData/master/datasets/"
+_DATASET_URL = "https://raw.githubusercontent.com/EdisonLeeeee/GraphData/master/datasets"
 
 Transform = Union[List, Tuple, str, List, Tuple, Callable]
 
@@ -70,7 +70,7 @@ class NPZDataset(InMemoryDataset):
 
     @property
     def url(self) -> str:
-        return '{}/{}.zip'.format(self._url, self.name)
+        return f'{self._url}/{self.name}.npz'
 
     @property
     def raw_paths(self) -> List[str]:

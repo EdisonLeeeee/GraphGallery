@@ -61,6 +61,7 @@ class JaccardDetection(Transform):
         super().__init__()
         self.threshold = threshold
         self.allow_singleton = allow_singleton
+        self.flips = None
 
     def __call__(self, graph):
         assert isinstance(graph, gg.data.HomoGraph), type(graph)
@@ -72,6 +73,7 @@ class JaccardDetection(Transform):
         structure_flips = jaccard_detection(adj_matrix, node_attr,
                                             threshold=self.threshold,
                                             allow_singleton=self.allow_singleton)
+        self.flips = structure_flips
         graph.update(adj_matrix=remove_edge(adj_matrix, structure_flips, symmetric=False))
         return graph
 
@@ -86,6 +88,7 @@ class CosineDetection(Transform):
         super().__init__()
         self.threshold = threshold
         self.allow_singleton = allow_singleton
+        self.flips = None
 
     def __call__(self, graph):
         assert isinstance(graph, gg.data.HomoGraph), type(graph)
@@ -97,6 +100,8 @@ class CosineDetection(Transform):
         structure_flips = cosine_detection(adj_matrix, node_attr,
                                            threshold=self.threshold,
                                            allow_singleton=self.allow_singleton)
+
+        self.flips = structure_flips
         graph.update(adj_matrix=remove_edge(adj_matrix, structure_flips, symmetric=False))
         return graph
 

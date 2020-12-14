@@ -10,7 +10,6 @@ from graphgallery.utils.walker import RandomWalker, alias_sample
 from .sklearn_model import SklearnModel
 
 
-
 class Node2vec(SklearnModel):
     """
         Implementation of Node2vec Unsupervised Graph Neural Networks (Node2vec). 
@@ -33,8 +32,6 @@ class Node2vec(SklearnModel):
         ----------
         graph: An instance of `graphgallery.data.Graph`.
             A sparse, labeled graph.
-        graph_transform: string, `transform` or None. optional
-            How to transform the graph, by default None.
         device: string. optional
             The device where the model is running on. 
             You can specified ``CPU``, ``GPU`` or ``cuda`` 
@@ -51,8 +48,6 @@ class Node2vec(SklearnModel):
         """
         super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
 
-        self.nxgraph = self.graph.nxgraph()
-
     def build(self,
               walk_length=80,
               walks_per_node=10,
@@ -64,19 +59,20 @@ class Node2vec(SklearnModel):
               p=0.5,
               q=0.5):
         super().build()
-
-        self.walker = RandomWalker(self.nxgraph, p=p, q=q)
+        graph = self.transform.graph_transform(self.graph)
+        nxgraph = graph.nxgraph()
+        self.walker = RandomWalker(nxgraph, p=p, q=q)
         self.walker.preprocess_transition_probs()
 
-        walks = self.node2vec_random_walk(self.nxgraph,
+        walks = self.node2vec_random_walk(nxgraph,
                                           self.walker.alias_nodes,
                                           self.walker.alias_edges,
                                           walk_length=walk_length,
                                           walks_per_node=walks_per_node)
 
         sentences = [list(map(str, walk)) for walk in walks]
-        if LooseVersion(gensim.__version__)<=LooseVersion("4.0.0"):
-             model = Word2Vec(sentences,
+        if LooseVersion(gensim.__version__) <= LooseVersion("4.0.0"):
+            model = Word2Vec(sentences,
                              size=embedding_dim,
                              window=window_size,
                              min_count=0,
@@ -86,7 +82,7 @@ class Node2vec(SklearnModel):
                              negative=num_neg_samples,
                              hs=0,
                              compute_loss=True)
-           
+
         else:
             model = Word2Vec(sentences,
                              vector_size=embedding_dim,
@@ -98,7 +94,7 @@ class Node2vec(SklearnModel):
                              negative=num_neg_samples,
                              hs=0,
                              compute_loss=True)
-            
+
         self.model = model
 
     @staticmethod
@@ -130,7 +126,7 @@ class Node2vec(SklearnModel):
                 yield single_walk
 
     def get_embeddings(self, norm=True):
-        if LooseVersion(gensim.__version__)<=LooseVersion("4.0.0"):
+        if LooseVersion(gensim.__version__) <= LooseVersion("4.0.0"):
             embeddings = self.model.wv.vectors[np.fromiter(
                 map(int, self.model.wv.index2word), np.int32).argsort()]
         else:

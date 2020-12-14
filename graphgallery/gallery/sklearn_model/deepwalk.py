@@ -28,8 +28,6 @@ class Deepwalk(SklearnModel):
         ----------
         graph: An instance of `graphgallery.data.Graph`.
             A sparse, labeled graph.
-        graph_transform: string, `transform` or None. optional
-            How to transform the graph, by default None.
         device: string. optional
             The device where the model is running on. 
             You can specified ``CPU``, ``GPU`` or ``cuda``  
@@ -55,16 +53,16 @@ class Deepwalk(SklearnModel):
               epochs=1,
               num_neg_samples=1):
         super().build()
-
-        adj_matrix = self.graph.adj_matrix
+        graph = self.transform.graph_transform(self.graph)
+        adj_matrix = graph.adj_matrix
         walks = self.deepwalk_random_walk(adj_matrix.indices,
                                           adj_matrix.indptr,
                                           walk_length=walk_length,
                                           walks_per_node=walks_per_node)
 
         sentences = [list(map(str, walk)) for walk in walks]
-        if LooseVersion(gensim.__version__)<=LooseVersion("4.0.0"):
-             model = Word2Vec(sentences,
+        if LooseVersion(gensim.__version__) <= LooseVersion("4.0.0"):
+            model = Word2Vec(sentences,
                              size=embedding_dim,
                              window=window_size,
                              min_count=0,
@@ -74,7 +72,7 @@ class Deepwalk(SklearnModel):
                              negative=num_neg_samples,
                              hs=0,
                              compute_loss=True)
-           
+
         else:
             model = Word2Vec(sentences,
                              vector_size=embedding_dim,
@@ -113,7 +111,7 @@ class Deepwalk(SklearnModel):
                 yield single_walk
 
     def get_embeddings(self, norm=True):
-        if LooseVersion(gensim.__version__)<=LooseVersion("4.0.0"):
+        if LooseVersion(gensim.__version__) <= LooseVersion("4.0.0"):
             embeddings = self.model.wv.vectors[np.fromiter(
                 map(int, self.model.wv.index2word), np.int32).argsort()]
         else:

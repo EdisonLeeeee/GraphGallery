@@ -11,9 +11,8 @@ from ..data.preprocess import process_planetoid_datasets
 from ..data.graph import Graph
 
 _DATASETS = {'citeseer', 'cora', 'pubmed'}
-_DATASET_URL = "https://raw.githubusercontent.com/EdisonLeeeee/"
-"GraphData/master/datasets/planetoid"
-
+_DATASET_URL = "https://github.com/EdisonLeeeee/" + \
+    "GraphData/raw/master/datasets/planetoid"
 Transform = Union[List, Tuple, str, List, Tuple, Callable]
 
 
@@ -49,7 +48,6 @@ class Planetoid(InMemoryDataset):
         return _DATASETS
 
     def _download(self):
-        print(self.download_paths)
         makedirs(self.download_dir)
         download_file(self.download_paths, self.urls)
 
@@ -79,25 +77,23 @@ class Planetoid(InMemoryDataset):
 
     @property
     def urls(self) -> List[str]:
-        return [
-            osp.join(self._url, raw_filename)
-            for raw_filename in self.raw_filenames
-        ]
+        return [f"{self._url}/{raw_filename}"
+                for raw_filename in self.raw_filenames]
 
-    @property
+    @ property
     def download_dir(self):
         return osp.join(self.root, 'planetoid')
 
-    @property
+    @ property
     def processed_path(self) -> str:
         return None
 
-    @property
+    @ property
     def raw_filenames(self) -> List[str]:
         names = ['x', 'tx', 'allx', 'y', 'ty', 'ally', 'graph', 'test.index']
         return ['ind.{}.{}'.format(self.name.lower(), name) for name in names]
 
-    @property
+    @ property
     def raw_paths(self) -> List[str]:
         return [
             osp.join(self.download_dir, raw_filename)
