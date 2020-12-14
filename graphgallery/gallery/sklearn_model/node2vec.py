@@ -1,10 +1,14 @@
 import numpy as np
 import networkx as nx
 
-from gensim.models import Word2Vec
+import gensim
 
-from .sklearn_model import SklearnModel
+from gensim.models import Word2Vec
+from distutils.version import LooseVersion
+
 from graphgallery.utils.walker import RandomWalker, alias_sample
+from .sklearn_model import SklearnModel
+
 
 
 class Node2vec(SklearnModel):
@@ -71,18 +75,30 @@ class Node2vec(SklearnModel):
                                           walks_per_node=walks_per_node)
 
         sentences = [list(map(str, walk)) for walk in walks]
-
-        model = Word2Vec(sentences,
-                         vector_size=embedding_dim,
-                         window=window_size,
-                         min_count=0,
-                         sg=1,
-                         workers=workers,
-                         epochs=epochs,
-                         negative=num_neg_samples,
-                         hs=0,
-                         compute_loss=True)
-
+        if LooseVersion(gensim.__version__)<=LooseVersion("4.0.0"):
+             model = Word2Vec(sentences,
+                             size=embedding_dim,
+                             window=window_size,
+                             min_count=0,
+                             sg=1,
+                             workers=workers,
+                             iter=epochs,
+                             negative=num_neg_samples,
+                             hs=0,
+                             compute_loss=True)
+           
+        else:
+            model = Word2Vec(sentences,
+                             vector_size=embedding_dim,
+                             window=window_size,
+                             min_count=0,
+                             sg=1,
+                             workers=workers,
+                             epochs=epochs,
+                             negative=num_neg_samples,
+                             hs=0,
+                             compute_loss=True)
+            
         self.model = model
 
     @staticmethod
@@ -114,8 +130,12 @@ class Node2vec(SklearnModel):
                 yield single_walk
 
     def get_embeddings(self, norm=True):
-        embeddings = self.model.wv.vectors[np.fromiter(
-            map(int, self.model.wv.index_to_key), np.int32).argsort()]
+        if LooseVersion(gensim.__version__)<=LooseVersion("4.0.0"):
+            embeddings = self.model.wv.vectors[np.fromiter(
+                map(int, self.model.wv.index2word), np.int32).argsort()]
+        else:
+            embeddings = self.model.wv.vectors[np.fromiter(
+                map(int, self.model.wv.index_to_key), np.int32).argsort()]
 
         if norm:
             embeddings = self.normalize_embedding(embeddings)

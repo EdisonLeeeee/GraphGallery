@@ -58,5 +58,6 @@ def get(transform: Union[str, Transform, None, List, Tuple, "Compose"]) -> Trans
         transform, transform_para = transform
 
     assert isinstance(transform, str), transform
-    name = "".join(map(lambda s: s.title(), transform.split("_")))
-    return Transformers.get(name)(**transform_para)
+    if transform not in Transformers:
+        transform = "".join(map(lambda s: s.title(), transform.split("_")))
+    return Transformers.get(transform)(**transform_para)
