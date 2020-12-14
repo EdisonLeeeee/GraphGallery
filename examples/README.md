@@ -1,3 +1,12 @@
+- [🤖 Implementations](#-implementations)
+  - [Semi-supervised models](#semi-supervised-models)
+    - [General models](#general-models)
+    - [Defense models (for Graph Adversarial Learning)](#defense-models-for-graph-adversarial-learning)
+      - [Robust Optimization](#robust-optimization)
+      - [Graph Purification](#graph-purification)
+  - [Unsupervised models](#unsupervised-models)
+
+
 # 🤖 Implementations
 In detail, the following methods are currently implemented:
 
@@ -140,7 +149,7 @@ In detail, the following methods are currently implemented:
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyG/GCN-GDC.py"> [🔥PyG] </a>
 </details>
 
-### Defense models
+### Defense models (for Graph Adversarial Learning)
 #### Robust Optimization
 <!-- 1 -->
 <details>
@@ -176,6 +185,11 @@ In detail, the following methods are currently implemented:
 </details>
 
 #### Graph Purification
+The graph purification methods are universal for all models, just specify:
+```python
+graph_transform="purification_method"
+```
+so, here we only give the examples of `GCN` with purification methods, other models should work.
 <!-- 1 -->
 <details>
 <summary>
@@ -189,7 +203,7 @@ In detail, the following methods are currently implemented:
 <!-- 2 -->
 <details>
 <summary>
-<b>GCN-SVD</b> from <i>Huijun Wu et al</i>,
+<b>GCN-SVD</b> from <i>Negin Entezari et al</i>,
 <a href="https://dl.acm.org/doi/abs/10.1145/3336191.3371789"> 📝<i>All You Need Is Low (Rank): Defending Against Adversarial Attacks on Graphs (WSDM'20)</i> </a>
 </summary>
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/GCN-SVD.py"> [:octocat:TensorFLow] </a>
