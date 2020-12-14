@@ -15,7 +15,7 @@ _DATASETS = {
     'pubmed', 'flickr', 'blogcatalog', 'dblp', 'acm', 'uai'
 }
 
-_DATASET_URL = "https://raw.githubusercontent.com/EdisonLeeeee/GraphData/master/datasets"
+_DATASET_URL = "https://github.com/EdisonLeeeee/GraphData/raw/master/datasets"
 
 Transform = Union[List, Tuple, str, List, Tuple, Callable]
 
