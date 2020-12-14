@@ -49,4 +49,10 @@ def prettify(item):
     key, val = item
     if hasattr(val, "shape"):
         val = f"{type(val)}, shape={val.shape}"
+    else:
+        try:
+            val = f"{type(val)}, len={len(val)}"
+        except TypeError:
+            pass
+        
     return key, val

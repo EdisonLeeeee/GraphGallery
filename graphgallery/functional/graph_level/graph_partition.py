@@ -34,8 +34,8 @@ class GraphPartition(Transform):
     def __call__(self, graph):
         return graph_partition(graph, n_clusters=self.n_clusters, metis_partition=self.metis_partition)
 
-    def __repr__(self):
-        return f"{self.__class__.__name__}(n_clusters={self.n_clusters}, metis_partition={self.metis_partition})"
+    def extra_repr(self):
+        return f"n_clusters={self.n_clusters}, metis_partition={self.metis_partition}"
 
 
 # TODO: accept a Graph and output a MultiGraph
@@ -44,13 +44,10 @@ def graph_partition(graph, n_clusters: int = None, metis_partition: bool = True)
     node_attr = graph.node_attr
     if n_clusters is None:
         n_clusters = graph.num_node_classes
-
     # partition graph
     if metis_partition:
         assert metis, "Please install `metis` package!"
-        nxgraph = nx.from_scipy_sparse_matrix(
-            adj_matrix, create_using=nx.DiGraph)
-        parts = metis_clustering(nxgraph, n_clusters)
+        parts = metis_clustering(graph.nxgraph(), n_clusters)
     else:
         parts = random_clustering(adj_matrix.shape[0], n_clusters)
 

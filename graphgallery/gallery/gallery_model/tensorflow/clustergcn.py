@@ -125,13 +125,13 @@ class ClusterGCN(GalleryModel):
         for cluster in range(self.cache.n_clusters):
             nodes = self.cache.cluster_member[cluster]
             batch_mask = mask[nodes]
-            batch_labels = labels[nodes][batch_mask]
-            if batch_labels.size == 0:
+            y = labels[nodes][batch_mask]
+            if y.size == 0:
                 continue
             batch_x.append(self.cache.batch_x[cluster])
             batch_adj.append(self.cache.batch_adj[cluster])
             batch_idx.append(np.where(batch_mask)[0])
-            batch_labels.append(batch_labels)
+            batch_labels.append(y)
 
         batch_data = tuple(zip(batch_x, batch_adj, batch_idx))
 
