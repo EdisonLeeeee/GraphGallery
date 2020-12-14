@@ -141,7 +141,7 @@ In detail, the following methods are currently implemented:
 </details>
 
 ### Defense models
-
+#### Robust Optimization
 <!-- 1 -->
 <details>
 <summary>
@@ -173,6 +173,27 @@ In detail, the following methods are currently implemented:
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/OBVAT.py"> [:octocat:TensorFLow] </a>
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyTorch/OBVAT.py"> [🔥PyTorch] </a>
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyG/OBVAT.py"> [🔥PyG] </a>
+</details>
+
+#### Graph Purification
+<!-- 1 -->
+<details>
+<summary>
+<b>GCN-Jaccard</b> from <i>Huijun Wu et al</i>,
+<a href="https://arxiv.org/abs/1903.01610"> 📝<i>Adversarial Examples on Graph Data: Deep Insights into Attack and Defense (IJCAI'19)</i> </a>
+</summary>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/GCN-Jaccard.py"> [:octocat:TensorFLow] </a>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyTorch/GCN-Jaccard.py"> [🔥PyTorch] </a>
+</details>
+
+<!-- 2 -->
+<details>
+<summary>
+<b>GCN-SVD</b> from <i>Huijun Wu et al</i>,
+<a href="https://dl.acm.org/doi/abs/10.1145/3336191.3371789"> 📝<i>All You Need Is Low (Rank): Defending Against Adversarial Attacks on Graphs (WSDM'20)</i> </a>
+</summary>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/TensorFlow/GCN-SVD.py"> [:octocat:TensorFLow] </a>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/PyTorch/GCN-SVD.py"> [🔥PyTorch] </a>
 </details>
 
 ## Unsupervised models

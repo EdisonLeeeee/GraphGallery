@@ -13,7 +13,7 @@ install_requires = [
     'scikit_learn',
     'tensorflow>=2.1.0',
     'networkx>=2.3',
-    'gensim>=4.0.0b0',
+    'gensim>=3.8.0',
     'numba>=0.46.0',
 ]
 
