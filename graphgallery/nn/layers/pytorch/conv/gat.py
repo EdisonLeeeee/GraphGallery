@@ -1,6 +1,4 @@
 import torch
-import math
-import numpy as np
 from torch.nn import Module, Parameter, ParameterList, LeakyReLU, Dropout
 import torch.nn.functional as F
 

@@ -1,12 +1,12 @@
 import torch
 from torch.nn.parameter import Parameter
 from torch.nn import Module
+
 from graphgallery.nn.init.pytorch import uniform, zeros
 from ..get_activation import get_activation
 
 
-# TODO: change dtypes of trainable weights based on `floax`
-class GraphConvolution(Module):
+class MedianConvolution(Module):
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -30,10 +30,14 @@ class GraphConvolution(Module):
         zeros(self.bias)
 
     def forward(self, inputs):
-        x, adj = inputs
+        x, neighbors = inputs
         h = torch.mm(x, self.kernel)
-        output = torch.spmm(adj, h)
-
+        aggregation = []
+        for node, neighbor in enumerate(neighbors):
+            message, _ = torch.median(h[neighbor], 0)
+            aggregation.append(message)
+        output = torch.stack(aggregation)
+        
         if self.bias is not None:
             output += self.bias
 

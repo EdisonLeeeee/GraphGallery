@@ -282,7 +282,7 @@ class GalleryModel(GraphModel):
         callbacks.set_model(model)
         model.stop_training = False
 
-        metrics_names = metrics_names + ["Duration"]
+        metrics_names = metrics_names + ["Dur."]
         if verbose:
             stateful_metrics = set(metrics_names)
             if verbose <= 2:
@@ -317,7 +317,7 @@ class GalleryModel(GraphModel):
                 callbacks.on_epoch_end(epoch, logs)
 
                 time_passed = time.perf_counter() - begin_time
-                logs["Duration"] = time_passed
+                logs["Dur."] = time_passed
 
                 if verbose > 2:
                     print(f"Epoch {epoch+1}/{epochs}")
@@ -374,7 +374,7 @@ class GalleryModel(GraphModel):
         if verbose:
             print("Testing...")
 
-        metrics_names = self.model.metrics_names + ["Duration"]
+        metrics_names = self.model.metrics_names + ["Dur."]
 
         progbar = Progbar(target=len(test_data),
                           verbose=verbose,
@@ -382,7 +382,7 @@ class GalleryModel(GraphModel):
         begin_time = time.perf_counter()
         logs = BunchDict(**self.test_step(test_data))
         time_passed = time.perf_counter() - begin_time
-        logs["Duration"] = time_passed
+        logs["Dur."] = time_passed
         progbar.update(len(test_data), logs.items())
         return logs
 
