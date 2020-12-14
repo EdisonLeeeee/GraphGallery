@@ -14,13 +14,13 @@ __all__ = ["JaccardDetection", "CosineDetection", "SVD",
 
 def jaccard_similarity(A, B):
     intersection = np.count_nonzero(A * B, axis=1)
-    J = intersection * 1.0 / (np.count_nonzero(A, axis=1) + np.count_nonzero(B, axis=1) + intersection + epsilon())
+    J = intersection * 1.0 / (np.count_nonzero(A, axis=1) + np.count_nonzero(B, axis=1) + intersection + gg.epsilon())
     return J
 
 
 def cosine_similarity(A, B):
     inner_product = (A * B).sum(1)
-    C = inner_product / (np.sqrt(np.square(A).sum(1)) * np.sqrt(np.square(B).sum(1)) + epsilon())
+    C = inner_product / (np.sqrt(np.square(A).sum(1)) * np.sqrt(np.square(B).sum(1)) + gg.epsilon())
     return C
 
 
@@ -57,7 +57,7 @@ def cosine_detection(adj_matrix, node_attr, threshold=0.01, allow_singleton=Fals
 @Transformers.register()
 class JaccardDetection(Transform):
 
-    def __init__(self, threshold=0.01, allow_singleton=False):
+    def __init__(self, threshold=0., allow_singleton=False):
         super().__init__()
         self.threshold = threshold
         self.allow_singleton = allow_singleton
@@ -72,7 +72,7 @@ class JaccardDetection(Transform):
         structure_flips = jaccard_detection(adj_matrix, node_attr,
                                             threshold=self.threshold,
                                             allow_singleton=self.allow_singleton)
-        graph.update(adj_matrix=remove_edge(adj_matrix, structure_flips))
+        graph.update(adj_matrix=remove_edge(adj_matrix, structure_flips, symmetric=False))
         return graph
 
     def extra_repr(self):
@@ -82,7 +82,7 @@ class JaccardDetection(Transform):
 @Transformers.register()
 class CosineDetection(Transform):
 
-    def __init__(self, threshold=0.01, allow_singleton=False):
+    def __init__(self, threshold=0., allow_singleton=False):
         super().__init__()
         self.threshold = threshold
         self.allow_singleton = allow_singleton
@@ -97,7 +97,7 @@ class CosineDetection(Transform):
         structure_flips = cosine_detection(adj_matrix, node_attr,
                                            threshold=self.threshold,
                                            allow_singleton=self.allow_singleton)
-        graph.update(adj_matrix=remove_edge(adj_matrix, structure_flips))
+        graph.update(adj_matrix=remove_edge(adj_matrix, structure_flips, symmetric=False))
         return graph
 
     def extra_repr(self):
@@ -118,7 +118,7 @@ class SVD(Transform):
         # TODO: multiple graph
         assert not graph.multiple
         graph = graph.copy()
-        adj_matrix = svd(graph, k=self.k,
+        adj_matrix = svd(graph.adj_matrix, k=self.k,
                          threshold=self.threshold,
                          binaryzation=self.binaryzation)
         graph.update(adj_matrix=adj_matrix)
