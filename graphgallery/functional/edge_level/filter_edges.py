@@ -24,7 +24,7 @@ def filter_singletons(edge, adj_matrix):
 
     edge = asedge(edge, shape="col_wise")  # shape [2, M]
     if edge.size == 0:
-        warnings.warn("No edges found.", RuntimeWarning)
+        warnings.warn("No edges found.", UserWarning)
         return edge
 
     degs = adj_matrix.sum(1).A1

@@ -9,7 +9,7 @@ def flip_attr(matrix, flips):
     if flips is None or len(flips) == 0:
         warnings.warn(
             "There is NO flips, the matrix stays the same.",
-            RuntimeWarning,
+            UserWarning,
         )
         return matrix.copy()
 

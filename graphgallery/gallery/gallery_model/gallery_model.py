@@ -270,7 +270,7 @@ class GalleryModel(GraphModel):
             if monitor not in metrics_names:
                 monitor = metrics_names[-1]
                 warnings.warn(f"'{monitor}' are not included in the metrics names. default to '{monitor}'.",
-                              RuntimeWarning)
+                              UserWarning)
 
             mc_callback = ModelCheckpoint(ckpt_path,
                                           monitor=monitor,
