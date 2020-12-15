@@ -1,8 +1,25 @@
 #!/usr/bin/env python
 # coding: utf-8
 from setuptools import setup, find_packages
+from os import path
 
-VERSION = "0.6.0"
+
+# From: https://github.com/facebookresearch/iopath/blob/master/setup.py
+# Author: Facebook Research
+
+def get_version():
+    init_py_path = path.join(
+        path.abspath(path.dirname(__file__)), "graphgallery", "version.py"
+    )
+    init_py = open(init_py_path, "r").readlines()
+    version_line = [line.strip() for line in init_py if line.startswith("__version__")][
+        0
+    ]
+    version = version_line.split("=")[-1].strip().strip("'\"")
+
+    return version
+
+VERSION = get_version()
 url = 'https://github.com/EdisonLeeeee/GraphGallery'
 
 install_requires = [
