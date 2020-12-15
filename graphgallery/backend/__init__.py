@@ -1,3 +1,4 @@
-from graphgallery.backend.gpu import *
-from graphgallery.backend.modules import *
-from graphgallery.backend.config import *
+from .gpu import *
+from .modules import *
+from .backend import *
+from .config import *

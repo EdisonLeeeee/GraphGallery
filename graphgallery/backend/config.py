@@ -1,298 +1,112 @@
-"""Inspired by Keras backend config API. https://tensorflow.google.com """
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
+import logging
+import os
+import warnings
+from typing import IO, Any, Callable, Dict, List, Union
 
-import importlib
-import sys
-from tensorflow.keras import backend as K
-from typing import Union, Tuple, Optional
-
-from .modules import BackendModule, TensorFlowBackend, PyTorchBackend, PyGBackend, DGLPyTorchBackend, DGLTensorFlowBackend
-
-__all__ = [
-    'allowed_backends', 'backend_dict', 'backend', 'set_backend',
-    'set_to_default_backend', 'boolx', 'intx', 'set_intx', 'floatx',
-    'set_floatx', 'epsilon', 'set_epsilon', 'file_ext', 'set_file_ext'
-]
-
-# used to store the models or weights for `TensorFlow` and `PyTorch`
-_EXT = ".h5"
-
-##### Backends ######
-_TF = 'tensorflow'
-_TORCH = 'torch'
-_MXNET = 'mxnet'
-_CUPY = 'cupy'
-_NUMPY = 'numpy'
-
-_DEFAULT_BACKEND = TensorFlowBackend()
-_BACKEND = _DEFAULT_BACKEND
-
-_ALL_BACKENDS = {
-    TensorFlowBackend, PyTorchBackend, PyGBackend, DGLPyTorchBackend,
-    DGLTensorFlowBackend
-}
-_BACKEND_DICT = {}
-
-BACKEND_TYPE = Union[TensorFlowBackend, PyTorchBackend, PyGBackend,
-                     DGLPyTorchBackend, DGLTensorFlowBackend]
+import yaml
+# from fvcore.common.file_io import PathManager
+from yacs.config import CfgNode as _CfgNode
 
 
-def allowed_backends() -> Tuple[str]:
-    return tuple(backend_dict().keys())
+__all__ = ["CfgNode"]
 
-
-def backend_dict() -> dict:
-    return _BACKEND_DICT
-
-
-def set_backend_dict():
-    global _BACKEND_DICT
-    _BACKEND_DICT = {}
-    for bkd in _ALL_BACKENDS:
-        for act in bkd.alias:
-            _BACKEND_DICT[act] = bkd
-
-
-##### Types ######
-_INT_TYPES = {'uint8', 'int8', 'int16', 'int32', 'int64'}
-_FLOAT_TYPES = {'float16', 'float32', 'float64'}
-
-# The type of integer to use throughout a network
-_INTX = 'int32'
-# The type of float to use throughout a network
-_FLOATX = 'float32'
-# The type of bool to use throughout a network
-_BOOLX = 'bool'
-
-epsilon = K.epsilon
-set_epsilon = K.set_epsilon
-
-
-def boolx() -> str:
-    """Returns the default bool type, as a string,
-        i.e., bool
-
-    Returns:
-    --------
-    String, the current default bool type.
-
-    Example:
-    --------
-    >>> graphgallery.boolx()
-    'bool'
+class CfgNode(_CfgNode):
     """
-    return _BOOLX
+    Our own extended version of :class:`yacs.config.CfgNode`.
+    It contains the following extra features:
 
-
-def floatx() -> str:
-    """Returns the default float type, as a string.
-
-    E.g. `'float16'`, `'float32'`, `'float64'`.
-
-    Returns:
-    --------
-    String, the current default float type.
-
-    Example:
-    --------
-    >>> graphgallery.floatx()
-    'float32'
-    """
-    return _FLOATX
-
-
-def set_floatx(dtype: str) -> str:
-    """Sets the default float type.
-
-    Parameters:
-    --------
-    dtype: String; `'float16'`, `'float32'`, or `'float64'`.
-
-    Example:
-    --------
-    >>> graphgallery.floatx()
-    'float32'
-    >>> graphgallery.set_floatx('float64')
-    'float64'
-
-    Raises:
-    --------
-    ValueError: In case of invalid value.
+    1. The :meth:`merge_from_file` method supports the "_BASE_" key,
+       which allows the new CfgNode to inherit all the attributes from the
+       base configuration file.
+    2. Keys that start with "COMPUTED_" are treated as insertion-only
+       "computed" attributes. They can be inserted regardless of whether
+       the CfgNode is frozen or not.
+    3. With "allow_unsafe=True", it supports pyyaml tags that evaluate
+       expressions in config. See examples in
+       https://pyyaml.org/wiki/PyYAMLDocumentation#yaml-tags-and-python-types
+       Note that this may lead to arbitrary code execution: you must not
+       load a config file from untrusted sources before manually inspecting
+       the content of the file.
     """
 
-    if dtype not in _FLOAT_TYPES:
-        raise ValueError(
-            f"Unknown floatx type: '{str(dtype)}', expected one of {_FLOAT_TYPES}."
-        )
-    global _FLOATX
-    _FLOATX = str(dtype)
-    return _FLOATX
+    @classmethod
+    def _open_cfg(cls, filename: str) -> Union[IO[str], IO[bytes]]:
+        """
+        Defines how a config file is opened. May be overridden to support
+        different file schemas.
+        """
+        return open(filename, "r")
 
+    @classmethod
+    def load_yaml_with_base(cls, filename: str, allow_unsafe: bool = False) -> None:
+        """
+        Just like `yaml.load(open(filename))`, but inherit attributes from its
+            `_BASE_`.
 
-def intx() -> str:
-    """Returns the default integer type, as a string.
+        Args:
+            filename (str or file-like object): the file name or file of the current config.
+                Will be used to find the base config file.
+            allow_unsafe (bool): whether to allow loading the config file with
+                `yaml.unsafe_load`.
 
-    E.g. `'uint8'`, `'int8'`, `'int16'`, 
-        `'int32'`, `'int64'`.
+        Returns:
+            (dict): the loaded yaml
+        """
+        with cls._open_cfg(filename) as f:
+            try:
+                cfg = yaml.safe_load(f)
+            except yaml.constructor.ConstructorError:
+                if not allow_unsafe:
+                    raise
+                warnings.warn(
+                    "Loading config {} with yaml.unsafe_load. Your machine may "
+                    "be at risk if the file contains malicious content.".format(
+                        filename, UserWarning
+                    )
+                )
+                f.close()
+                with cls._open_cfg(filename) as f:
+                    cfg = yaml.unsafe_load(f)
 
-    Returns:
-    --------
-    String, the current default integer type.
+        # pyre-ignore
+        def merge_a_into_b(a: Dict[Any, Any], b: Dict[Any, Any]) -> None:
+            # merge dict a into dict b. values in a will overwrite b.
+            for k, v in a.items():
+                if isinstance(v, dict) and k in b:
+                    assert isinstance(
+                        b[k], dict
+                    ), "Cannot inherit key '{}' from base!".format(k)
+                    merge_a_into_b(v, b[k])
+                else:
+                    b[k] = v
 
-    Example:
-    --------
-    >>> graphgallery.intx()
-    'int32'
+        return cfg
 
-    Note:
-    -------
-    The default integer type of PyTorch backend will set to
-        'int64', i.e., 'Long'.
-    """
-    return _INTX
+    def merge_from_file(self, cfg_filename: str, allow_unsafe: bool = False) -> None:
+        """
+        Merge configs from a given yaml file.
 
+        Args:
+            cfg_filename: the file name of the yaml config.
+            allow_unsafe: whether to allow loading the config file with
+                `yaml.unsafe_load`.
+        """
+        loaded_cfg = self.load_yaml_with_base(cfg_filename, allow_unsafe=allow_unsafe)
+        loaded_cfg = type(self)(loaded_cfg)
+        self.merge_from_other_cfg(loaded_cfg)
 
-def set_intx(dtype: str) -> str:
-    """Sets the default integer type.
+    def merge_from_other_cfg(self, cfg_other: object) -> Callable[[], None]:
+        """
+        Args:
+            cfg_other (CfgNode): configs to merge from.
+        """
+        return super().merge_from_other_cfg(cfg_other)
 
-    Parameters:
-    --------
-    dtype: String. `'uint8'`, `'int8'`, `'int16'`, 
-        `'int32'`, `'int64'`.
+    def merge_from_list(self, cfg_list: List[object]) -> Callable[[], None]:
+        """
+        Args:
+            cfg_list (list): list of configs to merge from.
+        """
+        return super().merge_from_list(cfg_list)
 
-    Example:
-    --------
-    >>> graphgallery.intx()
-    'int32'
-    >>> graphgallery.set_intx('int64')
-    'int64'
-
-    Raises:
-    --------
-    ValueError: In case of invalid value.
-    RuntimeError: PyTorch backend using other integer types except for 'int64.
-    """
-
-    if dtype not in _INT_TYPES:
-        raise ValueError(
-            f"Unknown integer type: '{str(dtype)}', expected one of {_INT_TYPES}."
-        )
-    global _INTX
-
-    if _BACKEND == _TORCH and dtype != 'int64':
-        raise RuntimeError(
-            f"For {_BACKEND}, tensors used as integer must be 'long' ('int64'), not '{str(dtype)}'."
-        )
-
-    _INTX = str(dtype)
-    return _INTX
-
-
-def backend(
-        module_name: Optional[Union[str,
-                                    BackendModule]] = None) -> BACKEND_TYPE:
-    """Publicly accessible method
-    for determining the current backend.
-
-    Parameters:
-    --------
-    module_name: String or 'BackendModule', optional.
-     `'tensorflow'`, `'torch'`, TensorFlowBackend, PyTorchBackend, etc.
-     if not specified, return the current default backend module. 
-
-    Returns:
-    --------
-    The backend module.
-
-    E.g. `'TensorFlow 2.1.2 Backend'`,
-      `'PyTorch 1.6.0+cpu Backend'`.
-
-    Example:
-    --------
-    >>> graphgallery.backend()
-    'TensorFlow 2.1.2 Backend'
-    >>> graphgallery.backend('torch)
-    'PyTorch 1.6.0+cpu Backend'    
-    """
-    if module_name is None:
-        return _BACKEND
-    elif isinstance(module_name, BackendModule):
-        return module_name
-    else:
-        module_name = str(module_name)
-        module = _BACKEND_DICT.get(module_name.lower(), None)
-
-        if module is None:
-            raise ValueError(
-                f"Unsupported backend module name: '{module_name}', expected one of {allowed_backends()}."
-            )
-        return module()
-
-
-def set_to_default_backend():
-    global _BACKEND
-    _BACKEND = _DEFAULT_BACKEND
-    # Using `int32` is more efficient
-    set_intx('int32')
-    return _BACKEND
-
-
-def set_backend(
-        module_name: Optional[Union[str,
-                                    BackendModule]] = None) -> BACKEND_TYPE:
-    """Set the default backend module.
-
-    Parameters:
-    --------
-    module_name: String or 'BackendModule', optional.
-        `'tf'`, `'tensorflow'`,
-        `'th'`, `'torch'`, `'pytorch'`.
-
-    Example:
-    --------
-    >>> graphgallery.backend()
-    'TensorFlow 2.1.2 Backend'
-
-    >>> graphgallery.set_backend('torch')
-    'PyTorch 1.6.0+cpu Backend'
-
-    Raises:
-    --------
-    ValueError: In case of invalid value.
-    """
-
-    _backend = backend(module_name)
-
-    global _BACKEND
-
-    if _backend != _BACKEND:
-        _BACKEND = _backend
-        if _backend == _TORCH:
-            # PyTorch backend uses `int64` as default
-            set_intx('int64')
-        else:
-            # Using `int32` is more efficient
-            set_intx('int32')
-        try:
-            from graphgallery import gallery
-            importlib.reload(gallery)
-        except Exception as e:
-            print(
-                f"Something went wrong. Set to Default Backend {_DEFAULT_BACKEND}.",
-                file=sys.stderr)
-            set_to_default_backend()
-            raise e
-
-    return _BACKEND
-
-
-def file_ext():
-    return _EXT
-
-
-def set_file_ext(ext):
-    global _EXT
-    _EXT = ext
-    return _EXT
-
-
-set_backend_dict()
