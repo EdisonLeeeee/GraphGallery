@@ -1,6 +1,5 @@
 import os
 import sys
-import time
 import copy
 import warnings
 import os.path as osp
@@ -13,7 +12,8 @@ from tensorflow.keras.utils import Sequence
 from tensorflow.python.keras import callbacks as callbacks_module
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from tensorflow.keras.callbacks import History
-from tensorflow.python.keras.utils.generic_utils import Progbar
+# from tensorflow.python.keras.utils.generic_utils import Progbar
+from graphgallery.utils import Progbar
 
 import graphgallery as gg
 from graphgallery.functional import BunchDict
@@ -283,26 +283,21 @@ class GalleryModel(GraphModel):
         callbacks.set_model(model)
         model.stop_training = False
 
-        metrics_names = metrics_names + ["total_time"]
         if verbose:
-            stateful_metrics = set(metrics_names)
             if verbose <= 2:
                 progbar = Progbar(target=epochs,
                                   width=20,
-                                  verbose=verbose,
-                                  stateful_metrics=stateful_metrics)
+                                  verbose=verbose)
             print("Training...")
 
         logs = BunchDict()
-        begin_time = time.perf_counter()
         callbacks.on_train_begin()
         try:
             for epoch in range(epochs):
                 if verbose > 2:
                     progbar = Progbar(target=len(train_data),
                                       width=20,
-                                      verbose=verbose - 2,
-                                      stateful_metrics=stateful_metrics)
+                                      verbose=verbose - 2)
 
                 callbacks.on_epoch_begin(epoch)
                 callbacks.on_train_batch_begin(0)
@@ -318,9 +313,6 @@ class GalleryModel(GraphModel):
 
                 callbacks.on_train_batch_end(len(train_data), logs)
                 callbacks.on_epoch_end(epoch, logs)
-
-                time_passed = time.perf_counter() - begin_time
-                logs["total_time"] = np.round(time_passed, 2)
 
                 if verbose > 2:
                     print(f"Epoch {epoch+1}/{epochs}")
@@ -377,16 +369,12 @@ class GalleryModel(GraphModel):
         if verbose:
             print("Testing...")
 
-        metrics_names = self.model.metrics_names + ["total_time"]
+        metrics_names = self.model.metrics_names
 
         progbar = Progbar(target=len(test_data),
                           width=20,
-                          verbose=verbose,
-                          stateful_metrics=set(metrics_names))
-        begin_time = time.perf_counter()
+                          verbose=verbose)
         logs = BunchDict(**self.test_step(test_data))
-        time_passed = time.perf_counter() - begin_time
-        logs["total_time"] = np.round(time_passed, 2)
         progbar.update(len(test_data), logs.items())
         return logs
 
