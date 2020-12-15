@@ -2,6 +2,7 @@ import random
 import torch
 import os
 import sys
+import uuid
 
 import numpy as np
 import tensorflow as tf
@@ -65,9 +66,8 @@ class GraphModel(Model):
         self._custom_objects = None  # used for save/load TF model
 
         # checkpoint path
-        # add random integer to avoid duplication
-        _id = np.random.RandomState(None).randint(100)
-        self.ckpt_path = osp.join(os.getcwd(), f"{self.name}_checkpoint_{_id}{gg.file_ext()}")
+        # use `uuid` to avoid duplication
+        self.ckpt_path = osp.join(os.getcwd(), f"{self.name}_checkpoint_{uuid.uuid1().hex[:6]}{gg.file_ext()}")
 
     def save(self,
              path=None,
