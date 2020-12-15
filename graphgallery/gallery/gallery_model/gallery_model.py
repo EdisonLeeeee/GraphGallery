@@ -283,11 +283,12 @@ class GalleryModel(GraphModel):
         callbacks.set_model(model)
         model.stop_training = False
 
-        metrics_names = metrics_names + ["Dur."]
+        metrics_names = metrics_names + ["total_time"]
         if verbose:
             stateful_metrics = set(metrics_names)
             if verbose <= 2:
                 progbar = Progbar(target=epochs,
+                                  width=20,
                                   verbose=verbose,
                                   stateful_metrics=stateful_metrics)
             print("Training...")
@@ -299,6 +300,7 @@ class GalleryModel(GraphModel):
             for epoch in range(epochs):
                 if verbose > 2:
                     progbar = Progbar(target=len(train_data),
+                                      width=20,
                                       verbose=verbose - 2,
                                       stateful_metrics=stateful_metrics)
 
@@ -318,7 +320,7 @@ class GalleryModel(GraphModel):
                 callbacks.on_epoch_end(epoch, logs)
 
                 time_passed = time.perf_counter() - begin_time
-                logs["Dur."] = time_passed
+                logs["total_time"] = np.round(time_passed, 2)
 
                 if verbose > 2:
                     print(f"Epoch {epoch+1}/{epochs}")
@@ -327,7 +329,7 @@ class GalleryModel(GraphModel):
                     progbar.update(epoch + 1, logs.items())
 
                 if model.stop_training:
-                    print(f"Early Stopping in Epoch {epoch}", file=sys.stderr)
+                    print(f"Early Stopping at Epoch {epoch}", file=sys.stderr)
                     break
 
             callbacks.on_train_end()
@@ -375,15 +377,16 @@ class GalleryModel(GraphModel):
         if verbose:
             print("Testing...")
 
-        metrics_names = self.model.metrics_names + ["Dur."]
+        metrics_names = self.model.metrics_names + ["total_time"]
 
         progbar = Progbar(target=len(test_data),
+                          width=20,
                           verbose=verbose,
                           stateful_metrics=set(metrics_names))
         begin_time = time.perf_counter()
         logs = BunchDict(**self.test_step(test_data))
         time_passed = time.perf_counter() - begin_time
-        logs["Dur."] = time_passed
+        logs["total_time"] = np.round(time_passed, 2)
         progbar.update(len(test_data), logs.items())
         return logs
 
