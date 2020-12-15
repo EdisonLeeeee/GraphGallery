@@ -226,8 +226,9 @@ class GalleryModel(GraphModel):
             )
 
         metrics_names = getattr(model, "metrics_names", None)
-        # FIXME: This would be return '[]' for tensorflow>=2.2.0
+        # FIXME: This would return '[]' for tensorflow>=2.2.0
         # See <https://github.com/tensorflow/tensorflow/issues/37990>
+        # metrics_names = ['loss', 'accuracy']
         if not metrics_names:
             raise RuntimeError(f"Please specify the attribute 'metrics_names' for the model.")
         if not isinstance(train_data, Sequence):

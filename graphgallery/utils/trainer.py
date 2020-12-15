@@ -6,6 +6,11 @@ import tensorflow as tf
 def train_step_tf(model, sequence, device):
     model.reset_metrics()
 
+    # FIXME: for Tensorflow 2.4.0, if causes an error:
+    # ValueError: Data cardinality is ambiguous. 
+    # https://github.com/tensorflow/tensorflow/issues/42175
+    # this should be fixed using ``GradientTape`` and ``apply_gradients``
+    # for training.
     with tf.device(device):
         for inputs, labels in sequence:
             results = model.train_on_batch(x=inputs,

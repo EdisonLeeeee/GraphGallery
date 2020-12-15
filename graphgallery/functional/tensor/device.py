@@ -79,6 +79,8 @@ def device(device: Device = None, backend: Backend = None) -> Device:
     # tensorflow backend returns 'string'
     if _device == "cpu":
         return tf_device.cpu(_device_id)
+    # FIXME: Tensorflow 2.4.0 requires cuDNN 8.0 and CUDA 11.0
+    # while Tensorflow  2.1~2.3 require cuDNN 7.6 and CUDA 10.1
     elif not tf.config.list_physical_devices('GPU'):
         raise RuntimeError(f"GPU is unavailable for {backend}.")
     return tf_device.gpu(_device_id)
