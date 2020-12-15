@@ -11,7 +11,7 @@
     <img src="https://img.shields.io/badge/Python->=3.7-3776AB?logo=python" alt="Python">
   </a>    
   <a href="https://github.com/tensorflow/tensorflow/releases/tag/v2.1.0">
-    <img src="https://img.shields.io/badge/TensorFlow->=2.1.2-FF6F00?logo=tensorflow" alt="tensorflow">
+    <img src="https://img.shields.io/badge/TensorFlow->=2.1.0-FF6F00?logo=tensorflow" alt="tensorflow">
   </a>      
   <a href="https://github.com/pytorch/pytorch">
     <img src="https://img.shields.io/badge/PyTorch->=1.5-FF6F00?logo=pytorch" alt="pytorch">
@@ -56,7 +56,7 @@ NEWS:
 Differences between GraphGallery and [Pytorch Geometric (PyG)](https://github.com/rusty1s/pytorch_geometric), [Deep Graph Library (DGL)](https://github.com/dmlc/dgl), etc...
 + PyG and DGL are just like **TensorFlow** while GraphGallery is more like **Keras**
 + GraphGallery is a plug-and-play and user-friendly toolbox
-+ GraphGallery has high scalaribility for researchers to use
++ GraphGallery has high scalaibility for researchers and developers to use
 
 
 # 🚀 Installation
@@ -70,6 +70,14 @@ python setup.py install
 ```bash
 pip install -U graphgallery
 ```
+
+GraphGallery has been tested on:
++ CUDA 10.1
++ TensorFlow 2.1~2.3, 2.4 is unavailable now and 2.1.2 is recommended.
++ PyTorch 1.5~1.7
++ Pytorch Geometric (PyG) 1.6.1
++ DGL 0.5.2, 0.5.3
+
 # 🤖 Implementations
 Please refer to the [examples](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples) directory.
 
@@ -85,9 +93,9 @@ data = Planetoid('cora', verbose=False)
 graph = data.graph
 # here `splits` is a dict like instance
 splits = data.split_nodes()
-# splits.trainum_nodes:  training indices: 1D Numpy array
+# splits.train_nodes:  training indices: 1D Numpy array
 # splits.val_nodes:  validation indices: 1D Numpy array
-# splits.nodes:  testing indices: 1D Numpy array
+# splits.test_nodes:  testing indices: 1D Numpy array
 >>> graph
 Graph(adj_matrix(2708, 2708),
       node_attr(2708, 1433),
@@ -199,9 +207,9 @@ from graphgallery.gallery import GCN
 model = GCN(graph, attr_transform="normalize_attr", device="CPU", seed=123)
 # build your GCN model with default hyper-parameters
 model.build()
-# train your model. here splits.trainum_nodes and splits.val_nodes are numpy arrays
+# train your model. here splits.train_nodes and splits.val_nodes are numpy arrays
 # verbose takes 0, 1, 2, 3, 4
-history = model.train(splits.trainum_nodes, splits.val_nodes, verbose=1, epochs=100)
+history = model.train(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
 # test your model
 # verbose takes 0, 1, 2
 results = model.test(splits.nodes, verbose=1)
@@ -210,9 +218,9 @@ print(f'Test loss {results.loss:.5}, Test accuracy {results.accuracy:.2%}')
 On `Cora` dataset:
 ```
 Training...
-100/100 [==============================] - 1s 14ms/step - loss: 1.0161 - acc: 0.9500 - val_loss: 1.4101 - val_acc: 0.7740 - time: 1.4180
+100/100 [==============================] - 1s 14ms/step - loss: 1.0161 - accuracy: 0.9500 - val_loss: 1.4101 - val_accuracy: 0.7740 - Dur.: 1.4180
 Testing...
-1/1 [==============================] - 0s 62ms/step - loss: 1.4123 - acc: 0.8120 - time: 0.0620
+1/1 [==============================] - 0s 62ms/step - loss: 1.4123 - accuracy: 0.8120 - Dur.: 0.0620
 Test loss 1.4123, Test accuracy 81.20%
 ```
 ## Customization
@@ -232,17 +240,17 @@ you can use the following statement to build your model
 + Train your model
 ```python
 # train with validation
->>> history = model.train(splits.trainum_nodes, splits.val_nodes, verbose=1, epochs=100)
+>>> history = model.train(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
 # train without validation
->>> history = model.train(splits.trainum_nodes, verbose=1, epochs=100)
+>>> history = model.train(splits.train_nodes, verbose=1, epochs=100)
 ```
 here `history` is a tensorflow `History` instance.
 
 + Test you model
 ```python
->>> results = model.test(splits.nodes, verbose=1)
+>>> results = model.test(splits.test_nodes, verbose=1)
 Testing...
-1/1 [==============================] - 0s 62ms/step - loss: 1.4123 - acc: 0.8120 - time: 0.0620
+1/1 [==============================] - 0s 62ms/step - loss: 1.4123 - accuracy: 0.8120 - Dur.: 0.0620
 >>> print(f'Test loss {results.loss:.5}, Test accuracy {results.accuracy:.2%}')
 Test loss 1.4123, Test accuracy 81.20%
 ```
@@ -255,7 +263,7 @@ import matplotlib.pyplot as plt
 with plt.style.context(['science', 'no-latex']):
     fig, axes = plt.subplots(1, 2, figsize=(15, 5))
     axes[0].plot(history.history['accuracy'], label='Training accuracy', linewidth=3)
-    axes[0].plot(history.history['val_accuracy'], label='Validation accuracy', linewidth=3)
+    axes[0].plot(history.history['val_accuracyuracy'], label='Validation accuracy', linewidth=3)
     axes[0].legend(fontsize=20)
     axes[0].set_title('Accuracy', fontsize=20)
     axes[0].set_xlabel('Epochs', fontsize=20)
@@ -277,7 +285,7 @@ with plt.style.context(['science', 'no-latex']):
 ```python
 >>> import graphgallery
 >>> graphgallery.backend()
-TensorFlow 2.1.0 Backend
+TensorFlow 2.1.2 Backend
 
 >>> graphgallery.set_backend("pytorch")
 PyTorch 1.6.0+cu101 Backend
@@ -290,12 +298,12 @@ PyTorch 1.6.0+cu101 Backend
 >>> from graphgallery.gallery import GCN
 >>> model = GCN(graph, attr_transform="normalize_attr", device="GPU", seed=123);
 >>> model.build()
->>> history = model.train(splits.trainum_nodes, splits.val_nodes, verbose=1, epochs=100)
+>>> history = model.train(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
 Training...
-100/100 [==============================] - 0s 5ms/step - loss: 0.6813 - acc: 0.9214 - val_loss: 1.0506 - val_acc: 0.7820 - time: 0.4734
->>> results = model.test(splits.nodes, verbose=1)
+100/100 [==============================] - 0s 5ms/step - loss: 0.6813 - accuracy: 0.9214 - val_loss: 1.0506 - val_accuracy: 0.7820 - Dur.: 0.4734
+>>> results = model.test(splits.test_nodes, verbose=1)
 Testing...
-1/1 [==============================] - 0s 1ms/step - loss: 1.0131 - acc: 0.8220 - time: 0.0013
+1/1 [==============================] - 0s 1ms/step - loss: 1.0131 - accuracy: 0.8220 - Dur.: 0.0013
 >>> print(f'Test loss {results.loss:.5}, Test accuracy {results.accuracy:.2%}')
 Test loss 1.0131, Test accuracy 82.20%
 
@@ -342,18 +350,22 @@ PyTorch Geometric 1.6.1 (PyTorch 1.6.0+cu101) Backend
 >>> from graphgallery.gallery import GCN
 >>> model = GCN(graph, attr_transform="normalize_attr", device="GPU", seed=123);
 >>> model.build()
->>> history = model.train(splits.trainum_nodes, splits.val_nodes, verbose=1, epochs=100)
+>>> history = model.train(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
 Training...
-100/100 [==============================] - 0s 3ms/step - loss: 0.5325 - acc: 0.9643 - val_loss: 1.0034 - val_acc: 0.7980 - time: 0.3101
->>> results = model.test(splits.nodes, verbose=1)
+100/100 [==============================] - 0s 3ms/step - loss: 0.5325 - accuracy: 0.9643 - val_loss: 1.0034 - val_accuracy: 0.7980 - Dur.: 0.3101
+>>> results = model.test(splits.test_nodes, verbose=1)
 Testing...
-1/1 [==============================] - 0s 834us/step - loss: 0.9733 - acc: 0.8130 - time: 8.2737e-04
+1/1 [==============================] - 0s 834us/step - loss: 0.9733 - accuracy: 0.8130 - Dur.: 8.2737e-04
 >>> print(f'Test loss {results.loss:.5}, Test accuracy {results.accuracy:.2%}')
 Test loss 0.97332, Test accuracy 81.30%
 ```
 similarly, you can use DGL backend just by:
 ```python
+# DGL PyTorch backend
 >>> graphgallery.set_backend("dgl")
+# DGL TensorFlow backend
+>>> graphgallery.set_backend("dgl-tf")
+
 ```
 
 
@@ -365,7 +377,7 @@ similarly, you can use DGL backend just by:
 - [ ] Support for more tasks, e.g., `graph Classification` and `link prediction`
 - [x] Support for more types of graphs, e.g., Heterogeneous graph
 - [ ] Add Docstrings and Documentation (Building)
-
+- [ ] Comprehensive tutorials
 
 # 😘 Acknowledgement
 This project is motivated by [Pytorch Geometric](https://github.com/rusty1s/pytorch_geometric), [Tensorflow Geometric](https://github.com/CrawlScript/tf_geometric), [Stellargraph](https://github.com/stellargraph/stellargraph) and [DGL](https://github.com/dmlc/dgl), etc., and the original implementations of the authors, thanks for their excellent works!
