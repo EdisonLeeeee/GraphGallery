@@ -23,13 +23,13 @@ class Dataset:
         if root is None:
             root = 'dataset'
 
-        if isinstance(root, str):
-            root = osp.abspath(osp.expanduser(root))
-        else:
-            raise ValueError(root)
+        assert isinstance(root, str), root
+        root = osp.abspath(osp.expanduser(root))
 
         if url:
             self._url = url
+        else:
+            self._url = None
         self.root = root
         self.name = str(name)
         self.verbose = verbose
@@ -54,7 +54,7 @@ class Dataset:
 
     @property
     def url(self) -> str:
-        raise NotImplementedError
+        return self._url
 
     def split_nodes(self,
                     train_size: float = 0.1,

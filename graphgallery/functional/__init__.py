@@ -9,3 +9,4 @@ from .attr_matrix import *
 from .graph_level import *
 from .get_transform import *
 from .tensor import *
+from .random import random_seed

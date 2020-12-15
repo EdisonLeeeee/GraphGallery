@@ -33,7 +33,7 @@ def dtype_to_tensor_class(dtype: str):
 
 def sparse_edge_to_sparse_tensor(edge_index: np.ndarray,
                                  edge_weight: np.ndarray = None,
-                                 shape: tuple = None) -> torch.sparse.Tensor:
+                                 shape: tuple = None) -> torch.Tensor:
     """
     edge_index: shape [2, M]
     edge_weight: shape [M,]
@@ -74,7 +74,7 @@ def sparse_adj_to_sparse_tensor(x, dtype=None):
                                         x.shape)
 
 
-def sparse_tensor_to_sparse_adj(x: torch.sparse.Tensor) -> sp.csr_matrix:
+def sparse_tensor_to_sparse_adj(x: torch.Tensor) -> sp.csr_matrix:
     """Converts a SparseTensor to a Scipy sparse matrix (CSR matrix)."""
     x = x.coalesce()
     data = x.values().detach().cpu().numpy()
