@@ -34,7 +34,7 @@ class Model:
         gg.utils.raise_error.raise_if_kwargs(kwargs)
 
         if seed:
-            gf.random_seeed(seed, _backend)
+            gf.random_seed(seed, _backend)
 
         if name is None:
             name = self.__class__.__name__
