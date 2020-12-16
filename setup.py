@@ -25,6 +25,7 @@ url = 'https://github.com/EdisonLeeeee/GraphGallery'
 install_requires = [
     'torch',
     'tqdm',
+    'yacs',
     'scipy',
     'numpy',
     'tabulate',

@@ -33,15 +33,8 @@ class Model:
         # It currently takes no keyword arguments
         gg.utils.raise_error.raise_if_kwargs(kwargs)
 
-        if seed is not None:
-            np.random.seed(seed)
-            random.seed(seed)
-            if _backend == "tensorflow":
-                tf.random.set_seed(seed)
-            else:
-                torch.manual_seed(seed)
-                torch.cuda.manual_seed(seed)
-                # torch.cuda.manual_seed_all(seed)
+        if seed:
+            gf.random_seeed(seed, _backend)
 
         if name is None:
             name = self.__class__.__name__
