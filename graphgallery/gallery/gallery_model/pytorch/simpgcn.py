@@ -7,6 +7,20 @@ from graphgallery.nn.models import get_model
 
 @PyTorch.register()
 class SimPGCN(Trainer):
+    """
+        Implementation of Similarity Preserving Graph Convolutional Networks (SimPGCN).
+        `Node Similarity Preserving Graph Convolutional Networks
+        <https://arxiv.org/abs/2011.09643>`
+        Pytorch implementation: <https://github.com/ChandlerBang/SimP-GCN>
+
+        Create a SimPGCN model.
+
+        This can be instantiated in the following way:
+
+            trainer = SimPGCN(graph)
+                with a `graphgallery.data.Graph` instance representing
+                A sparse, attributed, labeled graph.
+    """    
     def process_step(self,
                      adj_transform="normalize_adj",
                      attr_transform=None,

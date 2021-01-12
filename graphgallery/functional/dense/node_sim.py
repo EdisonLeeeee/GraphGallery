@@ -1,3 +1,12 @@
+"""
+From Similarity Preserving Graph Convolutional Networks (SimPGCN).
+`Node Similarity Preserving Graph Convolutional Networks
+<https://arxiv.org/abs/2011.09643>`
+
+Original implementation: <https://github.com/ChandlerBang/SimP-GCN>
+and <https://github.com/DSE-MSU/DeepRobust>
+"""
+    
 import numpy as np
 import scipy.sparse as sp
 from sklearn.metrics.pairwise import cosine_similarity
