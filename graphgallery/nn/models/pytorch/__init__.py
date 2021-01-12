@@ -5,3 +5,4 @@ from .median import MedianGCN
 from .fastgcn import FastGCN
 from .dagnn import DAGNN
 from .parinorm import *
+from .simpgcn import *
