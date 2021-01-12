@@ -4,16 +4,16 @@ from tensorflow.keras.optimizers import Nadam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tensorflow import Top_k_features, LGConvolution, DenseConvolution, Mask
-from graphgallery import floatx, intx
+from graphgallery.nn.layers.tensorflow import Top_k_features, LGConvolution, DenseConvolution
 from graphgallery.nn.models import TFKeras
+from graphgallery import floatx
 
 
 class LGCN(TFKeras):
 
     def __init__(self, in_channels, out_channels,
-                 hiddens=[32], n_filters=[8, 8],
-                 activations=[None, None],
+                 hids=[32], num_filters=[8, 8],
+                 acts=[None, None],
                  dropout=0.8,
                  weight_decay=5e-4, lr=0.1, use_bias=False, K=8):
 
@@ -21,23 +21,22 @@ class LGCN(TFKeras):
                   dtype=floatx(), name='node_attr')
         adj = Input(batch_shape=[None, None], dtype=floatx(),
                     sparse=False, name='adj_matrix')
-        mask = Input(batch_shape=[None], dtype='bool', name='node_mask')
 
         h = x
-        for idx, hidden in enumerate(hiddens):
+        for idx, hid in enumerate(hids):
             h = Dropout(rate=dropout)(h)
-            h = DenseConvolution(hidden,
+            h = DenseConvolution(hid,
                                  use_bias=use_bias,
-                                 activation=activations[idx],
+                                 activation=acts[idx],
                                  kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
 
-        for idx, n_filter in enumerate(n_filters):
+        for idx, num_filter in enumerate(num_filters):
             top_k_h = Top_k_features(K=K)([h, adj])
-            cur_h = LGConvolution(n_filter,
+            cur_h = LGConvolution(num_filter,
                                   kernel_size=K,
                                   use_bias=use_bias,
                                   dropout=dropout,
-                                  activation=activations[idx],
+                                  activation=acts[idx],
                                   kernel_regularizer=regularizers.l2(weight_decay))(top_k_h)
             cur_h = BatchNormalization()(cur_h)
             h = Concatenate()([h, cur_h])
@@ -45,11 +44,9 @@ class LGCN(TFKeras):
         h = Dropout(rate=dropout)(h)
         h = DenseConvolution(out_channels,
                              use_bias=use_bias,
-                             activation=activations[-1],
+                             activation=acts[-1],
                              kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
 
-        h = Mask()([h, mask])
-
-        super().__init__(inputs=[x, adj, mask], outputs=h)
+        super().__init__(inputs=[x, adj], outputs=h)
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
                      optimizer=Nadam(lr=lr), metrics=['accuracy'])

@@ -1,3 +1,4 @@
+import warnings
 import numpy as np
 import scipy.sparse as sp
 import graphgallery as gg
@@ -8,9 +9,9 @@ from .shape import maybe_shape
 __all__ = ['asedge', 'edge_to_sparse_adj']
 
 
-def asedge(edge, shape="col_wise", symmetric=False):
+def asedge(edge, shape="col_wise", symmetric=False,  dtype=None):
     """make sure the array as edge like,
-    shape [M, 2] or [2, M] with dtype int64
+    shape [M, 2] or [2, M] with dtype 'dtype' (or 'int64')
     if ``symmetric=True``, it wiil have shape
     [2*M, 2] or [2, M*2].
 
@@ -28,6 +29,8 @@ def asedge(edge, shape="col_wise", symmetric=False):
         row_wise: edge has shape [2*M, 2]
         col_wise: edge has shape [2, M*2]
         by default ``False``
+    dtype: string, optional
+        data type for edges, if None, default to 'int64'
 
     Returns
     -------
@@ -35,11 +38,16 @@ def asedge(edge, shape="col_wise", symmetric=False):
         edge array
     """
     assert shape in ["row_wise", "col_wise"], shape
-    edge = np.asarray(edge, dtype='int64')
+    assert isinstance(edge, (np.ndarray, list, tuple)), edge
+    edge = np.asarray(edge, dtype=dtype or "int64")
     assert edge.ndim == 2 and 2 in edge.shape, edge.shape
     N, M = edge.shape
-    if not (N == M == 2) and ((shape == "col_wise" and N != 2)
-                              or (shape == "row_wise" and M != 2)):
+    if N == M == 2 and shape == "col_wise":
+        # TODO: N=M=2 is confusing, we assume that edge was 'row_wise'
+        warnings.warn(f"The shape of the edge is {N}x{M}."
+                      f"we assume that {edge} was 'row_wise'")
+        edge = edge.T
+    elif (shape == "col_wise" and N != 2) or (shape == "row_wise" and M != 2):
         edge = edge.T
 
     if symmetric:
@@ -71,8 +79,8 @@ def edge_to_sparse_adj(edge: np.ndarray,
 
     """
 
-    edge = asedge(edge)
-
+    edge = asedge(edge, shape="col_wise")
+    
     if edge_weight is None:
         edge_weight = np.ones(edge.shape[1], dtype=gg.floatx())
 

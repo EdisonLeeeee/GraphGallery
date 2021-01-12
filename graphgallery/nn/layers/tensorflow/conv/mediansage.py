@@ -47,7 +47,7 @@ class MedianAggregator(Layer):
 
         Input shape:
           tuple/list with two tensor: 2-D Tensor `x` and 3-D Tensor `neigh_x`: 
-          `[(batch_num_nodes, num_node_attrs), (batch_num_nodes, n_samples, num_node_attrs)]`.
+          `[(batch_num_nodes, num_node_attrs), (batch_num_nodes, num_samples, num_node_attrs)]`.
           The former one is the node attribute matrix (Tensor) and the last is the neighbor node attribute matrix (Tensor).
 
         Output shape:
@@ -202,7 +202,7 @@ class MedianGCNAggregator(Layer):
 
         Input shape:
           tuple/list with two tensor: 2-D Tensor `x` and 3-D Tensor `neigh_x`: 
-          `[(batch_num_nodes, num_node_attrs), (batch_num_nodes, n_samples, num_node_attrs)]`.
+          `[(batch_num_nodes, num_node_attrs), (batch_num_nodes, num_samples, num_node_attrs)]`.
           The former one is the node attribute matrix (Tensor) and the last is the neighbor node attribute matrix (Tensor).
 
         Output shape:

@@ -13,8 +13,8 @@ class SGC(TorchKeras):
     def __init__(self,
                  in_channels,
                  out_channels,
-                 hiddens=[],
-                 activations=[],
+                 hids=[],
+                 acts=[],
                  K=2,
                  dropout=0.5,
                  weight_decay=5e-5,
@@ -22,9 +22,9 @@ class SGC(TorchKeras):
                  use_bias=True):
         super().__init__()
 
-        if hiddens or activations:
+        if hids or acts:
             raise RuntimeError(
-                f"Arguments 'hiddens' and 'activations' are not supported to use in SGC (DGL backend)."
+                f"Arguments 'hids' and 'acts' are not supported to use in SGC (DGL backend)."
             )
 
         conv = SGConv(in_channels,
@@ -40,7 +40,6 @@ class SGC(TorchKeras):
                                           weight_decay=weight_decay),
                      metrics=[Accuracy()])
 
-    def forward(self, inputs):
-        x, g, idx = inputs
+    def forward(self, x, g):
         x = self.conv(g, x)
-        return x[idx]
+        return x

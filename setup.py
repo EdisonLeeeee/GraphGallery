@@ -6,7 +6,6 @@ from os import path
 
 # From: https://github.com/facebookresearch/iopath/blob/master/setup.py
 # Author: Facebook Research
-
 def get_version():
     init_py_path = path.join(
         path.abspath(path.dirname(__file__)), "graphgallery", "version.py"
@@ -23,13 +22,13 @@ VERSION = get_version()
 url = 'https://github.com/EdisonLeeeee/GraphGallery'
 
 install_requires = [
-    'torch',
     'tqdm',
     'yacs',
     'scipy',
     'numpy',
     'tabulate',
     'scikit_learn',
+    'torch>=1.4',
     'tensorflow>=2.1.0',
     'networkx>=2.3',
     'gensim>=3.8.0',

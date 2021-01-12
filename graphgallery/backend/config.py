@@ -11,6 +11,7 @@ from yacs.config import CfgNode as _CfgNode
 
 __all__ = ["CfgNode"]
 
+
 class CfgNode(_CfgNode):
     """
     Our own extended version of :class:`yacs.config.CfgNode`.
@@ -110,3 +111,19 @@ class CfgNode(_CfgNode):
         """
         return super().merge_from_list(cfg_list)
 
+    def merge_from_dict(self, cfg_dict: Dict[object, object]) -> Callable[[], None]:
+        """
+        Args:
+            cfg_dict (dict): dict of configs to merge from.
+        """
+        cfg_dict.pop("self", None)
+        merge_dict(self, cfg_dict)
+        return self
+
+
+def merge_dict(a, b):
+    for k, v in b.items():
+        if not isinstance(v, dict):
+            a[k] = v
+        else:
+            merge_dict(a[k], b[k])

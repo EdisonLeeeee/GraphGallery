@@ -5,21 +5,20 @@ from typing import Any, Optional
 
 import graphgallery as gg
 from graphgallery import functional as gf
-from graphgallery.typing import Device, Backend
 
 from . import tensorflow
 from . import pytorch
 from .ops import get_module
 
 
-def data_type_dict(backend: Optional[Backend] = None) -> dict:
+def data_type_dict(backend=None) -> dict:
     """get the data type dict of the corresponding backend.
 
     Parameters
     ----------
-    backend: String or BackendModule, optional.    
-        'tensorflow', 'torch', TensorFlowBackend, PyTorchBackend, etc.    
-        if not specified, return the current default backend module. 
+    backend: String or BackendModule, optional.
+        'tensorflow', 'torch', TensorFlowBackend, PyTorchBackend, etc.
+        if not specified, return the current default backend module.
 
     Returns
     -------
@@ -30,16 +29,16 @@ def data_type_dict(backend: Optional[Backend] = None) -> dict:
     return module.data_type_dict()
 
 
-def is_sparse(x: Any, backend: Optional[Backend] = None) -> bool:
+def is_sparse(x: Any, backend=None) -> bool:
     """Check whether 'x' is a sparse Tensor.
 
     Parameters:
     ----------
     x: A python object to check.
 
-    backend: String or BackendModule, optional.    
-        'tensorflow', 'torch', TensorFlowBackend, PyTorchBackend, etc.    
-        if not specified, return the current default backend module. 
+    backend: String or BackendModule, optional.
+        'tensorflow', 'torch', TensorFlowBackend, PyTorchBackend, etc.
+        if not specified, return the current default backend module.
 
     Returns:
     -------
@@ -49,15 +48,15 @@ def is_sparse(x: Any, backend: Optional[Backend] = None) -> bool:
     return module.is_sparse(x)
 
 
-def is_dense(x: Any, backend: Optional[Backend] = None) -> bool:
+def is_dense(x: Any, backend=None) -> bool:
     """Check whether 'x' is a strided (dense) Tensor.
 
     Parameters:
     ----------
     x: A python object to check.
-    backend: String or BackendModule, optional.    
-        'tensorflow', 'torch', TensorFlowBackend, PyTorchBackend, etc.    
-        if not specified, return the current default backend module. 
+    backend: String or BackendModule, optional.
+        'tensorflow', 'torch', TensorFlowBackend, PyTorchBackend, etc.
+        if not specified, return the current default backend module.
 
     Returns:
     ----------
@@ -68,20 +67,21 @@ def is_dense(x: Any, backend: Optional[Backend] = None) -> bool:
     return module.is_dense(x)
 
 
-def is_tensor(x: Any, backend: Optional[Backend] = None) -> bool:
-    """Check whether 'x' is 
+def is_tensor(x: Any, backend=None) -> bool:
+    """Check whether 'x' is
         tf.Tensor,
         tf.Variable,
         tf.RaggedTensor,
         tf.sparse.SparseTensor,
-        torch.Tensor, 
+        torch.Tensor,
         torch.sparse.Tensor.
+
     Parameters:
     ----------
     x: A python object to check.
-    backend: String or BackendModule, optional.    
-        'tensorflow', 'torch', TensorFlowBackend, PyTorchBackend, etc.    
-        if not specified, return the current default backend module.  
+    backend: String or BackendModule, optional.
+        'tensorflow', 'torch', TensorFlowBackend, PyTorchBackend, etc.
+        if not specified, return the current default backend module.
 
     Returns:
     -------
@@ -91,8 +91,31 @@ def is_tensor(x: Any, backend: Optional[Backend] = None) -> bool:
     return module.is_tensor(x)
 
 
-def astensor(x, *, dtype=None, device: Optional[Device] = None,
-             backend: Optional[Backend] = None, escape=None):
+def is_anytensor(x: Any) -> bool:
+    """Check whether 'x' is
+        any of
+        tf.Tensor,
+        tf.Variable,
+        tf.RaggedTensor,
+        tf.sparse.SparseTensor,
+        torch.Tensor,
+        torch.sparse.Tensor.
+    Parameters:
+    ----------
+    x: A python object to check.
+    backend: String or BackendModule, optional.
+        'tensorflow', 'torch', TensorFlowBackend, PyTorchBackend, etc.
+        if not specified, return the current default backend module.
+
+    Returns:
+    -------
+    `True` iff x is any of (tf or torch) (sparse-)tensor.
+    """
+    return is_tensor(x, "tensorflow") or is_tensor(x, "torch")
+
+
+def astensor(x, *, dtype=None, device=None,
+             backend=None, escape=None):
     """Convert input object to Tensor or SparseTensor.
 
     Parameters:
@@ -130,8 +153,8 @@ def astensor(x, *, dtype=None, device: Optional[Device] = None,
 _astensors_fn = gf.multiple(type_check=False)(astensor)
 
 
-def astensors(*xs, dtype=None, device: Optional[Device] = None,
-              backend: Optional[Backend] = None, escape=None):
+def astensors(*xs, dtype=None, device=None,
+              backend=None, escape=None):
     """Convert input matrices to Tensor(s) or SparseTensor(s).
 
     Parameters:
@@ -165,7 +188,8 @@ def astensors(*xs, dtype=None, device: Optional[Device] = None,
                          escape=escape)
 
 
-def tensor2tensor(tensor, *, device: Optional[Device] = None):
+@gf.multiple()
+def tensor2tensor(tensor, *, device=None):
     """Convert a TensorFLow tensor to PyTorch Tensor, or vice versa.
     """
     if tensorflow.is_tensor(tensor):
@@ -182,6 +206,7 @@ def tensor2tensor(tensor, *, device: Optional[Device] = None):
         )
 
 
+@gf.multiple()
 def tensoras(tensor):
     """Convert a TensorFLow tensor or PyTorch Tensor
         to Numpy array or Scipy sparse matrix.

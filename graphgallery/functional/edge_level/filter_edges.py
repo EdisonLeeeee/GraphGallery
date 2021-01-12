@@ -37,4 +37,4 @@ def filter_singletons(edge, adj_matrix):
 
     mask = np.logical_and(edge_degrees[0] != 0, edge_degrees[1] != 0)
     remained_edge = edge[:, mask]
-    return remained_edge
+    return remained_edge.T

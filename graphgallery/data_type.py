@@ -45,7 +45,7 @@ def is_multiobjects(x: Any) -> bool:
     `True` iff `x` is a list of complex objects.
     """
     return (is_listlike(x) or (isinstance(x, np.ndarray)
-                               and x.dtype == "O")) and not is_scalar(x[0])
+                               and x.dtype == "O")) and len(x) > 0 and not is_scalar(x[0])
 
 
 def is_scalar(x: Any) -> bool:

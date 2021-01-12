@@ -49,7 +49,8 @@ class PropConvolution(Layer):
           2-D tensor with the same shape as `x`: `(num_nodes, num_node_attrs)`.       
     """
 
-    def __init__(self, K=10,
+    def __init__(self,
+                 K=10,
                  use_bias=False,
                  activation=None,
                  kernel_initializer='glorot_uniform',

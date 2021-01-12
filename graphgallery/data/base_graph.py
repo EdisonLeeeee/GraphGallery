@@ -16,7 +16,7 @@ class BaseGraph:
         kwargs.pop('__class__', None)
         self.update(**kwargs)
 
-    @ property
+    @property
     def num_nodes(self) -> int:
         """Get the number of nodes in the graph."""
         raise NotImplementedError
@@ -28,37 +28,37 @@ class BaseGraph:
         """
         raise NotImplementedError
 
-    @ property
+    @property
     def num_graphs(self) -> int:
         """Get the number of graphs."""
         raise NotImplementedError
 
-    @ property
+    @property
     def num_node_attrs(self) -> int:
         """Get the number of attribute dimensions of the nodes."""
         raise NotImplementedError
 
-    @ property
+    @property
     def num_edge_attrs(self) -> int:
         """Get the number of attribute dimensions of the edges."""
         raise NotImplementedError
 
-    @ property
+    @property
     def num_graph_attrs(self) -> int:
         """Get the number of attribute dimensions of the graphs."""
         raise NotImplementedError
 
-    @ property
+    @property
     def num_node_classes(self) -> int:
         """Get the number of node classes."""
         raise NotImplementedError
 
-    @ property
+    @property
     def num_edge_classes(self) -> int:
         """Get the number of edge classes."""
         raise NotImplementedError
 
-    @ property
+    @property
     def num_graph_classes(self) -> int:
         """Get the number of graph classes."""
         raise NotImplementedError
@@ -95,7 +95,7 @@ class BaseGraph:
     def dicts(self, apply_fn=None):
         return dict(self.items(apply_fn=apply_fn))
 
-    @ classmethod
+    @classmethod
     def from_dict(cls, dictionary: dict):
         graph = cls(**dictionary)
         return graph
@@ -103,7 +103,7 @@ class BaseGraph:
     def to_dict(self):
         return dict(self.items())
 
-    @ classmethod
+    @classmethod
     def from_npz(cls, filepath: str):
         filepath = osp.abspath(osp.expanduser(filepath))
         loader = load_npz(filepath)
@@ -161,6 +161,11 @@ class BaseGraph:
         cls = self.__class__
         result = cls.__new__(cls)
         result.__dict__.update(self.__dict__)
+        for k, v in self.__dict__.items():
+            if isinstance(v, dict):
+                result.__dict__[k] = _deepcopy(v)
+            else:
+                result.__dict__[k] = v
         return result
 
     def __deepcopy__(self, memo: dict):

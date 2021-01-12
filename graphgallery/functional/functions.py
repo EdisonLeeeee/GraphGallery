@@ -13,8 +13,9 @@ import graphgallery as gg
 from graphgallery import functional as gf
 
 __all__ = ['asarray', 'index_to_mask',
-           'repeat', 'get_length', 'onehot',
-           'nx_graph_to_sparse_adj']
+           'repeat', 'get_length',
+           'nx_graph_to_sparse_adj', 
+           'largest_indices', 'least_indices']
 
 
 def asarray(x: Any, dtype: Optional[str] = None) -> np.ndarray:
@@ -61,9 +62,11 @@ def index_to_mask(indices: np.ndarray, shape: tuple) -> np.ndarray:
     return mask
 
 
-def repeat(src: Any, length: int) -> Any:
+def repeat(src: Any, length: int=None) -> Any:
     if src == [] or src == ():
         return []
+    if length is None:
+        length = get_length(src)
     if any((gg.is_scalar(src), isinstance(src, str), src is None)):
         return list(itertools.repeat(src, length))
     if len(src) > length:
@@ -81,15 +84,6 @@ def get_length(obj: Any) -> int:
     return length
 
 
-def onehot(label):
-    """Get the one-hot like label of nodes."""
-    label = np.asarray(label, dtype=np.int32)
-    if label.ndim == 1:
-        return np.eye(label.max() + 1, dtype=label.dtype)[label]
-    else:
-        raise ValueError(f"label must be a 1D array, but got {label.ndim}D array.")
-
-
 def nx_graph_to_sparse_adj(graph):
     num_nodes = graph.number_of_nodes()
     data = np.asarray(list(graph.edges().data('weight', default=1.0)))
@@ -97,3 +91,34 @@ def nx_graph_to_sparse_adj(graph):
     edge_weight = data[:, -1].T.astype(np.float32)
     adj_matrix = sp.csr_matrix((edge_weight, edge_index), shape=(num_nodes, num_nodes))
     return adj_matrix
+
+
+def largest_indices(array: np.ndarray, n: int) -> tuple:
+    """Returns the n largest indices from a numpy array.
+    Arguments:
+        array {np.ndarray} -- data array
+        n {int} -- number of elements to select
+    Returns:
+        tuple[np.ndarray] -- tuple of ndarray
+        each ndarray is index
+    """
+    flat = array.ravel()
+    indices = np.argpartition(flat, -n)[-n:]
+    indices = indices[np.argsort(-flat[indices])]
+    return np.unravel_index(indices, array.shape)
+
+
+def least_indices(array: np.ndarray, n: int) -> tuple:
+    """Returns the n least indices from a numpy array.
+    Arguments:
+        array {np.ndarray} -- data array
+        n {int} -- number of elements to select
+    Returns:
+        tuple[np.ndarray] -- tuple of ndarray
+        each ndarray is index
+    """
+    flat = array.ravel()
+    indices = np.argpartition(flat, n)[:n]
+    indices = indices[np.argsort(flat[indices])]
+    return np.unravel_index(indices, array.shape)
+

@@ -13,14 +13,16 @@ class Accuracy(Metric):
         self.reduction = reduction
 
     def forward(self, y_true, y_pred,
-                sample_weight=None):
+                out_weight=None):
         return self.update_state(y_true, y_pred,
-                                 sample_weight=sample_weight)
+                                 out_weight=out_weight)
 
+    @torch.no_grad()
     def update_state(self, y_true, y_pred,
-                     sample_weight=None):
-        if sample_weight is not None:
-            raise NotImplementedError("sample_weight")
+                     out_weight=None):
+        if out_weight is not None:
+            # TODO
+            raise NotImplementedError("out_weight")
         if y_pred.ndim == 2:
             y_pred = y_pred.argmax(1)
         self.correct += torch.sum(y_pred == y_true)

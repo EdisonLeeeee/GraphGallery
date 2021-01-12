@@ -76,14 +76,21 @@ class GaussionConvolution_F(Layer):
                                       name='kernel',
                                       regularizer=self.kernel_regularizer,
                                       constraint=self.kernel_constraint)
+
         if self.use_bias:
-            self.bias = self.add_weight(shape=(self.units,),
-                                        initializer=self.bias_initializer,
-                                        name='bias',
-                                        regularizer=self.bias_regularizer,
-                                        constraint=self.bias_constraint)
+            self.bias_mean = self.add_weight(shape=(self.units,),
+                                             initializer=self.bias_initializer,
+                                             name='bias_mean',
+                                             regularizer=self.bias_regularizer,
+                                             constraint=self.bias_constraint)
+            self.bias_var = self.add_weight(shape=(self.units,),
+                                            initializer=self.bias_initializer,
+                                            name='bias_var',
+                                            regularizer=self.bias_regularizer,
+                                            constraint=self.bias_constraint)
         else:
-            self.bias = None
+            self.bias_mean = None
+            self.bias_val = None
 
         super().build(input_shapes)
 
@@ -209,28 +216,26 @@ class GaussionConvolution_D(Layer):
                                            name='kernel_mean',
                                            regularizer=self.kernel_regularizer,
                                            constraint=self.kernel_constraint)
+        self.kernel_var = self.add_weight(shape=(attribute_shape_var[1], self.units),
+                                          initializer=self.kernel_initializer,
+                                          name='kernel_var',
+                                          regularizer=self.kernel_regularizer,
+                                          constraint=self.kernel_constraint)
+
         if self.use_bias:
             self.bias_mean = self.add_weight(shape=(self.units,),
                                              initializer=self.bias_initializer,
                                              name='bias_mean',
                                              regularizer=self.bias_regularizer,
                                              constraint=self.bias_constraint)
-        else:
-            self.bias = None
-
-        self.kernel_var = self.add_weight(shape=(attribute_shape_var[1], self.units),
-                                          initializer=self.kernel_initializer,
-                                          name='kernel_var',
-                                          regularizer=self.kernel_regularizer,
-                                          constraint=self.kernel_constraint)
-        if self.use_bias:
             self.bias_var = self.add_weight(shape=(self.units,),
                                             initializer=self.bias_initializer,
                                             name='bias_var',
                                             regularizer=self.bias_regularizer,
                                             constraint=self.bias_constraint)
         else:
-            self.bias = None
+            self.bias_mean = None
+            self.bias_val = None
 
         super().build(input_shapes)
 

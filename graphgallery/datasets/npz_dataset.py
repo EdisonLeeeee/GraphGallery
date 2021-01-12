@@ -53,7 +53,7 @@ class NPZDataset(InMemoryDataset):
 
         elif not osp.exists(self.raw_paths[0]):
             raise RuntimeError(
-                f"Dataset file '{name}' not exists. Please put the file in {self.raw_paths[0]}"
+                f"Dataset file '{self.name}' not exists. Please put the file in {self.raw_paths[0]}"
             )
 
     @property

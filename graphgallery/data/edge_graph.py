@@ -14,9 +14,6 @@ class EdgeGraph(HeteGraph):
         Numpy array form."""
     multiple = False
 
-    @property
-    def A(self):
-        raise NotImplementedError
-
     def to_Graph(self):
+        # TODO
         raise NotImplementedError

@@ -6,8 +6,7 @@ from typing import Any
 
 from graphgallery import functional as gf
 
-__all__ = [
-    "sparse_adj_to_sparse_tensor", "sparse_tensor_to_sparse_adj",
+__all__ = ["gather", "sparse_adj_to_sparse_tensor", "sparse_tensor_to_sparse_adj",
     "sparse_edge_to_sparse_tensor", "normalize_adj_tensor",
     "add_selfloops_edge", "normalize_edge_tensor"
 ]
@@ -23,6 +22,10 @@ _DTYPE_TO_CLASS = {
     'torch.bool': "BoolTensor"
 }
 
+def gather(out, out_weight):
+    if out_weight is not None:
+        return out[out_weight]
+    return out
 
 def dtype_to_tensor_class(dtype: str):
     tensor_class = _DTYPE_TO_CLASS.get(str(dtype), None)
@@ -84,9 +87,12 @@ def sparse_tensor_to_sparse_adj(x: torch.Tensor) -> sp.csr_matrix:
 
 
 def normalize_adj_tensor(adj, rate=-0.5, fill_weight=1.0):
-    # TODO
-    ...
-
+    device = torch.device("cuda" if adj.is_cuda else "cpu")
+    adj = adj + fill_weight * torch.eye(adj.shape[0]).to(device)
+    d = adj.sum(1)
+    d_power = d.pow(rate).flatten()
+    d_power_mat = torch.diag(d_power)
+    return d_power_mat @ adj @ d_power_mat
 
 def add_selfloops_edge(edge_index,
                        edge_weight,

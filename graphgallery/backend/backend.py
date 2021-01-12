@@ -45,8 +45,8 @@ def set_backend_dict():
     global _BACKEND_DICT
     _BACKEND_DICT = {}
     for bkd in _ALL_BACKENDS:
-        for act in bkd.alias:
-            _BACKEND_DICT[act] = bkd
+        for name in bkd.alias:
+            _BACKEND_DICT[name] = bkd
 
 
 ##### Types ######
@@ -270,8 +270,16 @@ def set_backend(
             # Using `int32` is more efficient
             set_intx('int32')
         try:
+            # gallery models
             from graphgallery import gallery
             importlib.reload(gallery)
+            # attacker models
+            from graphgallery.attack import targeted
+            from graphgallery.attack import untargeted
+            from graphgallery.attack import backdoor
+            importlib.reload(targeted)
+            importlib.reload(untargeted)
+            importlib.reload(backdoor)
         except Exception as e:
             print(
                 f"Something went wrong. Set to Default Backend {_DEFAULT_BACKEND}.",

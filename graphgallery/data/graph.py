@@ -30,7 +30,7 @@ class Graph(HomoGraph):
     def to_undirected(self):
         """Convert to an undirected graph (make adjacency matrix symmetric)."""
         if self.is_weighted():
-            raise ValueError(
+            raise RuntimeError(
                 "Convert to unweighted graph first. Using 'graph.to_unweighted()'."
             )
         else:
@@ -76,6 +76,7 @@ class Graph(HomoGraph):
                 left.append(_class)
 
         if removed > 0:
+            # TODO: considering about metadata['class_names']
             G = self.subgraph(nodes_to_remove=nodes_to_remove)
             mapping = dict(zip(left, range(self.num_node_classes - removed)))
             G.node_label = np.asarray(list(
@@ -100,6 +101,24 @@ class Graph(HomoGraph):
         A.eliminate_zeros()
         G.adj_matrix = A
         return G
+    
+    def from_flips(self, **flips):
+        """Return a new graph from:
+        'adj_flips' or 'nattr_flips'
+        """
+        allowed = ("adj_flips", "nattr_flips")
+        g = self.copy()
+        for k, v in flips.items():
+            if v is None:
+                continue
+            if k=="adj_flips":
+                g.update(adj_matrix=gf.flip_adj(g.adj_matrix, v))
+            elif k=="nattr_flips":
+                g.update(node_attr=gf.flip_attr(g.node_attr, v))
+            else:
+                raise ValueError(f"Unrecognized key {k}, allowed: {allowed}.")
+        return g
+                
 
     def standardize(self):
         """Select the largest connected components (LCC) of 
@@ -119,3 +138,22 @@ class Graph(HomoGraph):
         return create_subgraph(self,
                                nodes_to_remove=nodes_to_remove,
                                nodes_to_keep=nodes_to_keep)
+
+    def erase_node_attr(self, nodes, missing_rate=0.1):
+        """PairNorm: Tackling Oversmoothing in GNNs
+        <https://openreview.net/forum?id=rkecl1rtwB>
+        ICLR 2020"""
+        assert 0 <= missing_rate <= 1
+        if missing_rate > 0:
+            node_erased = np.random.choice(nodes, size=int(len(nodes) * missing_rate), replace=False)
+            self.node_attr[node_erased] = 0.
+
+        return self
+
+    def erase_node_attr_except(self, nodes, missing_rate=0.1):
+        """PairNorm: Tackling Oversmoothing in GNNs
+        <https://openreview.net/forum?id=rkecl1rtwB>
+        ICLR 2020"""
+        mask = gf.index_to_mask(nodes, self.num_nodes)
+        erased = np.arange(self.num_nodes, dtype=nodes.dtype)
+        return self.erase_node_attr(erased[~mask], missing_rate=missing_rate)

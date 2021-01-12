@@ -106,12 +106,32 @@ class HomoGraph(BaseGraph):
     @property
     def x(self):
         """Alias of node_attr."""
+        return self.nx
+
+    @property
+    def nx(self):
+        """Alias of node_attr."""
         return self.node_attr
+
+    @property
+    def gx(self):
+        """Alias of graph_attr."""
+        return self.graph_attr
 
     @property
     def y(self):
         """Alias of node_label."""
+        return self.ny
+
+    @property
+    def ny(self):
+        """Alias of node_label."""
         return self.node_label
+
+    @property
+    def gy(self):
+        """Alias of graph_label."""
+        return self.graph_label
 
     @property
     def d(self):
@@ -127,16 +147,24 @@ class HomoGraph(BaseGraph):
         return is_directed(self.adj_matrix)
 
     def is_singleton(self) -> bool:
-        """Check if the input adjacency matrix has singletons."""
+        """Check if the graph has singletons."""
         return is_singleton(self.adj_matrix)
 
     def is_selfloops(self) -> bool:
-        """Check if the input Scipy sparse adjacency matrix has self loops."""
+        """Check if the graph has self loops."""
         return is_selfloops(self.adj_matrix)
+
+    def is_connected(self) -> bool:
+        """Check if the graph is a connected graph."""
+        return is_connected(self.adj_matrix)
 
     def is_weighted(self) -> bool:
         """Check if the graph is weighted (edge weights other than 1)."""
         return is_weighted(self.adj_matrix)
+
+    def is_symmetric(self) -> bool:
+        """Check if the adjacency matrix is symmetric."""
+        return is_symmetric(self.adj_matrix)
 
     def is_binary(self) -> bool:
         """Check if the node attribute matrix has binary attributes."""

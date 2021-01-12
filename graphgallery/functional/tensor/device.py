@@ -2,7 +2,6 @@ import torch
 import tensorflow as tf
 import graphgallery as gg
 from typing import Optional, Union
-from graphgallery.typing import Device, Backend
 
 from .tensorflow import device as tf_device
 from .pytorch import device as th_device
@@ -10,7 +9,7 @@ from .pytorch import device as th_device
 __all__ = ['device']
 
 
-def device(device: Device = None, backend: Backend = None) -> Device:
+def device(device=None, backend=None):
     """
     Specify the device for the corresponding backend
 

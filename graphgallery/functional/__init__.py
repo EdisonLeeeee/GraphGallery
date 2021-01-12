@@ -4,8 +4,8 @@ from .transforms import *
 from .decorators import *
 from .functions import *
 from .edge_level import *
-from .adj_matrix import *
-from .attr_matrix import *
+from .sparse import *
+from .dense import *
 from .graph_level import *
 from .get_transform import *
 from .tensor import *

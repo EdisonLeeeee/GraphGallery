@@ -8,7 +8,7 @@ from ..data_type import is_multiobjects
 __all__ = ["get_num_nodes", "get_num_edges", "get_num_graphs",
            "get_num_node_attrs", "get_num_node_classes", "get_degree",
            "is_directed", "is_singleton", "is_selfloops",
-           "is_binary", "is_weighted"
+           "is_binary", "is_weighted", "is_connected", "is_symmetric"
            ]
 
 
@@ -117,8 +117,23 @@ def is_binary(A) -> bool:
     return np.all(np.unique(A) == (0, 1))
 
 
+def is_symmetric(A) -> bool:
+    assert A is not None
+    if is_multiobjects(A):
+        return all(is_symmetric(adj) for adj in A)
+    return np.abs(A - A.T).sum() == 0
+
+
 def is_weighted(A) -> bool:
     assert A is not None
     if is_multiobjects(A):
         return any(is_weighted(adj) for adj in A)
     return np.any(A.data != 1)
+
+
+def is_connected(A) -> bool:
+    assert A is not None
+    if is_multiobjects(A):
+        return all(is_weighted(adj) for adj in A)
+    _, connected_components = sp.csgraph.connected_components(A)
+    return np.all(connected_components == 0)

@@ -1,12 +1,12 @@
 import torch
-from torch.nn import Module, Parameter, ParameterList, LeakyReLU, Dropout
+import torch.nn as nn
 import torch.nn.functional as F
 
 from graphgallery.nn.init.pytorch import glorot_uniform, zeros
 from ..get_activation import get_activation
 
 
-class GraphAttention(Module):
+class GraphAttention(nn.Module):
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -29,10 +29,10 @@ class GraphAttention(Module):
         self.attn_heads = attn_heads
         self.reduction = reduction
 
-        self.kernels = ParameterList()
-        self.attn_kernel_self, self.attn_kernel_neighs = ParameterList(
-        ), ParameterList()
-        self.biases = ParameterList()
+        self.kernels = nn.ParameterList()
+        self.attn_kernel_self, self.attn_kernel_neighs = nn.ParameterList(
+        ), nn.ParameterList()
+        self.biases = nn.ParameterList()
         self.use_bias = use_bias
 
         if not use_bias:
@@ -40,22 +40,21 @@ class GraphAttention(Module):
 
         # Initialize weights for each attention head
         for head in range(self.attn_heads):
-            W = Parameter(torch.FloatTensor(in_channels, out_channels),
-                          requires_grad=True)
+            W = nn.Parameter(torch.FloatTensor(in_channels, out_channels),
+                             requires_grad=True)
             self.kernels.append(W)
-            a1 = Parameter(torch.FloatTensor(out_channels, 1),
-                           requires_grad=True)
+            a1 = nn.Parameter(torch.FloatTensor(out_channels, 1),
+                              requires_grad=True)
             self.attn_kernel_self.append(a1)
-            a2 = Parameter(torch.FloatTensor(out_channels, 1),
-                           requires_grad=True)
+            a2 = nn.Parameter(torch.FloatTensor(out_channels, 1),
+                              requires_grad=True)
             self.attn_kernel_neighs.append(a2)
 
             if use_bias:
-                bias = Parameter(torch.Tensor(out_channels))
+                bias = nn.Parameter(torch.Tensor(out_channels))
                 self.biases.append(bias)
 
-        self.leakyrelu = LeakyReLU(alpha)
-
+        self.leakyrelu = nn.LeakyReLU(alpha)
         self.reset_parameters()
 
     def reset_parameters(self):
@@ -69,27 +68,26 @@ class GraphAttention(Module):
             if self.use_bias:
                 zeros(self.biases[head])
 
-    def forward(self, inputs):
-        x, adj = inputs
-        dense_adj = adj.to_dense()
+    def forward(self, x, adj):
+        if adj.layout != torch.strided:
+            adj = adj.to_dense()
 
         outputs = []
         for head in range(self.attn_heads):
-            W, a1, a2 = self.kernels[head], self.attn_kernel_self[
-                head], self.attn_kernel_neighs[head]
-            Wh = torch.mm(x, W)
-
+            W = self.kernels[head]
+            a1, a2 = self.attn_kernel_self[head], self.attn_kernel_neighs[head]
+            Wh = x @ W
             f_1 = Wh @ a1
             f_2 = Wh @ a2
 
             e = self.leakyrelu(f_1 + f_2.transpose(0, 1))
 
             zero_vec = -9e15 * torch.ones_like(e)
-            attention = torch.where(dense_adj > 0, e, zero_vec)
-            attention = gf.softmax(attention, dim=1)
-            attention = gf.dropout(attention,
-                                   self.dropout,
-                                   training=self.training)
+            attention = torch.where(adj > 0, e, zero_vec)
+            attention = F.softmax(attention, dim=1)
+            attention = F.dropout(attention,
+                                  self.dropout,
+                                  training=self.training)
             h_prime = torch.matmul(attention, Wh)
 
             if self.use_bias:
@@ -105,14 +103,10 @@ class GraphAttention(Module):
         return self.activation(output)
 
     def __repr__(self):
-        return self.__class__.__name__ + ' (' \
-            + str(self.in_channels) + ' -> ' \
-            + str(self.out_channels) + ')'
+        return f"{self.__class__.__name__}({self.in_channels} -> {self.out_channels})"
 
 
 #########################Sparse Version of `GraphAttention` layer###################
-
-
 class SpecialSpmmFunction(torch.autograd.Function):
     """Special function for only sparse region backpropataion layer."""
     @staticmethod
@@ -136,12 +130,12 @@ class SpecialSpmmFunction(torch.autograd.Function):
         return None, grad_values, None, grad_b
 
 
-class SpecialSpmm(Module):
+class SpecialSpmm(nn.Module):
     def forward(self, indices, values, shape, b):
         return SpecialSpmmFunction.apply(indices, values, shape, b)
 
 
-class SparseGraphAttention(Module):
+class SparseGraphAttention(nn.Module):
     """
     Sparse version GAT layer, similar to https://arxiv.org/abs/1710.10903
     """
@@ -164,13 +158,13 @@ class SparseGraphAttention(Module):
         self.out_channels = out_channels
         self.activation = get_activation(activation)
 
-        self.dropout = Dropout(dropout)
+        self.dropout = nn.Dropout(dropout)
         self.attn_heads = attn_heads
         self.reduction = reduction
 
-        self.kernels = ParameterList()
-        self.att_kernels = ParameterList()
-        self.biases = ParameterList()
+        self.kernels = nn.ParameterList()
+        self.att_kernels = nn.ParameterList()
+        self.biases = nn.ParameterList()
         self.use_bias = use_bias
 
         if not use_bias:
@@ -178,16 +172,16 @@ class SparseGraphAttention(Module):
 
         # Initialize weights for each attention head
         for head in range(self.attn_heads):
-            W = Parameter(torch.Tensor(in_channels, out_channels))
+            W = nn.Parameter(torch.Tensor(in_channels, out_channels))
             self.kernels.append(W)
-            a = Parameter(torch.Tensor(1, 2 * out_channels))
+            a = nn.Parameter(torch.Tensor(1, 2 * out_channels))
             self.att_kernels.append(a)
 
             if use_bias:
-                bias = Parameter(torch.Tensor(out_channels))
+                bias = nn.Parameter(torch.Tensor(out_channels))
                 self.biases.append(bias)
 
-        self.leakyrelu = LeakyReLU(alpha)
+        self.leakyrelu = nn.LeakyReLU(alpha)
         self.special_spmm = SpecialSpmm()
         self.reset_parameters()
 
@@ -199,8 +193,7 @@ class SparseGraphAttention(Module):
             if self.use_bias:
                 zeros(self.biases[head])
 
-    def forward(self, inputs):
-        x, adj = inputs
+    def forward(self, x, adj):
 
         dv = x.device
         N = x.size()[0]
@@ -237,5 +230,4 @@ class SparseGraphAttention(Module):
         return self.activation(output)
 
     def __repr__(self):
-        return self.__class__.__name__ + ' (' + str(
-            self.in_channels) + ' -> ' + str(self.out_channels) + ')'
+        return f"{self.__class__.__name__}({self.in_channels} -> {self.out_channels})"

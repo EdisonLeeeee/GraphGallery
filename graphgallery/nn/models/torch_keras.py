@@ -1,17 +1,15 @@
 import torch
-import numpy as np
 import torch.nn as nn
+import os.path as osp
 
-from torch import optim
-from torch.autograd import Variable
-
-from collections import OrderedDict
-from graphgallery.utils import saver
+import graphgallery as gg
 
 
 class TorchKeras(nn.Module):
     """Keras like PyTorch Model."""
+
     def __init__(self, *args, **kwargs):
+        self.__doc__ = super().__doc__
 
         super().__init__(*args, **kwargs)
 
@@ -24,6 +22,57 @@ class TorchKeras(nn.Module):
         self.optimizer = None
         self.metrics = None
         self.loss = None
+
+    def train_step_on_batch(self,
+                            x,
+                            y=None,
+                            out_weight=None,
+                            device="cpu"):
+        self.train()
+        optimizer = self.optimizer
+        loss_fn = self.loss
+        metrics = self.metrics
+        optimizer.zero_grad()
+
+        out = self(*x if isinstance(x, (list, tuple)) else [x])
+        if out_weight is not None:
+            out = out[out_weight]
+        loss = loss_fn(out, y)
+        loss.backward()
+        optimizer.step()
+        for metric in metrics:
+            metric.update_state(y.cpu(), out.detach().cpu())
+
+        results = [loss.cpu().detach()] + [metric.result() for metric in metrics]
+        return dict(zip(self.metrics_names, results))
+
+    @torch.no_grad()
+    def test_step_on_batch(self,
+                           x,
+                           y=None,
+                           out_weight=None,
+                           device="cpu"):
+        self.eval()
+        loss_fn = self.loss
+        metrics = self.metrics
+
+        out = self(*x if isinstance(x, (list, tuple)) else [x])
+        if out_weight is not None:
+            out = out[out_weight]
+        loss = loss_fn(out, y)
+        for metric in metrics:
+            metric.update_state(y.cpu(), out.detach().cpu())
+
+        results = [loss.cpu().detach()] + [metric.result() for metric in metrics]
+        return dict(zip(self.metrics_names, results))
+
+    @torch.no_grad()
+    def predict_step_on_batch(self, x, out_weight=None, device="cpu"):
+        self.eval()
+        out = self(*x if isinstance(x, (list, tuple)) else [x])
+        if out_weight is not None:
+            out = out[out_weight]
+        return out.cpu().detach()
 
     def build(self, inputs):
         # TODO
@@ -55,18 +104,48 @@ class TorchKeras(nn.Module):
                      overwrite=True,
                      save_format=None,
                      **kwargs):
-        saver.save_torch_weights(self,
-                                 filepath,
-                                 overwrite=overwrite,
-                                 save_format=save_format,
-                                 **kwargs)
+        ext = gg.file_ext()
+
+        if not filepath.endswith(ext):
+            filepath = filepath + ext
+
+        if not overwrite and osp.isfile(filepath):
+            proceed = gg.utils.ask_to_proceed_with_overwrite(filepath)
+            if not proceed:
+                return
+
+        torch.save(self.state_dict(), filepath)
+
+    def load_weights(self, filepath):
+        ext = gg.file_ext()
+
+        if not filepath.endswith(ext):
+            filepath = filepath + ext
+
+        checkpoint = torch.load(filepath)
+        self.load_state_dict(checkpoint)
 
     def save(self, filepath, overwrite=True, save_format=None, **kwargs):
-        saver.save_torch_model(self,
-                               filepath,
-                               overwrite=overwrite,
-                               save_format=save_format,
-                               **kwargs)
+        ext = gg.file_ext()
+
+        if not filepath.endswith(ext):
+            filepath = filepath + ext
+
+        if not overwrite and osp.isfile(filepath):
+            proceed = gg.utils.ask_to_proceed_with_overwrite(filepath)
+            if not proceed:
+                return
+
+        torch.save(self, filepath)
+
+    @classmethod
+    def load(cls, filepath):
+        ext = gg.file_ext()
+
+        if not filepath.endswith(ext):
+            filepath = filepath + ext
+
+        return torch.load(filepath)
 
     def reset_parameters(self):
         for layer in self.layers:

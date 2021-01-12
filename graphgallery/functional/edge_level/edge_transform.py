@@ -114,8 +114,8 @@ def augment_edge(edge_index: np.ndarray, nodes: np.ndarray,
         edges_to_link = np.hstack([np.vstack([np.tile(node, get_length(nbr)), nbr])
                                    for node, nbr in zip(nodes, nbrs_to_link)])
     else:
-        n_repeat = len(common_nbrs)
-        edges_to_link = np.hstack([np.vstack([np.tile(node, n_repeat), common_nbrs])
+        num_repeat = len(common_nbrs)
+        edges_to_link = np.hstack([np.vstack([np.tile(node, num_repeat), common_nbrs])
                                    for node in nodes])
 
     edges_to_link = np.hstack([edges_to_link, edges_to_link[[1, 0]]])

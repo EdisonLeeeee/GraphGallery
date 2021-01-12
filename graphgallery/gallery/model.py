@@ -1,9 +1,3 @@
-import random
-import torch
-
-import numpy as np
-import tensorflow as tf
-import scipy.sparse as sp
 import graphgallery as gg
 from graphgallery import functional as gf
 
@@ -11,7 +5,6 @@ from graphgallery import functional as gf
 class Model:
     def __init__(self, graph, device="cpu", seed=None, name=None, **kwargs):
         """
-
         Parameters:
         ----------
         graph: Graph or MultiGraph.
@@ -22,25 +15,22 @@ class Model:
             & `random.seed` to create a reproducible sequence of tensors
             across multiple calls.
         name: string. optional
-            Specified name for the model. (default: :str: `class.__name__`)
+            Specified name for the model. (default: :str: `class name`)
         kwargs: other custom keyword arguments. 
         """
         if not isinstance(graph, gg.data.BaseGraph):
             raise ValueError(f"Unrecognized graph: {graph}.")
 
-        _backend = gg.backend()
-
         # It currently takes no keyword arguments
         gg.utils.raise_error.raise_if_kwargs(kwargs)
+
+        _backend = gg.backend()
 
         if seed:
             gf.random_seed(seed, _backend)
 
-        if name is None:
-            name = self.__class__.__name__
-
         self.seed = seed
-        self.name = name
+        self.name = name or self.__class__.__name__
         self.graph = graph.copy()
         self.device = gf.device(device, _backend)
         self.backend = _backend
@@ -50,13 +40,22 @@ class Model:
         self.intx = gg.intx()
         self.boolx = gg.boolx()
         self._cache = gf.BunchDict()
+        self.transform = gf.BunchDict()
+
+        self.cfg = None
+        self._model = None
+
+        self.setup_cfg()
+
+    def setup_cfg(self):
+        pass
 
     @property
     def cache(self):
         return self._cache
 
-    def register_cache(self, name, value):
-        self._cache[name] = value
+    def register_cache(self, **kwargs):
+        self._cache.update(kwargs)
 
     def __repr__(self):
         return f"{self.name}(device={self.device}, backend={self.backend})"

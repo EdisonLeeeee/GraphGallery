@@ -4,7 +4,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tensorflow import GraphConvAttribute, Gather
+from graphgallery.nn.layers.tensorflow import GraphConvAttribute
 from graphgallery import floatx, intx
 from graphgallery.nn.models import TFKeras
 
@@ -12,8 +12,8 @@ from graphgallery.nn.models import TFKeras
 class GCNA(TFKeras):
 
     def __init__(self, in_channels, out_channels,
-                 hiddens=[16],
-                 activations=['relu'],
+                 hids=[16],
+                 acts=['relu'],
                  dropout=0.5,
                  weight_decay=5e-4,
                  lr=0.01, use_bias=False):
@@ -22,19 +22,17 @@ class GCNA(TFKeras):
                   dtype=floatx(), name='node_attr')
         adj = Input(batch_shape=[None, None], dtype=floatx(),
                     sparse=True, name='adj_matrix')
-        index = Input(batch_shape=[None], dtype=intx(), name='node_index')
 
         h = x
-        for hidden, activation in zip(hiddens, activations):
-            h = GraphConvAttribute(hidden, use_bias=use_bias,
-                                   activation=activation, concat=True,
+        for hid, act in zip(hids, acts):
+            h = GraphConvAttribute(hid, use_bias=use_bias,
+                                   activation=act, concat=True,
                                    kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
 
             h = Dropout(rate=dropout)(h)
 
         h = GraphConvAttribute(out_channels, use_bias=use_bias)([h, adj])
-        h = Gather()([h, index])
 
-        super().__init__(inputs=[x, adj, index], outputs=h)
+        super().__init__(inputs=[x, adj], outputs=h)
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
                      optimizer=Adam(lr=lr), metrics=['accuracy'])

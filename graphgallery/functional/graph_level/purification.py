@@ -5,11 +5,11 @@ import scipy.sparse as sp
 from ..transforms import Transform
 from ..get_transform import Transformers
 from ..edge_level import filter_singletons
-from ..adj_matrix import remove_edge
+from ..sparse import remove_edge
 import graphgallery as gg
 
-__all__ = ["JaccardDetection", "CosineDetection", "SVD",
-           "jaccard_detection", "cosine_detection", "svd"]
+__all__ = ["JaccardDetection", "CosineDetection", "SVD", "jaccard_similarity", 
+           "jaccard_detection", "cosine_detection", "svd", "cosine_similarity"]
 
 
 def jaccard_similarity(A, B):

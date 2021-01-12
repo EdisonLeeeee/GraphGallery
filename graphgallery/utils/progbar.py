@@ -2,6 +2,7 @@ import time
 import sys
 import numpy as np
 
+import graphgallery as gg
 
 class Progbar:
     """Displays a progress bar.
@@ -20,6 +21,8 @@ class Progbar:
                  verbose=1,
                  interval=0.05,
                  unit_name='step'):
+        
+        assert gg.is_intscalar(target), target
         self.target = target
         self.width = width
         self.verbose = verbose
@@ -74,12 +77,12 @@ class Progbar:
             delta = ' %.2fms' % (delta * 1e3)
         else:
             delta = ' %.2fus' % (delta * 1e6)
-        info = ' - Total:%s -' % delta
+        info = ' - Total:%s' % delta
 
         if self.verbose == 1:
             if now - self._last_update < self.interval and not finalize:
                 return
-
+            info += ' -'
             prev_total_width = self._total_width
             if self._dynamic_display:
                 sys.stdout.write('\b' * prev_total_width)

@@ -49,7 +49,7 @@ class Registry(Iterable[Tuple[str, object]]):
             )
         self._obj_map[name] = obj
 
-    def register(self, obj: object = None, *, name: str = None, freeze: bool = True) -> Optional[object]:
+    def register(self, obj: object = None, *, name: str = None, freeze: bool = False) -> Optional[object]:
         """
         Register the given object under the the name `obj.__name__`.
         Can be used as either a decorator or not. See docstring of this class for usage.
@@ -62,7 +62,7 @@ class Registry(Iterable[Tuple[str, object]]):
                     try:
                         name = func_or_class.__name__  # pyre-ignore
                     except AttributeError:
-                        name = str(obj)                    
+                        name = str(obj)
                 self._do_register(name, func_or_class, freeze=freeze)
                 return func_or_class
 
@@ -83,19 +83,32 @@ class Registry(Iterable[Tuple[str, object]]):
                 "No object named '{}' found in '{}' registry!".format(name, self._name)
             )
         return ret
+    # __getattr__ = get
 
     def items(self):
-        return self._obj_map.items()
+        return tuple(self._obj_map.items())
 
     def names(self):
-        return self._obj_map.keys()
+        return tuple(self._obj_map.keys())
 
     def objects(self):
-        return self._obj_map.values()
+        return tuple(self._obj_map.values())
+
+    def __dir__(self):
+        return self.keys()
+
+    def __add__(self, register):
+        assert isinstance(register, Registry)
+        a = self._obj_map
+        b = register._obj_map
+        c = dict(**a, **b)
+        merged = type(self)(self._name)
+        merged._obj_map = c
+        return merged
 
     def __contains__(self, name: str) -> bool:
         return name in self._obj_map
-    
+
     def __getattr__(self, name: str) -> object:
         return self.get(name)
 
@@ -105,6 +118,9 @@ class Registry(Iterable[Tuple[str, object]]):
             self._obj_map.items(), headers=table_headers, tablefmt="fancy_grid"
         )
         return "Registry of {}:\n".format(self._name) + table
+
+    def __len__(self):
+        return len(self._obj_map)
 
     def __iter__(self) -> Iterator[Tuple[str, object]]:
         return iter(self._obj_map.items())

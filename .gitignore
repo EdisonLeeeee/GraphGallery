@@ -100,3 +100,9 @@ ENV/
 
 # dataset file
 dataset/
+
+# checkpoint
+*.h5
+*.pkl
+*.pth
+

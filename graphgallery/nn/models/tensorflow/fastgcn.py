@@ -4,15 +4,15 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tensorflow import GraphConvolution, Gather
-from graphgallery import floatx, intx
+from graphgallery.nn.layers.tensorflow import GraphConvolution
 from graphgallery.nn.models import TFKeras
+from graphgallery import floatx
 
 
 class FastGCN(TFKeras):
 
     def __init__(self, in_channels, out_channels,
-                 hiddens=[32], activations=['relu'], dropout=0.5,
+                 hids=[32], acts=['relu'], dropout=0.5,
                  weight_decay=5e-4, lr=0.01, use_bias=False):
 
         x = Input(batch_shape=[None, in_channels],
@@ -21,8 +21,8 @@ class FastGCN(TFKeras):
                     sparse=True, name='adj_matrix')
 
         h = x
-        for hidden, activation in zip(hiddens, activations):
-            h = Dense(hidden, use_bias=use_bias, activation=activation,
+        for hid, act in zip(hids, acts):
+            h = Dense(hid, use_bias=use_bias, activation=act,
                       kernel_regularizer=regularizers.l2(weight_decay))(h)
             h = Dropout(rate=dropout)(h)
 

@@ -11,7 +11,7 @@ class LGConvolution(Layer):
 
         `LGConvolution` implements the operation:
         `output = Conv1d(Conv1d(x))`, where `x` is the input node attribute matrix, 
-        and the dropout will be used in `x` and hidden outpus.
+        and the dropout will be used in `x` and hid outpus.
 
 
         Parameters:
@@ -21,7 +21,7 @@ class LGConvolution(Layer):
               height and width of the 2D convolution window.
               Can be a single integer to specify the same value for
               all spatial dimensions.              
-            dropout: Float, the dropout rate of inputs and hidden outputs.
+            dropout: Float, the dropout rate of inputs and hid outputs.
             use_bias: bool, whether the layer uses a bias vector.
             activation: Activation function to use.
               If you don't specify anything, no activation is applied

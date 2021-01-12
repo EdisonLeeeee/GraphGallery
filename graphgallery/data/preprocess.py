@@ -1,3 +1,4 @@
+import copy
 import numpy as np
 import networkx as nx
 import scipy.sparse as sp
@@ -40,30 +41,23 @@ def train_val_test_split_tabular(N: int,
     return idx_train, idx_val, idx_test
 
 
-def largest_connected_components(graph: "Graph", n_components: int = 1) -> "Graph":
+def largest_connected_components(graph: "Graph") -> "Graph":
     """Select the largest connected components in the graph.
 
     Parameters
     ----------
     graph : Graph
         Input graph.
-    n_components : int, default 1
-        Number of largest connected components to keep.
 
     Returns
     -------
     graph : Graph
-        Subgraph of the input graph where only the nodes in largest n_components are kept.
+        Subgraph of the input graph where only the nodes in largest num_components are kept.
     """
-    assert n_components == 1, "Not support for n_components>1"
-    _, component_indices = sp.csgraph.connected_components(
-        graph.adj_matrix)
+    _, component_indices = sp.csgraph.connected_components(graph.adj_matrix)
     component_sizes = np.bincount(component_indices)
-    # reverse order to sort descending
-    components_to_keep = np.argsort(component_sizes)[::-1][:n_components]
-    nodes_to_keep = [
-        idx for (idx, component) in enumerate(component_indices) if component in components_to_keep
-    ]
+    components_to_keep = np.argsort(component_sizes)[-1]
+    nodes_to_keep = np.where(component_indices==components_to_keep)[0]
     return create_subgraph(graph, nodes_to_keep=nodes_to_keep)
 
 
@@ -116,7 +110,7 @@ def create_subgraph(graph: "Graph", *,
         graph.node_label = node_label[nodes_to_keep]
 
     # TODO: remove?
-    metadata = graph.metadata
+    metadata = copy.deepcopy(graph.metadata)
     if metadata is not None and 'node_names' in metadata:
         graph.metadata['node_names'] = metadata['node_names'][nodes_to_keep]
 
@@ -133,7 +127,7 @@ def binarize_labels(labels: Array1D, sparse_output: bool = False, returnum_node_
 
     Parameters
     ----------
-    labels : array-like, shape [n_samples]
+    labels : array-like, shape [num_samples]
         Array of node labels in categorical single- or multi-label format.
     sparse_output : bool, default False
         Whether return the label_matrix in CSR format.
@@ -142,7 +136,7 @@ def binarize_labels(labels: Array1D, sparse_output: bool = False, returnum_node_
 
     Returns
     -------
-    label_matrix : np.ndarray or sp.csr_matrix, shape [n_samples, num_node_classes]
+    label_matrix : np.ndarray or sp.csr_matrix, shape [num_samples, num_node_classes]
         Binary matrix of class labels.
         num_node_classes = number of unique values in "labels" array.
         label_matrix[i, k] = 1 <=> node i belongs to class k.
@@ -158,7 +152,7 @@ def binarize_labels(labels: Array1D, sparse_output: bool = False, returnum_node_
 
 
 def get_train_val_test_split(stratify: Array1D,
-                             train_examples_per_class: int,
+                             trainum_examples_per_class: int,
                              val_examples_per_class: int,
                              test_examples_per_class: Optional[None] = None,
                              random_state: Optional[None] = None) -> TrainValTest:
@@ -166,7 +160,7 @@ def get_train_val_test_split(stratify: Array1D,
     random_state = np.random.RandomState(random_state)
     remaining_indices = list(range(stratify.shape[0]))
 
-    idx_train = sample_per_class(stratify, train_examples_per_class,
+    idx_train = sample_per_class(stratify, trainum_examples_per_class,
                                  random_state=random_state)
 
     idx_val = sample_per_class(stratify, val_examples_per_class,
@@ -193,24 +187,25 @@ def get_train_val_test_split(stratify: Array1D,
     return idx_train, idx_val, idx_test
 
 
-def sample_per_class(stratify: Array1D, n_examples_per_class: int,
+def sample_per_class(stratify: Array1D,
+                     num_examples_per_class: int,
                      forbidden_indices: Optional[Array1D] = None,
                      random_state: Optional[int] = None) -> Array1D:
 
     num_node_classes = stratify.max() + 1
-    n_samples = stratify.shape[0]
+    num_samples = stratify.shape[0]
     sample_indices_per_class = {index: [] for index in range(num_node_classes)}
 
     # get indices sorted by class
     for class_index in range(num_node_classes):
-        for sample_index in range(n_samples):
+        for sample_index in range(num_samples):
             if stratify[sample_index] == class_index:
                 if forbidden_indices is None or sample_index not in forbidden_indices:
                     sample_indices_per_class[class_index].append(sample_index)
 
     # get specified number of indices for each class
     return np.concatenate(
-        [random_state.choice(sample_indices_per_class[class_index], n_examples_per_class, replace=False)
+        [random_state.choice(sample_indices_per_class[class_index], num_examples_per_class, replace=False)
          for class_index in range(len(sample_indices_per_class))
          ])
 

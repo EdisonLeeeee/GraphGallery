@@ -25,6 +25,9 @@ class Sequence(tf_Sequence):
     def __getitem__(self, index):
         raise NotImplementedError
 
+    def on_epoch_begin(self):
+        ...
+
     def on_epoch_end(self):
         ...
 

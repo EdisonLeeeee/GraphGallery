@@ -2,7 +2,7 @@
 import numpy as np
 import tensorflow as tf
 
-from graphgallery.sequence.base_sequence import Sequence
+from .base_sequence import Sequence
 
 
 class SBVATSampleSequence(Sequence):
@@ -12,16 +12,18 @@ class SBVATSampleSequence(Sequence):
         x,
         y,
         neighbors,
-        n_samples=50,
+        out_weight=None,
+        num_samples=50,
         resample=True,
         *args, **kwargs
     ):
         super().__init__(*args, **kwargs)
         self.x = x
         self.y = y
+        self.out_weight = out_weight
         self.neighbors = neighbors
         self.num_nodes = x[0].shape[0]
-        self.n_samples = n_samples
+        self.num_samples = num_samples
         self.adv_mask = self.smple_nodes()
         self.resample = resample
 
@@ -29,7 +31,7 @@ class SBVATSampleSequence(Sequence):
         return 1
 
     def __getitem__(self, index):
-        return self.astensors(*self.x, self.adv_mask), self.astensor(self.y)
+        return self.astensors(*self.x, self.adv_mask), self.astensor(self.y), self.astensor(self.out_weight)
 
     def on_epoch_end(self):
         if self.resample:
@@ -38,8 +40,8 @@ class SBVATSampleSequence(Sequence):
     def smple_nodes(self):
         N = self.num_nodes
         flag = np.zeros(N, dtype=np.bool)
-        adv_index = np.zeros(self.n_samples, dtype='int32')
-        for i in range(self.n_samples):
+        adv_index = np.zeros(self.num_samples, dtype='int32')
+        for i in range(self.num_samples):
             n = np.random.randint(0, N)
             while flag[n]:
                 n = np.random.randint(0, N)

@@ -5,7 +5,7 @@ import graphgallery as gg
 from typing import Callable, Any, List
 from .functions import get_length, repeat
 
-__all__ = ['multiple', 'equal']
+__all__ = ['multiple', 'equal', "wrapper"]
 
 
 def cal_outpus(func: Callable,
@@ -71,14 +71,14 @@ def assert_same_type(*inputs) -> bool:
     return True
 
 
-_BASE_VARS = ['hiddens', 'activations']
+_BASE_VARS = ['hids', 'acts']
 
 
 class equal:
     """
     A decorator class which makes the values of the 'variables' 
-    equal in 'max-length'. 'Variables' consist of 'hiddens', 
-    'activations' and other custom ones in `include`.
+    equal in 'max-length'. 'Variables' consist of 'hids', 
+    'acts' and other custom ones in `include`.
 
     """
 
@@ -86,18 +86,18 @@ class equal:
                  *,
                  include: List[str] = [],
                  exclude: List[str] = [],
-                 length_as: str = 'hiddens'):
+                 length_as: str = 'hids'):
         """
         Parameters
         ----------
         include : list, optional
             the custom variable names except for 
-            'hiddens', 'activations', by default []
+            'hids', 'acts', by default []
         exclude : list, optional
             the excluded variable names, by default []
         length_as : str, optional
             the variable name whose length is used for all variables,
-            by default 'hiddens'
+            by default 'hids'
         """
         _vars = list(include) + self.base_vars()
         _vars = list(set(_vars) - set(list(exclude)))
@@ -107,13 +107,13 @@ class equal:
 
     def __call__(self, func: Callable) -> Callable:
         @functools.wraps(func)
-        def wrapper(*args, **kwargs) -> Any:
+        def _do_decoracte(*args, **kwargs) -> Any:
             ArgSpec = inspect.getfullargspec(func)
 
             if not ArgSpec.defaults or len(
                     ArgSpec.args) != len(ArgSpec.defaults) + 1:
                 raise Exception(
-                    f"The '{func.__name__}' method must be defined with all default parameters."
+                    f"'{func.__name__}' function must be defined with default parameters."
                 )
 
             model, *values = args
@@ -132,8 +132,41 @@ class equal:
 
             return func(model, **paras)
 
-        return wrapper
+        return _do_decoracte
 
     @staticmethod
     def base_vars() -> List[str]:
         return _BASE_VARS
+
+
+def wrapper(func: Callable) -> Callable:
+
+    @functools.wraps(func)
+    def decoracte(*args, **kwargs) -> Any:
+        ArgSpec = inspect.getfullargspec(func)
+
+        if not ArgSpec.defaults or len(
+                ArgSpec.args) != len(ArgSpec.defaults) + 1:
+            raise Exception(
+                f"'{func.__name__}' function must be defined with default parameters."
+            )
+        values = list(args)
+        for i in range(len(values), len(ArgSpec.args[1:])):
+            values.append(ArgSpec.defaults[i])
+
+        paras = dict(zip(ArgSpec.args[1:], values))
+        paras.update(kwargs)
+
+        accepted_vars = list(paras.get("include", [])) + ['hids', 'acts']
+        accepted_vars = list(set(accepted_vars) - set(list(paras.get("exclude", []))))
+        length_as = paras.get("length_as", "hids")
+        assert length_as in accepted_vars
+
+        repeated = get_length(paras.get(length_as, 0))
+        for var in accepted_vars:
+            if var in paras:
+                val = paras[var]
+                paras[var] = repeat(val, repeated)
+        return func(**paras), paras
+
+    return decoracte

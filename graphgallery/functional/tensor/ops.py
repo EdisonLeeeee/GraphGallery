@@ -6,13 +6,12 @@ from typing import Any, Union, Optional
 
 import graphgallery as gg
 from graphgallery import functional as gf
-from graphgallery.typing import Device, Backend
 
 from . import tensorflow
 from . import pytorch
 
 
-def get_module(backend: Optional[Backend] = None):
+def get_module(backend=None):
     """get the module of eigher
     'graphgallery.functional.tensor.tensorflow'
     or 'graphgallery.functional.tensor.pytorch'
@@ -92,12 +91,20 @@ def infer_type(x: Any) -> str:
         raise TypeError(f"Invalid input of '{type(x).__name__}'.")
 
 
-def to(tensor, device_or_dtype: Union[Device, str]):
+def gather(x, index_or_mask=None):
+    # TODO axis?
+    if tensorflow.is_tensor(x):
+        return tensorflow.gather(x, index_or_mask)
+    else:
+        return pytorch.gather(x, index_or_mask)
+
+
+def to(tensor, device_or_dtype):
     # TODO
     raise NotImplemented
 
 
-def sparse_adj_to_sparse_tensor(x, *, backend: Optional[Backend] = None):
+def sparse_adj_to_sparse_tensor(x, *, backend=None):
     """Converts a Scipy sparse matrix to a TensorFlow/PyTorch SparseTensor.
 
     Parameters
@@ -118,7 +125,7 @@ def sparse_adj_to_sparse_tensor(x, *, backend: Optional[Backend] = None):
     return module.sparse_adj_to_sparse_tensor(x)
 
 
-def sparse_tensor_to_sparse_adj(x, *, backend: Optional[Backend] = None):
+def sparse_tensor_to_sparse_adj(x, *, backend=None):
     """Converts a SparseTensor to a Scipy sparse matrix (CSR matrix)."""
     module = get_module(backend)
     return module.sparse_tensor_to_sparse_adj(x)
@@ -127,7 +134,7 @@ def sparse_tensor_to_sparse_adj(x, *, backend: Optional[Backend] = None):
 def sparse_edge_to_sparse_tensor(edge_index: np.ndarray,
                                  edge_weight: np.ndarray = None,
                                  shape: tuple = None,
-                                 backend: Optional[Backend] = None):
+                                 backend=None):
     module = get_module(backend)
     return module.sparse_edge_to_sparse_tensor(edge_index, edge_weight, shape)
 
@@ -136,7 +143,7 @@ def sparse_edge_to_sparse_tensor(edge_index: np.ndarray,
 def normalize_adj_tensor(adj,
                          rate=-0.5,
                          fill_weight=1.0,
-                         backend: Optional[Backend] = None):
+                         backend=None):
     module = get_module(backend)
     return module.normalize_adj_tensor(adj, rate=rate, fill_weight=fill_weight)
 
@@ -145,7 +152,7 @@ def add_selfloops_edge(edge_index,
                        edge_weight,
                        num_nodes=None,
                        fill_weight=1.0,
-                       backend: Optional[Backend] = None):
+                       backend=None):
     module = get_module(backend)
     return module.add_selfloops_edge(edge_index,
                                      edge_weight,
@@ -158,7 +165,7 @@ def normalize_edge_tensor(edge_index,
                           num_nodes=None,
                           fill_weight=1.0,
                           rate=-0.5,
-                          backend: Optional[Backend] = None):
+                          backend=None):
     module = get_module(backend)
     return module.normalize_edge_tensor(edge_index,
                                         edge_weight,

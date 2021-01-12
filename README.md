@@ -14,7 +14,7 @@
     <img src="https://img.shields.io/badge/TensorFlow->=2.1.0-FF6F00?logo=tensorflow" alt="tensorflow">
   </a>      
   <a href="https://github.com/pytorch/pytorch">
-    <img src="https://img.shields.io/badge/PyTorch->=1.5-FF6F00?logo=pytorch" alt="pytorch">
+    <img src="https://img.shields.io/badge/PyTorch->=1.4-FF6F00?logo=pytorch" alt="pytorch">
   </a>   
   <a href="https://pypi.org/project/graphgallery/">
     <img src="https://badge.fury.io/py/graphgallery.svg" alt="pypi">
@@ -45,18 +45,7 @@
 - [😘 Acknowledgement](#-acknowledgement)
 
 # GraphGallery
-GraphGallery is a gallery for benchmarking Graph Neural Networks (GNNs) with [TensorFlow 2.x](https://github.com/tensorflow/tensorflow) and [PyTorch](https://github.com/pytorch/pytorch) backend. GraphGallery 0.6.x is a total re-write from previous versions, and some things have changed. 
-
-NEWS: 
-+ [PyG](https://github.com/rusty1s/pytorch_geometric) backend and [DGL](https://github.com/dmlc/dgl) backend now are available in GraphGallery
-+ GraphGallery now supports Multiple Graph for different tasks
-
-
-# 👀 What's important
-Differences between GraphGallery and [Pytorch Geometric (PyG)](https://github.com/rusty1s/pytorch_geometric), [Deep Graph Library (DGL)](https://github.com/dmlc/dgl), etc...
-+ PyG and DGL are just like **TensorFlow** while GraphGallery is more like **Keras**
-+ GraphGallery is a plug-and-play and user-friendly toolbox
-+ GraphGallery has high scalaibility for researchers and developers to use
+GraphGallery is a gallery for benchmarking Graph Neural Networks (GNNs) with [TensorFlow 2.x](https://github.com/tensorflow/tensorflow) and [PyTorch](https://github.com/pytorch/pytorch) backend. Besides, [Pytorch Geometric (PyG)](https://github.com/rusty1s/pytorch_geometric) backend and [Deep Graph Library (DGL)](https://github.com/dmlc/dgl) backend now are available in GraphGallery.
 
 
 # 🚀 Installation
@@ -73,8 +62,8 @@ pip install -U graphgallery
 
 GraphGallery has been tested on:
 + CUDA 10.1
-+ TensorFlow 2.1~2.3, 2.4 is unavailable now and 2.1.2 is recommended.
-+ PyTorch 1.5~1.7
++ TensorFlow 2.1~2.4, 2.1.2 is recommended.
++ PyTorch 1.4~1.7
 + Pytorch Geometric (PyG) 1.6.1
 + DGL 0.5.2, 0.5.3
 

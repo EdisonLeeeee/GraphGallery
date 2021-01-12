@@ -78,28 +78,19 @@ def _check_label_matrix(label_matrix, copy=False):
 
 
 def _check_edge_index(edge_index, copy=False):
-    if isinstance(edge_index, np.ndarray):
-        edge_index = edge_index.astype(np.int64, copy=copy)
-    else:
-        raise ValueError(
-            f"Edge indices must be a np.ndarray (got {type(edge_index)} instead).")
-    assert edge_index.ndim == 2 and edge_index.shape[0] == 2
-    return edge_index
+    edge_index = np.array(edge_index, dtype=np.int64, copy=copy)
+    return gf.asedge(edge_index)
 
 
 def _check_edge_weight(edge_weight, copy=False):
-    if isinstance(edge_weight, np.ndarray):
-        edge_weight = edge_weight.astype(np.float32, copy=copy)
-    else:
-        raise ValueError(
-            f"Edge weights must be a np.ndarray (got {type(edge_weight)} instead).")
-    assert edge_weight.ndim == 1
+    edge_weight = np.array(edge_index, dtype=np.float32, copy=copy)
+    assert edge_weight.ndim == 1, edge_weight.ndim
     return edge_weight
 
 
 def _check_dict(obj, copy=None):
     if not isinstance(obj, dict):
-        raise ValueError("'mapping' and  'metadata' should be a dict instance.")
+        raise ValueError("this should be a dict instance.")
     return obj
 
 

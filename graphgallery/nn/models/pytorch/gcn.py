@@ -1,7 +1,6 @@
 import torch
 import torch.nn.functional as F
-
-from torch.nn import Module, ModuleList, Dropout
+import torch.nn as nn
 from torch import optim
 
 from graphgallery.nn.models import TorchKeras
@@ -13,8 +12,8 @@ class GCN(TorchKeras):
     def __init__(self,
                  in_channels,
                  out_channels,
-                 hiddens=[16],
-                 activations=['relu'],
+                 hids=[16],
+                 acts=['relu'],
                  dropout=0.5,
                  weight_decay=5e-4,
                  lr=0.01,
@@ -22,34 +21,34 @@ class GCN(TorchKeras):
 
         super().__init__()
 
-        self.layers = ModuleList()
+        layers = nn.ModuleList()
         paras = []
 
         # use ModuleList to create layers with different size
         inc = in_channels
-        for hidden, activation in zip(hiddens, activations):
+        for hid, act in zip(hids, acts):
             layer = GraphConvolution(inc,
-                                     hidden,
-                                     activation=activation,
+                                     hid,
+                                     activation=act,
                                      use_bias=use_bias)
-            self.layers.append(layer)
+            layers.append(layer)
             paras.append(dict(params=layer.parameters(), weight_decay=weight_decay))
-            inc = hidden
+            inc = hid
 
         layer = GraphConvolution(inc, out_channels, use_bias=use_bias)
-        self.layers.append(layer)
-        # do not use weight_decay in the final layer
         paras.append(dict(params=layer.parameters(), weight_decay=0.))
+        layers.append(layer)
+        self.layers = layers
+        # do not use weight_decay in the final layer
         self.compile(loss=torch.nn.CrossEntropyLoss(),
                      optimizer=optim.Adam(paras, lr=lr),
                      metrics=[Accuracy()])
-        self.dropout = Dropout(dropout)
+        self.dropout = nn.Dropout(dropout)
 
-    def forward(self, inputs):
-        x, neighbors, idx = inputs
+    def forward(self, x, adj):
 
         for layer in self.layers:
             x = self.dropout(x)
-            x = layer([x, neighbors])
+            x = layer(x, adj)
 
-        return x[idx]
+        return x

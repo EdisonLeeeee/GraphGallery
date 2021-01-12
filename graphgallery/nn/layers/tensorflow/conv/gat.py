@@ -15,7 +15,7 @@ class GraphAttention(Layer):
 
         Parameters:
           units: Positive integer, dimensionality of the output space.
-          atten_heads: Positive integer, number of attention heads.
+          attenum_heads: Positive integer, number of attention heads.
           reduction: {'concat', 'average'}, whether to enforce concat or average for the outputs from different heads.
           dropout: Float, internal dropout rate
           activation: Activation function to use.

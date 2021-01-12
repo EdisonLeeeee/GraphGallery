@@ -28,8 +28,7 @@ class Dataset:
 
         if url:
             self._url = url
-        else:
-            self._url = None
+
         self.root = root
         self.name = str(name)
         self.verbose = verbose
@@ -83,19 +82,19 @@ class Dataset:
         return self.splits
 
     def split_nodes_by_sample(self,
-                              train_examples_per_class: int,
+                              trainum_examples_per_class: int,
                               val_examples_per_class: int,
                               test_examples_per_class: int,
                               random_state: Optional[int] = None) -> dict:
 
         assert not self.graph.multiple, "NOT Supported for multiple graph"
         self.graph = self.graph.eliminate_classes(
-            train_examples_per_class + val_examples_per_class).standardize()
+            trainum_examples_per_class + val_examples_per_class).standardize()
 
         label = self.graph.node_label
         train_nodes, val_nodes, test_nodes = get_train_val_test_split(
             label,
-            train_examples_per_class,
+            trainum_examples_per_class,
             val_examples_per_class,
             test_examples_per_class,
             random_state=random_state)

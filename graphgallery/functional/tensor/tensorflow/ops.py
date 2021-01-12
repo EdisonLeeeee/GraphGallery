@@ -7,6 +7,15 @@ from graphgallery import functional as gf
 from typing import Any
 
 
+def gather(out, out_weight):
+    if out_weight is not None:
+        if out_weight.dtype.is_bool:
+            return tf.boolean_mask(out, out_weight)
+        else:
+            return tf.gather(out, out_weight)
+    return out
+
+
 def sparse_edge_to_sparse_tensor(edge_index: np.ndarray,
                                  edge_weight: np.ndarray = None,
                                  shape: tuple = None) -> tf.SparseTensor:
@@ -36,9 +45,7 @@ def sparse_adj_to_sparse_tensor(x: sp.csr_matrix, dtype=None):
 
     edge_index, edge_weight = gf.sparse_adj_to_edge(x)
     edge_weight = edge_weight.astype(dtype, copy=False)
-    return sparse_edge_to_sparse_tensor(edge_index,
-                                        edge_weight,
-                                        x.shape)
+    return sparse_edge_to_sparse_tensor(edge_index, edge_weight, x.shape)
 
 
 def sparse_tensor_to_sparse_adj(x) -> sp.csr_matrix:

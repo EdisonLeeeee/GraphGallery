@@ -1,14 +1,14 @@
 import tensorflow as tf
 
-from graphgallery.gallery import GalleryModel
 from graphgallery.sequence import FastGCNBatchSequence
-
-from graphgallery.nn.models.tensorflow import FastGCN as tfFastGCN
-
 from graphgallery import functional as gf
+from graphgallery.gallery import TensorFlow
+from graphgallery.gallery import Trainer
+from graphgallery.nn.models import get_model
 
 
-class FastGCN(GalleryModel):
+@TensorFlow.register()
+class FastGCN(Trainer):
     """
         Implementation of Fast Graph Convolutional Networks (FastGCN).
         `FastGCN: Fast Learning with Graph Convolutional Networks via Importance Sampling 
@@ -17,98 +17,54 @@ class FastGCN(GalleryModel):
 
     """
 
-    def __init__(self,
-                 graph,
-                 batch_size=256,
-                 rank=100,
-                 adj_transform="normalize_adj",
-                 attr_transform=None,
-                 graph_transform=None,
-                 device="cpu",
-                 seed=None,
-                 name=None,
-                 **kwargs):
-        r"""Create a Fast Graph Convolutional Networks (FastGCN) model.
+    def custom_setup(self):
+        cfg = self.cfg.train
+        cfg.batch_size = 256
+        cfg.rank = 100
 
+        cfg = self.cfg.test
+        cfg.batch_size = None
+        cfg.rank = None
 
-        This can be instantiated in the following way:
+    def process_step(self,
+                     adj_transform="normalize_adj",
+                     attr_transform=None,
+                     graph_transform=None):
 
-            model = FastGCN(graph)
-                with a `graphgallery.data.Graph` instance representing
-                A sparse, attributed, labeled graph.
-
-
-        Parameters:
-        ----------
-        graph: An instance of `graphgallery.data.Graph`.
-            A sparse, attributed, labeled graph.
-        batch_size (Positive integer, optional):
-            Batch size for the training nodes. (default :int: `256`)
-        rank (Positive integer, optional):
-            The selected nodes for each batch nodes, `rank` must be smaller than
-            `batch_size`. (default :int: `100`)
-        adj_transform: string, `transform`, or None. optional
-            How to transform the adjacency matrix. See `graphgallery.functional`
-            (default: :obj:`'normalize_adj'` with normalize rate `-0.5`.
-            i.e., math:: \hat{A} = D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) 
-        attr_transform: string, `transform`, or None. optional
-            How to transform the node attribute matrix. See `graphgallery.functional`
-            (default :obj: `None`)
-        device: string. optional
-            The device where the model is running on. You can specified `CPU` or `GPU`
-            for the model. (default: :str: `cpu`, i.e., running on the `CPU`)
-        seed: interger scalar. optional 
-            Used in combination with `tf.random.set_seed` & `np.random.seed` 
-            & `random.seed` to create a reproducible sequence of tensors across 
-            multiple calls. (default :obj: `None`, i.e., using random seed)
-        name: string. optional
-            Specified name for the model. (default: :str: `class.__name__`)
-        kwargs: other custom keyword parameters.
-        """
-        super().__init__(graph, device=device, seed=seed, name=name,
-                         adj_transform=adj_transform,
-                         attr_transform=attr_transform,
-                         graph_transform=graph_transform,
-                         **kwargs)
-
-        self.register_cache("rank", rank)
-        self.register_cache("batch_size", batch_size)
-
-        self.process()
-
-    def process_step(self):
-        graph = self.transform.graph_transform(self.graph)
-        adj_matrix = self.transform.adj_transform(graph.adj_matrix)
-        node_attr = self.transform.attr_transform(graph.node_attr)
+        graph = gf.get(graph_transform)(self.graph)
+        adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
+        node_attr = gf.get(attr_transform)(graph.node_attr)
         node_attr = adj_matrix @ node_attr
 
         X, A = gf.astensor(node_attr, device=self.device), adj_matrix
 
         # ``A`` and ``X`` are cached for later use
-        self.register_cache("X", X)
-        self.register_cache("A", A)
+        self.register_cache(X=X, A=A)
 
-    # use decorator to make sure all list arguments have the same length
-    @gf.equal()
-    def build(self,
-              hiddens=[32],
-              activations=['relu'],
-              dropout=0.5,
-              weight_decay=5e-4,
-              lr=0.01,
-              use_bias=False):
+    def builder(self,
+                hids=[32],
+                acts=['relu'],
+                dropout=0.5,
+                weight_decay=5e-4,
+                lr=0.01,
+                use_bias=False,
+                use_tfn=True):
 
-        with tf.device(self.device):
-            self.model = tfFastGCN(self.graph.num_node_attrs,
-                                   self.graph.num_node_classes,
-                                   hiddens=hiddens,
-                                   activations=activations,
-                                   dropout=dropout,
-                                   weight_decay=weight_decay,
-                                   lr=lr,
-                                   use_bias=use_bias)
+        model = get_model("FastGCN", self.backend)
+        model = model(self.graph.num_node_attrs,
+                      self.graph.num_node_classes,
+                      hids=hids,
+                      acts=acts,
+                      dropout=dropout,
+                      weight_decay=weight_decay,
+                      lr=lr,
+                      use_bias=use_bias)
+        if use_tfn:
+            model.use_tfn()
+        return model
 
     def train_sequence(self, index):
+        cfg = self.cfg.train
 
         labels = self.graph.node_label[index]
         adj_matrix = self.graph.adj_matrix[index][:, index]
@@ -117,20 +73,20 @@ class FastGCN(GalleryModel):
         X = tf.gather(self.cache.X, index)
         sequence = FastGCNBatchSequence([X, adj_matrix],
                                         labels,
-                                        batch_size=self.cache.batch_size,
-                                        rank=self.cache.rank,
+                                        batch_size=cfg.batch_size,
+                                        rank=cfg.rank,
                                         device=self.device)
         return sequence
 
     def test_sequence(self, index):
+        cfg = self.cfg.test
 
         labels = self.graph.node_label[index]
         A = self.cache.A[index]
 
-        sequence = FastGCNBatchSequence(
-            [self.cache.X, A],
-            labels,
-            batch_size=None,
-            rank=None,
-            device=self.device)  # use full batch
+        sequence = FastGCNBatchSequence([self.cache.X, A],
+                                        labels,
+                                        batch_size=cfg.batch_size,
+                                        rank=cfg.rank,
+                                        device=self.device)
         return sequence

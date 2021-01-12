@@ -4,7 +4,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tensorflow import GraphAttention, Gather
+from graphgallery.nn.layers.tensorflow import GraphAttention
 from graphgallery import floatx, intx
 from graphgallery.nn.models import TFKeras
 
@@ -12,8 +12,8 @@ from graphgallery.nn.models import TFKeras
 class GAT(TFKeras):
 
     def __init__(self, in_channels,
-                 out_channels, hiddens=[16], n_heads=[8],
-                 activations=['elu'], dropout=0.6,
+                 out_channels, hids=[16], num_heads=[8],
+                 acts=['elu'], dropout=0.6,
                  weight_decay=5e-4,
                  lr=0.01, use_bias=True):
 
@@ -21,14 +21,13 @@ class GAT(TFKeras):
                   dtype=floatx(), name='node_attr')
         adj = Input(batch_shape=[None, None], dtype=floatx(),
                     sparse=True, name='adj_matrix')
-        index = Input(batch_shape=[None], dtype=intx(), name='node_index')
 
         h = x
-        for hidden, n_head, activation in zip(hiddens, n_heads, activations):
-            h = GraphAttention(hidden, attn_heads=n_head,
+        for hid, num_head, act in zip(hids, num_heads, acts):
+            h = GraphAttention(hid, attn_heads=num_head,
                                reduction='concat',
                                use_bias=use_bias,
-                               activation=activation,
+                               activation=act,
                                kernel_regularizer=regularizers.l2(weight_decay),
                                attn_kernel_regularizer=regularizers.l2(
                                    weight_decay),
@@ -37,9 +36,8 @@ class GAT(TFKeras):
 
         h = GraphAttention(out_channels, use_bias=use_bias,
                            attn_heads=1, reduction='average')([h, adj])
-        h = Gather()([h, index])
 
-        super().__init__(inputs=[x, adj, index], outputs=h)
+        super().__init__(inputs=[x, adj], outputs=h)
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
                      optimizer=Adam(lr=lr), metrics=['accuracy'])
       # TODO

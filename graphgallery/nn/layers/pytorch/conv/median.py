@@ -1,12 +1,11 @@
 import torch
-from torch.nn.parameter import Parameter
-from torch.nn import Module
+import torch.nn as nn
 
 from graphgallery.nn.init.pytorch import uniform, zeros
 from ..get_activation import get_activation
 
 
-class MedianConvolution(Module):
+class MedianConvolution(nn.Module):
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -16,34 +15,21 @@ class MedianConvolution(Module):
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.activation = get_activation(activation)
-        self.kernel = Parameter(torch.Tensor(in_channels, out_channels))
-
-        if use_bias:
-            self.bias = Parameter(torch.Tensor(out_channels))
-        else:
-            self.register_parameter('bias', None)
-
-        self.reset_parameters()
+        self.w = nn.Linear(in_channels, out_channels, bias=use_bias)
 
     def reset_parameters(self):
-        uniform(self.kernel)
-        zeros(self.bias)
+        self.w.reset_parameters()
 
-    def forward(self, inputs):
-        x, neighbors = inputs
-        h = torch.mm(x, self.kernel)
+    def forward(self, x, nbrs):
+        h = self.w(x)
         aggregation = []
-        for node, neighbor in enumerate(neighbors):
-            message, _ = torch.median(h[neighbor], 0)
+        for node, nbr in enumerate(nbrs):
+            message, _ = torch.median(h[nbr], 0)
             aggregation.append(message)
+            
         output = torch.stack(aggregation)
-        
-        if self.bias is not None:
-            output += self.bias
 
         return self.activation(output)
 
     def __repr__(self):
-        return self.__class__.__name__ + ' (' \
-            + str(self.in_channels) + ' -> ' \
-            + str(self.out_channels) + ')'
+        return f"{self.__class__.__name__}({self.in_channels} -> {self.out_channels})"

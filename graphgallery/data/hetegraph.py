@@ -30,32 +30,37 @@ class HeteGraph(BaseGraph):
         del collects['self']
         super().__init__(**collects)
 
-    @ property
+    @property
     def num_nodes(self) -> int:
         """Get the number of nodes in the graph."""
         return self.edge_index.max() + 1
 
     @property
-    def num_edges(self):
+    def num_edges(self) -> int:
         """Get the number of edges in the graph.
         For undirected graphs, (i, j) and (j, i) are counted as single edge.
         """
         return self.edge_index.shape[1]
 
-    @ property
+    @property
     def num_graphs(self) -> int:
         """Get the number of graphs."""
         return 1
 
-    @ property
+    @property
     def num_node_attrs(self) -> int:
         """Get the number of attribute dimensions of the nodes."""
         return get_num_node_attrs(self.node_attr)
 
-    @ property
+    @property
     def num_node_classes(self) -> int:
         """Get the number of classes node_label of the nodes."""
-        return self.node_label.max() + 1
+        return get_num_node_classes(self.node_label)
+
+    @property
+    def A(self):
+        # TODO
+        raise NotImplementedError
 
     @property
     def e(self):
@@ -69,8 +74,43 @@ class HeteGraph(BaseGraph):
 
     @property
     def x(self):
+        """alias of ex."""
+        return self.ex
+
+    @property
+    def ex(self):
         """alias of edge_attr."""
         return self.edge_attr
+
+    @property
+    def nx(self):
+        """Alias of node_attr."""
+        return self.node_attr
+
+    @property
+    def gx(self):
+        """Alias of graph_attr."""
+        return self.graph_attr
+
+    @property
+    def y(self):
+        """Alias of edge_label."""
+        return self.ey
+
+    @property
+    def ey(self):
+        """Alias of edge_label."""
+        return self.edge_label
+
+    @property
+    def ny(self):
+        """Alias of node_label."""
+        return self.node_label
+
+    @property
+    def gy(self):
+        """Alias of graph_label."""
+        return self.graph_label
 
     @property
     def y(self):
