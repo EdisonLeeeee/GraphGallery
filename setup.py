@@ -41,7 +41,7 @@ tests_require = ['pytest', 'pytest-cov']
 setup(
     name='graphgallery',
     version=VERSION,
-    description='A Gallery for Benchmarking Graph Neural Networks.',
+    description='A Gallery for Benchmarking Graph Neural Networks and Graph Adversarial Learning.',
     author='Jintang Li',
     author_email='cnljt@outlook.com',
     long_description=open("README.md", encoding="utf-8").read(),
@@ -61,7 +61,7 @@ setup(
     setup_requires=setup_requires,
     tests_require=tests_require,
     extras_require={'test': tests_require},
-    packages=find_packages(exclude=("examples", "imgs", "benchmark")),
+    packages=find_packages(exclude=("examples", "imgs", "benchmark", "test")),
     classifiers=[
         'Development Status :: 3 - Alpha',
         "Programming Language :: Python :: 3",
