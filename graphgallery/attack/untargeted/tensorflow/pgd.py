@@ -68,7 +68,7 @@ class PGD(UntargetedAttacker):
                num_budgets=0.05,
                sample_epochs=20,
                C=None,
-               CW_loss=True,
+               CW_loss=False,
                epochs=100,
                structure_attack=True,
                feature_attack=False,
@@ -110,19 +110,16 @@ class PGD(UntargetedAttacker):
         adj = self.get_perturbed_adj()
         adj_norm = gf.normalize_adj_tensor(adj)
         logit = self.surrogate([self.x_tensor, adj_norm])
-        logit = softmax(tf.gather(logit, victim_nodes))
-
+        logit = tf.gather(logit, victim_nodes)
         if self.CW_loss:
-            best_wrong_class = tf.argmax(logit - self.label_matrix,
-                                         axis=1,
+            best_wrong_class = tf.argmax(logit - 1000 * self.label_matrix, axis=1,
                                          output_type=self.intx)
-            indices_attack = tf.stack([self.range_idx, best_wrong_class],
-                                      axis=1)
-            margin = tf.gather_nd(logit, indices_attack) - tf.gather_nd(
-                logit, self.indices_real) - 0.2
+            indices_attack = tf.stack([self.range_idx, best_wrong_class], axis=1)
+            margin = tf.gather_nd(logit, indices_attack) - tf.gather_nd(logit, self.indices_real) - 0.2
             loss = tf.minimum(margin, 0.)
             return tf.reduce_sum(loss)
         else:
+            logit = softmax(logit)
             loss = self.loss_fn(self.victim_labels, logit)
 
             return tf.reduce_mean(loss)
@@ -231,7 +228,7 @@ class MinMax(PGD):
                num_budgets=0.05,
                sample_epochs=20,
                C=None,
-               CW_loss=True,
+               CW_loss=False,
                epochs=100,
                update_per_epoch=20,
                structure_attack=True,
