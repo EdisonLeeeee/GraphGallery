@@ -3,7 +3,7 @@
 
 import torch
 import dgl
-import graphgallery 
+import graphgallery
 
 print("GraphGallery version: ", graphgallery.__version__)
 print("Torch version: ", torch.__version__)
@@ -21,8 +21,7 @@ splits = data.split_nodes()
 graphgallery.set_backend("dgl")
 
 from graphgallery.gallery import GAT
-trainer = GAT(graph, attr_transform="normalize_attr", device="gpu", seed=42)
-trainer.build()
+trainer = GAT(graph, device="gpu", seed=123).process(attr_transform="normalize_attr").build()
 his = trainer.train(splits.train_nodes, splits.val_nodes, verbose=1, epochs=200)
-results = trainer.test(splits.test_nodes) 
+results = trainer.test(splits.test_nodes)
 print(f'Test loss {results.loss:.5}, Test accuracy {results.accuracy:.2%}')

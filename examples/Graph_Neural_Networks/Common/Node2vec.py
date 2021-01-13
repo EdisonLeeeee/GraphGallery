@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-import graphgallery 
+import graphgallery
 import tensorflow as tf
 
 graphgallery.set_memory_growth()
@@ -19,8 +19,7 @@ graph = data.graph
 splits = data.split_nodes()
 
 from graphgallery.gallery import Node2vec
-trainer = Node2vec(graph)
-trainer.build()
+trainer = Node2vec(graph).process().build()
 his = trainer.train(splits.train_nodes)
-results = trainer.test(splits.test_nodes) 
+results = trainer.test(splits.test_nodes)
 print(f'Test accuracy {results.accuracy:.2%}')

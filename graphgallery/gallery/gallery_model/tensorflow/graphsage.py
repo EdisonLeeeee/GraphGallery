@@ -17,9 +17,11 @@ class GraphSAGE(Trainer):
         Pytorch implementation: <https://github.com/williamleif/graphsage-simple/>
     """
 
-    def custom_setup(self):
-        self.cfg.train.num_samples = [15, 5]
-        self.cfg.test.num_samples = [15, 5]
+    def custom_setup(self,
+                     num_samples_train=[15, 5],
+                     num_samples_test=[15, 5]):
+        self.cfg.train.num_samples = num_samples_train
+        self.cfg.test.num_samples = num_samples_test
 
     def process_step(self,
                      adj_transform="neighbor_sampler",
@@ -47,7 +49,7 @@ class GraphSAGE(Trainer):
                 use_bias=True,
                 output_normalize=False,
                 aggregator='mean',
-                num_samples=[15, 5], 
+                num_samples=[15, 5],
                 use_tfn=True):
 
         model = get_model("GraphSAGE", self.backend)

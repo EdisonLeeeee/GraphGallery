@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-import graphgallery 
+import graphgallery
 import tensorflow as tf
 
 graphgallery.set_memory_growth()
@@ -19,8 +19,7 @@ graph = data.graph
 splits = data.split_nodes()
 
 from graphgallery.gallery import ClusterGCN
-trainer = ClusterGCN(graph, n_clusters=10, attr_transform="normalize_attr", device="gpu", seed=123)
-trainer.build()
+trainer = ClusterGCN(graph, device="gpu", seed=123).process(num_clusters=10, attr_transform="normalize_attr").build()
 his = trainer.train(splits.train_nodes, splits.val_nodes, verbose=1, epochs=50)
-results = trainer.test(splits.test_nodes) 
+results = trainer.test(splits.test_nodes)
 print(f'Test loss {results.loss:.5}, Test accuracy {results.accuracy:.2%}')
