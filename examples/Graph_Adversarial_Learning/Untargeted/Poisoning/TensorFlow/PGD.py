@@ -22,7 +22,7 @@ his = trainer.train(splits.train_nodes,
 
 ################### Attacker model ############################
 attacker = gg.attack.untargeted.PGD(graph, device=device, seed=123).process(trainer, splits.train_nodes)
-attacker.attack(0.05)
+attacker.attack(0.05, CW_loss=False)
 
 ################### Victim model ############################
 # Before attack
@@ -48,6 +48,6 @@ print(f"perturbed prediction {perturbed_result.accuracy:.2%}")
 print(
     f"The accuracy has gone down {original_result.accuracy-perturbed_result.accuracy:.2%}"
 )
-"""original prediction 83.85%
-perturbed prediction 80.18%
-The accuracy has gone down 3.67%"""
+"""original prediction 83.50%
+perturbed prediction 78.52%
+The accuracy has gone down 4.98%"""
