@@ -24,20 +24,26 @@ class SimPGCN(Trainer):
     def process_step(self,
                      adj_transform="normalize_adj",
                      attr_transform=None,
-                     graph_transform=None):
+                     graph_transform=None,
+                     recalculate=True):
 
         graph = gf.get(graph_transform)(self.graph)
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
         node_attr = gf.get(attr_transform)(graph.node_attr)
+        
+        X, A = gf.astensors(node_attr, adj_matrix, device=self.device)
 
-        knn_graph = gf.normalize_adj(gf.knn_graph(node_attr), fill_weight=0.)
-        pseudo_labels, node_pairs = gf.attr_sim(node_attr)
+        # ``A`` and ``X`` are cached for later use
+        self.register_cache(X=X, A=A)   
         
-        X, A, knn_graph, pseudo_labels = gf.astensors(node_attr, adj_matrix, knn_graph, pseudo_labels, device=self.device)
+        if recalculate:
+            # Uses this to save time for structure evation attack
+            # NOTE: Please make sure the node attribute matrix remains the same if recalculate=False
+            knn_graph = gf.normalize_adj(gf.knn_graph(node_attr), fill_weight=0.)
+            pseudo_labels, node_pairs = gf.attr_sim(node_attr)
+            knn_graph, pseudo_labels = gf.astensors(knn_graph, pseudo_labels, device=self.device)
         
-        # ``A``, ``X`` and ``knn_graph`` are cached for later use
-        self.register_cache(X=X, A=A, knn_graph=knn_graph, 
-                           pseudo_labels=pseudo_labels, node_pairs=node_pairs)
+            self.register_cache(knn_graph=knn_graph, pseudo_labels=pseudo_labels, node_pairs=node_pairs)
 
     def builder(self,
                 hids=[64],
