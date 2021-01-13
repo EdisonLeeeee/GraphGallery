@@ -27,7 +27,7 @@ class TrimmedGCN(Trainer):
                 dropout=0.5,
                 weight_decay=5e-5,
                 lr=0.01,
-                tperc=0.3,
+                tperc=0.45,
                 use_bias=False):
         
         model = get_model("TrimmedGCN", self.backend)

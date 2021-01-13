@@ -15,7 +15,7 @@ class TrimmedGCN(TorchKeras):
                  out_channels,
                  hids=[16],
                  acts=['relu'],
-                 tperc=0.3,
+                 tperc=0.45,
                  dropout=0.5,
                  weight_decay=5e-4,
                  lr=0.01,
