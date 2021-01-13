@@ -28,13 +28,13 @@ def filter_singletons(edge, adj_matrix):
         return edge
 
     degs = adj_matrix.sum(1).A1
-    existing_edge = adj_matrix.tocsr(copy=False)[tuple(edge)].A1
+    existing_edge = adj_matrix.tocsr(copy=False)[edge[0], edge[1]].A1
 
     if existing_edge.size > 0:
-        edge_degrees = degs[edge] + 2 * existing_edge[None, :] + 1
+        edge_degrees = degs[edge] - 2 * existing_edge[None, :] + 1
     else:
         edge_degrees = degs[edge] + 1
 
-    mask = np.logical_and(edge_degrees[0] != 0, edge_degrees[1] != 0)
+    mask = np.logical_and(edge_degrees[0] > 0, edge_degrees[1] > 0)
     remained_edge = edge[:, mask]
     return remained_edge.T

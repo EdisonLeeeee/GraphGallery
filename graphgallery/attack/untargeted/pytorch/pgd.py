@@ -106,7 +106,7 @@ class PGD(UntargetedAttacker):
             logit = F.log_softmax(logit, dim=1)
             best_wrong_class = (logit - 1000 * self.label_matrix).argmax(1)
             indices_attack = torch.stack([self.range_idx, best_wrong_class])
-            margin = logit[self.indices_real] - logit[indices_attack]
+            margin = logit[self.indices_real] - logit[indices_attack] + 0.2
             loss = -torch.clamp(margin, min=0.) 
             return loss.mean()
         else:
