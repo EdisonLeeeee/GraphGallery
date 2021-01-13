@@ -22,7 +22,6 @@ In detail, the following methods are currently implemented:
 </summary>
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/ChebyNet.py"> [:octocat:TensorFLow]</a>
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/ChebyNet.py"> [🔥PyTorch] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyG/ChebyNet.py"> [🔥PyG] </a>
 
 </details>
 
@@ -48,7 +47,6 @@ In detail, the following methods are currently implemented:
 </summary>
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/GraphSAGE.py"> [:octocat:TensorFLow] </a>
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/GraphSAGE.py"> [🔥PyTorch] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyG/GraphSAGE.py"> [🔥PyG] </a>
 </details>
 
 <!-- 4 -->
@@ -59,7 +57,6 @@ In detail, the following methods are currently implemented:
 </summary>
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/FastGCN.py"> [:octocat:TensorFLow] </a>
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/FastGCN.py"> [🔥PyTorch] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyG/FastGCN.py"> [🔥PyG] </a>
 </details>
 
 <!-- 5 -->
@@ -70,7 +67,6 @@ In detail, the following methods are currently implemented:
 </summary>
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/LGCN.py"> [:octocat:TensorFLow] </a>
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/LGCN.py"> [🔥PyTorch] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyG/LGCN.py"> [🔥PyG] </a>
 </details>
 
 <!-- 6 -->
@@ -103,7 +99,6 @@ In detail, the following methods are currently implemented:
 </summary>
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/GWNN.py"> [:octocat:TensorFLow] </a>
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/GWNN.py"> [🔥PyTorch] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyG/GWNN.py"> [🔥PyG] </a>
 </details>
 
 <!-- 9 -->
@@ -114,7 +109,6 @@ In detail, the following methods are currently implemented:
 </summary>
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/GMNN.py"> [:octocat:TensorFLow] </a>
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/GMNN.py"> [🔥PyTorch] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyG/GMNN.py"> [🔥PyG] </a>
 </details>
 
 <!-- 10 -->
@@ -136,7 +130,6 @@ In detail, the following methods are currently implemented:
 </summary>
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/DAGNN.py"> [:octocat:TensorFLow] </a>
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/DAGNN.py"> [🔥PyTorch] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyG/DAGNN.py"> [🔥PyG] </a>
 </details>
 
 <!-- 12 -->
@@ -162,7 +155,6 @@ In detail, the following methods are currently implemented:
 </summary>
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/RobustGCN.py"> [:octocat:TensorFLow] </a>
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/RobustGCN.py"> [🔥PyTorch] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyG/RobustGCN.py"> [🔥PyG] </a>
 </details>
 
 <!-- 2 -->
@@ -173,7 +165,6 @@ In detail, the following methods are currently implemented:
 </summary>
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/SBVAT.py"> [:octocat:TensorFLow] </a>
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/SBVAT.py"> [🔥PyTorch] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyG/SBVAT.py"> [🔥PyG] </a>
 </details>
 
 <!-- 3 -->
@@ -184,7 +175,6 @@ In detail, the following methods are currently implemented:
 </summary>
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/OBVAT.py"> [:octocat:TensorFLow] </a>
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/OBVAT.py"> [🔥PyTorch] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyG/OBVAT.py"> [🔥PyG] </a>
 </details>
 
 <!-- 4 -->
