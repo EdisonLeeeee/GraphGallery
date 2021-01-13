@@ -25,16 +25,17 @@
 </p>
 
 # GraphGallery
-GraphGallery is a gallery for benchmarking Graph Neural Networks (GNNs) with [TensorFlow 2.x](https://github.com/tensorflow/tensorflow) and [PyTorch](https://github.com/pytorch/pytorch) backend. Besides, [Pytorch Geometric (PyG)](https://github.com/rusty1s/pytorch_geometric) backend and [Deep Graph Library (DGL)](https://github.com/dmlc/dgl) backend now are available in GraphGallery.
+GraphGallery is a gallery for benchmarking Graph Neural Networks (GNNs) and Graph Adversarial Learning with [TensorFlow 2.x](https://github.com/tensorflow/tensorflow) and [PyTorch](https://github.com/pytorch/pytorch) backend. Besides, [Pytorch Geometric (PyG)](https://github.com/rusty1s/pytorch_geometric) backend and [Deep Graph Library (DGL)](https://github.com/dmlc/dgl) backend now are available in GraphGallery.
 
 # 💨 NEWS
-We have integrated the adversarial parts in this project, examples please refer to [Graph Adversarial Learning examples](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Adversarial_Learning)
+We have integrated the **Adversarial Attacks** in this project, examples please refer to [Graph Adversarial Learning examples](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Adversarial_Learning).
 
 # 🚀 Installation
+```python
 pip install -U graphgallery
-
+```
 GraphGallery has been tested on:
-+ CUDA 10.1
++ CPU, CUDA 10.1, CUDA 11.0
 + TensorFlow 2.1~2.4, 2.1.2 is recommended.
 + PyTorch 1.4~1.7
 + Pytorch Geometric (PyG) 1.6.1
@@ -82,7 +83,7 @@ PyTorch 1.6.0+cu101 Backend
 # DGL TensorFlow backend
 >>> graphgallery.set_backend("dgl-tf")
 ```
-But you codes don't even need to change!
+But your codes don't even need to change.
 
 # ❓ How to add your datasets
 This is motivated by [gnn-benchmark](https://github.com/shchur/gnn-benchmark/)
