@@ -68,6 +68,6 @@ class GCN(Trainer):
 
     
 @PyTorch.register()
-class DenseGCN(Trainer):
+class DenseGCN(GCN):
     """This model is not really dense version of GCN, but it works for dense adjacency matrix tensor"""
     ...

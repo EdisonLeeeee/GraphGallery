@@ -136,9 +136,9 @@ class PGD(UntargetedAttacker):
 
     def projection(self):
         clipped_matrix = self.clip(self.adj_changes)
-        num_budgets = tf.reduce_sum(clipped_matrix)
+        num_modified = tf.reduce_sum(clipped_matrix)
 
-        if num_budgets > self.num_budgets:
+        if num_modified > self.num_budgets:
             left = tf.reduce_min(self.adj_changes - 1.)
             right = tf.reduce_max(self.adj_changes)
             miu = self.bisection(left, right, epsilon=1e-5)
@@ -171,7 +171,7 @@ class PGD(UntargetedAttacker):
         return clipped_matrix
 
     def random_sample(self, sample_epochs=20, disable=False):
-        best_loss = -np.inf
+        best_loss = -10000
         best_s = None
         s = tf.linalg.band_part(self.adj_changes, 0, -1) - tf.linalg.band_part(self.adj_changes, 0, 0)
         for it in tqdm(range(sample_epochs),
