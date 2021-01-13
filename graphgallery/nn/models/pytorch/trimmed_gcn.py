@@ -5,16 +5,17 @@ from torch.nn import Module, ModuleList, Dropout
 from torch import optim
 
 from graphgallery.nn.models import TorchKeras
-from graphgallery.nn.layers.pytorch import MedianConvolution
+from graphgallery.nn.layers.pytorch import TrimmedConvolution
 from graphgallery.nn.metrics.pytorch import Accuracy
 
 
-class MedianGCN(TorchKeras):
+class TrimmedGCN(TorchKeras):
     def __init__(self,
                  in_channels,
                  out_channels,
                  hids=[16],
                  acts=['relu'],
+                 tperc=0.3,
                  dropout=0.5,
                  weight_decay=5e-4,
                  lr=0.01,
@@ -28,15 +29,16 @@ class MedianGCN(TorchKeras):
         # use ModuleList to create layers with different size
         inc = in_channels
         for hid, act in zip(hids, acts):
-            layer = MedianConvolution(inc,
-                                      hid,
-                                      activation=act,
-                                      use_bias=use_bias)
+            layer = TrimmedConvolution(inc,
+                                       hid,
+                                       activation=act,
+                                       use_bias=use_bias,
+                                       tperc=tperc)
             layers.append(layer)
             paras.append(dict(params=layer.parameters(), weight_decay=weight_decay))
             inc = hid
 
-        layer = MedianConvolution(inc, out_channels, use_bias=use_bias)
+        layer = TrimmedConvolution(inc, out_channels, use_bias=use_bias, tperc=tperc)
         layers.append(layer)
         # do not use weight_decay in the final layer
         paras.append(dict(params=layer.parameters(), weight_decay=0.))

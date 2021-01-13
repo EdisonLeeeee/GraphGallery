@@ -9,3 +9,5 @@ from .simpgcn import SimPGCN
 
 # experimantal model
 from .experimental.median_gcn import MedianGCN
+from .experimental.trimmed_gcn import TrimmedGCN
+
