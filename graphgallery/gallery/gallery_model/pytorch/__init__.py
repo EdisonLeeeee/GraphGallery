@@ -6,6 +6,7 @@ from .fastgcn import FastGCN
 from .dagnn import DAGNN
 from .pairnorm import *
 from .simpgcn import SimPGCN
+from .mlp import MLP
 
 # experimantal model
 from .experimental.median_gcn import MedianGCN

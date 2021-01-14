@@ -11,3 +11,4 @@ from .edgeconv import EdgeGCN
 from .gwnn import GWNN
 from .fastgcn import FastGCN
 from .graphsage import GraphSAGE
+from .mlp import MLP

@@ -6,4 +6,5 @@ from .trimmed_gcn import TrimmedGCN
 from .fastgcn import FastGCN
 from .dagnn import DAGNN
 from .parinorm import *
-from .simpgcn import *
+from .simpgcn import SimPGCN
+from .mlp import MLP

@@ -13,6 +13,7 @@ from .obvat import OBVAT
 from .sbvat import SBVAT
 from .gmnn import GMNN
 from .dagnn import DAGNN
+from .mlp import MLP
 
 # experimental model
 from .experimental.edgeconv import EdgeGCN
