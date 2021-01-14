@@ -40,7 +40,7 @@ class PGD(UntargetedAttacker):
         self.complementary = (torch.ones_like(adj_tensor) - torch.eye(self.num_nodes).to(self.device) - 2. * adj_tensor)
         self.loss_fn = nn.CrossEntropyLoss()
         self.adj_changes = nn.Parameter(torch.zeros_like(self.adj_tensor))
-        self.surrogate = surrogate.model
+        self.surrogate = surrogate.model.to(self.device)
         self.surrogate.eval()
 
         # # used for `CW_loss=True`
