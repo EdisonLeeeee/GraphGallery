@@ -98,7 +98,9 @@ class FGSM(UntargetedAttacker):
         # Make sure that the minimum entry is 0.
         adj_grad = adj_grad - tf.reduce_min(adj_grad)
         # Filter self-loops
+#         adj_grad = tf.linalg.band_part(adj_grad, 0, -1) - tf.linalg.band_part(adj_grad, 0, 0)        
         adj_grad = adj_grad - tf.linalg.band_part(adj_grad, 0, 0)
+        adj_grad = adj_grad + tf.transpose(adj_grad)
 
         if not self.allow_singleton:
             # Set entries to 0 that could lead to singleton nodes.
