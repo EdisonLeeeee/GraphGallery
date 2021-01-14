@@ -21,7 +21,7 @@ his = trainer.train(splits.train_nodes,
 ################### Attacker model ############################
 attacker = gg.attack.untargeted.PGD(graph, device=device, seed=None).process(
     trainer, splits.train_nodes, unlabeled_nodes=splits.test_nodes)
-attacker.attack(0.05)
+attacker.attack(0.05, CW_loss=True)
 
 ################### Victim model ############################
 # This is a white-box attack

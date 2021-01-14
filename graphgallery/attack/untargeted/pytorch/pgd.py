@@ -160,11 +160,13 @@ class PGD(UntargetedAttacker):
         best_loss = -10000
         best_s = None
         s = torch.triu(self.adj_changes, diagonal=1)
+        _one = torch.tensor(1.).to(self.device)
+        _zero = torch.tensor(0.).to(self.device)
         for it in tqdm(range(sample_epochs),
                        desc='Random Sampling',
                        disable=disable):
             random_matrix = torch.zeros_like(s).uniform_(0, 1)
-            sampled = torch.where(s > random_matrix, 1., 0.)
+            sampled = torch.where(s > random_matrix, _one, _zero)
             if sampled.sum() > self.num_budgets:
                 continue
 
@@ -174,5 +176,6 @@ class PGD(UntargetedAttacker):
             if best_loss < loss:
                 best_loss = loss
                 best_s = sampled
-
+                
+        assert best_s is not None, "Something wrong"
         return best_s.detach().cpu().numpy()

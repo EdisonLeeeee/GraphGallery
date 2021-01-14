@@ -111,15 +111,16 @@ class PGD(UntargetedAttacker):
         adj_norm = gf.normalize_adj_tensor(adj)
         logit = self.surrogate([self.x_tensor, adj_norm])
         logit = tf.gather(logit, victim_nodes)
+        logit = softmax(logit)
+        
         if self.CW_loss:
-            best_wrong_class = tf.argmax(logit - 1000 * self.label_matrix, axis=1,
+            best_wrong_class = tf.argmax(logit - self.label_matrix, axis=1,
                                          output_type=self.intx)
             indices_attack = tf.stack([self.range_idx, best_wrong_class], axis=1)
             margin = tf.gather_nd(logit, indices_attack) - tf.gather_nd(logit, self.indices_real) - 0.2
             loss = tf.minimum(margin, 0.)
             return tf.reduce_sum(loss)
         else:
-            logit = softmax(logit)
             loss = self.loss_fn(self.victim_labels, logit)
 
             return tf.reduce_mean(loss)
@@ -190,6 +191,7 @@ class PGD(UntargetedAttacker):
                 best_loss = loss
                 best_s = sampled
 
+        assert best_s is not None, "Something wrong"
         return best_s.numpy()
 
 
