@@ -143,25 +143,33 @@ class HomoGraph(BaseGraph):
     @property
     def degree(self):
         return get_degree(self.adj_matrix)
-    
+
+    def eliminate_selfloops(self):
+        """Remove self-loops from the adjacency matrix."""
+        g = self.copy()
+        A = g.adj_matrix
+        assert A is not None
+        g.adj_matrix = gf.eliminate_selfloops(A)
+        return g
+
     def add_selfloops(self, fill_weight=1.0):
         g = self.copy()
         A = g.adj_matrix
         assert A is not None
-        self.adj_matrix = gf.add_selfloops(A, fill_weight=fill_weight)
-        return self
+        g.adj_matrix = gf.add_selfloops(A, fill_weight=fill_weight)
+        return g
 
     def is_directed(self) -> bool:
         """Check if the graph is directed (adjacency matrix is not symmetric)."""
         return is_directed(self.adj_matrix)
 
-    def is_singleton(self) -> bool:
+    def has_singleton(self) -> bool:
         """Check if the graph has singletons."""
-        return is_singleton(self.adj_matrix)
+        return has_singleton(self.adj_matrix)
 
-    def is_selfloops(self) -> bool:
+    def has_selfloops(self) -> bool:
         """Check if the graph has self loops."""
-        return is_selfloops(self.adj_matrix)
+        return has_selfloops(self.adj_matrix)
 
     def is_connected(self) -> bool:
         """Check if the graph is a connected graph."""

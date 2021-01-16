@@ -48,15 +48,6 @@ class Graph(HomoGraph):
             (np.ones_like(A.data), A.indices, A.indptr), shape=A.shape)
         return G
 
-    def eliminate_selfloops(self):
-        """Remove self-loops from the adjacency matrix."""
-        G = self.copy()
-        A = G.adj_matrix
-        A = A - sp.diags(A.diagonal())
-        A.eliminate_zeros()
-        G.adj_matrix = A
-        return G
-
     def eliminate_classes(self, threshold=0):
         """Remove nodes from graph that correspond to a class of which there are less
         or equal than 'threshold'. Those classes would otherwise break the training procedure.
@@ -101,7 +92,7 @@ class Graph(HomoGraph):
 #         A.eliminate_zeros()
 #         G.adj_matrix = A
 #         return G
-    
+
     def from_flips(self, **flips):
         """Return a new graph from:
         'edge_flips' or 'nx_flips'
@@ -111,14 +102,13 @@ class Graph(HomoGraph):
         for k, v in flips.items():
             if v is None:
                 continue
-            if k=="edge_flips":
+            if k == "edge_flips":
                 g.update(adj_matrix=gf.flip_adj(g.adj_matrix, v))
-            elif k=="nx_flips":
+            elif k == "nx_flips":
                 g.update(node_attr=gf.flip_attr(g.node_attr, v))
             else:
                 raise ValueError(f"Unrecognized key {k}, allowed: {allowed}.")
         return g
-                
 
     def standardize(self):
         """Select the largest connected components (LCC) of 

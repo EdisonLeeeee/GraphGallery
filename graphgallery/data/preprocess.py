@@ -10,16 +10,12 @@ from sklearn.preprocessing import MultiLabelBinarizer, LabelBinarizer, normalize
 from sklearn.model_selection import train_test_split
 
 
-TrainValTest = Tuple[np.ndarray]
-Array1D = Union[List, np.ndarray]
-
-
 def train_val_test_split_tabular(N: int,
                                  train_size: float = 0.1,
                                  val_size: float = 0.1,
                                  test_size: float = 0.8,
-                                 stratify: Optional[Array1D] = None,
-                                 random_state: Optional[int] = None) -> TrainValTest:
+                                 stratify=None,
+                                 random_state: Optional[int] = None):
 
     idx = np.arange(N)
     idx_train_and_val, idx_test = train_test_split(idx,
@@ -57,13 +53,13 @@ def largest_connected_components(graph: "Graph") -> "Graph":
     _, component_indices = sp.csgraph.connected_components(graph.adj_matrix)
     component_sizes = np.bincount(component_indices)
     components_to_keep = np.argsort(component_sizes)[-1]
-    nodes_to_keep = np.where(component_indices==components_to_keep)[0]
+    nodes_to_keep = np.where(component_indices == components_to_keep)[0]
     return create_subgraph(graph, nodes_to_keep=nodes_to_keep)
 
 
 def create_subgraph(graph: "Graph", *,
-                    nodes_to_remove: Optional[Array1D] = None,
-                    nodes_to_keep: Optional[Array1D] = None) -> "Graph":
+                    nodes_to_remove=None,
+                    nodes_to_keep=None) -> "Graph":
     r"""Create a graph with the specified subset of nodes.
     Exactly one of (nodes_to_remove, nodes_to_keep) should be provided, while the other stays None.
     Note that to avoid confusion, it is required to pass node indices as named Parameters to this function.
@@ -117,7 +113,7 @@ def create_subgraph(graph: "Graph", *,
     return graph
 
 
-def binarize_labels(labels: Array1D, sparse_output: bool = False, returnum_node_classes: bool = False):
+def binarize_labels(labels, sparse_output: bool = False, returnum_node_classes: bool = False):
     """Convert labels vector to a binary label matrix.
     In the default single-label case, labels look like
     labels = [y1, y2, y3, ...].
@@ -151,11 +147,11 @@ def binarize_labels(labels: Array1D, sparse_output: bool = False, returnum_node_
     return (label_matrix, binarizer.classes_) if returnum_node_classes else label_matrix
 
 
-def get_train_val_test_split(stratify: Array1D,
+def get_train_val_test_split(stratify,
                              trainum_examples_per_class: int,
                              val_examples_per_class: int,
                              test_examples_per_class: Optional[None] = None,
-                             random_state: Optional[None] = None) -> TrainValTest:
+                             random_state: Optional[None] = None):
 
     random_state = np.random.RandomState(random_state)
     remaining_indices = list(range(stratify.shape[0]))
@@ -187,10 +183,10 @@ def get_train_val_test_split(stratify: Array1D,
     return idx_train, idx_val, idx_test
 
 
-def sample_per_class(stratify: Array1D,
+def sample_per_class(stratify,
                      num_examples_per_class: int,
-                     forbidden_indices: Optional[Array1D] = None,
-                     random_state: Optional[int] = None) -> Array1D:
+                     forbidden_indices=None,
+                     random_state: Optional[int] = None):
 
     num_node_classes = stratify.max() + 1
     num_samples = stratify.shape[0]
