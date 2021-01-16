@@ -1,37 +1,10 @@
 import numpy as np
 import scipy.sparse as sp
-import graphgallery as gg
 import tensorflow as tf
 from .to_adj import asedge
 
 __all__ = ["jaccard_score", "cosine_score",
-           "kld_score", "svd_score", "entropy_score",
-           "jaccard_similarity", "cosine_similarity",
-           "kld_divergence", "neighborhood_entropy"]
-
-
-def jaccard_similarity(A, B):
-    intersection = np.count_nonzero(A * B, axis=1)
-    J = intersection * 1.0 / (np.count_nonzero(A, axis=1) + np.count_nonzero(B, axis=1) + intersection + gg.epsilon())
-    return J
-
-
-def cosine_similarity(A, B):
-    inner_product = (A * B).sum(1)
-    C = inner_product / (np.sqrt(np.square(A).sum(1)) * np.sqrt(np.square(B).sum(1)) + gg.epsilon())
-    return C
-
-
-def kld_divergence(A, B):
-    kl = tf.keras.losses.KLDivergence(reduction=tf.keras.losses.Reduction.NONE)
-    D = kl(A, B) + kl(B, A)
-    return D
-
-
-def neighborhood_entropy(node_info, neighbor_infos):
-    infos = (neighbor_infos.sum(0) + node_info) / (neighbor_infos.shape[0] + 1)
-    entropy = infos * np.log2(infos + gg.epsilon())
-    return -np.sum(entropy)
+           "kld_score", "svd_score", "entropy_score"]
 
 
 def jaccard_score(edge, adj_matrix, matrix):
