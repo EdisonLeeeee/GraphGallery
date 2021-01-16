@@ -69,10 +69,7 @@ def add_selfloops(adj_matrix: sp.csr_matrix, fill_weight: float = 1.0):
 
     """
     def _add_selfloops(adj, w):
-        if sp.issparse(adj):
-            adj = adj - sp.diags(adj.diagonal())
-        else:
-            adj = adj - np.diag(adj)
+        adj = eliminate_selfloops(adj)
 
         # here a new copy of adj is created
         if w:
@@ -84,3 +81,13 @@ def add_selfloops(adj_matrix: sp.csr_matrix, fill_weight: float = 1.0):
         return tuple(_add_selfloops(adj_matrix, w) for w in fill_weight)
     else:
         return _add_selfloops(adj_matrix, fill_weight)
+
+
+@multiple()
+def eliminate_selfloops(adj_matrix):
+    if sp.issparse(adj_matrix):
+        adj_matrix = adj_matrix - sp.diags(adj_matrix.diagonal())
+        adj_matrix.eliminate_zeros()
+    else:
+        adj_matrix = adj_matrix - np.diag(adj_matrix)
+    return adj_matrix

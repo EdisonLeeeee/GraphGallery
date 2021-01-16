@@ -7,7 +7,7 @@ from ..data_type import is_multiobjects
 
 __all__ = ["get_num_nodes", "get_num_edges", "get_num_graphs",
            "get_num_node_attrs", "get_num_node_classes", "get_degree",
-           "is_directed", "is_singleton", "is_selfloops",
+           "is_directed", "has_singleton", "has_selfloops",
            "is_binary", "is_weighted", "is_connected", "is_symmetric"
            ]
 
@@ -94,19 +94,19 @@ def is_directed(A) -> bool:
     return (A != A.T).sum() != 0
 
 
-def is_singleton(A) -> bool:
+def has_singleton(A) -> bool:
     assert A is not None
     if is_multiobjects(A):
-        return any(is_singleton(adj) for adj in A)
+        return any(has_singleton(adj) for adj in A)
     out_deg = A.sum(1).A1
     in_deg = A.sum(0).A1
     return np.any(np.logical_and(in_deg == 0, out_deg == 0))
 
 
-def is_selfloops(A) -> bool:
+def has_selfloops(A) -> bool:
     assert A is not None
     if is_multiobjects(A):
-        return any(is_selfloops(adj) for adj in A)
+        return any(has_selfloops(adj) for adj in A)
     return A.diagonal().sum() != 0
 
 
@@ -137,5 +137,3 @@ def is_connected(A) -> bool:
         return all(is_weighted(adj) for adj in A)
     _, connected_components = sp.csgraph.connected_components(A)
     return np.all(connected_components == 0)
-
-
