@@ -79,7 +79,7 @@ def _check_label_matrix(label_matrix, copy=False):
 
 def _check_edge_index(edge_index, copy=False):
     edge_index = np.array(edge_index, dtype=np.int64, copy=copy)
-    return gf.asedge(edge_index)
+    return gf.asedge(edge_index, shape="col_wise")
 
 
 def _check_edge_weight(edge_weight, copy=False):

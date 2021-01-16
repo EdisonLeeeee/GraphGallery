@@ -107,7 +107,7 @@ class IG(TargetedAttacker):
             ])
 
         if not self.allow_singleton:
-            candidate_edges = gf.filter_singletons(candidate_edges, adj)
+            candidate_edges = gf.singleton_filter(candidate_edges, adj)
 
         return candidate_edges
 

@@ -1,11 +1,12 @@
 import warnings
 import numpy as np
+from scipy.sparse.csgraph import minimum_spanning_tree
 from .to_adj import asedge
 
-__all__ = ["filter_singletons"]
+__all__ = ["singleton_filter", "connected_filter"]
 
 
-def filter_singletons(edge, adj_matrix):
+def singleton_filter(edge, adj_matrix):
     """
     Filter edges that, if removed, would turn one or more nodes 
     into singleton nodes.
@@ -22,19 +23,43 @@ def filter_singletons(edge, adj_matrix):
         the edges that removed will not generate singleton nodes.
     """
 
-    edge = asedge(edge, shape="col_wise")  # shape [2, M]
+    edge = asedge(edge, shape="row_wise")  # shape [M, 2]
     if edge.size == 0:
         warnings.warn("No edges found.", UserWarning)
         return edge
 
     degs = adj_matrix.sum(1).A1
-    existing_edge = adj_matrix.tocsr(copy=False)[edge[0], edge[1]].A1
+    existing_edge = adj_matrix.tocsr(copy=False)[edge[:, 0], edge[:, 1]].A1
 
     if existing_edge.size > 0:
-        edge_degrees = degs[edge] - 2 * existing_edge[None, :] + 1
+        edge_degrees = degs[edge] - 2 * existing_edge[:, None] + 1
     else:
         edge_degrees = degs[edge] + 1
 
-    mask = np.logical_and(edge_degrees[0] > 0, edge_degrees[1] > 0)
-    remained_edge = edge[:, mask]
-    return remained_edge.T
+    mask = np.logical_and(edge_degrees[:, 0] > 0, edge_degrees[:, 1] > 0)
+    return edge[mask]
+
+
+def connected_filter(edge, adj_matrix, score=None):
+    edge = asedge(edge, shape="row_wise")  # shape [M,2]
+
+    if edge.size == 0:
+        warnings.warn("No edges found.", UserWarning)
+        return edge
+
+    if score is None:
+        score = np.ones(edge.shape[0])
+    else:
+        assert edge.shape[0] == score.shape[0]
+
+    edge_sym = np.vstack([edge, edge[:, [1, 0]]])
+    score_sym = np.hstack([score, score])
+
+    csgraph = adj_matrix.tolil(copy=True)
+    csgraph[edge_sym[:, 0], edge_sym[:, 1]] = 1 - score_sym
+    csgraph = csgraph.tocsr()
+    mst = minimum_spanning_tree(csgraph)
+
+    row, col = edge.T
+    mask = np.logical_and(mst[(row, col)].A1 == 0, mst[(col, row)].A1 == 0)
+    return edge[mask]

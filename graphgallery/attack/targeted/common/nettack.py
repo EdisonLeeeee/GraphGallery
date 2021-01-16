@@ -391,7 +391,7 @@ class Nettack(TargetedAttacker):
             if structure_attack:
                 # Do not consider edges that, if removed, result in singleton edges in the graph.
                 if not self.allow_singleton:
-                    filtered_edges = gf.filter_singletons(self.potential_edges, self.modified_adj).astype("int32")
+                    filtered_edges = gf.singleton_filter(self.potential_edges, self.modified_adj).astype("int32")
                 else:
                     filtered_edges = self.potential_edges
 

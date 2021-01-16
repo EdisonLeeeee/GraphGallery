@@ -54,7 +54,7 @@ class NodeEmbeddingAttack(TargetedAttacker):
                 for infl in influence_nodes
             ])
         if not self.allow_singleton:
-            candidates = gf.filter_singletons(candidates, adj)
+            candidates = gf.singleton_filter(candidates, adj)
 
         delta_w = 1. - 2 * adj[candidates[:, 0], candidates[:, 1]].A1
         loss_for_candidates = estimate_loss_with_delta_eigenvals(

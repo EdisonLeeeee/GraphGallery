@@ -93,8 +93,8 @@ class GFA(TargetedAttacker):
                        disable=disable):
 
             if not self.allow_singleton:
-                filtered_edges = gf.filter_singletons(potential_edges,
-                                                      self.modified_adj)
+                filtered_edges = gf.singleton_filter(potential_edges,
+                                                     self.modified_adj)
             else:
                 filtered_edges = potential_edges
 

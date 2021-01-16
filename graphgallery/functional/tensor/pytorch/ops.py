@@ -7,9 +7,9 @@ from typing import Any
 from graphgallery import functional as gf
 
 __all__ = ["gather", "sparse_adj_to_sparse_tensor", "sparse_tensor_to_sparse_adj",
-    "sparse_edge_to_sparse_tensor", "normalize_adj_tensor",
-    "add_selfloops_edge", "normalize_edge_tensor"
-]
+           "sparse_edge_to_sparse_tensor", "normalize_adj_tensor",
+           "add_selfloops_edge", "normalize_edge_tensor"
+           ]
 
 _DTYPE_TO_CLASS = {
     'torch.float16': "HalfTensor",
@@ -22,10 +22,12 @@ _DTYPE_TO_CLASS = {
     'torch.bool': "BoolTensor"
 }
 
+
 def gather(out, out_weight):
     if out_weight is not None:
         return out[out_weight]
     return out
+
 
 def dtype_to_tensor_class(dtype: str):
     tensor_class = _DTYPE_TO_CLASS.get(str(dtype), None)
@@ -41,7 +43,7 @@ def sparse_edge_to_sparse_tensor(edge_index: np.ndarray,
     edge_index: shape [2, M]
     edge_weight: shape [M,]
     """
-    edge_index = gf.asedge(edge_index)
+    edge_index = gf.asedge(edge_index, shape="col_wise")
     edge_index = torch.LongTensor(edge_index)
 
     if edge_weight is None:
@@ -93,6 +95,7 @@ def normalize_adj_tensor(adj, rate=-0.5, fill_weight=1.0):
     d_power = d.pow(rate).flatten()
     d_power_mat = torch.diag(d_power)
     return d_power_mat @ adj @ d_power_mat
+
 
 def add_selfloops_edge(edge_index,
                        edge_weight,

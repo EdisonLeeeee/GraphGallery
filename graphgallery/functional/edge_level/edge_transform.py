@@ -12,7 +12,7 @@ __all__ = ['add_selfloops_edge', 'normalize_edge', 'augment_edge']
 
 
 def add_selfloops_edge(edge_index, edge_weight, num_nodes=None, fill_weight=1.0):
-    edge_index = asedge(edge_index)
+    edge_index = asedge(edge_index, shape="col_wise")
 
     if num_nodes is None:
         num_nodes = edge_index.max() + 1
@@ -31,7 +31,7 @@ def add_selfloops_edge(edge_index, edge_weight, num_nodes=None, fill_weight=1.0)
 
 
 def normalize_edge(edge_index, edge_weight=None, rate=-0.5, fill_weight=1.0):
-    edge_index = asedge(edge_index)
+    edge_index = asedge(edge_index, shape="col_wise")
 
     num_nodes = edge_index.max() + 1
 
@@ -90,7 +90,7 @@ def augment_edge(edge_index: np.ndarray, nodes: np.ndarray,
     if nbrs_to_link is not None and common_nbrs is not None:
         raise RuntimeError("Only one of them should be specified.")
 
-    edge_index = asedge(edge_index)
+    edge_index = asedge(edge_index, shape="col_wise")
 
     if edge_weight is None:
         edge_weight = np.ones(edge_index.shape[1], dtype=gg.floatx())

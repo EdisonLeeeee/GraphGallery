@@ -4,11 +4,11 @@ import scipy.sparse as sp
 
 from ..transforms import Transform
 from ..get_transform import Transformers
-from ..edge_level import filter_singletons
+from ..edge_level import singleton_filter
 from ..sparse import remove_edge
 import graphgallery as gg
 
-__all__ = ["JaccardDetection", "CosineDetection", "SVD", "jaccard_similarity", 
+__all__ = ["JaccardDetection", "CosineDetection", "SVD", "jaccard_similarity",
            "jaccard_detection", "cosine_detection", "svd", "cosine_similarity"]
 
 
@@ -36,7 +36,7 @@ def filter_edges_by_similarity(adj_matrix, node_attr,
     idx = np.where(S <= threshold)[0]
     flips = np.vstack([rows[idx], cols[idx]])
     if not allow_singleton and flips.size > 0:
-        flips = filter_singletons(flips, adj_matrix)
+        flips = singleton_filter(flips, adj_matrix)
     return flips
 
 
