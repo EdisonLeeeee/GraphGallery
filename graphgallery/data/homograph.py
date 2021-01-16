@@ -4,6 +4,8 @@ import scipy.sparse as sp
 
 from typing import Union, Optional, List, Tuple, Any, Callable
 
+import graphgallery.functional as gf
+
 from .base_graph import BaseGraph
 from .preprocess import create_subgraph
 from .utils import *
@@ -141,6 +143,13 @@ class HomoGraph(BaseGraph):
     @property
     def degree(self):
         return get_degree(self.adj_matrix)
+    
+    def add_selfloops(self, fill_weight=1.0):
+        g = self.copy()
+        A = g.adj_matrix
+        assert A is not None
+        self.adj_matrix = gf.add_selfloops(A, fill_weight=fill_weight)
+        return self
 
     def is_directed(self) -> bool:
         """Check if the graph is directed (adjacency matrix is not symmetric)."""

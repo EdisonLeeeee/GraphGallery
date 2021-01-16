@@ -90,4 +90,4 @@ def ego_graph(adj_matrix, targets, hops: int = 1):
     else:
         e = []
 
-    return asedge(list(edges.keys()) + e), np.asarray(nodes)
+    return asedge(list(edges.keys()) + e, shape='row_wise'), np.asarray(nodes)

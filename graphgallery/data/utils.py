@@ -137,3 +137,5 @@ def is_connected(A) -> bool:
         return all(is_weighted(adj) for adj in A)
     _, connected_components = sp.csgraph.connected_components(A)
     return np.all(connected_components == 0)
+
+

@@ -93,27 +93,27 @@ class Graph(HomoGraph):
         nodes_to_keep = mask.nonzero()[0]
         return G.subgraph(nodes_to_keep=nodes_to_keep)
 
-    def add_selfloops(self, value=1.0):
-        """Set the diagonal."""
-        G = self.eliminate_selfloops()
-        A = G.adj_matrix
-        A = A + sp.diags(A.diagonal() + value)
-        A.eliminate_zeros()
-        G.adj_matrix = A
-        return G
+#     def add_selfloops(self, value=1.0):
+#         """Set the diagonal."""
+#         G = self.eliminate_selfloops()
+#         A = G.adj_matrix
+#         A = A + sp.diags(A.diagonal() + value)
+#         A.eliminate_zeros()
+#         G.adj_matrix = A
+#         return G
     
     def from_flips(self, **flips):
         """Return a new graph from:
-        'adj_flips' or 'nattr_flips'
+        'edge_flips' or 'nx_flips'
         """
-        allowed = ("adj_flips", "nattr_flips")
+        allowed = ("edge_flips", "nx_flips")
         g = self.copy()
         for k, v in flips.items():
             if v is None:
                 continue
-            if k=="adj_flips":
+            if k=="edge_flips":
                 g.update(adj_matrix=gf.flip_adj(g.adj_matrix, v))
-            elif k=="nattr_flips":
+            elif k=="nx_flips":
                 g.update(node_attr=gf.flip_attr(g.node_attr, v))
             else:
                 raise ValueError(f"Unrecognized key {k}, allowed: {allowed}.")
