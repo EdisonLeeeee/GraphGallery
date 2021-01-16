@@ -47,7 +47,7 @@ class SimPGCN(Trainer):
 
     def builder(self,
                 hids=[64],
-                acts=['relu'],
+                acts=[None],
                 dropout=0.5,
                 lambda_=5.0,
                 gamma=0.1,                
