@@ -101,7 +101,8 @@ class SGA(TargetedAttacker):
         neighbors = self.graph.adj_matrix[target].indices
         wrong_label_nodes = self.similar_nodes[wrong_label]
         sub_edges, sub_nodes = self.ego_subgraph()
-
+        sub_edges = sub_edges.T # shape [2, M]
+        
         if self.direct_attack or reduced_nodes is not None:
             influence_nodes = [target]
             wrong_label_nodes = np.setdiff1d(wrong_label_nodes, neighbors)
