@@ -74,7 +74,22 @@ class HomoGraph(BaseGraph):
         For undirected graphs, (i, j) and (j, i) are counted as single edge.
         """
         return get_num_edges(self.adj_matrix, self.is_directed())
-
+    @property
+    def density(self) -> float:
+        """Get the density of the graph.
+        It is defined as M/(N x N)
+        where M is number of edges and N is number of nodes
+        """        
+        return self.num_edges/self.num_nodes**2
+    
+    @property
+    def sparsity(self) -> float:
+        """Get the sparsity of the graph.
+        It is defined as 1 - M/(N x N)
+        where M is number of edges and N is number of nodes
+        """        
+        return 1.0 - self.density
+    
     @property
     def num_graphs(self) -> int:
         """Get the number of graphs."""
