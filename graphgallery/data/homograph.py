@@ -4,7 +4,7 @@ import scipy.sparse as sp
 
 from typing import Union, Optional, List, Tuple, Any, Callable
 
-import graphgallery.functional as gf
+from graphgallery import functional as gf
 
 from .base_graph import BaseGraph
 from .preprocess import create_subgraph
