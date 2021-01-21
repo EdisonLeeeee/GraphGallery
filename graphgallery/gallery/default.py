@@ -41,7 +41,7 @@ def default_cfg(model):
     cfg.train.ModelCheckpoint.remove_weights = True
     # checkpoint path
     # use `uuid` to avoid duplication
-    cfg.train.ModelCheckpoint.path = osp.join(os.getcwd(),
+    cfg.train.ModelCheckpoint.path = osp.join(".",
                                               f"{cfg.name}_checkpoint_{uuid.uuid1().hex[:6]}{gg.file_ext()}")
     cfg.train.ModelCheckpoint.monitor = 'val_accuracy'
     cfg.train.ModelCheckpoint.save_best_only = True
