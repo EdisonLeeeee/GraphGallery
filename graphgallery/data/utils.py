@@ -107,7 +107,7 @@ def has_selfloops(A) -> bool:
     assert A is not None
     if is_multiobjects(A):
         return any(has_selfloops(adj) for adj in A)
-    return A.diagonal().sum() != 0
+    return not np.allclose(A.diagonal(), 0)
 
 
 def is_binary(A) -> bool:
@@ -135,5 +135,4 @@ def is_connected(A) -> bool:
     assert A is not None
     if is_multiobjects(A):
         return all(is_weighted(adj) for adj in A)
-    _, connected_components = sp.csgraph.connected_components(A)
-    return np.all(connected_components == 0)
+    return sp.csgraph.connected_components(A, return_labels=False) == 1
