@@ -33,14 +33,14 @@ class InMemoryDataset(Dataset):
 
         if files_exist(self.raw_paths) or files_exist(self.processed_path):
             if self.verbose:
-                print(f"Dataset {self.name} have already existed, loading it.")
+                print(f"Dataset {self.name} has already existed, loading it.")
                 self.show()
             return
         elif files_exist(self.download_paths):
             extract_zip(self.download_paths)
             if self.verbose:
                 print(
-                    f"Dataset {self.name} have already existed, extracting it."
+                    f"Dataset {self.name} has already existed, extracting it."
                 )
                 self.show()
             return
@@ -65,7 +65,7 @@ class InMemoryDataset(Dataset):
 
         if files_exist(self.processed_path):
             if self.verbose:
-                print(f"Processed dataset {self.name} have already existed.")
+                print(f"Processed dataset {self.name} has already existed.")
                 self.show(self.processed_path)
             with open(self.processed_path, 'rb') as f:
                 cache = pkl.load(f)
