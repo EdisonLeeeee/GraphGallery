@@ -13,7 +13,6 @@ from ..data.graph import Graph
 _DATASETS = {'citeseer', 'cora', 'pubmed'}
 _DATASET_URL = "https://github.com/EdisonLeeeee/" + \
     "GraphData/raw/master/datasets/planetoid"
-Transform = Union[List, Tuple, str, List, Tuple, Callable]
 
 
 class Planetoid(InMemoryDataset):
@@ -32,7 +31,7 @@ class Planetoid(InMemoryDataset):
                  name: str,
                  root: Optional[str] = None,
                  url: Optional[str] = None,
-                 transform: Optional[Transform] = None,
+                 transform=None,
                  verbose: bool = True):
         name = str(name)
 

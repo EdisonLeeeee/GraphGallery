@@ -9,15 +9,13 @@ from tabulate import tabulate
 from graphgallery import functional as gf
 from ..data.preprocess import train_val_test_split_tabular, get_train_val_test_split
 
-Transform = Union[List, Tuple, str, List, Tuple, Callable]
-
 
 class Dataset:
     def __init__(self,
                  name: str,
                  root: Optional[str] = None,
                  url: Optional[str] = None,
-                 transform: Optional[Transform] = None,
+                 transform=None,
                  verbose: bool = True):
 
         if root is None:

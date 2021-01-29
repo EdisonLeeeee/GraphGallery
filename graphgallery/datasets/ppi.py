@@ -12,8 +12,6 @@ from .in_memory_dataset import InMemoryDataset
 from ..data.multi_graph import MultiGraph
 from graphgallery import functional as gf
 
-Transform = Union[List, Tuple, str, List, Tuple, Callable]
-
 
 class PPI(InMemoryDataset):
     r"""The protein-protein interaction networks from the `"Predicting
@@ -32,7 +30,7 @@ class PPI(InMemoryDataset):
     def __init__(self,
                  root: Optional[str] = None,
                  url: Optional[str] = None,
-                 transform: Optional[Transform] = None,
+                 transform=None,
                  verbose: bool = True):
         super().__init__("ppi", root, url, transform, verbose)
 

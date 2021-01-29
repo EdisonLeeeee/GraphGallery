@@ -10,19 +10,18 @@ from typing import Optional, List, Tuple, Callable, Union
 from .dataset import Dataset
 from ..data.io import makedirs, files_exist, download_file, extract_zip, clean
 
-Transform = Union[List, Tuple, str, List, Tuple, Callable]
-
 
 class InMemoryDataset(Dataset):
     r"""Dataset base class for creating graph datasets which fit completely
     into CPU memory.
     motivated by pytorch_geometric <https://github.com/rusty1s/pytorch_geometric/blob/master/torch_geometric/data/in_memory_dataset.py>
     """
+
     def __init__(self,
                  name: Optional[str] = None,
                  root: Optional[str] = None,
                  url: Optional[str] = None,
-                 transform: Optional[Transform] = None,
+                 transform=None,
                  verbose: bool = True):
         super().__init__(name, root, url, transform, verbose)
 

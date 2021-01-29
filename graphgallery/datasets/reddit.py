@@ -9,8 +9,6 @@ from typing import Optional, List, Tuple, Callable, Union
 from .in_memory_dataset import InMemoryDataset
 from ..data.graph import Graph
 
-Transform = Union[List, Tuple, str, List, Tuple, Callable]
-
 
 class Reddit(InMemoryDataset):
     r"""The Reddit dataset from the `"Inductive Representation Learning on
@@ -23,7 +21,7 @@ class Reddit(InMemoryDataset):
     def __init__(self,
                  root: Optional[str] = None,
                  url: Optional[str] = None,
-                 transform: Optional[Transform] = None,
+                 transform=None,
                  verbose: bool = True):
         super().__init__("reddit", root, url, transform, verbose)
 

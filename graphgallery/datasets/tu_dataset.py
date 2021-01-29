@@ -14,8 +14,6 @@ from .in_memory_dataset import InMemoryDataset
 from ..data.edge_graph import EdgeGraph
 from ..data.io import makedirs, extract_zip, clean
 
-Transform = Union[List, Tuple, str, List, Tuple, Callable]
-
 _DATASET_URL = 'https://ls11-www.cs.tu-dortmund.de/people/morris/graphkerneldatasets'
 _DATASET_CLEAN_URL = 'https://raw.githubusercontent.com/nd7141/graph_datasets/master/datasets'
 
@@ -31,11 +29,12 @@ class TUDataset(InMemoryDataset):
     graphs.
 
     """
+
     def __init__(self,
                  name: str,
                  root: Optional[str] = None,
                  url: Optional[str] = None,
-                 transform: Optional[Transform] = None,
+                 transform=None,
                  verbose: bool = True,
                  task=None):
 
@@ -81,7 +80,7 @@ class TUDataset(InMemoryDataset):
                                 dtype=np.int64).T - 1
         node_graph_label = genfromtxt(osp.join(
             folder, prefix + '_graph_indicator.txt'),
-                                      dtype=np.int64) - 1
+            dtype=np.int64) - 1
         edge_graph_label = node_graph_label[edge_index[0]]
 
         node_attr = node_label = None
@@ -111,7 +110,7 @@ class TUDataset(InMemoryDataset):
         if 'graph_attributes' in names:  # Regression problem.
             graph_attr = np.genfromtxt(osp.join(
                 folder, prefix + '_graph_attributes.txt'),
-                                       dtype=np.float32)
+                dtype=np.float32)
         if 'graph_labels' in names:  # Classification problem.
             graph_label = np.genfromtxt(osp.join(folder,
                                                  prefix + '_graph_labels.txt'),
