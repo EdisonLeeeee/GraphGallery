@@ -1,10 +1,10 @@
-import os
 import os.path as osp
 import numpy as np
 import scipy.sparse as sp
 import pickle as pkl
 
-from typing import Optional, List, Tuple, Callable, Union
+from typing import Optional, List
+from graphgallery import functional as gf
 
 from .in_memory_dataset import InMemoryDataset
 from ..data.graph import Graph
@@ -19,17 +19,23 @@ class Reddit(InMemoryDataset):
     _url = 'https://data.dgl.ai/dataset/reddit.zip'
 
     def __init__(self,
-                 root: Optional[str] = None,
-                 url: Optional[str] = None,
+                 root=None,
+                 *,
                  transform=None,
-                 verbose: bool = True):
-        super().__init__("reddit", root, url, transform, verbose)
+                 verbose=True,
+                 url=None,
+                 remove_download=True):
+
+        super().__init__(name="reddit", root=root,
+                         transform=transform,
+                         verbose=verbose, url=url,
+                         remove_download=remove_download)
 
     @staticmethod
     def available_datasets():
-        return "reddit"
+        return gf.BunchDict(reddit="reddit dataset")
 
-    def _process(self) -> dict:
+    def _process(self):
 
         data = np.load(osp.join(self.download_dir, 'reddit_data.npz'))
         adj_matrix = sp.load_npz(
@@ -51,7 +57,7 @@ class Reddit(InMemoryDataset):
                      val_nodes=val_nodes,
                      test_nodes=test_nodes,
                      graph=graph)
-        with open(self.processed_path, 'wb') as f:
+        with open(self.process_path, 'wb') as f:
             pkl.dump(cache, f)
         return cache
 
@@ -68,11 +74,7 @@ class Reddit(InMemoryDataset):
                                        random_state)
 
     @property
-    def url(self) -> List[str]:
-        return self._url
-
-    @property
-    def processed_filename(self):
+    def process_filename(self):
         return f'{self.name}.pkl'
 
     @property

@@ -10,3 +10,6 @@ def test_repeat():
     assert repeat([2, 3, 4], length=4) == [2, 3, 4, 4]
     assert repeat([1, 2, 3, 4], length=4) == [1, 2, 3, 4]
     assert repeat([1, 2, 3, 4, 5], length=4) == [1, 2, 3, 4]
+
+if __name__ == "__main__":
+    test_repeat()

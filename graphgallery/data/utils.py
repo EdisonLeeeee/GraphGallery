@@ -1,8 +1,6 @@
 import numpy as np
-import networkx as nx
 import scipy.sparse as sp
 
-from typing import Union, Optional, List, Tuple, Any, Callable
 from ..data_type import is_multiobjects
 
 __all__ = ["get_num_nodes", "get_num_edges", "get_num_graphs",

@@ -148,7 +148,7 @@ def check_and_convert(key, value, multiple=False, copy=False) -> dict:
 
         if multiple:
             if is_multiobjects(value):
-                value = np.asarray([check_fn(v, copy=copy) for v in value])
+                value = np.asarray([check_fn(v, copy=copy) for v in value], dtype=object)
             else:
                 value = check_fn(value, copy=copy)
                 if key != "graph_label":

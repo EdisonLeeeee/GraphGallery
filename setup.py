@@ -18,6 +18,7 @@ def get_version():
 
     return version
 
+
 VERSION = get_version()
 url = 'https://github.com/EdisonLeeeee/GraphGallery'
 
@@ -27,6 +28,7 @@ install_requires = [
     'scipy',
     'numpy',
     'tabulate',
+    'pandas',
     'scikit_learn',
     'torch>=1.4',
     'tensorflow>=2.1.0',

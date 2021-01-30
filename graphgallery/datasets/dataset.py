@@ -1,6 +1,4 @@
-import os
 import glob
-import numpy as np
 import os.path as osp
 
 from typing import Union, Optional, List, Tuple, Callable
@@ -12,14 +10,15 @@ from ..data.preprocess import train_val_test_split_tabular, get_train_val_test_s
 
 class Dataset:
     def __init__(self,
-                 name: str,
-                 root: Optional[str] = None,
-                 url: Optional[str] = None,
+                 name,
+                 root=None,
+                 *,
                  transform=None,
-                 verbose: bool = True):
+                 verbose=True,
+                 url=None):
 
         if root is None:
-            root = 'dataset'
+            root = 'datasets'
 
         assert isinstance(root, str), root
         root = osp.abspath(osp.expanduser(root))
@@ -31,7 +30,7 @@ class Dataset:
         self.name = str(name)
         self.verbose = verbose
 
-        self.graph = None
+        self._graph = None
         self.split_cache = None
         self.splits = gf.BunchDict()
         self.transform = gf.get(transform)
@@ -41,13 +40,14 @@ class Dataset:
         """alias of graph"""
         return self.graph
 
+    @property
+    def graph(self):
+        """alias of graph"""
+        return self.transform(self._graph)
+
     @staticmethod
     def available_datasets():
-        return None
-
-    @property
-    def urls(self) -> List[str]:
-        return [self.url]
+        return dict()
 
     @property
     def url(self) -> str:
@@ -117,7 +117,7 @@ class Dataset:
                      random_state: Optional[int] = None) -> dict:
         raise NotImplementedError
 
-    def show(self, *filepaths: str) -> None:
+    def show(self, *filepaths) -> None:
         if not filepaths:
             filepaths = self.list_files()
 

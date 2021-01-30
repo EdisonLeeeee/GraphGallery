@@ -6,7 +6,7 @@ import networkx as nx
 import pickle as pkl
 
 from itertools import product
-from typing import Optional, List, Tuple, Callable, Union
+from typing import Optional, List
 
 from .in_memory_dataset import InMemoryDataset
 from ..data.multi_graph import MultiGraph
@@ -28,17 +28,23 @@ class PPI(InMemoryDataset):
     _url = 'https://data.dgl.ai/dataset/ppi.zip'
 
     def __init__(self,
-                 root: Optional[str] = None,
-                 url: Optional[str] = None,
+                 root=None,
+                 *,
                  transform=None,
-                 verbose: bool = True):
-        super().__init__("ppi", root, url, transform, verbose)
+                 verbose=True,
+                 url=None,
+                 remove_download=True):
+
+        super().__init__(name="ppi", root=root,
+                         transform=transform,
+                         verbose=verbose, url=url,
+                         remove_download=remove_download)
 
     @staticmethod
     def available_datasets():
-        return "ppi"
+        return gf.BunchDict(ppi="ppi dataset")
 
-    def _process(self) -> dict:
+    def _process(self):
 
         adj_matrices = []
         node_attrs = []
@@ -74,7 +80,7 @@ class PPI(InMemoryDataset):
                            node_labels,
                            graph_label=graph_labels)
         cache['graph'] = graph
-        with open(self.processed_path, 'wb') as f:
+        with open(self.process_path, 'wb') as f:
             pkl.dump(cache, f)
         return cache
 
@@ -93,25 +99,21 @@ class PPI(InMemoryDataset):
         return self.splits
 
     @property
-    def url(self) -> str:
-        return self._url
-
-    @property
-    def processed_filename(self) -> str:
+    def process_filename(self):
         return f'{self.name}.pkl'
 
     @property
-    def raw_filenames(self) -> List[str]:
+    def raw_filenames(self):
         splits = ['train', 'valid', 'test']
         files = ['feats.npy', 'graph_id.npy', 'graph.json', 'labels.npy']
         return ['{}_{}'.format(s, f) for s, f in product(splits, files)]
 
     @property
-    def download_paths(self) -> str:
+    def download_paths(self):
         return [osp.join(self.download_dir, self.name + '.zip')]
 
     @property
-    def raw_paths(self) -> List[str]:
+    def raw_paths(self):
         return [
             osp.join(self.download_dir, raw_filename)
             for raw_filename in self.raw_filenames

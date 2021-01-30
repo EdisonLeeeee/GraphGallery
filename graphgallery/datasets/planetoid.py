@@ -1,16 +1,18 @@
 import os
 import os.path as osp
-import numpy as np
-import pickle as pkl
 
-from typing import Optional, List, Tuple, Callable, Union
+from typing import Optional, List
+from graphgallery import functional as gf
 
 from .in_memory_dataset import InMemoryDataset
-from ..data.io import makedirs, files_exist, download_file
+from ..data.io import makedirs, download_file
 from ..data.preprocess import process_planetoid_datasets
 from ..data.graph import Graph
 
-_DATASETS = {'citeseer', 'cora', 'pubmed'}
+_DATASETS = gf.BunchDict(citeseer="citeseer citation dataset",
+                         cora="cora citation dataset",
+                         pubmed="pubmed citation dataset")
+
 _DATASET_URL = "https://github.com/EdisonLeeeee/" + \
     "GraphData/raw/master/datasets/planetoid"
 
@@ -28,29 +30,28 @@ class Planetoid(InMemoryDataset):
     _url = _DATASET_URL
 
     def __init__(self,
-                 name: str,
-                 root: Optional[str] = None,
-                 url: Optional[str] = None,
+                 name,
+                 root=None,
+                 *,
                  transform=None,
-                 verbose: bool = True):
-        name = str(name)
+                 verbose=True,
+                 url=None,
+                 remove_download=False):
 
         if not name in self.available_datasets():
             raise ValueError(
-                f"Currently only support for these datasets {self.available_datasets()}."
+                f"Currently only support for these datasets {tuple(self.available_datasets().keys())}."
             )
-
-        super().__init__(name, root, url, transform, verbose)
+        super().__init__(name=name, root=root,
+                         transform=transform,
+                         verbose=verbose, url=url,
+                         remove_download=remove_download)
 
     @staticmethod
     def available_datasets():
         return _DATASETS
 
-    def _download(self):
-        makedirs(self.download_dir)
-        download_file(self.download_paths, self.urls)
-
-    def _process(self) -> dict:
+    def _process(self):
 
         adj_matrix, node_attr, node_label, train_nodes, val_nodes, test_nodes = process_planetoid_datasets(
             self.name, self.raw_paths)
@@ -65,8 +66,8 @@ class Planetoid(InMemoryDataset):
                     train_size: float = None,
                     val_size: float = None,
                     test_size: float = None,
-                    random_state: Optional[int] = None) -> dict:
-
+                    random_state: Optional[int] = None):
+        # TODO: fix when val_size = None
         if not all((train_size, val_size, test_size)):
             self.splits.update(self.split_cache)
             return self.splits
@@ -75,25 +76,21 @@ class Planetoid(InMemoryDataset):
                                        random_state)
 
     @property
-    def urls(self) -> List[str]:
+    def urls(self):
         return [f"{self._url}/{raw_filename}"
                 for raw_filename in self.raw_filenames]
 
-    @ property
+    @property
     def download_dir(self):
         return osp.join(self.root, 'planetoid')
 
-    @ property
-    def processed_path(self) -> str:
-        return None
-
-    @ property
-    def raw_filenames(self) -> List[str]:
+    @property
+    def raw_filenames(self):
         names = ['x', 'tx', 'allx', 'y', 'ty', 'ally', 'graph', 'test.index']
         return ['ind.{}.{}'.format(self.name.lower(), name) for name in names]
 
-    @ property
-    def raw_paths(self) -> List[str]:
+    @property
+    def raw_paths(self):
         return [
             osp.join(self.download_dir, raw_filename)
             for raw_filename in self.raw_filenames

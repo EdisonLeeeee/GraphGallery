@@ -53,9 +53,11 @@ def prettify(item):
         else:
             val = f"{val.__class__.__name__}, shape={val.shape}"
     else:
-        try:
-            val = f"{type(val).__name__}, len={len(val)}"
-        except TypeError:
-            pass
-
+        if isinstance(val, str):
+            val = f"{type(val).__name__}, {val}"
+        else:
+            try:
+                val = f"{type(val).__name__}, len={len(val)}"
+            except TypeError:
+                pass
     return key, val

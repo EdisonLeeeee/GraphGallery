@@ -34,3 +34,7 @@ def test_device():
         pass
     device = torch.device("cpu")
     assert device(device, "torch") == device
+    
+    
+if __name__ == "__main__":
+    test_device()    

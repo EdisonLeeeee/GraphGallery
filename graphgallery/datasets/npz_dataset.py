@@ -1,12 +1,9 @@
-import os
 import sys
-import zipfile
 import os.path as osp
-import numpy as np
 
-from typing import Optional, List, Tuple, Union, Callable
+from typing import Optional, List
 from .in_memory_dataset import InMemoryDataset
-from ..data.io import makedirs, files_exist, download_file
+from ..data.io import makedirs, download_file
 from ..data.graph import Graph
 
 _DATASETS = {
@@ -23,11 +20,13 @@ class NPZDataset(InMemoryDataset):
     _url = _DATASET_URL
 
     def __init__(self,
-                 name: str,
-                 root: Optional[str] = None,
-                 url: Optional[str] = None,
+                 name,
+                 root=None,
+                 *,
                  transform=None,
-                 verbose: bool = True):
+                 verbose=True,
+                 url=None,
+                 remove_download=False):
 
         name = str(name)
         if not name in self.available_datasets():
@@ -37,8 +36,10 @@ class NPZDataset(InMemoryDataset):
             self.custom = True
         else:
             self.custom = False
-
-        super().__init__(name, root, url, transform, verbose)
+        super().__init__(name=name, root=root,
+                         transform=transform,
+                         verbose=verbose, url=url,
+                         remove_download=remove_download)
 
     @staticmethod
     def available_datasets():
@@ -61,10 +62,6 @@ class NPZDataset(InMemoryDataset):
     def _process(self) -> dict:
         graph = Graph.from_npz(self.raw_paths[0])
         return dict(graph=graph)
-
-    @property
-    def processed_path(self) -> str:
-        return None
 
     @property
     def url(self) -> str:

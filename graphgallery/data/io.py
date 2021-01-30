@@ -1,18 +1,19 @@
+import io
 import os
 import errno
 import zipfile
 import os.path as osp
 import numpy as np
+import pandas as pd
 from tensorflow.keras.utils import get_file
-from typing import List
 
 __all__ = [
     'download_file', 'files_exist', 'makedirs', 'makedirs_from_filepath',
-    'extract_zip', 'clean', 'load_npz'
+    'extract_zip', 'remove', 'load_npz', 'read_csv',
 ]
 
 
-def download_file(raw_paths: List[str], urls: List[str]) -> None:
+def download_file(raw_paths, urls):
     if isinstance(raw_paths, str):
         raw_paths = (raw_paths, )
     if isinstance(urls, str):
@@ -41,9 +42,12 @@ def extract_zip(filename, folder=None):
     filename (string): The path to the tar archive.
     folder (string): The folder.
     """
+    if not filename:
+        return
     if isinstance(filename, (list, tuple)):
         for f in filename:
-            extract_zip(f, folder)
+            if f.endswith(".zip"):
+                extract_zip(f, folder)
         return
 
     if folder is None:
@@ -53,7 +57,7 @@ def extract_zip(filename, folder=None):
         f.extractall(folder)
 
 
-def clean(filepaths: List[str]):
+def remove(filepaths):
     if isinstance(filepaths, str):
         filepaths = (filepaths, )
     for path in filepaths:
@@ -61,7 +65,7 @@ def clean(filepaths: List[str]):
             os.unlink(path)
 
 
-def files_exist(files: List[str]) -> bool:
+def files_exist(files) -> bool:
     if not files:
         return False
     if isinstance(files, (list, tuple)):
@@ -70,7 +74,7 @@ def files_exist(files: List[str]) -> bool:
         return osp.exists(files)
 
 
-def makedirs(path: str) -> None:
+def makedirs(path: str):
     try:
         os.makedirs(osp.expanduser(osp.normpath(path)), exist_ok=True)
     except OSError as e:
@@ -78,7 +82,7 @@ def makedirs(path: str) -> None:
             raise e
 
 
-def makedirs_from_filepath(filepath: str, verbose: bool = True) -> None:
+def makedirs_from_filepath(filepath: str, verbose: bool = True):
     folder = osp.dirname(osp.realpath(osp.expanduser(filepath)))
     makedirs(folder)
 
@@ -97,3 +101,14 @@ def load_npz(filepath):
             return loader
     else:
         raise ValueError(f"{filepath} doesn't exist.")
+
+
+def read_csv(reader, dtype=np.int32):
+    if isinstance(reader, str):
+        reader = osp.abspath(osp.expanduser(reader))
+    else:
+        reader = io.BytesIO(reader)
+    return pd.read_csv(reader,
+                       encoding="utf8",
+                       sep=",",
+                       dtype={"switch": dtype})

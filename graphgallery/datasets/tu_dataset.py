@@ -1,18 +1,16 @@
 import os
-import json
 import glob
 import requests
 import os.path as osp
 import numpy as np
-import networkx as nx
 import pickle as pkl
 import pandas as pd
 from urllib.error import URLError
-from typing import Optional, List, Tuple, Callable, Union
+from typing import Optional, List
 
 from .in_memory_dataset import InMemoryDataset
 from ..data.edge_graph import EdgeGraph
-from ..data.io import makedirs, extract_zip, clean
+from ..data.io import makedirs, extract_zip, remove
 
 _DATASET_URL = 'https://ls11-www.cs.tu-dortmund.de/people/morris/graphkerneldatasets'
 _DATASET_CLEAN_URL = 'https://raw.githubusercontent.com/nd7141/graph_datasets/master/datasets'
@@ -31,12 +29,13 @@ class TUDataset(InMemoryDataset):
     """
 
     def __init__(self,
-                 name: str,
-                 root: Optional[str] = None,
-                 url: Optional[str] = None,
+                 name,
+                 root=None,
+                 *,
                  transform=None,
-                 verbose: bool = True,
-                 task=None):
+                 verbose=True,
+                 url=None,
+                 remove_download=True):
 
         if name.endswith('_clean'):
             name = name[:-6]
@@ -44,7 +43,10 @@ class TUDataset(InMemoryDataset):
         else:
             self._url = _DATASET_URL
 
-        super().__init__(name, root, url, transform, verbose)
+        super().__init__(name=name, root=root,
+                         transform=transform,
+                         verbose=verbose, url=url,
+                         remove_download=remove_download)
 
     @staticmethod
     def available_datasets():
@@ -68,21 +70,22 @@ class TUDataset(InMemoryDataset):
 
         with open(self.download_paths[0], 'wb') as f:
             f.write(req.content)
-        extract_zip(self.download_paths, osp.split(self.download_dir)[0])
-        clean(self.download_paths)
 
-    def _process(self) -> None:
+        extract_zip(self.download_paths, osp.split(self.download_dir)[0])
+
+        if self.remove_download:
+            remove(self.download_paths)
+
+    def _process(self):
         folder = self.download_dir
         prefix = self.name
         files = glob.glob(osp.join(folder, f'{prefix}_*.txt'))
         names = [f.split(os.sep)[-1][len(prefix) + 1:-4] for f in files]
         edge_index = genfromtxt(osp.join(folder, prefix + '_A.txt'),
                                 dtype=np.int64).T - 1
-        node_graph_label = genfromtxt(osp.join(
-            folder, prefix + '_graph_indicator.txt'),
-            dtype=np.int64) - 1
+        node_graph_label = genfromtxt(osp.join(folder, prefix + '_graph_indicator.txt'),
+                                      dtype=np.int64) - 1
         edge_graph_label = node_graph_label[edge_index[0]]
-
         node_attr = node_label = None
         if 'node_attributes' in names:
             node_attr = genfromtxt(osp.join(folder,
@@ -128,16 +131,12 @@ class TUDataset(InMemoryDataset):
                           graph_label=graph_label)
 
         cache = {'graph': graph}
-        with open(self.processed_path, 'wb') as f:
+        with open(self.process_path, 'wb') as f:
             pkl.dump(cache, f)
         return cache
 
     @property
     def download_dir(self):
-        return osp.join(self.root, "TU", self.name)
-
-    @property
-    def process_dir(self):
         return osp.join(self.root, "TU", self.name)
 
     def split_graphs(self,
@@ -153,7 +152,7 @@ class TUDataset(InMemoryDataset):
         return '{}/{}.zip'.format(self._url, self.name)
 
     @property
-    def processed_filename(self):
+    def process_filename(self):
         return f'{self.name}.pkl'
 
     @property
