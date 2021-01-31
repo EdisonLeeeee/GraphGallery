@@ -27,8 +27,8 @@ class KarateClub(InMemoryDataset):
     <https://github.com/benedekrozemberczki/karateclub>
     """
 
-    _node_level_url = "https://github.com/benedekrozemberczki/karateclub/raw/master/dataset/node_level/"
-    _graph_level_url = "https://github.com/benedekrozemberczki/karateclub/raw/master/dataset/graph_level/"
+    _node_level_url = "https://github.com/EdisonLeeeee/GraphData/raw/master/datasets/karateclub/node_level"
+    _graph_level_url = "https://github.com/EdisonLeeeee/GraphData/raw/master/datasets/karateclub/graph_level"
 
     def __init__(self,
                  name,

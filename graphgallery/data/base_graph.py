@@ -12,12 +12,12 @@ from .io import load_npz
 class BaseGraph:
     multiple = None
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         kwargs.pop('__class__', None)
         self.update(**kwargs)
 
     @property
-    def num_nodes(self) -> int:
+    def num_nodes(self):
         """Get the number of nodes in the graph."""
         raise NotImplementedError
 
@@ -29,57 +29,57 @@ class BaseGraph:
         raise NotImplementedError
 
     @property
-    def num_graphs(self) -> int:
+    def num_graphs(self):
         """Get the number of graphs."""
         raise NotImplementedError
 
     @property
-    def num_node_attrs(self) -> int:
+    def num_node_attrs(self):
         """Get the number of attribute dimensions of the nodes."""
         raise NotImplementedError
 
     @property
-    def num_edge_attrs(self) -> int:
+    def num_edge_attrs(self):
         """Get the number of attribute dimensions of the edges."""
         raise NotImplementedError
 
     @property
-    def num_graph_attrs(self) -> int:
+    def num_graph_attrs(self):
         """Get the number of attribute dimensions of the graphs."""
         raise NotImplementedError
 
     @property
-    def num_node_classes(self) -> int:
+    def num_node_classes(self):
         """Get the number of node classes."""
         raise NotImplementedError
 
     @property
-    def num_edge_classes(self) -> int:
+    def num_edge_classes(self):
         """Get the number of edge classes."""
         raise NotImplementedError
 
     @property
-    def num_graph_classes(self) -> int:
+    def num_graph_classes(self):
         """Get the number of graph classes."""
         raise NotImplementedError
 
-    def is_node_attributed(self) -> bool:
-        return hasattr(self, "node_attr") and self.node_attr is not None
+    def is_node_attributed(self):
+        return getattr(self, "node_attr", None)
 
-    def is_edge_attributed(self) -> bool:
-        return hasattr(self, "edge_attr") and self.edge_attr is not None
+    def is_edge_attributed(self):
+        return getattr(self, "edge_attr", None)
 
-    def is_graph_attributed(self) -> bool:
-        return hasattr(self, "graph_attr") and self.graph_attr is not None
+    def is_graph_attributed(self):
+        return getattr(self, "graph_attr", None)
 
-    def is_node_labeled(self) -> bool:
-        return hasattr(self, "node_label") and self.node_label is not None
+    def is_node_labeled(self):
+        return getattr(self, "node_label", None)
 
-    def is_edge_labeled(self) -> bool:
-        return hasattr(self, "edge_label") and self.edge_label is not None
+    def is_edge_labeled(self):
+        return getattr(self, "edge_label", None)
 
-    def is_graph_labeled(self) -> bool:
-        return hasattr(self, "graph_label") and self.graph_label is not None
+    def is_graph_labeled(self):
+        return getattr(self, "graph_label", None)
 
     def keys(self):
         # maybe using `tuple`?
@@ -108,7 +108,7 @@ class BaseGraph:
         filepath = osp.abspath(osp.expanduser(filepath))
         loader = load_npz(filepath)
         loader.pop("__class__", None)
-        print(f"Loading from {filepath}", file=sys.stderr)
+#         print(f"Loading from {filepath}", file=sys.stderr)
         return cls(copy=False, **loader)
 
     def to_npz(self, filepath: str, apply_fn=sparse_apply, compressed=True):

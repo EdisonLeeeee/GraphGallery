@@ -60,12 +60,13 @@ class Dataset:
                     random_state: Optional[int] = None) -> dict:
 
         assert all((train_size, val_size))
-        assert not self.graph.multiple, "NOT Supported for multiple graph"
+        graph = self.graph
+        assert not graph.multiple, "NOT Supported for multiple graph"
         if test_size is None:
             test_size = 1.0 - train_size - val_size
         assert train_size + val_size + test_size <= 1.0
 
-        label = self.graph.node_label
+        label = graph.node_label
         train_nodes, val_nodes, test_nodes = train_val_test_split_tabular(
             label.shape[0],
             train_size,
@@ -85,11 +86,11 @@ class Dataset:
                               test_examples_per_class: int,
                               random_state: Optional[int] = None) -> dict:
 
-        assert not self.graph.multiple, "NOT Supported for multiple graph"
-        self.graph = self.graph.eliminate_classes(
-            trainum_examples_per_class + val_examples_per_class).standardize()
+        graph = self.graph
+        assert not graph.multiple, "NOT Supported for multiple graph"
+        self._graph = graph.eliminate_classes(trainum_examples_per_class + val_examples_per_class).standardize()
 
-        label = self.graph.node_label
+        label = self._graph.node_label
         train_nodes, val_nodes, test_nodes = get_train_val_test_split(
             label,
             trainum_examples_per_class,
@@ -124,13 +125,13 @@ class Dataset:
         table_headers = ["File Path", "File Name"]
         items = [osp.split(path) for path in filepaths]
         table = tabulate(items, headers=table_headers,
-                         tablefmt="fancy_grid"
-                         )
-        print(f"Files in dataset {self.__class__.__name__}:\n" + table)
+                         tablefmt="fancy_grid")
+        print(f"Files in dataset '{self}':\n" + table)
 
     def list_files(self):
         return glob.glob(osp.join(self.download_dir, '*'))
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self.graph})"
+        return f"{self.__class__.__name__}({self.name}, root={self.root})"
+    
     __str__ = __repr__

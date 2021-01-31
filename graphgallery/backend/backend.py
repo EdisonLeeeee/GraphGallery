@@ -3,7 +3,6 @@
 import importlib
 import sys
 from tensorflow.keras import backend as K
-from typing import Union, Tuple, Optional
 
 from .modules import BackendModule, TensorFlowBackend, PyTorchBackend, PyGBackend, DGLPyTorchBackend, DGLTensorFlowBackend
 
@@ -29,15 +28,12 @@ _ALL_BACKENDS = {
 }
 _BACKEND_DICT = {}
 
-BACKEND_TYPE = Union[TensorFlowBackend, PyTorchBackend, PyGBackend,
-                     DGLPyTorchBackend, DGLTensorFlowBackend]
 
-
-def allowed_backends() -> Tuple[str]:
+def allowed_backends():
     return tuple(backend_dict().keys())
 
 
-def backend_dict() -> dict:
+def backend_dict():
     return _BACKEND_DICT
 
 
@@ -184,9 +180,7 @@ def set_intx(dtype: str) -> str:
     return _INTX
 
 
-def backend(
-        module_name: Optional[Union[str,
-                                    BackendModule]] = None) -> BACKEND_TYPE:
+def backend(module_name=None):
     """Publicly accessible method
     for determining the current backend.
 
@@ -233,9 +227,7 @@ def set_to_default_backend():
     return _BACKEND
 
 
-def set_backend(
-        module_name: Optional[Union[str,
-                                    BackendModule]] = None) -> BACKEND_TYPE:
+def set_backend(module_name=None):
     """Set the default backend module.
 
     Parameters:

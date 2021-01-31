@@ -4,7 +4,7 @@ from contextlib import contextmanager
 
 
 @contextmanager
-def nullcontext(enter_result: Any = None) -> Any:
+def nullcontext(enter_result=None):
     """Null context manager.
     Nothing is done when it's called
 

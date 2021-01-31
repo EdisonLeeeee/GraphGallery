@@ -1,3 +1,4 @@
+import six
 __all__ = ["merge_as_list", "ask_to_proceed_with_overwrite"]
 
 
