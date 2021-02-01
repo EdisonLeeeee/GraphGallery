@@ -47,20 +47,20 @@ def _check_adj_matrix(adj_matrix, copy=False):
     else:
         raise ValueError(f"Adjacency matrix must be in sparse format (got {type(adj_matrix)} instead).")
 
-    assert adj_matrix.ndim == 2 and adj_matrix.shape[0] == adj_matrix.shape[1]
+    assert adj_matrix.ndim == 2 and adj_matrix.shape[0] == adj_matrix.shape[1], adj_matrix.shape
     return adj_matrix
 
 
 def _check_attr_matrix(attr_matrix, copy=False):
     if sp.isspmatrix(attr_matrix):
-        attr_matrix = attr_matrix.toarray().astype(np.float32, copy=False)
+        attr_matrix = attr_matrix.astype(np.float32, copy=False).toarray()
     elif isinstance(attr_matrix, np.ndarray):
         attr_matrix = attr_matrix.astype(np.float32, copy=copy)
     else:
         raise ValueError(
             f"Attribute matrix must be a scipy.sparse.spmatrix or a np.ndarray (got {type(attr_matrix)} instead).")
 
-    assert attr_matrix.ndim == 2
+    assert attr_matrix.ndim == 2, attr_matrix.shape
     return attr_matrix
 
 
@@ -117,6 +117,7 @@ _KEYS = ('adj_matrix', 'node_attr', 'node_label', 'node_graph_label',
          'graph_attr', 'graph_label',
          'list_graphs', 'dict_graphs',
          'mapping', 'metadata')
+
 # adj_matrix should be CSR matrix
 # attribute matrices: node_attr, edge_attr, graph_attr should be 2D numpy array
 # label matrices: node_label, node_graph_label, edge_label, graph_label should be 1D or 2D numpy array
@@ -139,7 +140,7 @@ _check_fn_dict = {'adj_matrix': _check_adj_matrix,
                   'metadata': _check_dict}
 
 
-def check_and_convert(key, value, multiple=False, copy=False) -> dict:
+def check_and_convert(key, value, multiple=False, copy=False):
     if value is not None:
         check_fn = _check_fn_dict.get(key, None)
         if not check_fn:
