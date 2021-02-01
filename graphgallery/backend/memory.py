@@ -1,4 +1,3 @@
-import resource
 import torch
 import tensorflow as tf
 
@@ -32,6 +31,7 @@ def empty_cache():
 
 
 def max_memory():
+    import resource
     memory = 1024 * resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
     return memory
 

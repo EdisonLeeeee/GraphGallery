@@ -28,7 +28,7 @@ install_requires = [
     # pytorch and tensorflow themselves, preferrably by OS's package manager, or by
     # choosing the proper pypi package name at
     # pytorch: https://pytorch.org/
-    # tensorflow: http://tensorflow.org/    
+    # tensorflow: http://tensorflow.org/
     'tqdm',
     'yacs',
     'scipy',
@@ -80,6 +80,6 @@ setup(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",        
+        "Programming Language :: Python :: 3.8",
     ],
 )
