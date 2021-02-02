@@ -8,6 +8,8 @@ from typing import Union, Tuple
 from ..edge_level import asedge
 
 
+__all__ = ['ego_graph']
+
 @njit
 def extra_edges(indices, indptr,
                 last_level, seen,

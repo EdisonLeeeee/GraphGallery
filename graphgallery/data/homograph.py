@@ -157,7 +157,7 @@ class HomoGraph(BaseGraph):
 
     @property
     def degree(self):
-        return get_degree(self.adj_matrix)
+        return gf.degree(self.adj_matrix)
 
     def eliminate_selfloops(self):
         """Remove self-loops from the adjacency matrix."""
@@ -176,31 +176,31 @@ class HomoGraph(BaseGraph):
 
     def is_directed(self) -> bool:
         """Check if the graph is directed (adjacency matrix is not symmetric)."""
-        return is_directed(self.adj_matrix)
+        return gf.is_directed(self.adj_matrix)
 
     def has_singleton(self) -> bool:
         """Check if the graph has singletons."""
-        return has_singleton(self.adj_matrix)
+        return gf.has_singleton(self.adj_matrix)
 
     def has_selfloops(self) -> bool:
         """Check if the graph has self loops."""
-        return has_selfloops(self.adj_matrix)
+        return gf.has_selfloops(self.adj_matrix)
 
     def is_connected(self) -> bool:
         """Check if the graph is a connected graph."""
-        return is_connected(self.adj_matrix)
+        return gf.is_connected(self.adj_matrix)
 
     def is_weighted(self) -> bool:
         """Check if the graph is weighted (edge weights other than 1)."""
-        return is_weighted(self.adj_matrix)
+        return gf.is_weighted(self.adj_matrix)
 
     def is_symmetric(self) -> bool:
         """Check if the adjacency matrix is symmetric."""
-        return is_symmetric(self.adj_matrix)
+        return gf.is_symmetric(self.adj_matrix)
 
     def is_binary(self) -> bool:
         """Check if the node attribute matrix has binary attributes."""
-        return is_binary(self.node_attr)
+        return gf.is_binary(self.node_attr)
 
     def extra_repr(self) -> str:
         excluded = {"metadata", "mapping"}
