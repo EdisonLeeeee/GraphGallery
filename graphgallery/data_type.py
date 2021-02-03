@@ -13,6 +13,7 @@ __all__ = [
     'is_multiobjects',
     'is_scalar',
     'is_intscalar',
+    'is_floatscalar',
 ]
 
 

@@ -10,7 +10,7 @@ from typing import Optional, List
 
 from .in_memory_dataset import InMemoryDataset
 from ..data.edge_graph import EdgeGraph
-from ..data.io import makedirs, extract_zip, remove
+from ..data.io import makedirs, extractall, remove
 
 _DATASET_URL = 'https://ls11-www.cs.tu-dortmund.de/people/morris/graphkerneldatasets'
 _DATASET_CLEAN_URL = 'https://raw.githubusercontent.com/nd7141/graph_datasets/master/datasets'
@@ -71,7 +71,7 @@ class TUDataset(InMemoryDataset):
         with open(self.download_paths[0], 'wb') as f:
             f.write(req.content)
 
-        extract_zip(self.download_paths, osp.split(self.download_dir)[0])
+        extractall(self.download_paths, osp.split(self.download_dir)[0])
 
         if self.remove_download:
             remove(self.download_paths)

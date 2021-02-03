@@ -4,7 +4,7 @@ import pickle as pkl
 from typing import Optional, List
 
 from .dataset import Dataset
-from ..data.io import makedirs, files_exist, download_file, extract_zip, remove
+from ..data.io import makedirs, files_exist, download_file, extractall, remove
 
 
 class InMemoryDataset(Dataset):
@@ -35,7 +35,7 @@ class InMemoryDataset(Dataset):
                 print(f"Dataset '{self.name}' has already existed, loading it...")
             return
         elif files_exist(self.download_paths):
-            extract_zip(self.download_paths)
+            extractall(self.download_paths)
             if self.verbose:
                 print(
                     f"Dataset '{self.name}' has already existed, extracting it..."
@@ -53,7 +53,7 @@ class InMemoryDataset(Dataset):
     def _download(self):
         makedirs(self.download_dir)
         download_file(self.download_paths, self.urls)
-        extract_zip(self.download_paths)
+        extractall(self.download_paths)
 
         if self.remove_download:
             remove(self.download_paths)

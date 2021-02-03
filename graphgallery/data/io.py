@@ -9,10 +9,10 @@ import pandas as pd
 
 from tensorflow.keras.utils import get_file
 
-    
+
 __all__ = [
     'download_file', 'files_exist', 'makedirs', 'makedirs_from_filepath',
-    'extract_zip', 'remove', 'load_npz', 'read_csv',
+    'extractall', 'remove', 'load_npz', 'read_csv',
 ]
 
 
@@ -37,7 +37,7 @@ def download_file(raw_paths, urls):
         raise exceptions[0]
 
 
-def extract_zip(filename, folder=None):
+def extractall(filename, folder=None):
     """Extracts a zip or tar.gz (tgz) archive to a specific folder.
 
     Parameters:
@@ -47,23 +47,23 @@ def extract_zip(filename, folder=None):
     """
     if not filename:
         return
-  
+
     if folder is None:
         folder = osp.dirname(osp.realpath(osp.expanduser(filename)))
-        
+
     if isinstance(filename, (list, tuple)):
         for f in filename:
-            extract_zip(f, folder)
+            extractall(f, folder)
         return
 
     if filename.endswith(".zip"):
         with zipfile.ZipFile(filename, 'r') as f:
             f.extractall(folder)
-        
+
     if filename.endswith(".tgz") or filename.endswith(".tar.gz"):
         tar = tarfile.open(filename, "r:gz")
         tar.extractall(path=folder)
-        tar.close()        
+        tar.close()
 
 
 def remove(filepaths):
