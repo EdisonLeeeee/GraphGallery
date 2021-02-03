@@ -86,7 +86,7 @@ def normalize_adj(adj_matrix, rate=-0.5, fill_weight=1.0, symmetric=True):
 
         # here a new copy of adj is created
         if fill_weight:
-            adj = adj + fill_weight * sp.eye(adj.shape[0], dtype=adj.dtype)
+            adj = adj + fill_weight * sp.eye(adj.shape[0], dtype=adj.dtype, format='csr')
         else:
             adj = adj.copy()
 
@@ -114,3 +114,5 @@ def normalize_adj(adj_matrix, rate=-0.5, fill_weight=1.0, symmetric=True):
         return tuple(_normalize_adj(adj_matrix, r) for r in rate)
     else:
         return _normalize_adj(adj_matrix, rate)
+
+normalized_laplacian_matrix = normalize_adj

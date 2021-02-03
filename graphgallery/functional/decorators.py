@@ -64,8 +64,8 @@ def assert_same_type(*inputs) -> bool:
     _class = type(first)
     for ix, obj in enumerate(others):
         if not isinstance(obj, _class):
-            raise TypeError(f"Input types don't agree. "
-                            f"Type of the first input: {type(first)}, "
+            raise TypeError(f"Input types don't agree. This method accepts multiple inputs, "
+                            f"type of the first input: {type(first)}, "
                             f"but {ix+1}-th input: {type(obj)}")
 
     return True

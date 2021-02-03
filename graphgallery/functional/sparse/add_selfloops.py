@@ -73,7 +73,7 @@ def add_selfloops(adj_matrix: sp.csr_matrix, fill_weight: float = 1.0):
 
         # here a new copy of adj is created
         if w:
-            return adj + w * sp.eye(adj.shape[0], dtype=adj.dtype)
+            return adj + w * sp.eye(adj.shape[0], dtype=adj.dtype, format='csr')
         else:
             return adj
 
