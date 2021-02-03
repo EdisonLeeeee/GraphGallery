@@ -69,12 +69,49 @@ def is_weighted(A) -> bool:
 
 
 def is_connected(A) -> bool:
+    """Returns True if the graph is connected, False otherwise.
+    For directed graph, it test the weak connectivity.
+    
+    A directed graph is weakly connected if and only if the graph
+    is connected when the direction of the edge between nodes is ignored.
+
+    Note that if a graph is strongly connected (i.e. the graph is connected
+    even when we account for directionality), it is by definition weakly
+    connected as well.
+    
+    Example
+    -------
+    >>> G = np.array([[0,1,1], [0,0,0], [0,0,0]])
+    >>> G
+    array([[0, 1, 1],
+       [0, 0, 0],
+       [0, 0, 0]])
+    >>> G = sp.csr_matrix(G)
+    >>> gf.is_connected(G)
+    True
+    """
     assert A is not None
     if is_multiobjects(A):
         return all(is_connected(adj) for adj in A)
     return sp.csgraph.connected_components(A, directed=is_directed(A), return_labels=False, connection='weak') == 1
 
 def is_strong_connected(A) -> bool:
+    """Test directed graph for strong connectivity.
+
+    A directed graph is strongly connected if and only if every vertex in
+    the graph is reachable from every other vertex.
+    
+    Example
+    -------
+    >>> G = np.array([[0,1,1], [0,0,0], [0,0,0]])
+    >>> G
+    array([[0, 1, 1],
+       [0, 0, 0],
+       [0, 0, 0]])
+    >>> G = sp.csr_matrix(G)
+    >>> gf.is_strong_connected(G)
+    False
+    """    
     assert A is not None
     if is_multiobjects(A):
         return all(is_strong_connected(adj) for adj in A)
