@@ -111,17 +111,17 @@ class WaveletBasis(Transform):
 def laplacian(adj_matrix, normalized=True):
     """Return the Laplacian of the weight matrix."""
     # Degree matrix.
-    d = adj_matrix.sum(axis=0).A1
+    d = adj_matrix.sum(axis=1).A1
     # Laplacian matrix.
     if not normalized:
-        D = sp.diags(d)
+        D = sp.diags(d, dtype=adj_matrix.dtype, format='csr')
         L = D - adj_matrix
     else:
         d = 1 / (np.sqrt(d) + 1e-6)
         #         d[np.isinf(d)] = 0.
-        D = sp.diags(d)
-        I = sp.identity(d.size, dtype=adj_matrix.dtype)
-        L = I - D * adj_matrix * D
+        D = sp.diags(d, dtype=adj_matrix.dtype, format='csr')
+        I = sp.identity(d.size, dtype=adj_matrix.dtype, format='csr')
+        L = I - D @ adj_matrix @ D
     return L
 
 

@@ -3,12 +3,11 @@ import torch
 import numpy as np
 import graphgallery as gg
 import tensorflow as tf
-from typing import Optional
 
 __all__ = ["random_seed"]
 
 
-def random_seed(seed: int = None, backend=None):
+def random_seed(seed=None, backend=None):
     backend = gg.backend(backend)
     np.random.seed(seed)
     random.seed(seed)

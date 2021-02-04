@@ -30,6 +30,7 @@ _BACKEND_DICT = {}
 
 
 def allowed_backends():
+    """Return the allowed backends."""
     return tuple(backend_dict().keys())
 
 
@@ -201,7 +202,7 @@ def backend(module_name=None):
     --------
     >>> graphgallery.backend()
     'TensorFlow 2.1.2 Backend'
-    >>> graphgallery.backend('torch)
+    >>> graphgallery.backend('torch')
     'PyTorch 1.6.0+cpu Backend'    
     """
     if module_name is None:
@@ -220,6 +221,7 @@ def backend(module_name=None):
 
 
 def set_to_default_backend():
+    """Set the current backend to default"""
     global _BACKEND
     _BACKEND = _DEFAULT_BACKEND
     # Using `int32` is more efficient
@@ -283,10 +285,18 @@ def set_backend(module_name=None):
 
 
 def file_ext():
+    """Returns the checkpoint filename suffix(extension) for the training model
+
+    Returns
+    -------
+    str
+        ".h5" by default
+    """
     return _EXT
 
 
 def set_file_ext(ext):
+    """Set the filename suffix(extension)"""
     global _EXT
     _EXT = ext
     return _EXT

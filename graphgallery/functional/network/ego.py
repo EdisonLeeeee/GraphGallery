@@ -10,6 +10,7 @@ from ..edge_level import asedge
 
 __all__ = ['ego_graph']
 
+
 @njit
 def extra_edges(indices, indptr,
                 last_level, seen,
@@ -63,7 +64,7 @@ def ego_graph(adj_matrix, targets, hops: int = 1):
     """
 
     if np.ndim(targets) == 0:
-        nodes = [targets]
+        targets = [targets]
 
     indices = adj_matrix.indices
     indptr = adj_matrix.indptr
@@ -72,24 +73,24 @@ def ego_graph(adj_matrix, targets, hops: int = 1):
     start = 0
     N = adj_matrix.shape[0]
     seen = np.zeros(N) - 1
-    seen[nodes] = 0
+    seen[targets] = 0
     for level in range(hops):
-        end = len(nodes)
+        end = len(targets)
         while start < end:
-            head = nodes[start]
+            head = targets[start]
             nbrs = indices[indptr[head]:indptr[head + 1]]
             for u in nbrs:
                 if seen[u] < 0:
-                    nodes.append(u)
+                    targets.append(u)
                     seen[u] = level + 1
                 if (u, head) not in edges:
                     edges[(head, u)] = level + 1
 
             start += 1
 
-    if len(nodes[start:]):
-        e = extra_edges(indices, indptr, np.array(nodes[start:]), seen, hops)
+    if len(targets[start:]):
+        e = extra_edges(indices, indptr, np.array(targets[start:]), seen, hops)
     else:
         e = []
 
-    return asedge(list(edges.keys()) + e, shape='row_wise'), np.asarray(nodes)
+    return asedge(list(edges.keys()) + e, shape='row_wise'), np.asarray(targets)

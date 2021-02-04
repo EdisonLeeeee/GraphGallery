@@ -1,4 +1,4 @@
-"""Modified from networkx
+"""Modified from networkx.
 Generators for some classic graphs.
 """
 # TODO: implement with sicpy sparse matrix
@@ -9,7 +9,8 @@ from .to_networkx import from_nxgraph
 
 __all__ = ['complete_graph',
            'newman_watts_strogatz_graph',
-          ]
+           ]
+
 
 def complete_graph(n, directed=False):
     """Return the complete graph `K_n` with n nodes.
@@ -29,12 +30,12 @@ def complete_graph(n, directed=False):
     >>> G = gf.complete_graph(9)
     >>> G = gf.complete_graph(range(11, 14))
     >>> G = gf.complete_graph(4, directed=True)
-    """    
+    """
     if directed:
         create_using = nx.DiGraph()
     else:
         create_using = nx.Graph()
-        
+
     G = nx.complete_graph(n, create_using=create_using)
     return from_nxgraph(G)
 
@@ -63,7 +64,7 @@ def newman_watts_strogatz_graph(n, k, p, seed=None):
     neighbors" with probability $p$ add a new edge $(u, w)$ with
     randomly-chosen existing node $w$.  In contrast with
     :func:`watts_strogatz_graph`, no edges are removed.
-    
+
     Example
     -------
     >>> gf.newman_watts_strogatz_graph(100, 20, 0.05)
@@ -83,5 +84,3 @@ def newman_watts_strogatz_graph(n, k, p, seed=None):
     """
     G = nx.newman_watts_strogatz_graph(n, k, p, seed=seed)
     return from_nxgraph(G)
-        
-    

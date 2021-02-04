@@ -5,6 +5,7 @@ from numba.typed import Dict
 
 __all__ = ['mixing_matrix', 'degree_mixing_matrix', 'degree_assortativity_coefficient']
 
+
 @njit
 def mixing_matrix(edges, in_deg, out_deg, mapping):
 
@@ -76,7 +77,7 @@ def degree_assortativity_coefficient(adj_matrix):
         Assortativity of graph by degree.
 
     Notes
-    --------
+    -----
     This is a faster implementation of
         networkx.degree_assortativity_coefficient
 

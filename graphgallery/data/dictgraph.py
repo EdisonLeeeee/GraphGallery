@@ -34,7 +34,7 @@ class DictGraph(BaseGraph):
     def g(self):
         return self.graphs
 
-    @ classmethod
+    @classmethod
     def from_npz(cls, filepath: str):
         assert not filepath.endswith(".npz"), filepath
         filepath = osp.abspath(osp.expanduser(filepath))

@@ -6,7 +6,7 @@ class BunchDict(OrderedDict):
     """Container object for datasets
     Dictionary-like object that exposes its keys as attributes
     and remembers insertion order.
-    >>> b = Bunch(a=1, b=2)
+    >>> b = BunchDict(a=1, b=2)
     >>> b['b']
     2
     >>> b.b

@@ -1,5 +1,4 @@
 import scipy.sparse as sp
-import numpy as np
 
 from .normalize_adj import normalize_adj
 from ..transforms import Transform
@@ -25,9 +24,9 @@ class ChebyBasis(Transform):
 def cheby_basis(adj_matrix, order=2, rate=-0.5):
     """Calculate Chebyshev polynomials up to order k. Return a list of sparse matrices (tuple representation)."""
 
-    assert order >= 2
+    assert order >= 2, order
     adj_normalized = normalize_adj(adj_matrix, rate=rate, fill_weight=1.0)
-    I = sp.eye(adj_matrix.shape[0], dtype=adj_matrix.dtype).tocsr()
+    I = sp.eye(adj_matrix.shape[0], dtype=adj_matrix.dtype, format='csr')
     laplacian = I - adj_normalized
     largest_eigval = sp.linalg.eigsh(laplacian,
                                      1,
@@ -42,7 +41,7 @@ def cheby_basis(adj_matrix, order=2, rate=-0.5):
     def chebyshev_recurrence(t_k_minus_one, t_k_minus_two, scaled_lap):
         return 2 * scaled_lap.dot(t_k_minus_one) - t_k_minus_two
 
-    for i in range(2, order + 1):
+    for _ in range(2, order + 1):
         t_k.append(chebyshev_recurrence(t_k[-1], t_k[-2], scaled_laplacian))
 
     return t_k

@@ -1,5 +1,3 @@
-from typing import Union, List, Tuple, Any, Callable, Optional
-
 import graphgallery as gg
 from .registry import Registry
 
@@ -13,11 +11,11 @@ Transformers = Registry("Transformers")
 
 
 class Compose(Transform):
-    def __init__(self, *transforms: Union[str, Transform, None, List, Tuple, "Compose"],
+    def __init__(self, *transforms,
                  **kwargs):
         self.transforms = [get(transform) for transform in transforms]
 
-    def __call__(self, inputs: Any):
+    def __call__(self, inputs):
         for transform in self.transforms:
             if isinstance(inputs, tuple):
                 inputs = transform(*inputs)
@@ -26,10 +24,10 @@ class Compose(Transform):
 
         return inputs
 
-    def add(self, transform: Union[str, Transform, None, List, Tuple, "Compose"]):
+    def add(self, transform):
         self.transforms.append(get(transform))
 
-    def pop(self, index: int = -1) -> Transform:
+    def pop(self, index: int = -1):
         """Remove and return 'transforms' at index (default last)."""
         return self.transforms.pop(index=-1)
 
@@ -40,12 +38,12 @@ class Compose(Transform):
         return format_string
 
 
-def name_dict_tuple(transform):
+def is_name_dict_tuple(transform):
     return len(transform) == 2 and isinstance(transform[0], str) and isinstance(transform[1], dict)
 
 
-def get(transform: Union[str, Transform, None, List, Tuple, "Compose"]) -> Transform:
-    if gg.is_listlike(transform) and not name_dict_tuple(transform):
+def get(transform):
+    if gg.is_listlike(transform) and not is_name_dict_tuple(transform):
         return Compose(*transform)
 
     if isinstance(transform, Transform) or callable(transform):

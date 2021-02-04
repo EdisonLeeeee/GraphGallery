@@ -3,7 +3,6 @@ import scipy.sparse as sp
 import graphgallery as gg
 
 from ..transforms import Transform
-from ..functions import repeat
 from ..decorators import multiple
 from ..get_transform import Transformers
 
@@ -44,7 +43,7 @@ class AddSelfloops(Transform):
 
 
 @multiple()
-def add_selfloops(adj_matrix: sp.csr_matrix, fill_weight: float = 1.0):
+def add_selfloops(adj_matrix: sp.csr_matrix, fill_weight=1.0):
     """Normalize adjacency matrix.
 
     >>> add_selfloops(adj, fill_weight=1.0) # return a normalized adjacency matrix
@@ -71,7 +70,6 @@ def add_selfloops(adj_matrix: sp.csr_matrix, fill_weight: float = 1.0):
     def _add_selfloops(adj, w):
         adj = eliminate_selfloops(adj)
 
-        # here a new copy of adj is created
         if w:
             return adj + w * sp.eye(adj.shape[0], dtype=adj.dtype, format='csr')
         else:
@@ -86,7 +84,7 @@ def add_selfloops(adj_matrix: sp.csr_matrix, fill_weight: float = 1.0):
 @multiple()
 def eliminate_selfloops(adj_matrix):
     if sp.issparse(adj_matrix):
-        adj_matrix = adj_matrix - sp.diags(adj_matrix.diagonal())
+        adj_matrix = adj_matrix - sp.diags(adj_matrix.diagonal(), format='csr')
         adj_matrix.eliminate_zeros()
     else:
         adj_matrix = adj_matrix - np.diag(adj_matrix)

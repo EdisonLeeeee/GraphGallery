@@ -122,6 +122,23 @@ class CfgNode(_CfgNode):
 
 
 def merge_dict(a, b):
+    """merge dict instance b into a,
+        an extended version of `update` method.
+
+    Examples
+    --------
+    >>> a = {'x': 1,  'y': {'z': 2, 'v': 3}}
+    >>> b = {'y': {'z': 3}}
+    >>> a.update(ab)
+    {'x': 1,  'y': {'z': 3}}
+    >>> merge_dict(a,b)
+    {'x': 1,  'y': {'z': 3, 'v': 3}}
+
+    Parameters
+    ----------
+    a : dict
+    b : dict
+    """
     for k, v in b.items():
         if not isinstance(v, dict):
             a[k] = v

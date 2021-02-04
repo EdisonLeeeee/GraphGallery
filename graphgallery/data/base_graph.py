@@ -64,21 +64,27 @@ class BaseGraph:
         raise NotImplementedError
 
     def is_node_attributed(self):
+        """Whether the graph has node attributes"""
         return getattr(self, "node_attr", None)
 
     def is_edge_attributed(self):
+        """Whether the graph has edge attributes"""
         return getattr(self, "edge_attr", None)
 
     def is_graph_attributed(self):
+        """Whether the graph has graph attributes (for multiple graph)"""
         return getattr(self, "graph_attr", None)
 
     def is_node_labeled(self):
+        """Whether the graph has node labels"""
         return getattr(self, "node_label", None)
 
     def is_edge_labeled(self):
+        """Whether the graph has edge labels"""
         return getattr(self, "edge_label", None)
 
     def is_graph_labeled(self):
+        """Whether the graph has graph labels (for multiple graph)"""
         return getattr(self, "graph_label", None)
 
     def keys(self):
@@ -112,7 +118,25 @@ class BaseGraph:
         return cls(copy=False, **loader)
 
     def to_npz(self, filepath: str, apply_fn=sparse_apply, compressed=True):
+        """save the graph to NPZ files
 
+        Parameters
+        ----------
+        filepath : str
+            the path where the graph will be saved.
+        apply_fn :  callable, optional
+            the apply function for each items in the graph, by default `sparse_apply`,
+            i.e., the matrix will be saved as scipy sparse matrix for efficiency
+            if it is sparse enough
+        compressed : bool, optional
+            if True, use `np.savez_compressed` function to save,
+            else use `np.savez`, by default True
+
+        Returns
+        -------
+        str
+            the filepath where the graph is saved.
+        """
         filepath = osp.abspath(osp.expanduser(filepath))
         data_dict = {k: v for k, v in self.items(apply_fn=apply_fn) if v is not None}
         data_dict["__class__"] = str(self.__class__.__name__)
@@ -126,6 +150,18 @@ class BaseGraph:
         return filepath
 
     def update(self, *, apply_fn=None, copy=False, **collects):
+        """Update the items in the graph
+
+        Parameters
+        ----------
+        apply_fn : callable, optional
+            callable function which applied to the update items, by default None,
+            and it will use `check_and_convert` function to check if it is allowed and
+            convert to proper types.
+        copy : bool, optional
+            whether to use copy of the value, by default False for efficiency.
+            Note that the value will be changed if donot use copy.
+        """
         if apply_fn is None:
             apply_fn = partial(check_and_convert,
                                multiple=self.multiple,
