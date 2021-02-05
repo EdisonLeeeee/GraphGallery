@@ -6,3 +6,4 @@ from .ppi import PPI
 from .reddit import Reddit
 from .tu_dataset import TUDataset
 from .karateclub import KarateClub
+from .musae import MUSAE

@@ -10,3 +10,4 @@ from .dictgraph import DictGraph
 from .apply import *
 from .io import *
 from .utils import *
+from .reader import Reader

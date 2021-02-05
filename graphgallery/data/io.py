@@ -2,6 +2,7 @@ import io
 import os
 import tarfile
 import errno
+import json
 import zipfile
 import os.path as osp
 import numpy as np
@@ -12,7 +13,7 @@ from tensorflow.keras.utils import get_file
 
 __all__ = [
     'download_file', 'files_exist', 'makedirs', 'makedirs_from_filepath',
-    'extractall', 'remove', 'load_npz', 'read_csv',
+    'extractall', 'remove', 'load_npz', 'read_csv', 'read_json',
 ]
 
 
@@ -121,3 +122,9 @@ def read_csv(reader, dtype=np.int32):
                        encoding="utf8",
                        sep=",",
                        dtype={"switch": dtype})
+
+
+def read_json(filepath):
+    with open(filepath, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    return data

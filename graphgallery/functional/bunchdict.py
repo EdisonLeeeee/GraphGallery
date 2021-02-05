@@ -54,7 +54,7 @@ def prettify(item):
             val = f"{val.__class__.__name__}, shape={val.shape}"
     else:
         if isinstance(val, str):
-            val = f"{type(val).__name__}, {val}"
+            val = f"{val}"
         else:
             try:
                 val = f"{type(val).__name__}, len={len(val)}"

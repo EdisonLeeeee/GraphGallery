@@ -1,8 +1,6 @@
 import os.path as osp
 import pickle as pkl
 
-from typing import Optional, List
-
 from .dataset import Dataset
 from ..data.io import makedirs, files_exist, download_file, extractall, remove
 

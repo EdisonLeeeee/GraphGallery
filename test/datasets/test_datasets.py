@@ -20,7 +20,19 @@ def test_KarateClub():
     for d in dataset.available_datasets():
         data = dataset(d, verbose=None)
         graph = data.graph
-    
+        
+def test_MUSAE():
+    from graphgallery.datasets import MUSAE
+    dataset = MUSAE
+    for d in dataset.available_datasets():
+        data = dataset(d, verbose=None)
+        graph = data.graph
+        
+    # attenuated
+    for d in dataset.available_datasets():
+        data = dataset(d, verbose=None, attenuated=True)
+        graph = data.graph        
+        
 def test_PPI():
     from graphgallery.datasets import PPI
     data = PPI(verbose=True)
