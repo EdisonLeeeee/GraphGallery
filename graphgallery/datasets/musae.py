@@ -7,7 +7,6 @@ from sklearn.preprocessing import LabelEncoder
 
 from ..data import Reader
 from ..data.graph import Graph
-from ..data.multi_graph import MultiGraph
 from .in_memory_dataset import InMemoryDataset
 
 _DATASET = gf.BunchDict(chameleon="Wiki-chameleon dataset (classification)",

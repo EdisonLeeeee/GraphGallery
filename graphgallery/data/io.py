@@ -49,13 +49,13 @@ def extractall(filename, folder=None):
     if not filename:
         return
 
-    if folder is None:
-        folder = osp.dirname(osp.realpath(osp.expanduser(filename)))
-
     if isinstance(filename, (list, tuple)):
         for f in filename:
             extractall(f, folder)
         return
+
+    if folder is None:
+        folder = osp.dirname(osp.realpath(osp.expanduser(filename)))
 
     if filename.endswith(".zip"):
         with zipfile.ZipFile(filename, 'r') as f:
