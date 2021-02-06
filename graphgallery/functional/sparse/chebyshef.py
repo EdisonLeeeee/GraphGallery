@@ -8,23 +8,23 @@ from ..get_transform import Transformers
 
 @Transformers.register()
 class ChebyBasis(Transform):
-    def __init__(self, order=2, rate=-0.5):
+    def __init__(self, K=2, rate=-0.5):
         super().__init__()
-        self.order = order
+        self.K = K
         self.rate = rate
 
     def __call__(self, adj_matrix):
-        return cheby_basis(adj_matrix, order=self.order, rate=self.rate)
+        return cheby_basis(adj_matrix, K=self.K, rate=self.rate)
 
     def extra_repr(self):
-        return f"order={self.order}, rate={self.rate}"
+        return f"K={self.K}, rate={self.rate}"
 
 
 @multiple()
-def cheby_basis(adj_matrix, order=2, rate=-0.5):
-    """Calculate Chebyshev polynomials up to order k. Return a list of sparse matrices (tuple representation)."""
+def cheby_basis(adj_matrix, K=2, rate=-0.5):
+    """Calculate Chebyshev polynomials up to K k. Return a list of sparse matrices (tuple representation)."""
 
-    assert order >= 2, order
+    assert K >= 2, K
     adj_normalized = normalize_adj(adj_matrix, rate=rate, fill_weight=1.0)
     I = sp.eye(adj_matrix.shape[0], dtype=adj_matrix.dtype, format='csr')
     laplacian = I - adj_normalized
@@ -41,7 +41,7 @@ def cheby_basis(adj_matrix, order=2, rate=-0.5):
     def chebyshev_recurrence(t_k_minus_one, t_k_minus_two, scaled_lap):
         return 2 * scaled_lap.dot(t_k_minus_one) - t_k_minus_two
 
-    for _ in range(2, order + 1):
+    for _ in range(2, K + 1):
         t_k.append(chebyshev_recurrence(t_k[-1], t_k[-2], scaled_laplacian))
 
     return t_k

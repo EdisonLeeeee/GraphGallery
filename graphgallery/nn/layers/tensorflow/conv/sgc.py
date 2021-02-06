@@ -9,7 +9,7 @@ class SGConvolution(Layer):
         Pytorch implementation: https://github.com/Tiiiger/SGC
 
         `SGConvolution` implements the operation:
-        `output = x @ adj^{order}`
+        `output = x @ adj^{K}`
         where `x` is the node attribute matrix, `adj` is the adjacency matrix.
 
         Note:
@@ -17,7 +17,7 @@ class SGConvolution(Layer):
 
 
         Parameters:
-          order: Positive integer, the power of adjacency matrix, i.e., adj^{order}.
+          K: Positive integer, the power of adjacency matrix, i.e., adj^{K}.
 
         Input shape:
           tuple/list with two 2-D tensor: Tensor `x` and SparseTensor `adj`: `[(num_nodes, num_node_attrs), (num_nodes, num_nodes)]`.
@@ -27,20 +27,20 @@ class SGConvolution(Layer):
           2-D tensor with shape: `(num_nodes, num_node_attrs)`.       
     """
 
-    def __init__(self, order=1, **kwargs):
+    def __init__(self, K=1, **kwargs):
         super().__init__(**kwargs)
-        self.order = order
+        self.K = K
 
     def call(self, inputs):
         x, adj = inputs
 
-        for _ in range(self.order):
+        for _ in range(self.K):
             x = tf.sparse.sparse_dense_matmul(adj, x)
 
         return x
 
     def get_config(self):
-        config = {'order': self.order}
+        config = {'K': self.K}
 
         base_config = super().get_config()
         return {**base_config, **config}

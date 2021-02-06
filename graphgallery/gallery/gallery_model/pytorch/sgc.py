@@ -19,14 +19,14 @@ class SGC(Trainer):
                      adj_transform="normalize_adj",
                      attr_transform=None,
                      graph_transform=None,
-                     order=2):
+                     K=2):
         graph = gf.get(graph_transform)(self.graph)
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
         node_attr = gf.get(attr_transform)(graph.node_attr)
 
         X, A = gf.astensors(node_attr, adj_matrix, device=self.device)
 
-        X = SGConvolution(order=order)(X, A)
+        X = SGConvolution(K=K)(X, A)
         # ``A`` and ``X`` are cached for later use
         self.register_cache(X=X, A=A)
 

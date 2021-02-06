@@ -7,12 +7,12 @@ class TrainableSGConvolution(Module):
                  in_channels,
                  out_channels,
                  use_bias=False,
-                 order=2,
+                 K=2,
                  cached=True,
                  **kwargs):
 
         super().__init__()
-        self.order = order
+        self.K = K
         self.w = nn.Linear(in_channels, out_channels, bias=use_bias)
         self.cache = None
         self.cached = cached
@@ -20,7 +20,7 @@ class TrainableSGConvolution(Module):
     def forward(self, x, adj):
 
         if self.cache is None or not self.cached:
-            for _ in range(self.order):
+            for _ in range(self.K):
                 x = adj.mm(x)
             self.cache = x
         else:
@@ -32,4 +32,4 @@ class TrainableSGConvolution(Module):
         self.w.reset_parameters()
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self.in_channels}, {self.out_channels}, order={self.order})"
+        return f"{self.__class__.__name__}({self.in_channels}, {self.out_channels}, K={self.K})"

@@ -3,13 +3,13 @@ from torch.nn import Module, Parameter
 
 
 class SGConvolution(Module):
-    def __init__(self, order=2, **kwargs):
+    def __init__(self, K=2, **kwargs):
         super().__init__()
-        self.order = order
+        self.K = K
 
     def forward(self, x, adj):
 
-        for _ in range(self.order):
+        for _ in range(self.K):
             x = adj.mm(x)
 
         return x
@@ -18,4 +18,4 @@ class SGConvolution(Module):
         pass
 
     def extra_repr(self):
-        return f"order={self.order}"
+        return f"K={self.K}"

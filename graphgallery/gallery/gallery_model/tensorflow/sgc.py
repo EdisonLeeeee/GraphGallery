@@ -21,7 +21,7 @@ class SGC(Trainer):
                      adj_transform="normalize_adj",
                      attr_transform=None,
                      graph_transform=None,
-                     order=2):
+                     K=2):
 
         graph = gf.get(graph_transform)(self.graph)
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
@@ -37,7 +37,7 @@ class SGC(Trainer):
             device = self.device
 
         with tf.device(device):
-            X = SGConvolution(order=order)([X, A])
+            X = SGConvolution(K=K)([X, A])
 
         with tf.device(self.device):
             # ``A`` and ``X`` are cached for later use
@@ -49,9 +49,9 @@ class SGC(Trainer):
                 dropout=0.5,
                 weight_decay=5e-5,
                 lr=0.2,
-                use_bias=True, 
+                use_bias=True,
                 use_tfn=True):
-        
+
         model = get_model("SGC", self.backend)
         model = model(self.graph.num_node_attrs,
                       self.graph.num_node_classes,
@@ -61,7 +61,7 @@ class SGC(Trainer):
                       weight_decay=weight_decay,
                       lr=lr,
                       use_bias=use_bias)
-        
+
         if use_tfn:
             model.use_tfn()
 

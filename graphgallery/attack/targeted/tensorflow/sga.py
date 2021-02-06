@@ -15,7 +15,7 @@ class SGA(TargetedAttacker):
     def process(self, surrogate, reset=True):
         assert isinstance(surrogate, gg.gallery.SGC), surrogate
 
-        hops = surrogate.cfg.process.order  # NOTE: Be compatible with graphgallery
+        hops = surrogate.cfg.process.K  # NOTE: Be compatible with graphgallery
         # nodes with the same class labels
         self.similar_nodes = [
             np.where(self.graph.node_label == c)[0]
@@ -101,8 +101,8 @@ class SGA(TargetedAttacker):
         neighbors = self.graph.adj_matrix[target].indices
         wrong_label_nodes = self.similar_nodes[wrong_label]
         sub_edges, sub_nodes = self.ego_subgraph()
-        sub_edges = sub_edges.T # shape [2, M]
-        
+        sub_edges = sub_edges.T  # shape [2, M]
+
         if self.direct_attack or reduced_nodes is not None:
             influence_nodes = [target]
             wrong_label_nodes = np.setdiff1d(wrong_label_nodes, neighbors)

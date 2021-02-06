@@ -87,25 +87,25 @@ from ..get_transform import Transformers
 @Transformers.register()
 class WaveletBasis(Transform):
     def __init__(self,
-                 order=3,
+                 K=3,
                  wavelet_s=1.2,
                  threshold=1e-4,
                  wavelet_normalize=True):
         super().__init__()
-        self.order = order
+        self.K = K
         self.wavelet_s = wavelet_s
         self.threshold = threshold
         self.wavelet_normalize = wavelet_normalize
 
     def __call__(self, adj_matrix):
         return wavelet_basis(adj_matrix,
-                             order=self.order,
+                             K=self.K,
                              wavelet_s=self.wavelet_s,
                              threshold=self.threshold,
                              wavelet_normalize=self.wavelet_normalize)
 
     def extra_repr(self):
-        return f"order={self.order}, wavelet_s={self.wavelet_s}, threshold={self.threshold}, wavelet_normalize={self.wavelet_normalize}"
+        return f"K={self.K}, wavelet_s={self.wavelet_s}, threshold={self.threshold}, wavelet_normalize={self.wavelet_normalize}"
 
 
 def laplacian(adj_matrix, normalized=True):
@@ -125,25 +125,25 @@ def laplacian(adj_matrix, normalized=True):
     return L
 
 
-def compute_cheb_coeff_basis(scale, order):
+def compute_cheb_coeff_basis(scale, K):
     xx = np.array([
-        np.cos((2. * i - 1.) / (2. * order) * np.pi)
-        for i in range(1, order + 1)
+        np.cos((2. * i - 1.) / (2. * K) * np.pi)
+        for i in range(1, K + 1)
     ])
-    basis = [np.ones((1, order)), xx]
-    for k in range(order + 1 - 2):
+    basis = [np.ones((1, K)), xx]
+    for k in range(K + 1 - 2):
         basis.append(2 * np.multiply(xx, basis[-1]) - basis[-2])
     basis = np.vstack(basis)
     f = np.exp(-scale * (xx + 1))
     products = np.einsum("j,ij->ij", f, basis)
-    coeffs = 2. / order * products.sum(1)
+    coeffs = 2. / K * products.sum(1)
     coeffs[0] /= 2.
     return coeffs
 
 
 @multiple()
 def wavelet_basis(adj_matrix,
-                  order=3,
+                  K=3,
                   wavelet_s=1.0,
                   threshold=1e-4,
                   wavelet_normalize=False):
@@ -153,12 +153,12 @@ def wavelet_basis(adj_matrix,
     L = lap - I
     monome = {0: I, 1: L}
 
-    for k in range(2, order + 1):
+    for k in range(2, K + 1):
         monome[k] = 2 * L @ monome[k - 1] - monome[k - 2]
 
     def compute_walelet(tau):
-        coeffs = compute_cheb_coeff_basis(tau, order)
-        w = np.sum([coeffs[k] * monome[k] for k in range(order + 1)])
+        coeffs = compute_cheb_coeff_basis(tau, K)
+        w = np.sum([coeffs[k] * monome[k] for k in range(K + 1)])
         w.data = thres(w.data)
         w.eliminate_zeros()
         return w

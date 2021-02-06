@@ -35,12 +35,12 @@ class SGC(Trainer):
                 weight_decay=5e-5,
                 lr=0.2,
                 use_bias=True,
-                order=2):
+                K=2):
 
         model = get_model("SGC", self.backend)
         model = model(self.graph.num_node_attrs,
                       self.graph.num_node_classes,
-                      K=order,
+                      K=K,
                       acts=acts,
                       dropout=dropout,
                       weight_decay=weight_decay,

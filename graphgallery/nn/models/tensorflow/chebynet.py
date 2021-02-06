@@ -16,23 +16,23 @@ class ChebyNet(TFKeras):
                  acts=['relu'],
                  dropout=0.5,
                  weight_decay=5e-4,
-                 lr=0.01, order=2, use_bias=False):
+                 lr=0.01, K=2, use_bias=False):
 
         x = Input(batch_shape=[None, in_channels],
                   dtype=floatx(), name='node_attr')
         adj = [Input(batch_shape=[None, None],
                      dtype=floatx(), sparse=True,
-                     name=f'adj_matrix_{i}') for i in range(order + 1)]
+                     name=f'adj_matrix_{i}') for i in range(K + 1)]
 
         h = x
         for hid, act in zip(hids, acts):
-            h = ChebyConvolution(hid, order=order, use_bias=use_bias,
+            h = ChebyConvolution(hid, K=K, use_bias=use_bias,
                                  activation=act,
                                  kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
             h = Dropout(rate=dropout)(h)
 
         h = ChebyConvolution(out_channels,
-                             order=order, use_bias=use_bias)([h, adj])
+                             K=K, use_bias=use_bias)([h, adj])
 
         super().__init__(inputs=[x, *adj], outputs=h)
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),

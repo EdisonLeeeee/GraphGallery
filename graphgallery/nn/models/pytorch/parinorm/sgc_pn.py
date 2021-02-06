@@ -16,7 +16,7 @@ class SGC_PN(TorchKeras):
                  out_channels,
                  hids=[],
                  acts=[],
-                 order=2,
+                 K=2,
                  norm_mode=None,
                  norm_scale=10,
                  dropout=0.6,
@@ -29,14 +29,14 @@ class SGC_PN(TorchKeras):
         self.linear = nn.Linear(in_channels, out_channels, bias=use_bias)
         self.norm = PairNorm(norm_mode, norm_scale)
         self.dropout = nn.Dropout(p=dropout)
-        self.order = order
+        self.K = K
         self.compile(loss=nn.CrossEntropyLoss(),
                      optimizer=optim.Adam(self.parameters(), lr=0.01),
                      metrics=[Accuracy()])
 
     def forward(self, x, adj):
         x = self.norm(x)
-        for _ in range(self.order):
+        for _ in range(self.K):
             x = adj.mm(x)
             x = self.norm(x)
         x = self.dropout(x)

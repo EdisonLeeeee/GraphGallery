@@ -34,7 +34,7 @@ class APPNP(Trainer):
                 acts=['relu'],
                 alpha=0.1,
                 K=10,
-                ppr_dropout=0.,
+                ppr_dropout=0.2,
                 dropout=0.5,
                 weight_decay=5e-4,
                 lr=0.01,

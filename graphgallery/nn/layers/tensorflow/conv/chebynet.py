@@ -13,7 +13,7 @@ class ChebyConvolution(Layer):
 
         `ChebyConvolution` implements the operation:
         `output = activation(adj_0 @ x @ kernel + bias) + activation(adj_1 @ x @ kernel + bias) + ...`
-        where `x` is the node attribute matrix, `adj_i` is the i-th adjacency matrix, 0<=i<=`order`,
+        where `x` is the node attribute matrix, `adj_i` is the i-th adjacency matrix, 0<=i<=`K`,
         `activation` is the element-wise activation function
         passed as the `activation` argument, `kernel` is a weights matrix
         created by the layer, and `bias` is a bias vector created by the layer
@@ -22,7 +22,7 @@ class ChebyConvolution(Layer):
 
         Parameters:
           units: Positive integer, dimensionality of the output space.
-          order: Positive integer, the order of `Chebyshev polynomials`.
+          K: Positive integer, the K of `Chebyshev polynomials`.
           activation: Activation function to use.
             If you don't specify anything, no activation is applied
             (ie. "linear" activation: `a(x) = x`).
@@ -39,7 +39,7 @@ class ChebyConvolution(Layer):
           bias_constraint: Constraint function applied to the bias vector.
 
         Input shape:
-          tuple/list with `order + 2` 2-D tensor: Tensor `x` and `order + 1` SparseTensor `adj`: 
+          tuple/list with `K + 2` 2-D tensor: Tensor `x` and `K + 1` SparseTensor `adj`: 
           `[(num_nodes, num_node_attrs), (num_nodes, num_nodes), (num_nodes, num_nodes), ...]`.
           The former one is the node attribute matrix (Tensor) and the last is adjacency matrix (SparseTensor).
 
@@ -48,7 +48,7 @@ class ChebyConvolution(Layer):
     """
 
     def __init__(self, units,
-                 order,
+                 K,
                  use_bias=False,
                  activation=None,
                  kernel_initializer='glorot_uniform',
@@ -62,7 +62,7 @@ class ChebyConvolution(Layer):
 
         super().__init__(**kwargs)
         self.units = units
-        self.order = order
+        self.K = K
         self.use_bias = use_bias
 
         self.activation = activations.get(activation)
@@ -77,7 +77,7 @@ class ChebyConvolution(Layer):
     def build(self, input_shapes):
         self.kernel, self.bias = [], []
         input_dim = input_shapes[0][-1]
-        for i in range(self.order + 1):
+        for i in range(self.K + 1):
             kernel = self.add_weight(shape=(input_dim, self.units),
                                      initializer=self.kernel_initializer,
                                      name=f'kernel_{i}',
@@ -113,7 +113,7 @@ class ChebyConvolution(Layer):
 
     def get_config(self):
         config = {'units': self.units,
-                  'order': self.order,
+                  'K': self.K,
                   'use_bias': self.use_bias,
                   'activation': activations.serialize(self.activation),
                   'kernel_initializer': initializers.serialize(
