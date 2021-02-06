@@ -36,8 +36,7 @@ class TAGCN(Trainer):
                 dropout=0.5,
                 weight_decay=5e-4,
                 lr=0.01,
-                use_bias=True,
-                use_tfn=True):
+                use_bias=True):
 
         model = get_model("TAGCN", self.backend)
         model = model(self.graph.num_node_attrs,
@@ -49,8 +48,7 @@ class TAGCN(Trainer):
                       weight_decay=weight_decay,
                       lr=lr,
                       use_bias=use_bias)
-        if use_tfn:
-            model.use_tfn()
+
         return model
 
     def train_sequence(self, index):
