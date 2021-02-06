@@ -8,3 +8,4 @@ from .dagnn import DAGNN
 from .parinorm import *
 from .simpgcn import SimPGCN
 from .mlp import MLP
+from .tagcn import TAGCN

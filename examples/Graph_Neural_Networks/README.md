@@ -143,6 +143,17 @@ In detail, the following methods are currently implemented:
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyG/GCN-GDC.py"> [🔥PyG] </a>
 </details>
 
+<!-- 13 -->
+
+<details>
+<summary>
+<b>GCN</b> from <i>Du et al</i>,
+<a href="https://arxiv.org/abs/1710.10370"> 📝<i>Topology Adaptive Graph Convolutional Networks (arxiv'17)</i> </a>
+</summary>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/TAGCN.py"> [:octocat:TensorFLow] </a>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/TAGCN.py"> [🔥PyTorch] </a>
+</details>
+
 ### Defense models (for Graph Adversarial Learning)
 
 #### Robust Optimization

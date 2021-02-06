@@ -6,4 +6,4 @@ from .median import MedianConvolution
 from .trimmed_conv import TrimmedConvolution
 
 from .dagnn import PropConvolution
-
+from .tagcn import TAGConvolution

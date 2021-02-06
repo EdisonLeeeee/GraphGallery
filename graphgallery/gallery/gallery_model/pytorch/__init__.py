@@ -7,8 +7,8 @@ from .dagnn import DAGNN
 from .pairnorm import *
 from .simpgcn import SimPGCN
 from .mlp import MLP
+from .tagcn import TAGCN
 
 # experimantal model
 from .experimental.median_gcn import MedianGCN
 from .experimental.trimmed_gcn import TrimmedGCN
-

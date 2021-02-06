@@ -26,11 +26,13 @@ class NormalizeAdj(Transform):
             the normalize rate for `adj_matrix`.
         fill_weight: float scalar, optional.
             weight of self loops for the adjacency matrix.
-
+        symmetric: bool, optional
+            whether to use symmetrical  normalization
     """
         super().__init__()
         self.rate = rate
         self.fill_weight = fill_weight
+        self.symmetric = symmetric
 
     def __call__(self, *adj_matrix):
         """
@@ -49,7 +51,7 @@ class NormalizeAdj(Transform):
         """
         return normalize_adj(*adj_matrix,
                              rate=self.rate,
-                             fill_weight=self.fill_weight)
+                             fill_weight=self.fill_weight, symmetric=self.symmetric)
 
     def extra_repr(self):
         return f"normalize rate={self.rate}, fill_weight={self.fill_weight}"
@@ -72,6 +74,8 @@ def normalize_adj(adj_matrix, rate=-0.5, fill_weight=1.0, symmetric=True):
         the normalize rate for `adj_matrix`.
     fill_weight: float scalar, optional.
         weight of self loops for the adjacency matrix.
+    symmetric: bool, optional
+        whether to use symmetrical  normalization
 
     Returns
     ----------
@@ -114,5 +118,6 @@ def normalize_adj(adj_matrix, rate=-0.5, fill_weight=1.0, symmetric=True):
         return tuple(_normalize_adj(adj_matrix, r) for r in rate)
     else:
         return _normalize_adj(adj_matrix, rate)
+
 
 normalized_laplacian_matrix = normalize_adj

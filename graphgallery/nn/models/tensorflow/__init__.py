@@ -12,3 +12,4 @@ from .gwnn import GWNN
 from .fastgcn import FastGCN
 from .graphsage import GraphSAGE
 from .mlp import MLP
+from .tagcn import TAGCN

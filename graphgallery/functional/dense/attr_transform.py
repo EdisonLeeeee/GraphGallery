@@ -102,24 +102,27 @@ def normalize_attr(x, *, norm='l1'):
     norm: The specified type for the normalization.
         'l1': l1-norm for axis 1, from `sklearn.preprocessing`.
         'l1_0': l1-norm for axis 0, from `sklearn.preprocessing`.
-        'scale': standard scale for axis 0, 
+        'zscore': standard scale for axis 0, 
             from `sklearn.preprocessing.scale`
         'robust_scale', robust scale for axis 0, 
             from `sklearn.preprocessing.robust_scale`
         None: return the copy of `x`
+        or a callable function
 
     Returns
     -------
     A normalized attribute matrix in Numpy format.
     """
-    if norm not in {'l1', 'l1_0', 'scale', 'robust_scale', None}:
+    if callable(norm):
+        return norm(x)
+    if norm not in {'l1', 'l1_0', 'zscore', 'robust_scale', None}:
         raise ValueError(f'{norm} is not a supported norm.')
 
     if norm == 'l1':
         x_norm = preprocessing.normalize(x, norm='l1', axis=1)
     elif norm == 'l1_0':
         x_norm = preprocessing.normalize(x, norm='l1', axis=0)
-    elif norm == 'scale':
+    elif norm == 'zscore':
         # something goes wrong with type float32
         x_norm = preprocessing.StandardScaler().fit(x).transform(x)
     elif norm == 'robust_scale':

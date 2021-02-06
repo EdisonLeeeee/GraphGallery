@@ -10,7 +10,7 @@ class SGConvolution(Module):
     def forward(self, x, adj):
 
         for _ in range(self.order):
-            x = torch.spmm(adj, x)
+            x = adj.mm(x)
 
         return x
 

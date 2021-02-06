@@ -14,6 +14,7 @@ from .sbvat import SBVAT
 from .gmnn import GMNN
 from .dagnn import DAGNN
 from .mlp import MLP
+from .tagcn import TAGCN
 
 # experimental model
 from .experimental.edgeconv import EdgeGCN
@@ -21,4 +22,3 @@ from .experimental.s_obvat import SimplifiedOBVAT
 from .experimental.gcn_mix import GCN_MIX
 from .experimental.gcna import GCNA
 from .experimental.sat import SAT
-
