@@ -8,13 +8,13 @@ class SparseDropout(Layer):
         super().__init__()
         self.p = p
 
-    def forward(self, x, training=None):
+    def call(self, x, training=None):
         if training is None:
             training = K.learning_phase()
 
         if self.p and training:
-            x = tf.nn.dropout(x.values, self.p)
-            return tf.SparseTensor(x.indices, x, x.dense_shape)
+            values = tf.nn.dropout(x.values, self.p)
+            return tf.SparseTensor(x.indices, values, x.dense_shape)
         return x
 
 
@@ -24,7 +24,7 @@ class MixedDropout(Layer):
         self.dense_dropout = Dropout(p)
         self.sparse_dropout = SparseDropout(p)
 
-    def forward(self, x):
+    def call(self, x):
         if K.is_sparse(x):
             return self.sparse_dropout(x)
         else:
