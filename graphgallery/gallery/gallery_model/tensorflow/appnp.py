@@ -38,7 +38,8 @@ class APPNP(Trainer):
                 dropout=0.5,
                 weight_decay=5e-4,
                 lr=0.01,
-                use_bias=True):
+                use_bias=True,
+                use_tfn=True):
 
         model = get_model("APPNP", self.backend)
         model = model(self.graph.num_node_attrs,
@@ -53,6 +54,8 @@ class APPNP(Trainer):
                       lr=lr,
                       use_bias=use_bias,
                       approximated=True)
+        if use_tfn:
+            model.use_tfn()
 
         return model
 
@@ -97,7 +100,8 @@ class PPNP(Trainer):
                 dropout=0.5,
                 weight_decay=5e-4,
                 lr=0.01,
-                use_bias=True):
+                use_bias=True,
+                use_tfn=True):
 
         model = get_model("APPNP", self.backend)
         model = model(self.graph.num_node_attrs,
@@ -110,7 +114,8 @@ class PPNP(Trainer):
                       lr=lr,
                       use_bias=use_bias,
                       approximated=False)
-
+        if use_tfn:
+            model.use_tfn()
         return model
 
     def train_sequence(self, index):
