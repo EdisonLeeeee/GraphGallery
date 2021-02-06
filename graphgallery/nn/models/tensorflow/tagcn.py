@@ -28,12 +28,11 @@ class TAGCN(TFKeras):
 
         h = x
         for hid, act in zip(hids, acts):
+            h = Dropout(rate=dropout)(h)
             h = TAGConvolution(hid, K=K, use_bias=use_bias,
                                activation=act,
                                kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
-
-            h = Dropout(rate=dropout)(h)
-
+        h = Dropout(rate=dropout)(h)
         h = TAGConvolution(out_channels, K=K, use_bias=use_bias,
                            kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
 
