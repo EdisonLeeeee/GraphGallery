@@ -19,7 +19,7 @@ graph = data.graph
 splits = data.split_nodes()
 
 from graphgallery.gallery import SGC
-trainer = SGC(graph, device="gpu", seed=123).process(attr_transform="normalize_attr", order=2).build()
+trainer = SGC(graph, device="gpu", seed=123).process(attr_transform="normalize_attr", K=2).build()
 his = trainer.train(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
 results = trainer.test(splits.test_nodes)
 print(f'Test loss {results.loss:.5}, Test accuracy {results.accuracy:.2%}')
