@@ -76,9 +76,9 @@ class GraphAttention(nn.Module):
         for head in range(self.attn_heads):
             W = self.kernels[head]
             a1, a2 = self.attn_kernel_self[head], self.attn_kernel_neighs[head]
-            Wh = x @ W
-            f_1 = Wh @ a1
-            f_2 = Wh @ a2
+            Wh = x.mm(W)
+            f_1 = Wh.mm(a1)
+            f_2 = Wh.mm(a2)
 
             e = self.leakyrelu(f_1 + f_2.transpose(0, 1))
 
@@ -103,7 +103,7 @@ class GraphAttention(nn.Module):
         return self.activation(output)
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self.in_channels} -> {self.out_channels})"
+        return f"{self.__class__.__name__}({self.in_channels}, {self.out_channels})"
 
 
 #########################Sparse Version of `GraphAttention` layer###################
@@ -202,7 +202,7 @@ class SparseGraphAttention(nn.Module):
         outputs = []
         for head in range(self.attn_heads):
             W, a = self.kernels[head], self.att_kernels[head]
-            h = x @ W
+            h = x.mm(W)
 
             # Self-attention on the nodes - Shared attention mechanism
             edge_h = torch.cat((h[edge[0, :], :], h[edge[1, :], :]), dim=1).t()
@@ -230,4 +230,4 @@ class SparseGraphAttention(nn.Module):
         return self.activation(output)
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self.in_channels} -> {self.out_channels})"
+        return f"{self.__class__.__name__}({self.in_channels}, {self.out_channels})"

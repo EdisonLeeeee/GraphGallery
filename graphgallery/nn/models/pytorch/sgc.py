@@ -1,7 +1,7 @@
 import torch
 import torch.nn.functional as F
 
-from torch.nn import Module, ModuleList, Dropout, Linear
+from torch.nn import ModuleList, Dropout, Linear
 from torch import optim
 
 from graphgallery.nn.models import TorchKeras

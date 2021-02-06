@@ -154,6 +154,19 @@ In detail, the following methods are currently implemented:
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/TAGCN.py"> [🔥PyTorch] </a>
 </details>
 
+<!-- 14 -->
+
+<details>
+<summary>
+<b>APPNP, PPNP</b> from <i>Johannes Klicpera et al</i>,
+<a href="https://arxiv.org/abs/1810.05997"> 📝<i>Predict then Propagate: Graph Neural Networks meet Personalized PageRank (ICLR'19)</i> </a>
+</summary>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/APPNP.py"> [:octocat:TensorFLow(APPNP)] </a>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/PPNP.py"> [:octocat:TensorFLow(PPNP)] </a>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/APPNP.py"> [🔥PyTorch(APPNP)] </a>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/PPNP.py"> [🔥PyTorch(PPNP)] </a>
+</details>
+
 ### Defense models (for Graph Adversarial Learning)
 
 #### Robust Optimization

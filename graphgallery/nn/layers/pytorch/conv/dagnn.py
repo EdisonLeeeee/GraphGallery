@@ -26,14 +26,14 @@ class PropConvolution(nn.Module):
 
         propagations = [x]
         for _ in range(self.K):
-            x = torch.spmm(adj, x)
+            x = adj.mm(x)
             propagations.append(x)
 
-        h = torch.stack(propagations, axis=1)
-        retrain_score = self.w(h)
-        retrain_score = self.activation(retrain_score).permute(0, 2, 1).contiguous()
-        out = (retrain_score @ h).squeeze(1)
+        h = torch.stack(propagations, dim=1)
+        retain_score = self.w(h)
+        retain_score = self.activation(retain_score).permute(0, 2, 1).contiguous()
+        out = (retain_score @ h).squeeze(1)
         return out
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self.in_channels} -> {self.out_channels})"
+        return f"{self.__class__.__name__}({self.in_channels}, {self.out_channels}, K={self.K})"

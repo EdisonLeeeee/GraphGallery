@@ -1,4 +1,4 @@
-import torch
+import torch.nn as nn
 from torch.nn import Module, Parameter
 
 
@@ -21,7 +21,7 @@ class TrainableSGConvolution(Module):
 
         if self.cache is None or not self.cached:
             for _ in range(self.order):
-                x = torch.spmm(adj, x)
+                x = adj.mm(x)
             self.cache = x
         else:
             x = self.cache
@@ -32,4 +32,4 @@ class TrainableSGConvolution(Module):
         self.w.reset_parameters()
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self.in_channels} -> {self.out_channels}, order={self.order})"
+        return f"{self.__class__.__name__}({self.in_channels}, {self.out_channels}, order={self.order})"

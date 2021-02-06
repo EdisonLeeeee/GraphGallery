@@ -8,6 +8,7 @@ from .pairnorm import *
 from .simpgcn import SimPGCN
 from .mlp import MLP
 from .tagcn import TAGCN
+from .appnp import APPNP, PPNP
 
 # experimantal model
 from .experimental.median_gcn import MedianGCN

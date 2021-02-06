@@ -29,11 +29,11 @@ def is_tensor(x: Any) -> bool:
 
 
 def is_sparse(x: Any) -> bool:
-    return is_tensor(x) and not is_dense(x)
+    return is_tensor(x) and x.is_sparse
 
 
 def is_dense(x: Any) -> bool:
-    return is_tensor(x) and x.layout == torch.strided
+    return is_tensor(x) and not x.is_sparse
 
 
 def astensor(x, *, dtype=None, device=None, escape=None):

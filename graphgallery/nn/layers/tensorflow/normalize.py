@@ -11,25 +11,25 @@ class NormalizeLayer(Layer):
         and it is deprecated because we use SparseTensor `adj` instead.
     """
 
-    def __init__(self, norm_adj, **kwargs):
+    def __init__(self, rate, fill_weight=1.0, **kwargs):
         super().__init__(**kwargs)
-        self.norm_adj = norm_adj
+        self.rate = rate
+        self.fill_weight = fill_weight
 
-    def call(self, inputs, improved=False):
+    def call(self, inputs):
         edge_index, edge_weight = inputs
         num_nodes = tf.reduce_max(edge_index) + 1
         if not edge_weight:
             edge_weight = tf.ones([edge_index.shape[0]], dtype=floatx())
 
-        fill_weight = 2.0 if improved else 1.0
         edge_index, edge_weight = self.add_selfloops_edge(
-            edge_index, num_nodes, edge_weight=edge_weight, fill_weight=fill_weight)
+            edge_index, num_nodes, edge_weight=edge_weight, fill_weight=self.fill_weight)
 
         row = tf.gather(edge_index, 0, axis=1)
         col = tf.gather(edge_index, 1, axis=1)
         deg = tf.math.unsorted_segment_sum(
             edge_weight, row, num_segments=num_nodes)
-        deg_inv_sqrt = tf.pow(deg, self.norm_adj)
+        deg_inv_sqrt = tf.pow(deg, self.rate)
         deg_inv_sqrt = tf.where(tf.math.is_inf(
             deg_inv_sqrt), tf.zeros_like(deg_inv_sqrt), deg_inv_sqrt)
         deg_inv_sqrt = tf.where(tf.math.is_nan(
@@ -60,7 +60,7 @@ class NormalizeLayer(Layer):
         return updated_edge_index, updated_edge_weight
 
     def get_config(self):
-        = {'norm_adj': self.norm_adj}
+        config = {'rate': self.rate, 'fill_weight': self.fill_weight}
 
         base_config = super().get_config()
-        return {**base_config, **
+        return {**base_config, **config}

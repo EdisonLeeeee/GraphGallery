@@ -1,3 +1,4 @@
+import torch
 import torch.nn.functional as F
 
 
@@ -12,10 +13,13 @@ def get_activation(activation):
         raise ValueError("'activation' is expected a 'string', "
                          f"but got {type(activation)}.")
 
-    activation_fn = getattr(F, activation, None)
+    if hasattr(torch, activation):
+        activation_fn = getattr(torch, activation)
+    else:
+        activation_fn = getattr(F, activation, None)
 
     if activation_fn:
         return activation_fn
     else:
         raise KeyError(
-            f"function {activation} not found in 'torch.nn.functional'.")
+            f"function {activation} not found in 'torch.nn.functional' and 'torch'.")

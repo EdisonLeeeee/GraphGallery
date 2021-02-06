@@ -32,6 +32,4 @@ class TAGConvolution(nn.Module):
         return self.activation(out)
 
     def __repr__(self):
-        return '{}({}, {}, K={})'.format(self.__class__.__name__,
-                                         self.in_channels, self.out_channels,
-                                         self.K)
+        return f"{self.__class__.__name__}({self.in_channels}, {self.out_channels}, K={self.K})"

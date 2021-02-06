@@ -54,8 +54,10 @@ def get(transform):
     transform_para = {}
     if isinstance(transform, tuple):
         transform, transform_para = transform
-
+    original_transform = transform
     assert isinstance(transform, str), transform
     if transform not in Transformers:
         transform = "".join(map(lambda s: s.title(), transform.split("_")))
+        if transform not in Transformers:
+            raise ValueError(f"transform not found `{original_transform}`.")
     return Transformers.get(transform)(**transform_para)

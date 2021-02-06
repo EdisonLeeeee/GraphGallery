@@ -1,6 +1,4 @@
-import torch
 import torch.nn as nn
-from graphgallery.nn.init.pytorch import uniform, zeros
 from ..get_activation import get_activation
 
 
@@ -28,4 +26,4 @@ class GraphConvolution(nn.Module):
         return self.activation(out)
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self.in_channels} -> {self.out_channels})"
+        return f"{self.__class__.__name__}({self.in_channels}, {self.out_channels})"

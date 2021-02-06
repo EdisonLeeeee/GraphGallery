@@ -9,3 +9,4 @@ from .parinorm import *
 from .simpgcn import SimPGCN
 from .mlp import MLP
 from .tagcn import TAGCN
+from .appnp import APPNP

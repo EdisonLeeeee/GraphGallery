@@ -12,3 +12,4 @@ from .mediansage import MedianAggregator, MedianGCNAggregator
 from .gcna import GraphConvAttribute
 from .dagnn import PropConvolution
 from .tagcn import TAGConvolution
+from .appnp import APPNPropagation, PPNPropagation

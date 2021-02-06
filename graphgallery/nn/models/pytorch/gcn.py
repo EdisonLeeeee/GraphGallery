@@ -1,5 +1,3 @@
-import torch
-import torch.nn.functional as F
 import torch.nn as nn
 from torch import optim
 
@@ -40,7 +38,7 @@ class GCN(TorchKeras):
         layers.append(layer)
         self.layers = layers
         # do not use weight_decay in the final layer
-        self.compile(loss=torch.nn.CrossEntropyLoss(),
+        self.compile(loss=nn.CrossEntropyLoss(),
                      optimizer=optim.Adam(paras, lr=lr),
                      metrics=[Accuracy()])
         self.dropout = nn.Dropout(dropout)
