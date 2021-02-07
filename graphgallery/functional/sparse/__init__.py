@@ -6,7 +6,7 @@ from .neighbor_sampler import NeighborSampler, neighbor_sampler
 from .gdc import GDC, gdc
 from .to_edge import sparse_adj_to_edge, SparseAdjToEdge
 from .augment_adj import augment_adj
-from .sparse_reshape import SparseReshape, sparse_reshape
+from .reshape import SparseReshape, sparse_reshape
 from .sample import find_4o_nbrs
 from .flip import *
 from .ppr import ppr, PPR
