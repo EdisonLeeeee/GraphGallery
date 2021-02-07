@@ -5,6 +5,7 @@ import os.path as osp
 import graphgallery as gg
 from graphgallery import functional as gf
 
+
 class TorchKeras(nn.Module):
     """Keras like PyTorch Model."""
 
@@ -18,35 +19,39 @@ class TorchKeras(nn.Module):
         self._is_graph_network = dummy_function
         self.distribute_strategy = None
 
+        # to be compatible with TensorBoard callbacks
+        self._train_counter = 0
+        self._test_counter = 0
+
         # initialize
         self.optimizer = None
         self.metrics = None
         self.loss = None
-        
+
         # cache
         self.empty_cache()
-        
+
     def from_cache(self, **kwargs):
         if not kwargs:
             return None
-        
+
         def get(name, value):
             obj = self.cache.get(name, None)
-            
+
             if obj is None:
                 assert value is not None
                 self.cache[name] = value
                 obj = value
             return obj
-        
+
         out = tuple(get(k, v) for k, v in kwargs.items())
         if len(out) == 1:
             out, = out
         return out
-        
+
     def empty_cache(self):
         self.cache = gf.BunchDict()
-        
+
     def train_step_on_batch(self,
                             x,
                             y=None,

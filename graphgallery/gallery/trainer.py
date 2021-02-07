@@ -8,7 +8,7 @@ import tensorflow as tf
 
 from tensorflow.keras.utils import Sequence
 from tensorflow.python.keras import callbacks as callbacks_module
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, TerminateOnNaN
 from tensorflow.keras.callbacks import History
 from graphgallery.utils import Progbar
 
@@ -90,7 +90,7 @@ class Trainer(Model):
         attr_transform: string, Callable function, or a tuple with function and dict arguments.
             transform for attribute matrix.
         graph_transform: string, Callable function, or a tuple with function and dict arguments.
-            transform for the entire graph, it is used before 'adj_transform' and 'attr_transform'.        
+            transform for the entire graph, it is used before 'adj_transform' and 'attr_transform'.
         other arguments (if have) will be passed into your method 'process_step'.
         """
         cfg = self.cfg.process
@@ -108,7 +108,7 @@ class Trainer(Model):
         raise NotImplementedError
 
     def build(self, **kwargs):
-        """This method is used for build your model, which 
+        """This method is used for build your model, which
         accepts only keyword arguments in your defined method 'builder'.
 
         Note:
@@ -130,7 +130,7 @@ class Trainer(Model):
         use_bias: bool,
             whether to use bias in each layer.
         use_tfn: bool,
-            this argument is only used for TensorFlow backend, if `True`, it will decorate 
+            this argument is only used for TensorFlow backend, if `True`, it will decorate
             the model training and testing with `tf.function` (See `graphgallery.nn.modes.TFKeras`).
             By default, it was `True`, which can accelerate the training and inference, by it may cause
             several errors.
@@ -146,6 +146,19 @@ class Trainer(Model):
             model, kwargs = gf.wrapper(self.builder)(**kwargs)
             self.model = model.to(self.device)
         self.cfg.model.merge_from_dict(kwargs)
+        return self
+
+    def build_from_model(self, model):
+        if not self.is_processed:
+            raise RuntimeError("Please call 'trainer.process()' first.")
+
+        if self.backend == "tensorflow":
+            with tf.device(self.device):
+                self.model = model
+        else:
+            self.model = model.to(self.device)
+
+        self.cfg.model.build_from_model = False
         return self
 
     def builder(self, *args, **kwargs):
@@ -168,44 +181,21 @@ class Trainer(Model):
         if not isinstance(train_data, Sequence):
             train_data = self.train_sequence(train_data)
 
-        cache.train_data = train_data
+        if cfg.cache_train_data:
+            cache.train_data = train_data
 
         validation = val_data is not None
-
         if validation:
             if not isinstance(val_data, Sequence):
                 val_data = self.test_sequence(val_data)
-            cache.val_data = val_data
-        elif ckpt_cfg.enabled and ckpt_cfg.monitor.startswith("val_"):
-            ckpt_cfg.monitor = ckpt_cfg.monitor[4:]
-            warnings.warn(f"The metric 'val_{ckpt_cfg.monitor}' is invalid without validation "
-                          f"and has been automatically replaced with '{ckpt_cfg.monitor}'.", UserWarning)
+            if cfg.cache_val_data:
+                cache.val_data = val_data
 
+        # Setup callbacks
         callbacks = callbacks_module.CallbackList()
-
         history = History()
         callbacks.append(history)
-
-        if es_cfg.enabled:
-            assert es_cfg.monitor.startswith("val")
-            es_callback = EarlyStopping(monitor=es_cfg.monitor,
-                                        patience=es_cfg.monitor,
-                                        mode=es_cfg.mode,
-                                        verbose=es_cfg.verbose)
-            callbacks.append(es_callback)
-
-        if ckpt_cfg.enabled:
-            if not ckpt_cfg.path.endswith(gg.file_ext()):
-                ckpt_cfg.path += gg.file_ext()
-            makedirs_from_filepath(ckpt_cfg.path)
-
-            mc_callback = ModelCheckpoint(ckpt_cfg.path,
-                                          monitor=ckpt_cfg.monitor,
-                                          save_best_only=ckpt_cfg.save_best_only,
-                                          save_weights_only=ckpt_cfg.save_weights_only,
-                                          verbose=ckpt_cfg.vervose)
-            callbacks.append(mc_callback)
-
+        cfg, callbacks = setup_callbacks(cfg, callbacks, validation)
         callbacks.set_model(model)
         model.stop_training = False
 
@@ -280,7 +270,8 @@ class Trainer(Model):
         else:
             test_data = self.test_sequence(data)
 
-        cache.test_data = test_data
+        if cfg.cache_test_data:
+            cache.test_data = test_data
 
         if cfg.verbose:
             print("Testing...")
@@ -297,6 +288,7 @@ class Trainer(Model):
         model = self.model
         model.reset_metrics()
 
+        results = None
         for batch in sequence:
             inputs, labels, out_weight = unravel_batch(batch)
             results = model.train_step_on_batch(x=inputs,
@@ -309,6 +301,7 @@ class Trainer(Model):
         model = self.model
         model.reset_metrics()
 
+        results = None
         for batch in sequence:
             inputs, labels, out_weight = unravel_batch(batch)
             results = model.test_step_on_batch(x=inputs,
@@ -442,3 +435,50 @@ def remove_extra_tf_files(filepath):
     path = osp.join(file_dir, "checkpoint")
     if osp.exists(path):
         os.remove(path)
+
+
+def setup_callbacks(cfg, callbacks, validation):
+    ckpt_cfg = cfg.ModelCheckpoint
+    es_cfg = cfg.EarlyStopping
+    tb_cfg = cfg.TensorBoard
+
+    if not validation:
+        if ckpt_cfg.enabled and ckpt_cfg.monitor.startswith("val_"):
+            ckpt_cfg.monitor = ckpt_cfg.monitor[4:]
+            warnings.warn(f"The metric 'val_{ckpt_cfg.monitor}' is invalid without validation "
+                          f"and has been automatically replaced with '{ckpt_cfg.monitor}'.", UserWarning)
+        if es_cfg.enabled and es_cfg.monitor.startswith("val_"):
+            es_cfg.monitor = es_cfg.monitor[4:]
+            warnings.warn(f"The metric 'val_{es_cfg.monitor}' is invalid without validation "
+                          f"and has been automatically replaced with '{es_cfg.monitor}'.", UserWarning)
+
+    if es_cfg.enabled:
+        es_callback = EarlyStopping(monitor=es_cfg.monitor,
+                                    patience=es_cfg.patience,
+                                    mode=es_cfg.mode,
+                                    verbose=es_cfg.verbose,
+                                    baseline=es_cfg.baseline,
+                                    restore_best_weights=es_cfg.restore_best_weights)
+        callbacks.append(es_callback)
+
+    if ckpt_cfg.enabled:
+        if not ckpt_cfg.path.endswith(gg.file_ext()):
+            ckpt_cfg.path += gg.file_ext()
+        makedirs_from_filepath(ckpt_cfg.path)
+        mc_callback = ModelCheckpoint(ckpt_cfg.path,
+                                      monitor=ckpt_cfg.monitor,
+                                      save_best_only=ckpt_cfg.save_best_only,
+                                      save_weights_only=ckpt_cfg.save_weights_only,
+                                      verbose=ckpt_cfg.vervose)
+        callbacks.append(mc_callback)
+
+    if cfg.TerminateOnNaN.enabled:
+        callbacks.append(TerminateOnNaN())
+
+    if tb_cfg.enabled:
+        callbacks.append(tf.keras.callbacks.TensorBoard(tb_cfg.log_dir,
+                                                        write_graph=tb_cfg.write_graph,
+                                                        update_freq=tb_cfg.update_freq,
+                                                        histogram_freq=tb_cfg.histogram_freq,
+                                                        write_images=tb_cfg.write_images))
+    return cfg, callbacks
