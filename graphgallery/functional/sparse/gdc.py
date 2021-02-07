@@ -1,5 +1,3 @@
-from graphgallery.functional.sparse.clip import sparse_clip
-import numpy as np
 import scipy.sparse as sp
 from sklearn.preprocessing import normalize
 from scipy.linalg import expm
