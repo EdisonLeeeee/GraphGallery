@@ -2,14 +2,14 @@ import numpy as np
 import scipy.sparse as sp
 import graphgallery as gg
 
-from ..transforms import Transform
+from ..transforms import BaseTransform
 from ..functions import repeat
 from ..decorators import multiple
-from ..get_transform import Transformers
+from ..get_transform import Transform
 
 
-@Transformers.register()
-class NormalizeAdj(Transform):
+@Transform.register()
+class NormalizeAdj(BaseTransform):
     """Normalize adjacency matrix."""
 
     def __init__(self, rate=-0.5, fill_weight=1.0, symmetric=True):

@@ -1,13 +1,13 @@
 import scipy.sparse as sp
 
 from .normalize_adj import normalize_adj
-from ..transforms import Transform
+from ..transforms import BaseTransform
 from ..decorators import multiple
-from ..get_transform import Transformers
+from ..get_transform import Transform
 
 
-@Transformers.register()
-class ChebyBasis(Transform):
+@Transform.register()
+class ChebyBasis(BaseTransform):
     def __init__(self, K=2, rate=-0.5):
         super().__init__()
         self.K = K

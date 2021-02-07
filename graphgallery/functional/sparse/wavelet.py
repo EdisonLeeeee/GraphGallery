@@ -3,9 +3,9 @@ import numpy as np
 
 from sklearn.preprocessing import normalize
 
-from ..transforms import Transform
+from ..transforms import BaseTransform
 from ..decorators import multiple
-from ..get_transform import Transformers
+from ..get_transform import Transform
 
 # Version: Compute the exact signature
 # def laplacian(W, normalized=True):
@@ -84,8 +84,8 @@ from ..get_transform import Transformers
 # Version: Approximate with Chebychev polynomial
 
 
-@Transformers.register()
-class WaveletBasis(Transform):
+@Transform.register()
+class WaveletBasis(BaseTransform):
     def __init__(self,
                  K=3,
                  wavelet_s=1.2,

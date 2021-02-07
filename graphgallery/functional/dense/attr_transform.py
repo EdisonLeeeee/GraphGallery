@@ -5,9 +5,9 @@ from sklearn import preprocessing
 from typing import Union
 
 import graphgallery as gg
-from ..transforms import Transform
+from ..transforms import BaseTransform
 from ..decorators import multiple
-from ..get_transform import Transformers
+from ..get_transform import Transform
 
 __all__ = ['augment_attr', 'normalize_attr', 'NormalizeAttr']
 
@@ -48,8 +48,8 @@ def augment_attr(node_attr: np.ndarray,
     return augmented_attr
 
 
-@Transformers.register()
-class NormalizeAttr(Transform):
+@Transform.register()
+class NormalizeAttr(BaseTransform):
     """Normalize the node attribute matrix with given type."""
 
     def __init__(self, norm='l1'):

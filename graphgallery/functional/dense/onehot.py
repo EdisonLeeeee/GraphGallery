@@ -1,14 +1,14 @@
 import numpy as np
 
-from ..transforms import Transform
+from ..transforms import BaseTransform
 from ..decorators import multiple
-from ..get_transform import Transformers
+from ..get_transform import Transform
 
 __all__ = ['onehot', 'Onehot']
 
 
-@Transformers.register()
-class Onehot(Transform):
+@Transform.register()
+class Onehot(BaseTransform):
 
     def __init__(self, depth=None):
         super().__init__()

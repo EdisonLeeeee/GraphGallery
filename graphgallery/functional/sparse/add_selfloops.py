@@ -2,13 +2,13 @@ import numpy as np
 import scipy.sparse as sp
 import graphgallery as gg
 
-from ..transforms import Transform
+from ..transforms import BaseTransform
 from ..decorators import multiple
-from ..get_transform import Transformers
+from ..get_transform import Transform
 
 
-@Transformers.register()
-class AddSelfloops(Transform):
+@Transform.register()
+class AddSelfloops(BaseTransform):
     """Add self loops for adjacency matrix."""
 
     def __init__(self, fill_weight: float = 1.0):

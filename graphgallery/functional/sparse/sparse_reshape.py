@@ -1,13 +1,13 @@
 import numpy as np
 import scipy.sparse as sp
 
-from ..transforms import Transform
+from ..transforms import BaseTransform
 from .to_edge import sparse_adj_to_edge
-from ..get_transform import Transformers
+from ..get_transform import Transform
 
 
-@Transformers.register()
-class SparseReshape(Transform):
+@Transform.register()
+class SparseReshape(BaseTransform):
     """Add self loops for adjacency matrix."""
 
     def __init__(self, shape: tuple = None):

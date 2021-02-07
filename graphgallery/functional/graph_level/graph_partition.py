@@ -9,8 +9,8 @@ import scipy.sparse as sp
 from scipy.sparse.csgraph import connected_components
 from graphgallery import intx
 
-from ..transforms import Transform
-from ..get_transform import Transformers
+from ..transforms import BaseTransform
+from ..get_transform import Transform
 
 
 def metis_clustering(graph, num_clusters):
@@ -25,8 +25,8 @@ def random_clustering(num_nodes, num_clusters):
     return parts
 
 
-@Transformers.register()
-class GraphPartition(Transform):
+@Transform.register()
+class GraphPartition(BaseTransform):
     def __init__(self, num_clusters: int = None, metis_partition: bool = True):
         self.num_clusters = num_clusters
         self.metis_partition = metis_partition

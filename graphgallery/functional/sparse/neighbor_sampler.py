@@ -1,13 +1,13 @@
 import numpy as np
 import scipy.sparse as sp
 
-from ..transforms import Transform
-from ..get_transform import Transformers
+from ..transforms import BaseTransform
+from ..get_transform import Transform
 from graphgallery import intx
 
 
-@Transformers.register()
-class NeighborSampler(Transform):
+@Transform.register()
+class NeighborSampler(BaseTransform):
 
     def __init__(self, max_degree: int = 25,
                  selfloop: bool = False):

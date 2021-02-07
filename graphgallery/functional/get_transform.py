@@ -4,13 +4,13 @@ from .registry import Registry
 from .transforms import *
 from .functions import *
 
-__all__ = ["get", "Compose", "Transformers"]
+__all__ = ["get", "Compose", "Transform"]
 
 
-Transformers = Registry("Transformers")
+Transform = Registry("Transform")
 
 
-class Compose(Transform):
+class Compose(BaseTransform):
     def __init__(self, *transforms,
                  **kwargs):
         self.transforms = [get(transform) for transform in transforms]
@@ -46,7 +46,7 @@ def get(transform):
     if gg.is_listlike(transform) and not is_name_dict_tuple(transform):
         return Compose(*transform)
 
-    if isinstance(transform, Transform) or callable(transform):
+    if isinstance(transform, BaseTransform) or callable(transform):
         return transform
     elif transform is None:
         return NullTransform()
@@ -56,8 +56,8 @@ def get(transform):
         transform, transform_para = transform
     original_transform = transform
     assert isinstance(transform, str), transform
-    if transform not in Transformers:
+    if transform not in Transform:
         transform = "".join(map(lambda s: s.title(), transform.split("_")))
-        if transform not in Transformers:
+        if transform not in Transform:
             raise ValueError(f"transform not found `{original_transform}`.")
-    return Transformers.get(transform)(**transform_para)
+    return Transform.get(transform)(**transform_para)

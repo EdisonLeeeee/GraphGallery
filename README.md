@@ -7,8 +7,8 @@
 <!-- <p align="center"><strong>A <em>gallery</em> of state-of-the-art Graph Neural Networks (GNNs) for TensorFlow and PyTorch</strong>.</p> -->
 
 <p align=center>
-  <a href="https://www.python.org/downloads/release/python-370/">
-    <img src="https://img.shields.io/badge/Python->=3.7-3776AB?logo=python" alt="Python">
+  <a href="https://www.python.org/downloads/release/python-360/">
+    <img src="https://img.shields.io/badge/Python->=3.6-3776AB?logo=python" alt="Python">
   </a>    
   <a href="https://github.com/tensorflow/tensorflow/releases/tag/v2.1.0">
     <img src="https://img.shields.io/badge/TensorFlow->=2.1.0-FF6F00?logo=tensorflow" alt="tensorflow">
@@ -31,8 +31,14 @@ GraphGallery is a gallery for benchmarking Graph Neural Networks (GNNs) and Grap
 We have integrated the **Adversarial Attacks** in this project, examples please refer to [Graph Adversarial Learning examples](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Adversarial_Learning).
 
 # 🚀 Installation
-```python
+```bash
 pip install -U graphgallery
+```
+or
+```bash
+https://github.com/EdisonLeeeee/GraphGallery.git
+cd GraphGallery
+pip install -e .
 ```
 GraphGallery has been tested on:
 + CPU, CUDA 10.1, CUDA 11.0
@@ -114,3 +120,5 @@ mydataset = Graph.from_npz('path/to/mydataset.npz')
 
 # 😘 Acknowledgement
 This project is motivated by [Pytorch Geometric](https://github.com/rusty1s/pytorch_geometric), [Tensorflow Geometric](https://github.com/CrawlScript/tf_geometric), [Stellargraph](https://github.com/stellargraph/stellargraph) and [DGL](https://github.com/dmlc/dgl), etc., and the original implementations of the authors, thanks for their excellent works!
+
+# Cite

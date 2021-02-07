@@ -1,10 +1,10 @@
-__all__ = ["Transform", "NullTransform",
+__all__ = ["BaseTransform", "NullTransform",
            "SparseTransform", "DenseTransform",
            "EdgeTransform", "GraphTransform",
            "TensorTransform"]
 
 
-class Transform:
+class BaseTransform:
 
     def __init__(self):
         super().__init__()
@@ -20,7 +20,7 @@ class Transform:
     __str__ = __repr__
 
 
-class NullTransform(Transform):
+class NullTransform(BaseTransform):
     def __init__(self, *args, **kwargs):
         super().__init__()
 
@@ -28,21 +28,21 @@ class NullTransform(Transform):
         return inputs
 
 
-class SparseTransform(Transform):
+class SparseTransform(BaseTransform):
     pass
 
 
-class DenseTransform(Transform):
+class DenseTransform(BaseTransform):
     pass
 
 
-class GraphTransform(Transform):
+class GraphTransform(BaseTransform):
     pass
 
 
-class EdgeTransform(Transform):
+class EdgeTransform(BaseTransform):
     pass
 
 
-class TensorTransform(Transform):
+class TensorTransform(BaseTransform):
     pass

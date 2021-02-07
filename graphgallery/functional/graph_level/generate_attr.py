@@ -1,14 +1,14 @@
 import sys
 import numpy as np
 
-from ..transforms import Transform
-from ..get_transform import Transformers
+from ..transforms import BaseTransform
+from ..get_transform import Transform
 
 __all__ = ['GenerateNodeAttr', 'GenerateEdgeAttr']
 
 
-@Transformers.register()
-class GenerateNodeAttr(Transform):
+@Transform.register()
+class GenerateNodeAttr(BaseTransform):
     def __init__(self, N=None, fill_weight=1.0):
         super().__init__()
         self.N = N
@@ -32,8 +32,8 @@ class GenerateNodeAttr(Transform):
         return f"N={self.N}, fill_weight={self.fill_weight}"
 
 
-@Transformers.register()
-class GenerateEdgeAttr(Transform):
+@Transform.register()
+class GenerateEdgeAttr(BaseTransform):
     def __init__(self, N=None, fill_weight=1.0):
         super().__init__()
         self.N = N

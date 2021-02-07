@@ -1,13 +1,13 @@
 import numpy as np
 import scipy.sparse as sp
 from .normalize_adj import normalize_adj
-from ..transforms import Transform
+from ..transforms import BaseTransform
 from ..decorators import multiple
-from ..get_transform import Transformers
+from ..get_transform import Transform
 
 
-@Transformers.register()
-class PPR(Transform):
+@Transform.register()
+class PPR(BaseTransform):
     def __init__(self,
                  alpha: float = 0.1):
         super().__init__()

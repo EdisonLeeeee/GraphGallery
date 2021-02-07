@@ -2,8 +2,8 @@ import warnings
 import numpy as np
 import scipy.sparse as sp
 
-from ..transforms import Transform
-from ..get_transform import Transformers
+from ..transforms import BaseTransform
+from ..get_transform import Transform
 from ..edge_level import singleton_filter
 from ..sparse import remove_edge
 import graphgallery as gg
@@ -54,8 +54,8 @@ def cosine_detection(adj_matrix, node_attr, threshold=0.01, allow_singleton=Fals
                                       allow_singleton=allow_singleton)
 
 
-@Transformers.register()
-class JaccardDetection(Transform):
+@Transform.register()
+class JaccardDetection(BaseTransform):
 
     def __init__(self, threshold=0., allow_singleton=False):
         super().__init__()
@@ -81,8 +81,8 @@ class JaccardDetection(Transform):
         return f"threshold={self.threshold}, allow_singleton={self.allow_singleton}"
 
 
-@Transformers.register()
-class CosineDetection(Transform):
+@Transform.register()
+class CosineDetection(BaseTransform):
 
     def __init__(self, threshold=0., allow_singleton=False):
         super().__init__()
@@ -109,8 +109,8 @@ class CosineDetection(Transform):
         return f"threshold={self.threshold}, allow_singleton={self.allow_singleton}"
 
 
-@Transformers.register()
-class SVD(Transform):
+@Transform.register()
+class SVD(BaseTransform):
 
     def __init__(self, k=50, threshold=0.01, binaryzation=False):
         super().__init__()

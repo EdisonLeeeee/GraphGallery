@@ -1,13 +1,13 @@
 import numpy as np
 
-from ..transforms import Transform
-from ..get_transform import Transformers
+from ..transforms import BaseTransform
+from ..get_transform import Transform
 from graphgallery.data.preprocess import largest_connected_components
 __all__ = ['Standardize']
 
 
-@Transformers.register()
-class Standardize(Transform):
+@Transform.register()
+class Standardize(BaseTransform):
     def __init__(self):
         super().__init__()
 
