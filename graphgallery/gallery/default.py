@@ -17,6 +17,7 @@ def default_cfg(model):
 
     cfg.process = gg.CfgNode()
     cfg.process.graph_transform = None
+    cfg.process.edge_transform = None
     cfg.process.adj_transform = None
     cfg.process.attr_transform = None
     cfg.process.label_transform = None

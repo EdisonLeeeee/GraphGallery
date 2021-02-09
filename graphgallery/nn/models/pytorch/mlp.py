@@ -1,10 +1,8 @@
 import torch
-import torch.nn.functional as F
 import torch.nn as nn
 from torch import optim
 
 from graphgallery.nn.models import TorchKeras
-from graphgallery.nn.layers.pytorch import GraphConvolution
 from graphgallery.nn.metrics.pytorch import Accuracy
 from graphgallery.nn.layers.pytorch.get_activation import get_activation
 
@@ -38,10 +36,10 @@ class MLP(TorchKeras):
         layer = nn.Linear(inc, out_channels, bias=use_bias)
         paras.append(dict(params=layer.parameters(), weight_decay=0.))
         layers.append(layer)
-        
+
         self.layers = layers
         # do not use weight_decay in the final layer
-        self.compile(loss=torch.nn.CrossEntropyLoss(),
+        self.compile(loss=nn.CrossEntropyLoss(),
                      optimizer=optim.Adam(paras, lr=lr),
                      metrics=[Accuracy()])
         self.dropout = nn.Dropout(dropout)
