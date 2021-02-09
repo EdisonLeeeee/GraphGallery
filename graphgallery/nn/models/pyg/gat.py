@@ -20,7 +20,7 @@ class GAT(TorchKeras):
                  dropout=0.6,
                  weight_decay=5e-4,
                  lr=0.01,
-                 use_bias=True):
+                 bias=True):
 
         super().__init__()
 
@@ -34,7 +34,7 @@ class GAT(TorchKeras):
             layer = GATConv(inc * pre_head,
                             hid,
                             heads=num_head,
-                            bias=use_bias,
+                            bias=bias,
                             dropout=dropout)
             layers.append(layer)
             act_fns.append(get_activation(act))
@@ -46,7 +46,7 @@ class GAT(TorchKeras):
         layer = GATConv(inc * pre_head,
                         out_channels,
                         heads=1,
-                        bias=use_bias,
+                        bias=bias,
                         concat=False,
                         dropout=dropout)
         layers.append(layer)

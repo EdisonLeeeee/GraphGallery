@@ -31,7 +31,7 @@ class SimplifiedOBVAT(OBVAT):
                 dropout=0.,
                 lr=0.01,
                 weight_decay=5e-4,
-                use_bias=False,
+                bias=False,
                 p1=1.4,
                 p2=0.7,
                 epsilon=0.01,
@@ -51,12 +51,12 @@ class SimplifiedOBVAT(OBVAT):
                 GraphConvolution(
                     hid,
                     activation=act,
-                    use_bias=use_bias,
+                    bias=bias,
                     kernel_regularizer=regularizers.l2(weight_decay)))
 
         GCN_layers.append(
             GraphConvolution(self.graph.num_node_classes,
-                             use_bias=use_bias))
+                             bias=bias))
 
         self.GCN_layers = GCN_layers
         self.dropout = Dropout(rate=dropout)

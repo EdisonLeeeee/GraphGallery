@@ -18,7 +18,7 @@ class TAGCN(TorchKeras):
                  dropout=0.5,
                  weight_decay=5e-4,
                  lr=0.01,
-                 use_bias=False):
+                 bias=False):
 
         super().__init__()
 
@@ -30,12 +30,12 @@ class TAGCN(TorchKeras):
             layer = TAGConvolution(inc,
                                    hid, K=K,
                                    activation=act,
-                                   use_bias=use_bias)
+                                   bias=bias)
             layers.append(layer)
             inc = hid
 
         layer = TAGConvolution(inc, out_channels, K=K,
-                               use_bias=use_bias)
+                               bias=bias)
         layers.append(layer)
         self.layers = layers
         self.compile(loss=torch.nn.CrossEntropyLoss(),

@@ -16,18 +16,18 @@ class GCN(TFKeras):
                  acts=['relu'],
                  dropout=0.5,
                  weight_decay=5e-4,
-                 lr=0.01, use_bias=True):
+                 lr=0.01, bias=True):
 
         super().__init__()
         self.convs = []
         inc = in_channels
         for hid, act in zip(hids, acts):
-            layer = GraphConv(inc, hid, bias=use_bias,
+            layer = GraphConv(inc, hid, bias=bias,
                               activation=activations.get(act))
             self.convs.append(layer)
             inc = hid
 
-        layer = GraphConv(inc, out_channels, bias=use_bias)
+        layer = GraphConv(inc, out_channels, bias=bias)
         self.convs.append(layer)
         self.dropout = layers.Dropout(dropout)
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),

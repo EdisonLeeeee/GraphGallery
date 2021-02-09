@@ -35,7 +35,7 @@ class DAGNN(Trainer):
                 dropout=0.5,
                 weight_decay=5e-3,
                 lr=0.01,
-                use_bias=False,
+                bias=False,
                 K=10,
                 use_tfn=True):
 
@@ -47,7 +47,7 @@ class DAGNN(Trainer):
                       dropout=dropout,
                       weight_decay=weight_decay,
                       lr=lr,
-                      use_bias=use_bias,
+                      bias=bias,
                       K=K)
         if use_tfn:
             model.use_tfn()

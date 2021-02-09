@@ -46,7 +46,7 @@ class GraphSAGE(Trainer):
                 dropout=0.5,
                 weight_decay=5e-4,
                 lr=0.01,
-                use_bias=True,
+                bias=True,
                 output_normalize=False,
                 aggregator='mean',
                 num_samples=[15, 5],
@@ -60,7 +60,7 @@ class GraphSAGE(Trainer):
                       dropout=dropout,
                       weight_decay=weight_decay,
                       lr=lr,
-                      use_bias=use_bias,
+                      bias=bias,
                       aggregator=aggregator,
                       output_normalize=output_normalize,
                       num_samples=num_samples)

@@ -38,7 +38,7 @@ class APPNP(Trainer):
                 dropout=0.5,
                 weight_decay=5e-4,
                 lr=0.01,
-                use_bias=True):
+                bias=True):
 
         model = get_model("APPNP", self.backend)
         model = model(self.graph.num_node_attrs,
@@ -51,7 +51,7 @@ class APPNP(Trainer):
                       dropout=dropout,
                       weight_decay=weight_decay,
                       lr=lr,
-                      use_bias=use_bias,
+                      bias=bias,
                       approximated=True)
 
         return model
@@ -97,7 +97,7 @@ class PPNP(Trainer):
                 dropout=0.5,
                 weight_decay=5e-4,
                 lr=0.01,
-                use_bias=True):
+                bias=True):
 
         model = get_model("APPNP", self.backend)
         model = model(self.graph.num_node_attrs,
@@ -108,7 +108,7 @@ class PPNP(Trainer):
                       dropout=dropout,
                       weight_decay=weight_decay,
                       lr=lr,
-                      use_bias=use_bias,
+                      bias=bias,
                       approximated=False)
 
         return model

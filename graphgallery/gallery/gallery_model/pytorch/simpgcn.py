@@ -53,7 +53,7 @@ class SimPGCN(Trainer):
                 gamma=0.1,                
                 weight_decay=5e-4,
                 lr=0.01,
-                use_bias=False):
+                bias=False):
 
         model = get_model("SimPGCN", self.backend)
         model = model(self.graph.num_node_attrs,
@@ -65,7 +65,7 @@ class SimPGCN(Trainer):
                       dropout=dropout,
                       weight_decay=weight_decay,
                       lr=lr,
-                      use_bias=use_bias)
+                      bias=bias)
 
         return model
 

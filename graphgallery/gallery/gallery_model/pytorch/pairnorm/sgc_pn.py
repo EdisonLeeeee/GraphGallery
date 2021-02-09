@@ -31,7 +31,7 @@ class SGC_PN(Trainer):
                 dropout=0.6,
                 weight_decay=5e-4,
                 lr=0.005,
-                use_bias=True):
+                bias=True):
 
         model = get_model("SGC_PN", self.backend)
         model = model(self.graph.num_node_attrs,
@@ -44,7 +44,7 @@ class SGC_PN(Trainer):
                       dropout=dropout,
                       weight_decay=weight_decay,
                       lr=lr,
-                      use_bias=use_bias)
+                      bias=bias)
 
         return model
 

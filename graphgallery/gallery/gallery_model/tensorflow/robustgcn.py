@@ -39,7 +39,7 @@ class RobustGCN(Trainer):
                 lr=0.01,
                 kl=5e-4,
                 gamma=1.,
-                use_bias=False,
+                bias=False,
                 use_tfn=True):
         
         model = get_model("RobustGCN", self.backend)
@@ -52,7 +52,7 @@ class RobustGCN(Trainer):
                       kl=kl,
                       gamma=gamma,
                       lr=lr,
-                      use_bias=use_bias)
+                      bias=bias)
         
         if use_tfn:
             model.use_tfn()

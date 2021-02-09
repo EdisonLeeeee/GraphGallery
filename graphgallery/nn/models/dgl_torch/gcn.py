@@ -19,7 +19,7 @@ class GCN(TorchKeras):
                  dropout=0.5,
                  weight_decay=5e-4,
                  lr=0.01,
-                 use_bias=True):
+                 bias=True):
 
         super().__init__()
 
@@ -30,7 +30,7 @@ class GCN(TorchKeras):
             layer = GraphConv(inc,
                               hid,
                               activation=get_activation(act),
-                              bias=use_bias)
+                              bias=bias)
             self.layers.append(layer)
             inc = hid
         # output layer

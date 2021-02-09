@@ -46,7 +46,7 @@ class GMNN(Trainer):
                 dropout=0.6,
                 weight_decay=5e-4,
                 lr=0.05,
-                use_bias=False, 
+                bias=False, 
                 use_tfn=True):
 
         x_p = Input(batch_shape=[None, self.graph.num_node_classes],
@@ -65,14 +65,14 @@ class GMNN(Trainer):
             for hid, act in zip(hids, acts):
                 h = GraphConvolution(
                     hid,
-                    use_bias=use_bias,
+                    bias=bias,
                     activation=act,
                     kernel_regularizer=regularizers.l2(weight_decay))(
                         [h, adj])
                 h = Dropout(rate=dropout)(h)
 
             h = GraphConvolution(self.graph.num_node_classes,
-                                 use_bias=use_bias)([h, adj])
+                                 bias=bias)([h, adj])
 
             model = TFKeras(inputs=[x, adj], outputs=h)
             model.compile(loss=CategoricalCrossentropy(from_logits=True),

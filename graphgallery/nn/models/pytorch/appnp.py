@@ -20,7 +20,7 @@ class APPNP(TorchKeras):
                  dropout=0.5,
                  weight_decay=5e-4,
                  lr=0.01,
-                 use_bias=True,
+                 bias=True,
                  approximated=True):
 
         super().__init__()
@@ -34,13 +34,13 @@ class APPNP(TorchKeras):
         for hid, act in zip(hids, acts):
             layer = nn.Linear(inc,
                               hid,
-                              bias=use_bias)
+                              bias=bias)
             layers.append(layer)
             paras.append(dict(params=layer.parameters(), weight_decay=weight_decay))
             acts_fn.append(get_activation(act))
             inc = hid
 
-        layer = nn.Linear(inc, out_channels, bias=use_bias)
+        layer = nn.Linear(inc, out_channels, bias=bias)
         paras.append(dict(params=layer.parameters(), weight_decay=0.))
         layers.append(layer)
         self.layers = layers

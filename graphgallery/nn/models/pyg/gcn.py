@@ -19,7 +19,7 @@ class GCN(TorchKeras):
                  dropout=0.5,
                  weight_decay=5e-4,
                  lr=0.01,
-                 use_bias=True):
+                 bias=True):
 
         super().__init__()
 
@@ -32,7 +32,7 @@ class GCN(TorchKeras):
             layer = GCNConv(inc,
                             hid,
                             cached=True,
-                            bias=use_bias,
+                            bias=bias,
                             normalize=False)
             layers.append(layer)
             paras.append(
@@ -43,7 +43,7 @@ class GCN(TorchKeras):
         layer = GCNConv(inc,
                         out_channels,
                         cached=True,
-                        bias=use_bias,
+                        bias=bias,
                         normalize=False)
         layers.append(layer)
         # do not use weight_decay in the final layer

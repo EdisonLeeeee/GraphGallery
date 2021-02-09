@@ -16,7 +16,7 @@ class GCN(TorchKeras):
                  dropout=0.5,
                  weight_decay=5e-4,
                  lr=0.01,
-                 use_bias=False):
+                 bias=False):
         super().__init__()
         conv = []
         conv.append(nn.Dropout(dropout))
@@ -24,11 +24,11 @@ class GCN(TorchKeras):
         for hid, act in zip(hids, acts):
             conv.append(GraphConvolution(inc,
                                          hid,
-                                         use_bias=use_bias))
+                                         bias=bias))
             conv.append(activations.get(act))
             conv.append(nn.Dropout(dropout))
             inc = hid
-        conv.append(GraphConvolution(inc, out_channels, use_bias=use_bias))
+        conv.append(GraphConvolution(inc, out_channels, bias=bias))
         conv = Sequential(*conv)
 
         self.conv = conv

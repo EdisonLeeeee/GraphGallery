@@ -33,7 +33,7 @@ class DAGNN(Trainer):
                 dropout=0.5,
                 weight_decay=5e-3,
                 lr=0.01,
-                use_bias=False,
+                bias=False,
                 K=10):
 
         model = get_model("DAGNN", self.backend)
@@ -44,7 +44,7 @@ class DAGNN(Trainer):
                       dropout=dropout,
                       weight_decay=weight_decay,
                       lr=lr,
-                      use_bias=use_bias)
+                      bias=bias)
 
         return model
 

@@ -27,7 +27,7 @@ class MedianGCN(Trainer):
               dropout=0.5,
               weight_decay=5e-5,
               lr=0.01,
-              use_bias=False):
+              bias=False):
         
         model = get_model("MedianGCN", self.backend)
         model = model(self.graph.num_node_attrs,
@@ -37,7 +37,7 @@ class MedianGCN(Trainer):
                       dropout=dropout,
                       weight_decay=weight_decay,
                       lr=lr,
-                      use_bias=use_bias)
+                      bias=bias)
         return model
     
     def train_sequence(self, index):

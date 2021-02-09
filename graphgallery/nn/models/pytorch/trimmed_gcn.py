@@ -19,7 +19,7 @@ class TrimmedGCN(TorchKeras):
                  dropout=0.5,
                  weight_decay=5e-4,
                  lr=0.01,
-                 use_bias=False):
+                 bias=False):
 
         super().__init__()
 
@@ -32,13 +32,13 @@ class TrimmedGCN(TorchKeras):
             layer = TrimmedConvolution(inc,
                                        hid,
                                        activation=act,
-                                       use_bias=use_bias,
+                                       bias=bias,
                                        tperc=tperc)
             layers.append(layer)
             paras.append(dict(params=layer.parameters(), weight_decay=weight_decay))
             inc = hid
 
-        layer = TrimmedConvolution(inc, out_channels, use_bias=use_bias, tperc=tperc)
+        layer = TrimmedConvolution(inc, out_channels, bias=bias, tperc=tperc)
         layers.append(layer)
         # do not use weight_decay in the final layer
         paras.append(dict(params=layer.parameters(), weight_decay=0.))
@@ -55,4 +55,3 @@ class TrimmedGCN(TorchKeras):
             x = layer(x, nbrs)
 
         return x
-

@@ -35,7 +35,7 @@ class LGCN(Trainer):
                 dropout=0.8,
                 weight_decay=5e-4,
                 lr=0.1,
-                use_bias=False,
+                bias=False,
                 K=8, exclude=["num_filters", "acts"], use_tfn=True):
 
         model = get_model("LGCN", self.backend)
@@ -46,7 +46,7 @@ class LGCN(Trainer):
                       dropout=dropout,
                       weight_decay=weight_decay,
                       lr=lr,
-                      use_bias=use_bias,
+                      bias=bias,
                       K=K)
         if use_tfn:
             model.use_tfn()

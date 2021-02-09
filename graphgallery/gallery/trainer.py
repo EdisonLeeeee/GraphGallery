@@ -127,7 +127,7 @@ class Trainer(Model):
             learning rate used for the model.
         weight_decay: float scalar,
             weight decay used for the model weights.
-        use_bias: bool,
+        bias: bool,
             whether to use bias in each layer.
         use_tfn: bool,
             this argument is only used for TensorFlow backend, if `True`, it will decorate

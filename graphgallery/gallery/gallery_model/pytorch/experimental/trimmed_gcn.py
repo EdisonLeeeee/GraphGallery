@@ -28,7 +28,7 @@ class TrimmedGCN(Trainer):
                 weight_decay=5e-5,
                 lr=0.01,
                 tperc=0.45,
-                use_bias=False):
+                bias=False):
         
         model = get_model("TrimmedGCN", self.backend)
         model = model(self.graph.num_node_attrs,
@@ -39,7 +39,7 @@ class TrimmedGCN(Trainer):
                       dropout=dropout,
                       weight_decay=weight_decay,
                       lr=lr,
-                      use_bias=use_bias)
+                      bias=bias)
         return model
     
     def train_sequence(self, index):

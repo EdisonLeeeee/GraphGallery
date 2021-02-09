@@ -18,7 +18,7 @@ class MedianGCN(TorchKeras):
                  dropout=0.5,
                  weight_decay=5e-4,
                  lr=0.01,
-                 use_bias=False):
+                 bias=False):
 
         super().__init__()
 
@@ -31,12 +31,12 @@ class MedianGCN(TorchKeras):
             layer = MedianConvolution(inc,
                                       hid,
                                       activation=act,
-                                      use_bias=use_bias)
+                                      bias=bias)
             layers.append(layer)
             paras.append(dict(params=layer.parameters(), weight_decay=weight_decay))
             inc = hid
 
-        layer = MedianConvolution(inc, out_channels, use_bias=use_bias)
+        layer = MedianConvolution(inc, out_channels, bias=bias)
         layers.append(layer)
         # do not use weight_decay in the final layer
         paras.append(dict(params=layer.parameters(), weight_decay=0.))
@@ -53,4 +53,3 @@ class MedianGCN(TorchKeras):
             x = layer(x, nbrs)
 
         return x
-

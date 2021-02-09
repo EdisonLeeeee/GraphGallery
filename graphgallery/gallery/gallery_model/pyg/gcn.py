@@ -36,7 +36,7 @@ class GCN(Trainer):
                 dropout=0.5,
                 weight_decay=5e-4,
                 lr=0.01,
-                use_bias=True):
+                bias=True):
 
         model = get_model("GCN", self.backend)
         model = model(self.graph.num_node_attrs,
@@ -46,7 +46,7 @@ class GCN(Trainer):
                       dropout=dropout,
                       weight_decay=weight_decay,
                       lr=lr,
-                      use_bias=use_bias)
+                      bias=bias)
 
         return model
 

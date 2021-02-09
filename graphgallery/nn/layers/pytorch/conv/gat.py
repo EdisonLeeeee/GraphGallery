@@ -15,7 +15,7 @@ class GraphAttention(nn.Module):
                  alpha=0.2,
                  reduction='concat',
                  dropout=0.6,
-                 use_bias=False):
+                 bias=False):
         super().__init__()
 
         if reduction not in {'concat', 'average'}:
@@ -33,9 +33,9 @@ class GraphAttention(nn.Module):
         self.attn_kernel_self, self.attn_kernel_neighs = nn.ParameterList(
         ), nn.ParameterList()
         self.biases = nn.ParameterList()
-        self.use_bias = use_bias
+        self.bias = bias
 
-        if not use_bias:
+        if not bias:
             self.register_parameter('bias', None)
 
         # Initialize weights for each attention head
@@ -50,7 +50,7 @@ class GraphAttention(nn.Module):
                               requires_grad=True)
             self.attn_kernel_neighs.append(a2)
 
-            if use_bias:
+            if bias:
                 bias = nn.Parameter(torch.Tensor(out_channels))
                 self.biases.append(bias)
 
@@ -65,7 +65,7 @@ class GraphAttention(nn.Module):
             glorot_uniform(a1)
             glorot_uniform(a2)
 
-            if self.use_bias:
+            if self.bias:
                 zeros(self.biases[head])
 
     def forward(self, x, adj):
@@ -90,7 +90,7 @@ class GraphAttention(nn.Module):
                                   training=self.training)
             h_prime = torch.matmul(attention, Wh)
 
-            if self.use_bias:
+            if self.bias:
                 h_prime += self.biases[head]
 
             outputs.append(h_prime)
@@ -148,7 +148,7 @@ class SparseGraphAttention(nn.Module):
                  alpha=0.2,
                  reduction='concat',
                  dropout=0.6,
-                 use_bias=False):
+                 bias=False):
         super().__init__()
 
         if reduction not in {'concat', 'average'}:
@@ -165,9 +165,9 @@ class SparseGraphAttention(nn.Module):
         self.kernels = nn.ParameterList()
         self.att_kernels = nn.ParameterList()
         self.biases = nn.ParameterList()
-        self.use_bias = use_bias
+        self.bias = bias
 
-        if not use_bias:
+        if not bias:
             self.register_parameter('bias', None)
 
         # Initialize weights for each attention head
@@ -177,7 +177,7 @@ class SparseGraphAttention(nn.Module):
             a = nn.Parameter(torch.Tensor(1, 2 * out_channels))
             self.att_kernels.append(a)
 
-            if use_bias:
+            if bias:
                 bias = nn.Parameter(torch.Tensor(out_channels))
                 self.biases.append(bias)
 
@@ -190,7 +190,7 @@ class SparseGraphAttention(nn.Module):
             glorot_uniform(self.kernels[head])
             glorot_uniform(self.att_kernels[head])
 
-            if self.use_bias:
+            if self.bias:
                 zeros(self.biases[head])
 
     def forward(self, x, adj):
@@ -217,7 +217,7 @@ class SparseGraphAttention(nn.Module):
             h_prime = h_prime.div(e_rowsum)
             #             h_prime[torch.isnan(h_prime)] = 0.
 
-            if self.use_bias:
+            if self.bias:
                 h_prime += self.biases[head]
 
             outputs.append(h_prime)

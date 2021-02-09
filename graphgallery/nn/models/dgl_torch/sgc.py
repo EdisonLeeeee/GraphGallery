@@ -19,7 +19,7 @@ class SGC(TorchKeras):
                  dropout=0.5,
                  weight_decay=5e-5,
                  lr=0.2,
-                 use_bias=True):
+                 bias=True):
         super().__init__()
 
         if hids or acts:
@@ -29,7 +29,7 @@ class SGC(TorchKeras):
 
         conv = SGConv(in_channels,
                       out_channels,
-                      bias=use_bias,
+                      bias=bias,
                       k=K,
                       cached=True)
         self.conv = conv

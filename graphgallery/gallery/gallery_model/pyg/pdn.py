@@ -40,7 +40,7 @@ class PDN(Trainer):
                 dropout=0.5,
                 weight_decay=5e-4,
                 lr=0.01,
-                use_bias=True):
+                bias=True):
 
         num_edge_attr = self.cache.edge_x.shape[-1]
         model = get_model("PDN", self.backend)
@@ -53,7 +53,7 @@ class PDN(Trainer):
                       dropout=dropout,
                       weight_decay=weight_decay,
                       lr=lr,
-                      use_bias=use_bias)
+                      bias=bias)
 
         return model
 

@@ -21,7 +21,7 @@ class SimPGCN(TorchKeras):
                  dropout=0.5,
                  weight_decay=5e-4,
                  lr=0.01,
-                 use_bias=False):
+                 bias=False):
 
         super().__init__()
         self.lambda_ = lambda_
@@ -33,13 +33,13 @@ class SimPGCN(TorchKeras):
             layer = GraphConvolution(inc,
                                      hid,
                                      activation=act,
-                                     use_bias=use_bias)
+                                     bias=bias)
             layers.append(layer)
             inc = hid
 
         layer = GraphConvolution(inc,
                                  out_channels,
-                                 use_bias=use_bias)
+                                 bias=bias)
         layers.append(layer)
 
         self.layers = layers
@@ -53,7 +53,6 @@ class SimPGCN(TorchKeras):
             self.bias.append(nn.Parameter(torch.FloatTensor(1)))
             self.D_k.append(nn.Parameter(torch.FloatTensor(hid, 1)))
             self.D_bias.append(nn.Parameter(torch.FloatTensor(1)))
-            
 
         # discriminator for ssl
         self.linear = nn.Linear(hids[-1], 1)
@@ -69,7 +68,7 @@ class SimPGCN(TorchKeras):
 
         for layer in self.layers:
             layer.reset_parameters()
-            
+
         for s in self.scores:
             glorot_uniform(s)
 
@@ -89,12 +88,12 @@ class SimPGCN(TorchKeras):
         adj_knn = self.from_cache(adj_knn=adj_knn)
         gamma = self.gamma
         embeddings = None
-        
+
         for ix, layer in enumerate(self.layers):
             s = torch.sigmoid(x @ self.scores[ix] + self.bias[ix])
             Dk = x @ self.D_k[ix] + self.D_bias[ix]
             x = s * layer(x, adj) + (1 - s) * layer(x, adj_knn) + gamma * Dk * layer(x)
-            
+
             if ix < len(self.layers) - 1:
                 x = self.dropout(x)
 

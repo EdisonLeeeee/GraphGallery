@@ -37,7 +37,7 @@ class GAT(Trainer):
                 dropout=0.6,
                 weight_decay=5e-4,
                 lr=0.01,
-                use_bias=True,
+                bias=True,
                 include=["num_heads"]):
 
         model = get_model("GAT", self.backend)
@@ -49,7 +49,7 @@ class GAT(Trainer):
                       dropout=dropout,
                       weight_decay=weight_decay,
                       lr=lr,
-                      use_bias=use_bias)
+                      bias=bias)
 
         return model
 

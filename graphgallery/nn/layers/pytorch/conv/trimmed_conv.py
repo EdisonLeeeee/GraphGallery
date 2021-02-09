@@ -9,7 +9,7 @@ class TrimmedConvolution(nn.Module):
     def __init__(self,
                  in_channels,
                  out_channels,
-                 use_bias=False,
+                 bias=False,
                  activation=None,
                  tperc=0.45):
 
@@ -17,7 +17,7 @@ class TrimmedConvolution(nn.Module):
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.activation = get_activation(activation)
-        self.w = nn.Linear(in_channels, out_channels, bias=use_bias)
+        self.w = nn.Linear(in_channels, out_channels, bias=bias)
         self.tperc = tperc
 
     def reset_parameters(self):

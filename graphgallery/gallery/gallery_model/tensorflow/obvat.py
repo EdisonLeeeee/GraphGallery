@@ -52,7 +52,7 @@ class OBVAT(Trainer):
                 dropout=0.5,
                 weight_decay=5e-4,
                 lr=0.01,
-                use_bias=False,
+                bias=False,
                 p1=1.4,
                 p2=0.7,
                 use_tfn=True):
@@ -71,12 +71,12 @@ class OBVAT(Trainer):
                 GraphConvolution(
                     hid,
                     activation=act,
-                    use_bias=use_bias,
+                    bias=bias,
                     kernel_regularizer=regularizers.l2(weight_decay)))
 
         GCN_layers.append(
             GraphConvolution(self.graph.num_node_classes,
-                             use_bias=use_bias))
+                             bias=bias))
         self.GCN_layers = GCN_layers
         self.dropout = Dropout(rate=dropout)
 

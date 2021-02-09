@@ -6,14 +6,14 @@ class TrainableSGConvolution(Module):
     def __init__(self,
                  in_channels,
                  out_channels,
-                 use_bias=False,
+                 bias=False,
                  K=2,
                  cached=True,
                  **kwargs):
 
         super().__init__()
         self.K = K
-        self.w = nn.Linear(in_channels, out_channels, bias=use_bias)
+        self.w = nn.Linear(in_channels, out_channels, bias=bias)
         self.cache = None
         self.cached = cached
 

@@ -22,11 +22,11 @@ class SGC_PN(TorchKeras):
                  dropout=0.6,
                  weight_decay=5e-4,
                  lr=0.005,
-                 use_bias=False):
+                 bias=False):
 
         super().__init__()
         assert not hids and not acts
-        self.linear = nn.Linear(in_channels, out_channels, bias=use_bias)
+        self.linear = nn.Linear(in_channels, out_channels, bias=bias)
         self.norm = PairNorm(norm_mode, norm_scale)
         self.dropout = nn.Dropout(p=dropout)
         self.K = K

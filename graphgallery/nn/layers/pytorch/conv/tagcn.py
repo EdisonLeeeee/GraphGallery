@@ -8,7 +8,7 @@ class TAGConvolution(nn.Module):
                  in_channels,
                  out_channels,
                  K=3,
-                 use_bias=True,
+                 bias=True,
                  activation=None):
         super().__init__()
         self.in_channels = in_channels
@@ -16,7 +16,7 @@ class TAGConvolution(nn.Module):
         self.K = K
         self.activation = get_activation(activation)
         self.w = nn.Linear(in_channels * (self.K + 1),
-                           out_channels, bias=use_bias)
+                           out_channels, bias=bias)
 
     def reset_parameters(self):
         self.w.reset_parameters()

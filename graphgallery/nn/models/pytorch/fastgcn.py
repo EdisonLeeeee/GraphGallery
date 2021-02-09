@@ -13,8 +13,8 @@ from graphgallery.nn.layers.pytorch.get_activation import get_activation
 class FastGCN(TorchKeras):
     def __init__(self, in_channels, out_channels,
                  hids=[16], acts=['relu'], dropout=0.5,
-                 weight_decay=5e-4, lr=0.01, use_bias=False):
-                 
+                 weight_decay=5e-4, lr=0.01, bias=False):
+
         super().__init__()
 
         layers = nn.ModuleList()
@@ -25,15 +25,15 @@ class FastGCN(TorchKeras):
         inc = in_channels
         for hid, act in zip(hids, acts):
             layer = nn.Linear(inc,
-                              hid, 
-                              bias=use_bias)
-            
+                              hid,
+                              bias=bias)
+
             layers.append(layer)
-            acts_fn.append(get_activation(act))            
+            acts_fn.append(get_activation(act))
             paras.append(dict(params=layer.parameters(), weight_decay=weight_decay))
             inc = hid
 
-        conv = GraphConvolution(inc, out_channels, use_bias=use_bias)
+        conv = GraphConvolution(inc, out_channels, bias=bias)
         # do not use weight_decay in the final layer
         paras.append(dict(params=conv.parameters(), weight_decay=0.))
         self.compile(loss=torch.nn.CrossEntropyLoss(),

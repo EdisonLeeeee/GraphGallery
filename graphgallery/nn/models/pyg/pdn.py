@@ -20,34 +20,34 @@ class PDN(TorchKeras):
                  dropout=0.5,
                  weight_decay=5e-4,
                  lr=0.01,
-                 use_bias=True):
+                 bias=True):
         super().__init__()
-        
+
         convs = nn.ModuleList()
         act_fns = []
         inc = in_channels
         for hid, act in zip(hids, acts):
-            layer = GCNConv(inc, hid, bias=use_bias)
+            layer = GCNConv(inc, hid, bias=bias)
             convs.append(layer)
             act_fns.append(get_activation(act))
             inc = hid
-        layer = GCNConv(inc, out_channels, bias=use_bias)
+        layer = GCNConv(inc, out_channels, bias=bias)
         convs.append(layer)
-        
+
         self.fc = nn.Sequential(nn.Linear(edge_channels, pdn_hids),
                                 nn.ReLU(),
                                 nn.Linear(pdn_hids, 1),
-                                nn.Sigmoid())        
+                                nn.Sigmoid())
         self.convs = convs
         self.act_fns = act_fns
         self.dropout = nn.Dropout(dropout)
         self.compile(loss=nn.CrossEntropyLoss(),
                      optimizer=optim.Adam(self.parameters(), lr=lr),
                      metrics=[Accuracy()])
-        
+
     def forward(self, x, edge_index, edge_x):
         edge_x = self.fc(edge_x).view(-1)
-        
+
         for layer, act in zip(self.convs, self.act_fns):
             x = act(layer(x, edge_index, edge_x))
             x = self.dropout(x)
