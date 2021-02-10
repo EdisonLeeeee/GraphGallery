@@ -1,7 +1,5 @@
 import torch
 import torch.nn as nn
-from graphgallery.nn.init.pytorch import uniform, zeros
-from ..get_activation import get_activation
 
 
 class PropConvolution(nn.Module):
@@ -9,13 +7,11 @@ class PropConvolution(nn.Module):
                  in_channels,
                  out_channels=1,
                  K=10,
-                 bias=False,
-                 activation=None):
+                 bias=False):
         super().__init__()
         assert out_channels == 1, "'out_channels' must be 1"
         self.in_channels = in_channels
         self.out_channels = out_channels
-        self.activation = get_activation(activation)
         self.w = nn.Linear(in_channels, out_channels, bias=bias)
         self.K = K
 
@@ -30,8 +26,7 @@ class PropConvolution(nn.Module):
             propagations.append(x)
 
         h = torch.stack(propagations, dim=1)
-        retain_score = self.w(h)
-        retain_score = self.activation(retain_score).permute(0, 2, 1).contiguous()
+        retain_score = self.w(h).permute(0, 2, 1).contiguous()
         out = (retain_score @ h).squeeze(1)
         return out
 

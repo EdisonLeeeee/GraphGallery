@@ -20,15 +20,14 @@ class GCN(TorchKeras):
         super().__init__()
         conv = []
         conv.append(nn.Dropout(dropout))
-        inc = in_channels
         for hid, act in zip(hids, acts):
-            conv.append(GraphConvolution(inc,
+            conv.append(GraphConvolution(in_channels,
                                          hid,
                                          bias=bias))
             conv.append(activations.get(act))
             conv.append(nn.Dropout(dropout))
-            inc = hid
-        conv.append(GraphConvolution(inc, out_channels, bias=bias))
+            in_channels = hid
+        conv.append(GraphConvolution(in_channels, out_channels, bias=bias))
         conv = Sequential(*conv)
 
         self.conv = conv
@@ -36,7 +35,7 @@ class GCN(TorchKeras):
                      optimizer=optim.Adam([dict(params=conv[1].parameters(),
                                                 weight_decay=weight_decay),
                                            dict(params=conv[2:].parameters(),
-                                                weight_decay=0.), ], lr=lr),
+                                                weight_decay=0.)], lr=lr),
                      metrics=[Accuracy()])
 
     def forward(self, x, adj):

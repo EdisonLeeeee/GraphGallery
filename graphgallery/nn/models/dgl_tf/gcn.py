@@ -1,8 +1,5 @@
-import tensorflow as tf
-
 from tensorflow.keras import layers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
-from tensorflow.keras.metrics import SparseCategoricalAccuracy
 from tensorflow.keras.optimizers import Adam
 
 from dgl.nn.tensorflow import GraphConv
@@ -20,14 +17,14 @@ class GCN(TFKeras):
 
         super().__init__()
         self.convs = []
-        inc = in_channels
+
         for hid, act in zip(hids, acts):
-            layer = GraphConv(inc, hid, bias=bias,
+            layer = GraphConv(in_channels, hid, bias=bias,
                               activation=activations.get(act))
             self.convs.append(layer)
-            inc = hid
+            in_channels = hid
 
-        layer = GraphConv(inc, out_channels, bias=bias)
+        layer = GraphConv(in_channels, out_channels, bias=bias)
         self.convs.append(layer)
         self.dropout = layers.Dropout(dropout)
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),

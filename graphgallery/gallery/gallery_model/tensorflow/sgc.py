@@ -52,7 +52,7 @@ class SGC(Trainer):
                 bias=True,
                 use_tfn=True):
 
-        model = get_model("SGC", self.backend)
+        model = get_model("MLP", self.backend)
         model = model(self.graph.num_node_attrs,
                       self.graph.num_node_classes,
                       hids=hids,

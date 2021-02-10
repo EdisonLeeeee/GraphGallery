@@ -44,7 +44,8 @@ class DAGNN(Trainer):
                       dropout=dropout,
                       weight_decay=weight_decay,
                       lr=lr,
-                      bias=bias)
+                      bias=bias,
+                      K=K)
 
         return model
 

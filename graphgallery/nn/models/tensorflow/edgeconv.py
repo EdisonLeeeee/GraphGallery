@@ -1,10 +1,10 @@
 from tensorflow.keras import Input
-from tensorflow.keras.layers import Dropout, Dense
+from tensorflow.keras.layers import Dropout
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tensorflow import GraphEdgeConvolution, Gather
+from graphgallery.nn.layers.tensorflow import GraphEdgeConvolution
 from graphgallery.nn.models import TFKeras
 from graphgallery import floatx, intx
 
@@ -13,7 +13,7 @@ class EdgeGCN(TFKeras):
 
     def __init__(self, in_channels, out_channels,
                  hids=[16], acts=['relu'], dropout=0.5,
-                 weight_decay=5e-4, lr=0.01, use_bias=False):
+                 weight_decay=5e-4, lr=0.01, bias=False):
 
         _intx = intx()
         _floatx = floatx()
@@ -26,13 +26,13 @@ class EdgeGCN(TFKeras):
 
         h = x
         for hid, act in zip(hids, acts):
-            h = GraphEdgeConvolution(hid, use_bias=use_bias,
+            h = GraphEdgeConvolution(hid, use_bias=bias,
                                      activation=act,
                                      kernel_regularizer=regularizers.l2(weight_decay))([h, edge_index, edge_weight])
 
             h = Dropout(rate=dropout)(h)
 
-        h = GraphEdgeConvolution(out_channels, use_bias=use_bias)(
+        h = GraphEdgeConvolution(out_channels, use_bias=bias)(
             [h, edge_index, edge_weight])
 
         super().__init__(inputs=[x, edge_index, edge_weight], outputs=h)

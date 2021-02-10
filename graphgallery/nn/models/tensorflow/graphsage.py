@@ -21,7 +21,7 @@ class GraphSAGE(TFKeras):
 
     def __init__(self, in_channels, out_channels,
                  hids=[32], acts=['relu'], dropout=0.5,
-                 weight_decay=5e-4, lr=0.01, use_bias=True,
+                 weight_decay=5e-4, lr=0.01, bias=True,
                  aggregator='mean', output_normalize=False, num_samples=[15, 5]):
 
         Agg = _AGG.get(aggregator, None)
@@ -40,10 +40,10 @@ class GraphSAGE(TFKeras):
         for hid, act in zip(hids, acts):
             # you can use `GCNAggregator` instead
             aggregators.append(Agg(hid, concat=True, activation=act,
-                                   use_bias=use_bias,
+                                   use_bias=bias,
                                    kernel_regularizer=regularizers.l2(weight_decay)))
 
-        aggregators.append(Agg(out_channels, use_bias=use_bias))
+        aggregators.append(Agg(out_channels, use_bias=bias))
 
         h = [tf.nn.embedding_lookup(x, node)
              for node in [nodes, *neighbors]]

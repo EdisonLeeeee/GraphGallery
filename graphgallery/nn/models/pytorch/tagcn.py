@@ -1,10 +1,8 @@
-import torch
-import torch.nn.functional as F
 import torch.nn as nn
 from torch import optim
 
 from graphgallery.nn.models import TorchKeras
-from graphgallery.nn.layers.pytorch import TAGConvolution
+from graphgallery.nn.layers.pytorch import TAGConvolution, Sequential, activations
 from graphgallery.nn.metrics.pytorch import Accuracy
 
 
@@ -19,33 +17,28 @@ class TAGCN(TorchKeras):
                  weight_decay=5e-4,
                  lr=0.01,
                  bias=False):
-
         super().__init__()
-
-        layers = nn.ModuleList()
-
-        # use ModuleList to create layers with different size
-        inc = in_channels
+        conv = []
+        conv.append(nn.Dropout(dropout))
         for hid, act in zip(hids, acts):
-            layer = TAGConvolution(inc,
-                                   hid, K=K,
-                                   activation=act,
-                                   bias=bias)
-            layers.append(layer)
-            inc = hid
+            conv.append(TAGConvolution(in_channels,
+                                       hid, K=K,
+                                       bias=bias))
+            conv.append(activations.get(act))
+            conv.append(nn.Dropout(dropout))
+            in_channels = hid
+        conv.append(TAGConvolution(in_channels,
+                                   out_channels, K=K,
+                                   bias=bias))
+        conv = Sequential(*conv)
 
-        layer = TAGConvolution(inc, out_channels, K=K,
-                               bias=bias)
-        layers.append(layer)
-        self.layers = layers
-        self.compile(loss=torch.nn.CrossEntropyLoss(),
-                     optimizer=optim.Adam(layers.parameters(),
-                                          weight_decay=weight_decay, lr=lr),
+        self.conv = conv
+        self.compile(loss=nn.CrossEntropyLoss(),
+                     optimizer=optim.Adam([dict(params=conv[1].parameters(),
+                                                weight_decay=weight_decay),
+                                           dict(params=conv[2:].parameters(),
+                                                weight_decay=0.)], lr=lr),
                      metrics=[Accuracy()])
-        self.dropout = nn.Dropout(dropout)
 
     def forward(self, x, adj):
-        for layer in self.layers:
-            x = self.dropout(x)
-            x = layer(x, adj)
-        return x
+        return self.conv(x, adj)

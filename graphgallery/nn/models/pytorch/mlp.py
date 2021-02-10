@@ -21,15 +21,15 @@ class MLP(TorchKeras):
 
         lin = []
         lin.append(nn.Dropout(dropout))
-        inc = in_channels
+
         for hid, act in zip(hids, acts):
-            lin.append(nn.Linear(inc,
+            lin.append(nn.Linear(in_channels,
                                  hid,
                                  bias=bias))
             lin.append(activations.get(act))
             lin.append(nn.Dropout(dropout))
-            inc = hid
-        lin.append(nn.Linear(inc, out_channels, bias=bias))
+            in_channels = hid
+        lin.append(nn.Linear(in_channels, out_channels, bias=bias))
         lin = nn.Sequential(*lin)
 
         self.lin = lin

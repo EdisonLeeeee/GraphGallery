@@ -25,13 +25,13 @@ class PDN(TorchKeras):
 
         convs = nn.ModuleList()
         act_fns = []
-        inc = in_channels
+
         for hid, act in zip(hids, acts):
-            layer = GCNConv(inc, hid, bias=bias)
+            layer = GCNConv(in_channels, hid, bias=bias)
             convs.append(layer)
             act_fns.append(get_activation(act))
-            inc = hid
-        layer = GCNConv(inc, out_channels, bias=bias)
+            in_channels = hid
+        layer = GCNConv(in_channels, out_channels, bias=bias)
         convs.append(layer)
 
         self.fc = nn.Sequential(nn.Linear(edge_channels, pdn_hids),

@@ -6,7 +6,7 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 
 from graphgallery.nn.layers.tensorflow import TAGConvolution
-from graphgallery import floatx, intx
+from graphgallery import floatx
 from graphgallery.nn.models import TFKeras
 
 
@@ -19,7 +19,7 @@ class TAGCN(TFKeras):
                  acts=['relu'],
                  dropout=0.5,
                  weight_decay=5e-4,
-                 lr=0.01, use_bias=False):
+                 lr=0.01, bias=False):
 
         x = Input(batch_shape=[None, in_channels],
                   dtype=floatx(), name='node_attr')
@@ -29,11 +29,11 @@ class TAGCN(TFKeras):
         h = x
         for hid, act in zip(hids, acts):
             h = Dropout(rate=dropout)(h)
-            h = TAGConvolution(hid, K=K, use_bias=use_bias,
+            h = TAGConvolution(hid, K=K, use_bias=bias,
                                activation=act,
                                kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
         h = Dropout(rate=dropout)(h)
-        h = TAGConvolution(out_channels, K=K, use_bias=use_bias,
+        h = TAGConvolution(out_channels, K=K, use_bias=bias,
                            kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
 
         super().__init__(inputs=[x, adj], outputs=h)

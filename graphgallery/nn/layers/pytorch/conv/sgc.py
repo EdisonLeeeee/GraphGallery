@@ -1,5 +1,4 @@
-import torch
-from torch.nn import Module, Parameter
+from torch.nn import Module
 
 
 class SGConvolution(Module):

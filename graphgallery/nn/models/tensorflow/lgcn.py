@@ -15,7 +15,7 @@ class LGCN(TFKeras):
                  hids=[32], num_filters=[8, 8],
                  acts=[None, None],
                  dropout=0.8,
-                 weight_decay=5e-4, lr=0.1, use_bias=False, K=8):
+                 weight_decay=5e-4, lr=0.1, bias=False, K=8):
 
         x = Input(batch_shape=[None, in_channels],
                   dtype=floatx(), name='node_attr')
@@ -26,7 +26,7 @@ class LGCN(TFKeras):
         for idx, hid in enumerate(hids):
             h = Dropout(rate=dropout)(h)
             h = DenseConvolution(hid,
-                                 use_bias=use_bias,
+                                 use_bias=bias,
                                  activation=acts[idx],
                                  kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
 
@@ -34,7 +34,7 @@ class LGCN(TFKeras):
             top_k_h = Top_k_features(K=K)([h, adj])
             cur_h = LGConvolution(num_filter,
                                   kernel_size=K,
-                                  use_bias=use_bias,
+                                  use_bias=bias,
                                   dropout=dropout,
                                   activation=acts[idx],
                                   kernel_regularizer=regularizers.l2(weight_decay))(top_k_h)
@@ -43,7 +43,7 @@ class LGCN(TFKeras):
 
         h = Dropout(rate=dropout)(h)
         h = DenseConvolution(out_channels,
-                             use_bias=use_bias,
+                             use_bias=bias,
                              activation=acts[-1],
                              kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
 

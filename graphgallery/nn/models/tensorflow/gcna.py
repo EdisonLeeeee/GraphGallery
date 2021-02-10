@@ -5,7 +5,7 @@ from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 from graphgallery.nn.layers.tensorflow import GraphConvAttribute
-from graphgallery import floatx, intx
+from graphgallery import floatx
 from graphgallery.nn.models import TFKeras
 
 
@@ -16,7 +16,7 @@ class GCNA(TFKeras):
                  acts=['relu'],
                  dropout=0.5,
                  weight_decay=5e-4,
-                 lr=0.01, use_bias=False):
+                 lr=0.01, bias=False):
 
         x = Input(batch_shape=[None, in_channels],
                   dtype=floatx(), name='node_attr')
@@ -25,13 +25,13 @@ class GCNA(TFKeras):
 
         h = x
         for hid, act in zip(hids, acts):
-            h = GraphConvAttribute(hid, use_bias=use_bias,
+            h = GraphConvAttribute(hid, use_bias=bias,
                                    activation=act, concat=True,
                                    kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
 
             h = Dropout(rate=dropout)(h)
 
-        h = GraphConvAttribute(out_channels, use_bias=use_bias)([h, adj])
+        h = GraphConvAttribute(out_channels, use_bias=bias)([h, adj])
 
         super().__init__(inputs=[x, adj], outputs=h)
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),

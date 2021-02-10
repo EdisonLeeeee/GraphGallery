@@ -1,11 +1,8 @@
-import torch
-import torch.nn.functional as F
-
-from torch.nn import Module, ModuleList, Dropout
+import torch.nn as nn
 from torch import optim
 
 from graphgallery.nn.models import TorchKeras
-from graphgallery.nn.layers.pytorch import TrimmedConvolution
+from graphgallery.nn.layers.pytorch import TrimmedConvolution, Sequential, activations
 from graphgallery.nn.metrics.pytorch import Accuracy
 
 
@@ -22,36 +19,28 @@ class TrimmedGCN(TorchKeras):
                  bias=False):
 
         super().__init__()
-
-        layers = ModuleList()
-        paras = []
-
-        # use ModuleList to create layers with different size
-        inc = in_channels
+        conv = []
+        conv.append(nn.Dropout(dropout))
         for hid, act in zip(hids, acts):
-            layer = TrimmedConvolution(inc,
-                                       hid,
-                                       activation=act,
+            conv.append(TrimmedConvolution(in_channels,
+                                           hid,
+                                           bias=bias,
+                                           tperc=tperc))
+            conv.append(activations.get(act))
+            conv.append(nn.Dropout(dropout))
+            in_channels = hid
+        conv.append(TrimmedConvolution(in_channels, out_channels,
                                        bias=bias,
-                                       tperc=tperc)
-            layers.append(layer)
-            paras.append(dict(params=layer.parameters(), weight_decay=weight_decay))
-            inc = hid
+                                       tperc=tperc))
+        conv = Sequential(*conv)
 
-        layer = TrimmedConvolution(inc, out_channels, bias=bias, tperc=tperc)
-        layers.append(layer)
-        # do not use weight_decay in the final layer
-        paras.append(dict(params=layer.parameters(), weight_decay=0.))
-        self.compile(loss=torch.nn.CrossEntropyLoss(),
-                     optimizer=optim.Adam(paras, lr=lr),
+        self.conv = conv
+        self.compile(loss=nn.CrossEntropyLoss(),
+                     optimizer=optim.Adam([dict(params=conv[1].parameters(),
+                                                weight_decay=weight_decay),
+                                           dict(params=conv[2:].parameters(),
+                                                weight_decay=0.)], lr=lr),
                      metrics=[Accuracy()])
-        self.dropout = Dropout(dropout)
-        self.layers = layers
 
-    def forward(self, x, nbrs):
-
-        for layer in self.layers:
-            x = self.dropout(x)
-            x = layer(x, nbrs)
-
-        return x
+    def forward(self, x, adj):
+        return self.conv(x, adj)

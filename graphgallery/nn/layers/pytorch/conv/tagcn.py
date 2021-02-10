@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-from ..get_activation import get_activation
 
 
 class TAGConvolution(nn.Module):
@@ -8,13 +7,11 @@ class TAGConvolution(nn.Module):
                  in_channels,
                  out_channels,
                  K=3,
-                 bias=True,
-                 activation=None):
+                 bias=True):
         super().__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.K = K
-        self.activation = get_activation(activation)
         self.w = nn.Linear(in_channels * (self.K + 1),
                            out_channels, bias=bias)
 
@@ -29,7 +26,7 @@ class TAGConvolution(nn.Module):
             out = adj.mm(out)
             xs.append(out)
         out = self.w(torch.cat(xs, dim=-1))
-        return self.activation(out)
+        return out
 
     def __repr__(self):
         return f"{self.__class__.__name__}({self.in_channels}, {self.out_channels}, K={self.K})"

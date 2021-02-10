@@ -5,7 +5,7 @@ import torch.nn as nn
 from torch import optim
 
 from graphgallery.nn.models import TorchKeras
-from graphgallery.nn.layers.pytorch import GraphConvolution
+from graphgallery.nn.layers.pytorch import GraphConvolution, activations
 from graphgallery.nn.metrics.pytorch import Accuracy
 from graphgallery.nn.init.pytorch import glorot_uniform, zeros
 
@@ -26,23 +26,24 @@ class SimPGCN(TorchKeras):
         super().__init__()
         self.lambda_ = lambda_
         self.gamma = gamma
-
+        assert hids, "hids should not empty"
         layers = nn.ModuleList()
+        act_layers = nn.ModuleList()
         inc = in_channels
         for hid, act in zip(hids, acts):
-            layer = GraphConvolution(inc,
-                                     hid,
-                                     activation=act,
-                                     bias=bias)
-            layers.append(layer)
+            layers.append(GraphConvolution(in_channels,
+                                           hid,
+                                           bias=bias))
+            act_layers.append(activations.get(act))
             inc = hid
 
-        layer = GraphConvolution(inc,
-                                 out_channels,
-                                 bias=bias)
-        layers.append(layer)
+        layers.append(GraphConvolution(inc,
+                                       out_channels,
+                                       bias=bias))
+        act_layers.append(activations.get(None))
 
         self.layers = layers
+        self.act_layers = act_layers
         self.scores = nn.ParameterList()
         self.bias = nn.ParameterList()
         self.D_k = nn.ParameterList()
@@ -57,7 +58,7 @@ class SimPGCN(TorchKeras):
         # discriminator for ssl
         self.linear = nn.Linear(hids[-1], 1)
 
-        self.compile(loss=torch.nn.CrossEntropyLoss(),
+        self.compile(loss=nn.CrossEntropyLoss(),
                      optimizer=optim.Adam(self.parameters(), lr=lr, weight_decay=weight_decay),
                      metrics=[Accuracy()])
 
@@ -75,13 +76,13 @@ class SimPGCN(TorchKeras):
         for b in self.bias:
             # fill in b with postive value to make
             # score s closer to 1 at the beginning
-            b.data.fill_(0.)
+            zeros(b)
 
         for Dk in self.D_k:
             glorot_uniform(Dk)
 
         for b in self.D_bias:
-            b.data.fill_(0.)
+            zeros(b)
 
     def forward(self, x, adj, adj_knn=None):
 
@@ -89,10 +90,10 @@ class SimPGCN(TorchKeras):
         gamma = self.gamma
         embeddings = None
 
-        for ix, layer in enumerate(self.layers):
+        for ix, (layer, act) in enumerate(zip(self.layers, self.act_layers)):
             s = torch.sigmoid(x @ self.scores[ix] + self.bias[ix])
             Dk = x @ self.D_k[ix] + self.D_bias[ix]
-            x = s * layer(x, adj) + (1 - s) * layer(x, adj_knn) + gamma * Dk * layer(x)
+            x = s * act(layer(x, adj)) + (1 - s) * act(layer(x, adj_knn)) + gamma * Dk * act(layer(x))
 
             if ix < len(self.layers) - 1:
                 x = self.dropout(x)

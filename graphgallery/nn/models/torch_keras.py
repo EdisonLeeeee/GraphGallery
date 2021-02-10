@@ -62,7 +62,6 @@ class TorchKeras(nn.Module):
         loss_fn = self.loss
         metrics = self.metrics
         optimizer.zero_grad()
-
         out = self(*x if isinstance(x, (list, tuple)) else [x])
         if out_weight is not None:
             out = out[out_weight]

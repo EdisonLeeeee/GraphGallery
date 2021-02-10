@@ -1,7 +1,5 @@
-import torch
-import torch.nn.functional as F
+import torch.nn as nn
 from torch import optim
-from torch.nn import Module, ModuleList, Dropout
 
 from graphgallery.nn.models import TorchKeras
 from graphgallery.nn.metrics.pytorch import Accuracy
@@ -33,8 +31,7 @@ class SGC(TorchKeras):
                       k=K,
                       cached=True)
         self.conv = conv
-        self.dropout = Dropout(dropout)
-        self.compile(loss=torch.nn.CrossEntropyLoss(),
+        self.compile(loss=nn.CrossEntropyLoss(),
                      optimizer=optim.Adam(conv.parameters(),
                                           lr=lr,
                                           weight_decay=weight_decay),

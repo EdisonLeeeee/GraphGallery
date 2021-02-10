@@ -1,7 +1,6 @@
 import torch.nn as nn
 from torch import optim
 from graphgallery.nn.models import TorchKeras
-from graphgallery.nn.layers.pytorch.get_activation import get_activation
 from graphgallery.nn.layers.pytorch import PairNorm
 from graphgallery.nn.metrics.pytorch import Accuracy
 

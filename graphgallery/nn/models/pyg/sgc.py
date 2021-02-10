@@ -1,10 +1,7 @@
-import torch
-import torch.nn.functional as F
+import torch.nn as nn
 from torch import optim
-from torch.nn import Module, ModuleList, Dropout
 
 from graphgallery.nn.models import TorchKeras
-from graphgallery.nn.layers.pytorch.get_activation import get_activation
 from graphgallery.nn.metrics.pytorch import Accuracy
 
 from torch_geometric.nn import SGConv
@@ -17,7 +14,7 @@ class SGC(TorchKeras):
                  hids=[],
                  acts=[],
                  K=2,
-                 dropout=0.5,
+                 dropout=None,
                  weight_decay=5e-5,
                  lr=0.2,
                  bias=False):
@@ -28,6 +25,7 @@ class SGC(TorchKeras):
                 f"Arguments 'hids' and 'acts' are not supported to use in SGC (PyG backend)."
             )
 
+        # assert dropout, "unused"
         conv = SGConv(in_channels,
                       out_channels,
                       bias=bias,
@@ -35,8 +33,7 @@ class SGC(TorchKeras):
                       cached=True,
                       add_self_loops=True)
         self.conv = conv
-        self.dropout = Dropout(dropout)
-        self.compile(loss=torch.nn.CrossEntropyLoss(),
+        self.compile(loss=nn.CrossEntropyLoss(),
                      optimizer=optim.Adam(conv.parameters(),
                                           lr=lr,
                                           weight_decay=weight_decay),

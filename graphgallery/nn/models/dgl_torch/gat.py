@@ -1,9 +1,8 @@
-import torch
+import torch.nn as nn
 from torch import optim
-from torch.nn import Module, ModuleList, Dropout
 
 from graphgallery.nn.models import TorchKeras
-from graphgallery.nn.layers.pytorch.get_activation import get_activation
+from graphgallery.nn.layers.pytorch import Sequential, activations
 from graphgallery.nn.metrics.pytorch import Accuracy
 
 from dgl.nn.pytorch import GATConv
@@ -21,44 +20,35 @@ class GAT(TorchKeras):
                  lr=0.01):
 
         super().__init__()
-
-        layers = ModuleList()
-        paras = []
-
-        inc = in_channels
-        pre_head = 1
+        head = 1
+        conv = []
         for hid, num_head, act in zip(hids, num_heads, acts):
-            layer = GATConv(inc * pre_head,
-                            hid,
-                            activation=get_activation(act),
-                            num_heads=num_head,
+            conv.append(GATConv(in_channels * head,
+                                hid,
+                                num_heads=num_head,
+                                feat_drop=dropout,
+                                attn_drop=dropout))
+            conv.append(activations.get(act))
+            conv.append(nn.Flatten(start_dim=1))
+            conv.append(nn.Dropout(dropout))
+            in_channels = hid
+            head = num_head
+
+        conv.append(GATConv(in_channels * head,
+                            out_channels,
+                            num_heads=1,
                             feat_drop=dropout,
-                            attn_drop=dropout)
-            layers.append(layer)
-            paras.append(
-                dict(params=layer.parameters(), weight_decay=weight_decay))
-            inc = hid
-            pre_head = num_head
+                            attn_drop=dropout))
+        conv = Sequential(*conv, inverse=True)  # `inverse=True` is important
 
-        layer = GATConv(inc * pre_head,
-                        out_channels,
-                        num_heads=1,
-                        feat_drop=dropout,
-                        attn_drop=dropout)
-        layers.append(layer)
-        # do not use weight_decay in the final layer
-        paras.append(dict(params=layer.parameters(), weight_decay=0.))
-
-        self.layers = layers
-        self.dropout = Dropout(dropout)
-        self.compile(loss=torch.nn.CrossEntropyLoss(),
-                     optimizer=optim.Adam(paras, lr=lr),
+        self.conv = conv
+        self.compile(loss=nn.CrossEntropyLoss(),
+                     optimizer=optim.Adam([dict(params=conv[0].parameters(),
+                                                weight_decay=weight_decay),
+                                           dict(params=conv[1:].parameters(),
+                                                weight_decay=0.)], lr=lr),
                      metrics=[Accuracy()])
 
     def forward(self, x, g):
-        for layer in self.layers[:-1]:
-            x = layer(g, x).flatten(1)
-            x = self.dropout(x)
-
-        x = self.layers[-1](g, x).mean(1)
+        x = self.conv(g, x).mean(1)
         return x
