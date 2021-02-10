@@ -1,10 +1,10 @@
 import sys
 import os.path as osp
 
-from typing import Optional, List
+from typing import List
 from .in_memory_dataset import InMemoryDataset
-from ..data.io import makedirs, download_file
-from ..data.graph import Graph
+from ..data.io import makedirs, download_file, load_npz
+from ..data import Graph, EdgeGraph, MultiGraph, MultiEdgeGraph
 
 _DATASETS = {
     'citeseer', 'citeseer_full', 'cora', 'cora_ml', 'cora_full', 'amazon_cs',
@@ -60,7 +60,10 @@ class NPZDataset(InMemoryDataset):
         return self.root
 
     def _process(self) -> dict:
-        graph = Graph.from_npz(self.raw_paths[0])
+        loader = load_npz(self.raw_paths[0])
+        graph_cls = loader.pop("__class__", "Graph")
+        assert graph_cls in {"Graph", "MultiGraph", "EdgeGraph", "MultiEdgeGraph"}, graph_cls
+        graph = eval(graph_cls).from_npz(self.raw_paths[0])
         return dict(graph=graph)
 
     @property

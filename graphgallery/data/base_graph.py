@@ -3,7 +3,6 @@ import numpy as np
 import os.path as osp
 from functools import partial
 from copy import copy as _copy, deepcopy as _deepcopy
-from typing import Union, Tuple, List
 
 from .apply import check_and_convert, sparse_apply
 from .io import load_npz
@@ -114,6 +113,7 @@ class BaseGraph:
         filepath = osp.abspath(osp.expanduser(filepath))
         loader = load_npz(filepath)
         loader.pop("__class__", None)
+        loader.pop("multiple", None)
 #         print(f"Loading from {filepath}", file=sys.stderr)
         return cls(copy=False, **loader)
 
@@ -140,6 +140,7 @@ class BaseGraph:
         filepath = osp.abspath(osp.expanduser(filepath))
         data_dict = {k: v for k, v in self.items(apply_fn=apply_fn) if v is not None}
         data_dict["__class__"] = str(self.__class__.__name__)
+        data_dict["multiple"] = self.multiple
         if compressed:
             save_fn = np.savez_compressed
         else:

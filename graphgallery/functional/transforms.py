@@ -24,7 +24,9 @@ class NullTransform(BaseTransform):
     def __init__(self, *args, **kwargs):
         super().__init__()
 
-    def __call__(self, inputs):
+    def __call__(self, *inputs):
+        if len(inputs) == 1:
+            inputs, = inputs
         return inputs
 
 

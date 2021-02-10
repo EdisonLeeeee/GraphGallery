@@ -4,9 +4,10 @@ import networkx as nx
 import os.path as osp
 import scipy.sparse as sp
 
-from typing import Union, Optional, List, Tuple, Any
+from typing import Any
 
 from .base_graph import BaseGraph
+from . import utils
 
 
 class HeteGraph(BaseGraph):
@@ -32,7 +33,6 @@ class HeteGraph(BaseGraph):
 
     @property
     def num_nodes(self) -> int:
-        """Get the number of nodes in the graph."""
         return self.edge_index.max() + 1
 
     @property
@@ -49,13 +49,15 @@ class HeteGraph(BaseGraph):
 
     @property
     def num_node_attrs(self) -> int:
-        """Get the number of attribute dimensions of the nodes."""
-        return get_num_node_attrs(self.node_attr)
+        return utils.get_num_node_attrs(self.node_attr)
+
+    @property
+    def num_edge_attrs(self) -> int:
+        return utils.get_num_node_attrs(self.edge_attr)
 
     @property
     def num_node_classes(self) -> int:
-        """Get the number of classes node_label of the nodes."""
-        return get_num_node_classes(self.node_label)
+        return utils.get_num_node_classes(self.node_label)
 
     @property
     def A(self):

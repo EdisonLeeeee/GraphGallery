@@ -1,11 +1,9 @@
-import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torch import optim
 
 from graphgallery.nn.models import TorchKeras
-from graphgallery.nn.layers.pytorch.get_activation import get_activation
 from graphgallery.nn.metrics.pytorch import Accuracy
+from graphgallery.nn.layers.pytorch import Sequential, activations
 from torch_geometric.nn import GCNConv
 
 
@@ -13,7 +11,8 @@ class PDN(TorchKeras):
     def __init__(self,
                  in_channels,
                  out_channels,
-                 edge_channels=1,
+                 edge_channels,
+                 *,
                  hids=[32],
                  pdn_hids=32,
                  acts=['relu'],
@@ -23,34 +22,31 @@ class PDN(TorchKeras):
                  bias=True):
         super().__init__()
 
-        convs = nn.ModuleList()
-        act_fns = []
-
+        conv = []
         for hid, act in zip(hids, acts):
-            layer = GCNConv(in_channels, hid, bias=bias)
-            convs.append(layer)
-            act_fns.append(get_activation(act))
+            conv.append(GCNConv(in_channels,
+                                hid,
+                                bias=bias))
+            conv.append(activations.get(act))
+            conv.append(nn.Dropout(dropout))
             in_channels = hid
-        layer = GCNConv(in_channels, out_channels, bias=bias)
-        convs.append(layer)
+
+        conv.append(GCNConv(in_channels,
+                            out_channels,
+                            bias=bias))
+        conv = Sequential(*conv)
 
         self.fc = nn.Sequential(nn.Linear(edge_channels, pdn_hids),
                                 nn.ReLU(),
                                 nn.Linear(pdn_hids, 1),
                                 nn.Sigmoid())
-        self.convs = convs
-        self.act_fns = act_fns
-        self.dropout = nn.Dropout(dropout)
+        self.conv = conv
         self.compile(loss=nn.CrossEntropyLoss(),
-                     optimizer=optim.Adam(self.parameters(), lr=lr),
+                     optimizer=optim.Adam(self.parameters(), lr=lr,
+                                          weight_decay=weight_decay),
                      metrics=[Accuracy()])
 
     def forward(self, x, edge_index, edge_x):
         edge_x = self.fc(edge_x).view(-1)
-
-        for layer, act in zip(self.convs, self.act_fns):
-            x = act(layer(x, edge_index, edge_x))
-            x = self.dropout(x)
-
-        x = self.convs[-1](x, edge_index, edge_x)
+        x = self.conv(x, edge_index, edge_x)
         return x
