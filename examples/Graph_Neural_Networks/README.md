@@ -167,6 +167,18 @@ In detail, the following methods are currently implemented:
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/PPNP.py"> [🔥PyTorch(PPNP)] </a>
 </details>
 
+<!-- 15 -->
+
+<details>
+<summary>
+<b>PDN</b> from <i>Benedek Rozemberczki et al</i>,
+<a href="https://arxiv.org/abs/2010.12878"> 📝<i>Pathfinder Discovery Networks for Neural Message Passing (ICLR'21)</i> </a>
+</summary>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyG/PDN.py"> [🔥PyG] </a>
+</details>
+</details>
+</details>
+
 ### Defense models (for Graph Adversarial Learning)
 
 #### Robust Optimization

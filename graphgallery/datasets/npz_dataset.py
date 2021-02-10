@@ -9,7 +9,7 @@ from ..data import Graph, EdgeGraph, MultiGraph, MultiEdgeGraph
 _DATASETS = {
     'citeseer', 'citeseer_full', 'cora', 'cora_ml', 'cora_full', 'amazon_cs',
     'amazon_photo', 'coauthor_cs', 'coauthor_phy', 'polblogs', 'karate_club',
-    'pubmed', 'flickr', 'blogcatalog', 'dblp', 'acm', 'uai'
+    'pubmed', 'flickr', 'blogcatalog', 'dblp', 'acm', 'uai', 'pdn',
 }
 
 _DATASET_URL = "https://github.com/EdisonLeeeee/GraphData/raw/master/datasets"
