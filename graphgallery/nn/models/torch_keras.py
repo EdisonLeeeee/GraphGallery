@@ -19,7 +19,7 @@ class TorchKeras(nn.Module):
         self._is_graph_network = dummy_function
         self.distribute_strategy = None
 
-        # to be compatible with TensorBoard callbacks
+        # To be compatible with TensorBoard callbacks
         self._train_counter = 0
         self._test_counter = 0
 
