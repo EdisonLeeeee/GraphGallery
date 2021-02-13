@@ -12,7 +12,7 @@ from graphgallery.nn.models import TFKeras
 
 class RobustGCN(TFKeras):
 
-    def __init__(self, in_channels, out_channels,
+    def __init__(self, in_features, out_features,
                  hids=[64],
                  acts=['relu'],
                  dropout=0.5,
@@ -21,7 +21,7 @@ class RobustGCN(TFKeras):
                  bias=False):
 
         _floatx = floatx()
-        x = Input(batch_shape=[None, in_channels],
+        x = Input(batch_shape=[None, in_features],
                   dtype=_floatx, name='node_attr')
         adj = [Input(batch_shape=[None, None], dtype=_floatx,
                      sparse=True, name='adj_matrix_1'),
@@ -52,7 +52,7 @@ class RobustGCN(TFKeras):
             var = Dropout(rate=dropout)(var)
 
         mean, var = GaussionConvolution_D(
-            out_channels, gamma=gamma, use_bias=bias)([mean, var, *adj])
+            out_features, gamma=gamma, use_bias=bias)([mean, var, *adj])
 
         h = Sample()([mean, var])
 

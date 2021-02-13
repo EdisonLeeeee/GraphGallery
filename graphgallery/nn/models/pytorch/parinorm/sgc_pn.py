@@ -11,8 +11,8 @@ class SGC_PN(TorchKeras):
     ICLR 2020"""
 
     def __init__(self,
-                 in_channels,
-                 out_channels,
+                 in_features,
+                 out_features,
                  hids=[],
                  acts=[],
                  K=2,
@@ -25,7 +25,7 @@ class SGC_PN(TorchKeras):
 
         super().__init__()
         assert not hids and not acts
-        self.linear = nn.Linear(in_channels, out_channels, bias=bias)
+        self.linear = nn.Linear(in_features, out_features, bias=bias)
         self.norm = PairNorm(norm_mode, norm_scale)
         self.dropout = nn.Dropout(p=dropout)
         self.K = K

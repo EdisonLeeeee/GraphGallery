@@ -9,8 +9,8 @@ from torch_geometric.nn import SGConv
 
 class SGC(TorchKeras):
     def __init__(self,
-                 in_channels,
-                 out_channels,
+                 in_features,
+                 out_features,
                  hids=[],
                  acts=[],
                  K=2,
@@ -26,8 +26,8 @@ class SGC(TorchKeras):
             )
 
         # assert dropout, "unused"
-        conv = SGConv(in_channels,
-                      out_channels,
+        conv = SGConv(in_features,
+                      out_features,
                       bias=bias,
                       K=K,
                       cached=True,

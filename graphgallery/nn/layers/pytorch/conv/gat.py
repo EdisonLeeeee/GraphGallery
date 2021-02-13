@@ -7,8 +7,8 @@ from graphgallery.nn.init.pytorch import glorot_uniform, zeros
 
 class GraphAttention(nn.Module):
     def __init__(self,
-                 in_channels,
-                 out_channels,
+                 in_features,
+                 out_features,
                  attn_heads=8,
                  alpha=0.2,
                  reduction='concat',
@@ -19,8 +19,8 @@ class GraphAttention(nn.Module):
         if reduction not in {'concat', 'average'}:
             raise ValueError('Possbile reduction methods: concat, average')
 
-        self.in_channels = in_channels
-        self.out_channels = out_channels
+        self.in_features = in_features
+        self.out_features = out_features
 
         self.dropout = dropout
         self.attn_heads = attn_heads
@@ -34,18 +34,18 @@ class GraphAttention(nn.Module):
 
         # Initialize weights for each attention head
         for head in range(self.attn_heads):
-            W = nn.Parameter(torch.FloatTensor(in_channels, out_channels),
+            W = nn.Parameter(torch.FloatTensor(in_features, out_features),
                              requires_grad=True)
             self.kernels.append(W)
-            a1 = nn.Parameter(torch.FloatTensor(out_channels, 1),
+            a1 = nn.Parameter(torch.FloatTensor(out_features, 1),
                               requires_grad=True)
             self.attn_kernel_self.append(a1)
-            a2 = nn.Parameter(torch.FloatTensor(out_channels, 1),
+            a2 = nn.Parameter(torch.FloatTensor(out_features, 1),
                               requires_grad=True)
             self.attn_kernel_neighs.append(a2)
 
             if bias:
-                self.biases.append(nn.Parameter(torch.Tensor(out_channels)))
+                self.biases.append(nn.Parameter(torch.Tensor(out_features)))
 
         self.leakyrelu = nn.LeakyReLU(alpha)
         self.reset_parameters()
@@ -96,7 +96,7 @@ class GraphAttention(nn.Module):
         return output
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self.in_channels}, {self.out_channels})"
+        return f"{self.__class__.__name__}({self.in_features}, {self.out_features})"
 
 
 #########################Sparse Version of `GraphAttention` layer###################
@@ -134,8 +134,8 @@ class SparseGraphAttention(nn.Module):
     """
 
     def __init__(self,
-                 in_channels,
-                 out_channels,
+                 in_features,
+                 out_features,
                  attn_heads=8,
                  alpha=0.2,
                  reduction='concat',
@@ -146,8 +146,8 @@ class SparseGraphAttention(nn.Module):
         if reduction not in {'concat', 'average'}:
             raise ValueError('Possbile reduction methods: concat, average')
 
-        self.in_channels = in_channels
-        self.out_channels = out_channels
+        self.in_features = in_features
+        self.out_features = out_features
 
         self.dropout = nn.Dropout(dropout)
         self.attn_heads = attn_heads
@@ -160,13 +160,13 @@ class SparseGraphAttention(nn.Module):
 
         # Initialize weights for each attention head
         for head in range(self.attn_heads):
-            W = nn.Parameter(torch.Tensor(in_channels, out_channels))
+            W = nn.Parameter(torch.Tensor(in_features, out_features))
             self.kernels.append(W)
-            a = nn.Parameter(torch.Tensor(1, 2 * out_channels))
+            a = nn.Parameter(torch.Tensor(1, 2 * out_features))
             self.att_kernels.append(a)
 
             if bias:
-                self.biases.append(nn.Parameter(torch.Tensor(out_channels)))
+                self.biases.append(nn.Parameter(torch.Tensor(out_features)))
 
         self.leakyrelu = nn.LeakyReLU(alpha)
         self.special_spmm = SpecialSpmm()
@@ -217,4 +217,4 @@ class SparseGraphAttention(nn.Module):
         return output
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self.in_channels}, {self.out_channels})"
+        return f"{self.__class__.__name__}({self.in_features}, {self.out_features})"

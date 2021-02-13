@@ -8,8 +8,8 @@ from graphgallery.nn.metrics.pytorch import Accuracy
 
 class GAT(TorchKeras):
     def __init__(self,
-                 in_channels,
-                 out_channels,
+                 in_features,
+                 out_features,
                  hids=[8],
                  num_heads=[8],
                  acts=['elu'],
@@ -24,17 +24,17 @@ class GAT(TorchKeras):
         conv = []
         conv.append(nn.Dropout(dropout))
         for hid, num_head, act in zip(hids, num_heads, acts):
-            conv.append(SparseGraphAttention(in_channels * head,
+            conv.append(SparseGraphAttention(in_features * head,
                                              hid,
                                              attn_heads=num_head,
                                              reduction='concat',
                                              bias=bias))
             conv.append(activations.get(act))
             conv.append(nn.Dropout(dropout))
-            in_channels = hid
+            in_features = hid
             head = num_head
-        conv.append(SparseGraphAttention(in_channels * head,
-                                         out_channels,
+        conv.append(SparseGraphAttention(in_features * head,
+                                         out_features,
                                          attn_heads=1,
                                          reduction='average',
                                          bias=bias))

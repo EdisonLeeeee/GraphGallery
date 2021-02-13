@@ -8,8 +8,8 @@ from graphgallery.nn.metrics.pytorch import Accuracy
 
 class TAGCN(TorchKeras):
     def __init__(self,
-                 in_channels,
-                 out_channels,
+                 in_features,
+                 out_features,
                  hids=[16],
                  acts=['relu'],
                  K=3,
@@ -21,14 +21,14 @@ class TAGCN(TorchKeras):
         conv = []
         conv.append(nn.Dropout(dropout))
         for hid, act in zip(hids, acts):
-            conv.append(TAGConvolution(in_channels,
+            conv.append(TAGConvolution(in_features,
                                        hid, K=K,
                                        bias=bias))
             conv.append(activations.get(act))
             conv.append(nn.Dropout(dropout))
-            in_channels = hid
-        conv.append(TAGConvolution(in_channels,
-                                   out_channels, K=K,
+            in_features = hid
+        conv.append(TAGConvolution(in_features,
+                                   out_features, K=K,
                                    bias=bias))
         conv = Sequential(*conv)
 

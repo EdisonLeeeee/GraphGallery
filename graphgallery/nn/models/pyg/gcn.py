@@ -10,8 +10,8 @@ from torch_geometric.nn import GCNConv
 
 class GCN(TorchKeras):
     def __init__(self,
-                 in_channels,
-                 out_channels,
+                 in_features,
+                 out_features,
                  hids=[16],
                  acts=['relu'],
                  dropout=0.5,
@@ -23,16 +23,16 @@ class GCN(TorchKeras):
 
         conv = []
         for hid, act in zip(hids, acts):
-            conv.append(GCNConv(in_channels,
+            conv.append(GCNConv(in_features,
                                 hid,
                                 cached=True,
                                 bias=bias,
                                 normalize=False))
             conv.append(activations.get(act))
             conv.append(nn.Dropout(dropout))
-            in_channels = hid
-        conv.append(GCNConv(in_channels,
-                            out_channels,
+            in_features = hid
+        conv.append(GCNConv(in_features,
+                            out_features,
                             cached=True,
                             bias=bias,
                             normalize=False))

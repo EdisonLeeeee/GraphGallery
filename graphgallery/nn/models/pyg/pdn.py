@@ -9,9 +9,9 @@ from torch_geometric.nn import GCNConv
 
 class PDN(TorchKeras):
     def __init__(self,
-                 in_channels,
-                 out_channels,
-                 edge_channels,
+                 in_features,
+                 out_features,
+                 edge_features,
                  *,
                  hids=[32],
                  pdn_hids=32,
@@ -24,19 +24,19 @@ class PDN(TorchKeras):
 
         conv = []
         for hid, act in zip(hids, acts):
-            conv.append(GCNConv(in_channels,
+            conv.append(GCNConv(in_features,
                                 hid,
                                 bias=bias))
             conv.append(activations.get(act))
             conv.append(nn.Dropout(dropout))
-            in_channels = hid
+            in_features = hid
 
-        conv.append(GCNConv(in_channels,
-                            out_channels,
+        conv.append(GCNConv(in_features,
+                            out_features,
                             bias=bias))
         conv = Sequential(*conv)
 
-        self.fc = nn.Sequential(nn.Linear(edge_channels, pdn_hids),
+        self.fc = nn.Sequential(nn.Linear(edge_features, pdn_hids),
                                 nn.ReLU(),
                                 nn.Linear(pdn_hids, 1),
                                 nn.Sigmoid())

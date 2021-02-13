@@ -12,8 +12,8 @@ from graphgallery.nn.init.pytorch import glorot_uniform, zeros
 
 class SimPGCN(TorchKeras):
     def __init__(self,
-                 in_channels,
-                 out_channels,
+                 in_features,
+                 out_features,
                  hids=[64],
                  acts=[None],
                  lambda_=5.0,
@@ -29,16 +29,16 @@ class SimPGCN(TorchKeras):
         assert hids, "hids should not empty"
         layers = nn.ModuleList()
         act_layers = nn.ModuleList()
-        inc = in_channels
+        inc = in_features
         for hid, act in zip(hids, acts):
-            layers.append(GraphConvolution(in_channels,
+            layers.append(GraphConvolution(in_features,
                                            hid,
                                            bias=bias))
             act_layers.append(activations.get(act))
             inc = hid
 
         layers.append(GraphConvolution(inc,
-                                       out_channels,
+                                       out_features,
                                        bias=bias))
         act_layers.append(activations.get(None))
 
@@ -49,7 +49,7 @@ class SimPGCN(TorchKeras):
         self.D_k = nn.ParameterList()
         self.D_bias = nn.ParameterList()
 
-        for hid in [in_channels] + hids:
+        for hid in [in_features] + hids:
             self.scores.append(nn.Parameter(torch.FloatTensor(hid, 1)))
             self.bias.append(nn.Parameter(torch.FloatTensor(1)))
             self.D_k.append(nn.Parameter(torch.FloatTensor(hid, 1)))

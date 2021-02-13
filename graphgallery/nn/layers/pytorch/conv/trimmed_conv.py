@@ -5,15 +5,15 @@ import torch.nn as nn
 
 class TrimmedConvolution(nn.Module):
     def __init__(self,
-                 in_channels,
-                 out_channels,
+                 in_features,
+                 out_features,
                  bias=False,
                  tperc=0.45):
 
         super().__init__()
-        self.in_channels = in_channels
-        self.out_channels = out_channels
-        self.w = nn.Linear(in_channels, out_channels, bias=bias)
+        self.in_features = in_features
+        self.out_features = out_features
+        self.w = nn.Linear(in_features, out_features, bias=bias)
         self.tperc = tperc
 
     def reset_parameters(self):
@@ -35,4 +35,4 @@ class TrimmedConvolution(nn.Module):
         return output
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self.in_channels}, {self.out_channels}, tperc={self.tperc})"
+        return f"{self.__class__.__name__}({self.in_features}, {self.out_features}, tperc={self.tperc})"

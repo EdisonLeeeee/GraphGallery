@@ -11,12 +11,12 @@ from graphgallery import floatx
 
 class DAGNN(TFKeras):
 
-    def __init__(self, in_channels, out_channels,
+    def __init__(self, in_features, out_features,
                  hids=[64], acts=['relu'],
                  dropout=0.5, weight_decay=5e-3,
                  lr=0.01, bias=False, K=10):
 
-        x = Input(batch_shape=[None, in_channels],
+        x = Input(batch_shape=[None, in_features],
                   dtype=floatx(), name='node_attr')
         adj = Input(batch_shape=[None, None], dtype=floatx(),
                     sparse=True, name='adj_matrix')
@@ -27,7 +27,7 @@ class DAGNN(TFKeras):
                       kernel_regularizer=regularizers.l2(weight_decay))(h)
             h = Dropout(dropout)(h)
 
-        h = Dense(out_channels, use_bias=bias, activation=acts[-1],
+        h = Dense(out_features, use_bias=bias, activation=acts[-1],
                   kernel_regularizer=regularizers.l2(weight_decay))(h)
         h = Dropout(dropout)(h)
 

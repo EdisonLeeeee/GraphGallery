@@ -11,7 +11,7 @@ from graphgallery.nn.models import TFKeras
 
 class MLP(TFKeras):
 
-    def __init__(self, in_channels, out_channels,
+    def __init__(self, in_features, out_features,
                  hids=[16],
                  acts=['relu'],
                  dropout=0.5,
@@ -22,7 +22,7 @@ class MLP(TFKeras):
             raise RuntimeError(f"Arguments 'hids' and 'acts' should have the same length."
                                " Or you can set both of them to `[]`.")
 
-        x = Input(batch_shape=[None, in_channels],
+        x = Input(batch_shape=[None, in_features],
                   dtype=floatx(), name='node_attr')
 
         h = x
@@ -33,7 +33,7 @@ class MLP(TFKeras):
                       kernel_regularizer=regularizers.l2(weight_decay))(h)
 
         h = Dropout(rate=dropout)(h)
-        h = Dense(out_channels, use_bias=bias,
+        h = Dense(out_features, use_bias=bias,
                   kernel_regularizer=regularizers.l2(weight_decay))(h)
 
         super().__init__(inputs=x, outputs=h)

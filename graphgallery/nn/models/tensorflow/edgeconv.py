@@ -11,13 +11,13 @@ from graphgallery import floatx, intx
 
 class EdgeGCN(TFKeras):
 
-    def __init__(self, in_channels, out_channels,
+    def __init__(self, in_features, out_features,
                  hids=[16], acts=['relu'], dropout=0.5,
                  weight_decay=5e-4, lr=0.01, bias=False):
 
         _intx = intx()
         _floatx = floatx()
-        x = Input(batch_shape=[None, in_channels],
+        x = Input(batch_shape=[None, in_features],
                   dtype=_floatx, name='node_attr')
         edge_index = Input(batch_shape=[None, 2], dtype=_intx,
                            name='edge_index')
@@ -32,7 +32,7 @@ class EdgeGCN(TFKeras):
 
             h = Dropout(rate=dropout)(h)
 
-        h = GraphEdgeConvolution(out_channels, use_bias=bias)(
+        h = GraphEdgeConvolution(out_features, use_bias=bias)(
             [h, edge_index, edge_weight])
 
         super().__init__(inputs=[x, edge_index, edge_weight], outputs=h)

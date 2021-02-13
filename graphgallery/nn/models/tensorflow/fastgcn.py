@@ -11,11 +11,11 @@ from graphgallery import floatx
 
 class FastGCN(TFKeras):
 
-    def __init__(self, in_channels, out_channels,
+    def __init__(self, in_features, out_features,
                  hids=[32], acts=['relu'], dropout=0.5,
                  weight_decay=5e-4, lr=0.01, bias=False):
 
-        x = Input(batch_shape=[None, in_channels],
+        x = Input(batch_shape=[None, in_features],
                   dtype=floatx(), name='node_attr')
         adj = Input(batch_shape=[None, None], dtype=floatx(),
                     sparse=True, name='adj_matrix')
@@ -26,7 +26,7 @@ class FastGCN(TFKeras):
                       kernel_regularizer=regularizers.l2(weight_decay))(h)
             h = Dropout(rate=dropout)(h)
 
-        h = GraphConvolution(out_channels,
+        h = GraphConvolution(out_features,
                              use_bias=bias)([h, adj])
 
         super().__init__(inputs=[x, adj], outputs=h)

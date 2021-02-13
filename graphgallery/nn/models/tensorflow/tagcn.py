@@ -12,8 +12,8 @@ from graphgallery.nn.models import TFKeras
 
 class TAGCN(TFKeras):
 
-    def __init__(self, in_channels,
-                 out_channels,
+    def __init__(self, in_features,
+                 out_features,
                  K=3,
                  hids=[16],
                  acts=['relu'],
@@ -21,7 +21,7 @@ class TAGCN(TFKeras):
                  weight_decay=5e-4,
                  lr=0.01, bias=False):
 
-        x = Input(batch_shape=[None, in_channels],
+        x = Input(batch_shape=[None, in_features],
                   dtype=floatx(), name='node_attr')
         adj = Input(batch_shape=[None, None], dtype=floatx(),
                     sparse=True, name='adj_matrix')
@@ -33,7 +33,7 @@ class TAGCN(TFKeras):
                                activation=act,
                                kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
         h = Dropout(rate=dropout)(h)
-        h = TAGConvolution(out_channels, K=K, use_bias=bias,
+        h = TAGConvolution(out_features, K=K, use_bias=bias,
                            kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
 
         super().__init__(inputs=[x, adj], outputs=h)

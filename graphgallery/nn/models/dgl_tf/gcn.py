@@ -8,7 +8,7 @@ from graphgallery.nn.models import TFKeras
 
 
 class GCN(TFKeras):
-    def __init__(self, in_channels, out_channels,
+    def __init__(self, in_features, out_features,
                  hids=[16],
                  acts=['relu'],
                  dropout=0.5,
@@ -19,12 +19,12 @@ class GCN(TFKeras):
         self.convs = []
 
         for hid, act in zip(hids, acts):
-            layer = GraphConv(in_channels, hid, bias=bias,
+            layer = GraphConv(in_features, hid, bias=bias,
                               activation=activations.get(act))
             self.convs.append(layer)
-            in_channels = hid
+            in_features = hid
 
-        layer = GraphConv(in_channels, out_channels, bias=bias)
+        layer = GraphConv(in_features, out_features, bias=bias)
         self.convs.append(layer)
         self.dropout = layers.Dropout(dropout)
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),

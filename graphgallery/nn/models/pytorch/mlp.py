@@ -8,8 +8,8 @@ from graphgallery.nn.layers.pytorch import activations
 
 class MLP(TorchKeras):
     def __init__(self,
-                 in_channels,
-                 out_channels,
+                 in_features,
+                 out_features,
                  hids=[16],
                  acts=['relu'],
                  dropout=0.5,
@@ -23,13 +23,13 @@ class MLP(TorchKeras):
         lin.append(nn.Dropout(dropout))
 
         for hid, act in zip(hids, acts):
-            lin.append(nn.Linear(in_channels,
+            lin.append(nn.Linear(in_features,
                                  hid,
                                  bias=bias))
             lin.append(activations.get(act))
             lin.append(nn.Dropout(dropout))
-            in_channels = hid
-        lin.append(nn.Linear(in_channels, out_channels, bias=bias))
+            in_features = hid
+        lin.append(nn.Linear(in_features, out_features, bias=bias))
         lin = nn.Sequential(*lin)
 
         self.lin = lin

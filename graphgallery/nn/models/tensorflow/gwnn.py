@@ -11,13 +11,13 @@ from graphgallery.nn.models import TFKeras
 
 class GWNN(TFKeras):
 
-    def __init__(self, in_channels, out_channels, num_nodes,
+    def __init__(self, in_features, out_features, num_nodes,
                  hids=[16], acts=['relu'],
                  dropout=0.5, weight_decay=5e-4, lr=0.01,
                  bias=False):
 
         _floatx = floatx()
-        x = Input(batch_shape=[None, in_channels],
+        x = Input(batch_shape=[None, in_features],
                   dtype=_floatx, name='node_attr')
         wavelet = Input(batch_shape=[num_nodes, num_nodes],
                         dtype=_floatx, sparse=True,
@@ -32,7 +32,7 @@ class GWNN(TFKeras):
                                    kernel_regularizer=regularizers.l2(weight_decay))([h, wavelet, inverse_wavelet])
             h = Dropout(rate=dropout)(h)
 
-        h = WaveletConvolution(out_channels, use_bias=bias)(
+        h = WaveletConvolution(out_features, use_bias=bias)(
             [h, wavelet, inverse_wavelet])
 
         super().__init__(inputs=[x, wavelet, inverse_wavelet], outputs=h)

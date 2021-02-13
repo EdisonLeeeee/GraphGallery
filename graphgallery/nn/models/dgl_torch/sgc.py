@@ -9,8 +9,8 @@ from dgl.nn.pytorch.conv import SGConv
 
 class SGC(TorchKeras):
     def __init__(self,
-                 in_channels,
-                 out_channels,
+                 in_features,
+                 out_features,
                  hids=[],
                  acts=[],
                  K=2,
@@ -25,8 +25,8 @@ class SGC(TorchKeras):
                 f"Arguments 'hids' and 'acts' are not supported to use in SGC (DGL backend)."
             )
 
-        conv = SGConv(in_channels,
-                      out_channels,
+        conv = SGConv(in_features,
+                      out_features,
                       bias=bias,
                       k=K,
                       cached=True)

@@ -11,13 +11,13 @@ from graphgallery import floatx
 
 class LGCN(TFKeras):
 
-    def __init__(self, in_channels, out_channels,
+    def __init__(self, in_features, out_features,
                  hids=[32], num_filters=[8, 8],
                  acts=[None, None],
                  dropout=0.8,
                  weight_decay=5e-4, lr=0.1, bias=False, K=8):
 
-        x = Input(batch_shape=[None, in_channels],
+        x = Input(batch_shape=[None, in_features],
                   dtype=floatx(), name='node_attr')
         adj = Input(batch_shape=[None, None], dtype=floatx(),
                     sparse=False, name='adj_matrix')
@@ -42,7 +42,7 @@ class LGCN(TFKeras):
             h = Concatenate()([h, cur_h])
 
         h = Dropout(rate=dropout)(h)
-        h = DenseConvolution(out_channels,
+        h = DenseConvolution(out_features,
                              use_bias=bias,
                              activation=acts[-1],
                              kernel_regularizer=regularizers.l2(weight_decay))([h, adj])

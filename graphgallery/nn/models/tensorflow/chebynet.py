@@ -11,14 +11,14 @@ from graphgallery import floatx
 
 class ChebyNet(TFKeras):
 
-    def __init__(self, in_channels, out_channels,
+    def __init__(self, in_features, out_features,
                  hids=[16],
                  acts=['relu'],
                  dropout=0.5,
                  weight_decay=5e-4,
                  lr=0.01, K=2, bias=False):
 
-        x = Input(batch_shape=[None, in_channels],
+        x = Input(batch_shape=[None, in_features],
                   dtype=floatx(), name='node_attr')
         adj = [Input(batch_shape=[None, None],
                      dtype=floatx(), sparse=True,
@@ -31,7 +31,7 @@ class ChebyNet(TFKeras):
                                  kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
             h = Dropout(rate=dropout)(h)
 
-        h = ChebyConvolution(out_channels,
+        h = ChebyConvolution(out_features,
                              K=K, use_bias=bias)([h, adj])
 
         super().__init__(inputs=[x, *adj], outputs=h)

@@ -10,8 +10,8 @@ from dgl.nn.pytorch import GATConv
 
 class GAT(TorchKeras):
     def __init__(self,
-                 in_channels,
-                 out_channels,
+                 in_features,
+                 out_features,
                  hids=[8],
                  num_heads=[8],
                  acts=['elu'],
@@ -23,7 +23,7 @@ class GAT(TorchKeras):
         head = 1
         conv = []
         for hid, num_head, act in zip(hids, num_heads, acts):
-            conv.append(GATConv(in_channels * head,
+            conv.append(GATConv(in_features * head,
                                 hid,
                                 num_heads=num_head,
                                 feat_drop=dropout,
@@ -31,11 +31,11 @@ class GAT(TorchKeras):
             conv.append(activations.get(act))
             conv.append(nn.Flatten(start_dim=1))
             conv.append(nn.Dropout(dropout))
-            in_channels = hid
+            in_features = hid
             head = num_head
 
-        conv.append(GATConv(in_channels * head,
-                            out_channels,
+        conv.append(GATConv(in_features * head,
+                            out_features,
                             num_heads=1,
                             feat_drop=dropout,
                             attn_drop=dropout))

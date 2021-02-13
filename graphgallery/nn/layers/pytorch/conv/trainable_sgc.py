@@ -4,8 +4,8 @@ from torch.nn import Module, Parameter
 
 class TrainableSGConvolution(Module):
     def __init__(self,
-                 in_channels,
-                 out_channels,
+                 in_features,
+                 out_features,
                  bias=False,
                  K=2,
                  cached=True,
@@ -13,7 +13,7 @@ class TrainableSGConvolution(Module):
 
         super().__init__()
         self.K = K
-        self.w = nn.Linear(in_channels, out_channels, bias=bias)
+        self.w = nn.Linear(in_features, out_features, bias=bias)
         self.cache = None
         self.cached = cached
 
@@ -32,4 +32,4 @@ class TrainableSGConvolution(Module):
         self.w.reset_parameters()
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self.in_channels}, {self.out_channels}, K={self.K})"
+        return f"{self.__class__.__name__}({self.in_features}, {self.out_features}, K={self.K})"

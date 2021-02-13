@@ -11,14 +11,14 @@ from graphgallery import floatx
 
 class DenseGCN(TFKeras):
 
-    def __init__(self, in_channels, out_channels,
+    def __init__(self, in_features, out_features,
                  hids=[16],
                  acts=['relu'],
                  dropout=0.5,
                  weight_decay=5e-4,
                  lr=0.01, bias=False):
 
-        x = Input(batch_shape=[None, in_channels],
+        x = Input(batch_shape=[None, in_features],
                   dtype=floatx(), name='node_attr')
         adj = Input(batch_shape=[None, None], dtype=floatx(),
                     sparse=False, name='adj_matrix')
@@ -31,7 +31,7 @@ class DenseGCN(TFKeras):
 
             h = Dropout(rate=dropout)(h)
 
-        h = DenseConvolution(out_channels, use_bias=bias)([h, adj])
+        h = DenseConvolution(out_features, use_bias=bias)([h, adj])
 
         super().__init__(inputs=[x, adj], outputs=h)
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),

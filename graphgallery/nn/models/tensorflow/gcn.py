@@ -12,7 +12,7 @@ from graphgallery.nn.models import TFKeras
 
 class GCN(TFKeras):
 
-    def __init__(self, in_channels, out_channels,
+    def __init__(self, in_features, out_features,
                  hids=[16],
                  acts=['relu'],
                  dropout=0.5,
@@ -20,7 +20,7 @@ class GCN(TFKeras):
                  lr=0.01, bias=False,
                  experimental_run_tf_function=True):
 
-        x = Input(batch_shape=[None, in_channels],
+        x = Input(batch_shape=[None, in_features],
                   dtype=floatx(), name='node_attr')
         adj = Input(batch_shape=[None, None], dtype=floatx(),
                     sparse=True, name='adj_matrix')
@@ -33,7 +33,7 @@ class GCN(TFKeras):
 
             h = Dropout(rate=dropout)(h)
 
-        h = GraphConvolution(out_channels, use_bias=bias)([h, adj])
+        h = GraphConvolution(out_features, use_bias=bias)([h, adj])
 
         super().__init__(inputs=[x, adj], outputs=h)
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
@@ -43,7 +43,7 @@ class GCN(TFKeras):
 # class GCN(Model):
 
 #     def __init__(self, hids,
-#                  out_channels, acts=['relu'],
+#                  out_features, acts=['relu'],
 #                  weight_decay=5e-4, dropout=0.5,
 #                  lr=0.01, use_bias=False):
 
@@ -57,7 +57,7 @@ class GCN(TFKeras):
 
 #             self.GNN_layers.append(layer)
 
-#         layer = GraphConvolution(out_channels, use_bias=bias)
+#         layer = GraphConvolution(out_features, use_bias=bias)
 #         self.GNN_layers.append(layer)
 
 #         self.dropout = Dropout(dropout)

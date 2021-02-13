@@ -8,8 +8,8 @@ from graphgallery.nn.metrics.pytorch import Accuracy
 
 class GCN(TorchKeras):
     def __init__(self,
-                 in_channels,
-                 out_channels,
+                 in_features,
+                 out_features,
                  *,
                  hids=[16],
                  acts=['relu'],
@@ -21,13 +21,13 @@ class GCN(TorchKeras):
         conv = []
         conv.append(nn.Dropout(dropout))
         for hid, act in zip(hids, acts):
-            conv.append(GraphConvolution(in_channels,
+            conv.append(GraphConvolution(in_features,
                                          hid,
                                          bias=bias))
             conv.append(activations.get(act))
             conv.append(nn.Dropout(dropout))
-            in_channels = hid
-        conv.append(GraphConvolution(in_channels, out_channels, bias=bias))
+            in_features = hid
+        conv.append(GraphConvolution(in_features, out_features, bias=bias))
         conv = Sequential(*conv)
 
         self.conv = conv

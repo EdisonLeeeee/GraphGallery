@@ -8,8 +8,8 @@ from graphgallery.nn.metrics.pytorch import Accuracy
 
 class TrimmedGCN(TorchKeras):
     def __init__(self,
-                 in_channels,
-                 out_channels,
+                 in_features,
+                 out_features,
                  hids=[16],
                  acts=['relu'],
                  tperc=0.45,
@@ -22,14 +22,14 @@ class TrimmedGCN(TorchKeras):
         conv = []
         conv.append(nn.Dropout(dropout))
         for hid, act in zip(hids, acts):
-            conv.append(TrimmedConvolution(in_channels,
+            conv.append(TrimmedConvolution(in_features,
                                            hid,
                                            bias=bias,
                                            tperc=tperc))
             conv.append(activations.get(act))
             conv.append(nn.Dropout(dropout))
-            in_channels = hid
-        conv.append(TrimmedConvolution(in_channels, out_channels,
+            in_features = hid
+        conv.append(TrimmedConvolution(in_features, out_features,
                                        bias=bias,
                                        tperc=tperc))
         conv = Sequential(*conv)

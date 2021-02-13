@@ -19,7 +19,7 @@ _AGG = {'mean': MeanAggregator,
 
 class GraphSAGE(TFKeras):
 
-    def __init__(self, in_channels, out_channels,
+    def __init__(self, in_features, out_features,
                  hids=[32], acts=['relu'], dropout=0.5,
                  weight_decay=5e-4, lr=0.01, bias=True,
                  aggregator='mean', output_normalize=False, num_samples=[15, 5]):
@@ -30,7 +30,7 @@ class GraphSAGE(TFKeras):
                 f"Invalid value of 'aggregator', allowed values {tuple(_AGG.keys())}, but got '{aggregator}'.")
 
         _intx = intx()
-        x = Input(batch_shape=[None, in_channels],
+        x = Input(batch_shape=[None, in_features],
                   dtype=floatx(), name='node_attr')
         nodes = Input(batch_shape=[None], dtype=_intx, name='nodes')
         neighbors = [Input(batch_shape=[None], dtype=_intx, name=f'neighbors_{hop}')
@@ -43,7 +43,7 @@ class GraphSAGE(TFKeras):
                                    use_bias=bias,
                                    kernel_regularizer=regularizers.l2(weight_decay)))
 
-        aggregators.append(Agg(out_channels, use_bias=bias))
+        aggregators.append(Agg(out_features, use_bias=bias))
 
         h = [tf.nn.embedding_lookup(x, node)
              for node in [nodes, *neighbors]]
