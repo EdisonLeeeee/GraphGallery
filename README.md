@@ -56,7 +56,7 @@ Please refer to the [examples](https://github.com/EdisonLeeeee/GraphGallery/blob
 more details please refer to [GraphData](https://github.com/EdisonLeeeee/GraphData).
 ## Example of GCN
 ```python
-from graphgallery.gallery import GCN
+from graphgallery.gallery.nodeclas import GCN
 
 # initialize a GNN trainer
 trainer = GCN(graph)

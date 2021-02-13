@@ -3,7 +3,7 @@
 
 
 import torch
-import graphgallery 
+import graphgallery
 from graphgallery import functional as gf
 
 print("GraphGallery version: ", graphgallery.__version__)
@@ -20,7 +20,7 @@ splits = data.split_nodes(random_state=15)
 
 graphgallery.set_backend("pytorch")
 
-from graphgallery.gallery import GCN
+from graphgallery.gallery.nodeclas import GCN
 trainer = GCN(graph, device="gpu", seed=123).process(graph_transform="jaccard_detection").build()
 history = trainer.train(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
 results = trainer.test(splits.test_nodes)

@@ -18,7 +18,7 @@ data = Planetoid('cora', root="~/GraphData/datasets/", verbose=False)
 graph = data.graph
 splits = data.split_nodes()
 
-from graphgallery.gallery import SBVAT
+from graphgallery.gallery.nodeclas import SBVAT
 trainer = SBVAT(graph, device="gpu", seed=123).process(attr_transform="normalize_attr").build()
 his = trainer.train(splits.train_nodes, splits.val_nodes, verbose=1, epochs=200)
 results = trainer.test(splits.test_nodes)

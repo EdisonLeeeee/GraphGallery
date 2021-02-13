@@ -23,7 +23,7 @@ class PGD(UntargetedAttacker):
                 train_nodes,
                 unlabeled_nodes=None,
                 reset=True):
-        assert isinstance(surrogate, gg.gallery.DenseGCN), surrogate
+        assert isinstance(surrogate, gg.gallery.nodeclas.DenseGCN), surrogate
 
         # poisoning attack in DeepRobust
         if unlabeled_nodes is None:
@@ -112,7 +112,7 @@ class PGD(UntargetedAttacker):
         logit = self.surrogate([self.x_tensor, adj_norm])
         logit = tf.gather(logit, victim_nodes)
         logit = softmax(logit)
-        
+
         if self.CW_loss:
             best_wrong_class = tf.argmax(logit - self.label_matrix, axis=1,
                                          output_type=self.intx)

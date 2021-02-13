@@ -18,7 +18,7 @@ data = Planetoid('cora', root="~/GraphData/datasets/", verbose=False)
 graph = data.graph
 splits = data.split_nodes()
 
-from graphgallery.gallery import Node2vec
+from graphgallery.gallery.nodeclas import Node2vec
 trainer = Node2vec(graph).process().build()
 his = trainer.train(splits.train_nodes)
 results = trainer.test(splits.test_nodes)

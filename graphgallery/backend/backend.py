@@ -233,7 +233,7 @@ def set_backend(module_name=None):
     """Set the default backend module.
 
     Parameters:
-    --------
+    ----------
     module_name: String or 'BackendModule', optional.
         `'tf'`, `'tensorflow'`,
         `'th'`, `'torch'`, `'pytorch'`.
@@ -265,8 +265,12 @@ def set_backend(module_name=None):
             set_intx('int32')
         try:
             # gallery models
-            from graphgallery import gallery
-            importlib.reload(gallery)
+            from graphgallery.gallery import nodeclas
+            from graphgallery.gallery import graphclas
+            from graphgallery.gallery import linkpred
+            importlib.reload(nodeclas)
+            importlib.reload(graphclas)
+            importlib.reload(linkpred)
             # attacker models
             from graphgallery.attack import targeted
             from graphgallery.attack import untargeted

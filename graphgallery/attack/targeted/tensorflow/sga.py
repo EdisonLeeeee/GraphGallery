@@ -13,7 +13,7 @@ from ..targeted_attacker import TargetedAttacker
 @TensorFlow.register()
 class SGA(TargetedAttacker):
     def process(self, surrogate, reset=True):
-        assert isinstance(surrogate, gg.gallery.SGC), surrogate
+        assert isinstance(surrogate, gg.gallery.nodeclas.SGC), surrogate
 
         hops = surrogate.cfg.process.K  # NOTE: Be compatible with graphgallery
         # nodes with the same class labels

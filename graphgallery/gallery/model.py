@@ -7,7 +7,7 @@ class Model:
         """
         Parameters:
         ----------
-        graph: Graph or MultiGraph.
+        graph: Any ``Graph`` in graphgallery
         device: string. optional
             The device where the model running on.
         seed: interger scalar. optional

@@ -17,7 +17,7 @@ class IGA(TargetedAttacker):
     _allow_feature_attack = True
 
     def process(self, surrogate, reset=True):
-        if isinstance(surrogate, gg.gallery.Trainer):
+        if isinstance(surrogate, gg.gallery.nodeclas.Trainer):
             surrogate = surrogate.model
 
         with tf.device(self.device):

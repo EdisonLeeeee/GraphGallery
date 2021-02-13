@@ -14,7 +14,7 @@ class FGSM(UntargetedAttacker):
     _allow_feature_attack = True
 
     def process(self, surrogate, victim_nodes, victim_labels=None, reset=True):
-        if isinstance(surrogate, gg.gallery.Trainer):
+        if isinstance(surrogate, gg.gallery.nodeclas.Trainer):
             surrogate = surrogate.model
 
         if victim_labels is None:
@@ -98,7 +98,7 @@ class FGSM(UntargetedAttacker):
         # Make sure that the minimum entry is 0.
         adj_grad = adj_grad - tf.reduce_min(adj_grad)
         # Filter self-loops
-#         adj_grad = tf.linalg.band_part(adj_grad, 0, -1) - tf.linalg.band_part(adj_grad, 0, 0)        
+#         adj_grad = tf.linalg.band_part(adj_grad, 0, -1) - tf.linalg.band_part(adj_grad, 0, 0)
         adj_grad = adj_grad - tf.linalg.band_part(adj_grad, 0, 0)
         adj_grad = adj_grad + tf.transpose(adj_grad)
 

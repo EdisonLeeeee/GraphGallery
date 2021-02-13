@@ -16,7 +16,7 @@ class IG(TargetedAttacker):
     _allow_feature_attack = True
 
     def process(self, surrogate, reset=True):
-        if isinstance(surrogate, gg.gallery.Trainer):
+        if isinstance(surrogate, gg.gallery.nodeclas.Trainer):
             surrogate = surrogate.model
 
         adj, x = self.graph.adj_matrix, self.graph.node_attr

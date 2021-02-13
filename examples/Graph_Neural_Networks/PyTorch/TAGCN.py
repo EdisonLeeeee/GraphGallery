@@ -18,7 +18,7 @@ splits = data.split_nodes()
 
 graphgallery.set_backend("pytorch")
 
-from graphgallery.gallery import TAGCN
+from graphgallery.gallery.nodeclas import TAGCN
 trainer = TAGCN(graph, device="gpu", seed=123).process(attr_transform="normalize_attr").build()
 his = trainer.train(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
 results = trainer.test(splits.test_nodes)

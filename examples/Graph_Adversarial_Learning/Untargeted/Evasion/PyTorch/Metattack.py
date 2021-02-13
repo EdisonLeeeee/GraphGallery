@@ -14,7 +14,7 @@ gg.set_backend("torch")
 device = "gpu"
 
 ################### Surrogate model ############################
-trainer = gg.gallery.GCN(graph, device=device, seed=None).process().build()
+trainer = gg.gallery.nodeclas.GCN(graph, device=device, seed=None).process().build()
 his = trainer.train(splits.train_nodes,
                     splits.val_nodes,
                     verbose=1,
@@ -27,9 +27,9 @@ self_training_labels = trainer.predict(unlabeled_nodes).argmax(1)
 attacker = gg.attack.untargeted.Metattack(graph, device=device, seed=123).process(splits.train_nodes,
                                                                                   unlabeled_nodes,
                                                                                   self_training_labels,
-                                                                                  lr=0.1, # cora lr=0.1, citeseer lr=0.01 reaches the best performance
+                                                                                  lr=0.1,  # cora lr=0.1, citeseer lr=0.01 reaches the best performance
                                                                                   lambda_=0.,
-                                                                                  use_relu=False) 
+                                                                                  use_relu=False)
 attacker.attack(0.05)
 ################### Victim model ############################
 # This is a white-box attack
@@ -39,7 +39,7 @@ original_result = trainer.test(splits.test_nodes)
 # After attack
 trainer.graph = attacker.g
 # reprocess after the graph has changed
-trainer.process() # important!
+trainer.process()  # important!
 perturbed_result = trainer.test(splits.test_nodes)
 
 ################### Results ############################

@@ -20,7 +20,7 @@ splits = data.split_nodes()
 
 graphgallery.set_backend("pyg")
 
-from graphgallery.gallery import PDN
+from graphgallery.gallery.nodeclas import PDN
 trainer = PDN(graph, device="gpu", seed=123).process().build()
 his = trainer.train(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
 results = trainer.test(splits.test_nodes)

@@ -21,7 +21,7 @@ class PGD(UntargetedAttacker):
                 train_nodes,
                 unlabeled_nodes=None,
                 reset=True):
-        assert isinstance(surrogate, gg.gallery.GCN), surrogate
+        assert isinstance(surrogate, gg.gallery.nodeclas.GCN), surrogate
 
         # poisoning attack in DeepRobust
         if unlabeled_nodes is None:
@@ -107,7 +107,7 @@ class PGD(UntargetedAttacker):
             best_wrong_class = (logit - 1000 * self.label_matrix).argmax(1)
             indices_attack = torch.stack([self.range_idx, best_wrong_class])
             margin = logit[self.indices_real] - logit[indices_attack] + 0.2
-            loss = -torch.clamp(margin, min=0.) 
+            loss = -torch.clamp(margin, min=0.)
             return loss.mean()
         else:
             loss = self.loss_fn(logit, self.victim_labels)
@@ -176,6 +176,6 @@ class PGD(UntargetedAttacker):
             if best_loss < loss:
                 best_loss = loss
                 best_s = sampled
-                
+
         assert best_s is not None, "Something wrong"
         return best_s.detach().cpu().numpy()

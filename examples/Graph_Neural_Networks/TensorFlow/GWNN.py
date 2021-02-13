@@ -18,7 +18,7 @@ data = Planetoid('cora', root="~/GraphData/datasets/", verbose=False)
 graph = data.graph
 splits = data.split_nodes()
 
-from graphgallery.gallery import GWNN
+from graphgallery.gallery.nodeclas import GWNN
 trainer = GWNN(graph, device="gpu", seed=123).process(attr_transform="normalize_attr").build()
 his = trainer.train(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
 results = trainer.test(splits.test_nodes)

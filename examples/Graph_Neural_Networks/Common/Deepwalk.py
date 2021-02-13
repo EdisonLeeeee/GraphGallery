@@ -18,7 +18,7 @@ data = Planetoid('cora', root="~/GraphData/datasets/", verbose=False)
 graph = data.graph
 splits = data.split_nodes()
 
-from graphgallery.gallery import Deepwalk
+from graphgallery.gallery.nodeclas import Deepwalk
 trainer = Deepwalk(graph).process().build()
 his = trainer.train(splits.train_nodes)
 results = trainer.test(splits.test_nodes)

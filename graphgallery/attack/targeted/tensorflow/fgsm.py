@@ -12,7 +12,7 @@ from ..targeted_attacker import TargetedAttacker
 @TensorFlow.register()
 class FGSM(TargetedAttacker):
     def process(self, surrogate, reset=True):
-        if isinstance(surrogate, gg.gallery.Trainer):
+        if isinstance(surrogate, gg.gallery.nodeclas.Trainer):
             surrogate = surrogate.model
         with tf.device(self.device):
             self.surrogate = surrogate

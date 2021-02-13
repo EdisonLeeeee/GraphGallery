@@ -20,7 +20,7 @@ splits = data.split_nodes()
 
 graphgallery.set_backend("dgl")
 
-from graphgallery.gallery import GCN
+from graphgallery.gallery.nodeclas import GCN
 trainer = GCN(graph, device="gpu", seed=123).process(adj_transform="GDC", attr_transform="normalize_attr").build()
 his = trainer.train(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
 results = trainer.test(splits.test_nodes)
