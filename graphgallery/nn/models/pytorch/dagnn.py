@@ -2,7 +2,7 @@ import torch.nn as nn
 from torch import optim
 
 from graphgallery.nn.models import TorchKeras
-from graphgallery.nn.layers.pytorch import PropConvolution, activations
+from graphgallery.nn.layers.pytorch import PropConv, activations
 from graphgallery.nn.metrics.pytorch import Accuracy
 
 
@@ -26,7 +26,7 @@ class DAGNN(TorchKeras):
         lin.append(nn.Dropout(dropout))
         lin = nn.Sequential(*lin)
         self.lin = lin
-        self.conv = PropConvolution(out_features, K=K, bias=bias, activation="sigmoid")
+        self.conv = PropConv(out_features, K=K, bias=bias, activation="sigmoid")
         self.compile(loss=nn.CrossEntropyLoss(),
                      optimizer=optim.Adam([dict(params=lin.parameters(),
                                                 weight_decay=weight_decay),

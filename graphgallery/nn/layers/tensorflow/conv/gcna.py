@@ -4,7 +4,7 @@ from tensorflow.keras.layers import Layer
 import tensorflow as tf
 
 
-class GraphConvAttribute(Layer):
+class GCNAConv(Layer):
     """GCN + attribute"""
 
     def __init__(self, units,

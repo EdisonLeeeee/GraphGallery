@@ -5,14 +5,14 @@ import tensorflow as tf
 import numpy as np
 
 
-class WaveletConvolution(Layer):
+class WaveletConv(Layer):
     """
         Basic graph convolution layer as in: 
         [Graph Wavelet Neural Network](https://arxiv.org/abs/1904.07785)
         Tensorflow 1.x implementation: https://github.com/Eilene/GWNN
         Pytorch implementation: https://github.com/benedekrozemberczki/GraphWaveletNeuralNetwork
 
-        `WaveletConvolution` implements the operation:
+        `WaveletConv` implements the operation:
         `output = activation(wavelet @ filter @ inverse_wavelet @ x @ kernel + bias)`
         where `x` is the node attribute matrix, `wavelet` is the wavelet matrix,
         `inverse_wavelet` is the inversed wavelet matrix, filter is the trainable diagnal matrix.

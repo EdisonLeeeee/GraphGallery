@@ -11,7 +11,7 @@ class GINConvolution(Layer):
         Tensorflow 2.0 implementation: https://github.com/calciver/Graph-Isomorphism-Networks
         Pytorch implementation: https://github.com/weihua916/powerful-gnns
 
-        `GraphConvolution` implements the operation:
+        `GCNConv` implements the operation:
         `output = activation(((1+eps) * x + adj @ x) @ kernel + bias)`
         where `x` is the node attribute matrix, `adj` is the adjacency matrix,
         `activation` is the element-wise activation function

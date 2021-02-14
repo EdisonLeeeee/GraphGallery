@@ -5,7 +5,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tensorflow import GraphConvolution, Gather
+from graphgallery.nn.layers.tensorflow import GCNConv, Gather
 from graphgallery.sequence import FullBatchSequence
 from graphgallery.gallery.nodeclas.utils.bvat_utils import kl_divergence_with_logit, entropy_y_x, get_normalized_vector
 from graphgallery import functional as gf
@@ -48,15 +48,15 @@ class SimplifiedOBVAT(OBVAT):
         GCN_layers = []
         for hid, act in zip(hids, acts):
             GCN_layers.append(
-                GraphConvolution(
+                GCNConv(
                     hid,
                     activation=act,
                     bias=bias,
                     kernel_regularizer=regularizers.l2(weight_decay)))
 
         GCN_layers.append(
-            GraphConvolution(self.graph.num_node_classes,
-                             bias=bias))
+            GCNConv(self.graph.num_node_classes,
+                    bias=bias))
 
         self.GCN_layers = GCN_layers
         self.dropout = Dropout(rate=dropout)

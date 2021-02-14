@@ -1,15 +1,15 @@
-from .gcn import GraphConvolution
-from .sgc import SGConvolution
-from .gat import GraphAttention
-from .gwnn import WaveletConvolution
-from .robustgcn import GaussionConvolution_F, GaussionConvolution_D
+from .gcn import GCNConv
+from .sgc import SGConv
+from .gat import GATConv
+from .gwnn import WaveletConv
+from .robustgcn import GaussionConvF, GaussionConvD
 from .graphsage import MeanAggregator, GCNAggregator
-from .chebynet import ChebyConvolution
-from .densegcn import DenseConvolution
-from .lgcn import LGConvolution
-from .edgeconv import GraphEdgeConvolution
+from .chebynet import ChebConv
+from .densegcn import DenseConv
+from .lgcn import LGConv
+from .edgeconv import GCNEdgeConv
 from .mediansage import MedianAggregator, MedianGCNAggregator
-from .gcna import GraphConvAttribute
-from .dagnn import PropConvolution
-from .tagcn import TAGConvolution
-from .appnp import APPNPropagation, PPNPropagation
+from .gcna import GCNAConv
+from .dagnn import PropConv
+from .tagcn import TAGConv
+from .appnp import APPNProp, PPNProp

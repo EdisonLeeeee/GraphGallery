@@ -5,7 +5,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tensorflow import GaussionConvolution_F, GaussionConvolution_D, Sample
+from graphgallery.nn.layers.tensorflow import GaussionConvF, GaussionConvD, Sample
 from graphgallery import floatx
 from graphgallery.nn.models import TFKeras
 
@@ -30,10 +30,10 @@ class RobustGCN(TFKeras):
 
         h = x
         if hids:
-            mean, var = GaussionConvolution_F(hids[0], gamma=gamma,
-                                              use_bias=bias,
-                                              activation=acts[0],
-                                              kernel_regularizer=regularizers.l2(weight_decay))([h, *adj])
+            mean, var = GaussionConvF(hids[0], gamma=gamma,
+                                      use_bias=bias,
+                                      activation=acts[0],
+                                      kernel_regularizer=regularizers.l2(weight_decay))([h, *adj])
             if kl:
                 KL_divergence = 0.5 * \
                     tf.reduce_mean(tf.math.square(mean) + var -
@@ -46,12 +46,12 @@ class RobustGCN(TFKeras):
         # additional layers (usually unnecessay)
         for hid, act in zip(hids[1:], acts[1:]):
 
-            mean, var = GaussionConvolution_D(
+            mean, var = GaussionConvD(
                 hid, gamma=gamma, use_bias=bias, activation=act)([mean, var, *adj])
             mean = Dropout(rate=dropout)(mean)
             var = Dropout(rate=dropout)(var)
 
-        mean, var = GaussionConvolution_D(
+        mean, var = GaussionConvD(
             out_features, gamma=gamma, use_bias=bias)([mean, var, *adj])
 
         h = Sample()([mean, var])

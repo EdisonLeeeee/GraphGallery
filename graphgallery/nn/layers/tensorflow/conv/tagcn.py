@@ -4,7 +4,7 @@ from tensorflow.keras.layers import Layer
 import tensorflow as tf
 
 
-class TAGConvolution(Layer):
+class TAGConv(Layer):
 
     def __init__(self, units,
                  K=3,

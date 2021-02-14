@@ -4,7 +4,7 @@ from tensorflow.keras.layers import Layer
 import tensorflow as tf
 
 
-class GraphEdgeConvolution(Layer):
+class GCNEdgeConv(Layer):
     """
         Basic graph convolution layer (edge convolution version) as in: 
         [Convolutional Neural Networks on Graphs with Fast Localized Spectral Filtering](https://arxiv.org/abs/1606.09375)
@@ -13,7 +13,7 @@ class GraphEdgeConvolution(Layer):
         tf_geometric: https://github.com/CrawlScript/tf_geometric
         torch_geometric: https://github.com/rusty1s/pytorch_geometric
 
-        `GraphEdgeConvolution` implements the operation using message passing framework:
+        `GCNEdgeConv` implements the operation using message passing framework:
         `output = activation(adj @ x @ kernel + bias)`
         where `x` is the node attribute matrix, `adj` is the adjacency matrix,
         `activation` is the element-wise activation function

@@ -2,7 +2,7 @@ import torch.nn as nn
 from torch.nn import Module, Parameter
 
 
-class TrainableSGConvolution(Module):
+class TrainableSGConv(Module):
     def __init__(self,
                  in_features,
                  out_features,

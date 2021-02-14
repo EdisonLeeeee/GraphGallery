@@ -2,7 +2,7 @@ import torch.nn as nn
 from torch import optim
 
 from graphgallery.nn.models import TorchKeras
-from graphgallery.nn.layers.pytorch import TAGConvolution, Sequential, activations
+from graphgallery.nn.layers.pytorch import TAGConv, Sequential, activations
 from graphgallery.nn.metrics.pytorch import Accuracy
 
 
@@ -21,15 +21,15 @@ class TAGCN(TorchKeras):
         conv = []
         conv.append(nn.Dropout(dropout))
         for hid, act in zip(hids, acts):
-            conv.append(TAGConvolution(in_features,
-                                       hid, K=K,
-                                       bias=bias))
+            conv.append(TAGConv(in_features,
+                                hid, K=K,
+                                bias=bias))
             conv.append(activations.get(act))
             conv.append(nn.Dropout(dropout))
             in_features = hid
-        conv.append(TAGConvolution(in_features,
-                                   out_features, K=K,
-                                   bias=bias))
+        conv.append(TAGConv(in_features,
+                            out_features, K=K,
+                            bias=bias))
         conv = Sequential(*conv)
 
         self.conv = conv

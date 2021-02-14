@@ -5,7 +5,7 @@ from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 
-from graphgallery.nn.layers.tensorflow import GraphConvolution
+from graphgallery.nn.layers.tensorflow import GCNConv
 from graphgallery import floatx
 from graphgallery.nn.models import TFKeras
 
@@ -27,13 +27,13 @@ class GCN(TFKeras):
 
         h = x
         for hid, act in zip(hids, acts):
-            h = GraphConvolution(hid, use_bias=bias,
-                                 activation=act,
-                                 kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
+            h = GCNConv(hid, use_bias=bias,
+                        activation=act,
+                        kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
 
             h = Dropout(rate=dropout)(h)
 
-        h = GraphConvolution(out_features, use_bias=bias)([h, adj])
+        h = GCNConv(out_features, use_bias=bias)([h, adj])
 
         super().__init__(inputs=[x, adj], outputs=h)
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
@@ -51,13 +51,13 @@ class GCN(TFKeras):
 
 #         self.GNN_layers = []
 #         for hid, act, weight_decay in zip(hids, acts, weight_decay):
-#             layer = GraphConvolution(hid, use_bias=bias,
+#             layer = GCNConv(hid, use_bias=bias,
 #                                          activation=act,
 #                                          kernel_regularizer=regularizers.l2(weight_decay))
 
 #             self.GNN_layers.append(layer)
 
-#         layer = GraphConvolution(out_features, use_bias=bias)
+#         layer = GCNConv(out_features, use_bias=bias)
 #         self.GNN_layers.append(layer)
 
 #         self.dropout = Dropout(dropout)

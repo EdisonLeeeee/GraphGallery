@@ -2,18 +2,18 @@ import tensorflow as tf
 from tensorflow.keras.layers import Layer
 
 
-class SGConvolution(Layer):
+class SGConv(Layer):
     """
         Simplifying graph convolution layer as in: 
         [Simplifying Graph Convolutional Networks](https://arxiv.org/abs/1902.07153)
         Pytorch implementation: https://github.com/Tiiiger/SGC
 
-        `SGConvolution` implements the operation:
+        `SGConv` implements the operation:
         `output = x @ adj^{K}`
         where `x` is the node attribute matrix, `adj` is the adjacency matrix.
 
         Note:
-          This `SGConvolution` layer has NOT any trainable parameters.
+          This `SGConv` layer has NOT any trainable parameters.
 
 
         Parameters:

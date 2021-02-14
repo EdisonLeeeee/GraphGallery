@@ -2,7 +2,7 @@ import torch.nn as nn
 from ..dropout import MixedDropout
 
 
-class PPNPropagation(nn.Module):
+class PPNProp(nn.Module):
     def __init__(self, dropout: float = 0.):
         super().__init__()
         if not dropout:
@@ -17,7 +17,7 @@ class PPNPropagation(nn.Module):
         return f"{self.__class__.__name__}(dropout={self.dropout})"
 
 
-class APPNPropagation(nn.Module):
+class APPNProp(nn.Module):
     def __init__(self, alpha: float = 0.1, K: int = 10, dropout: float = 0.):
         super().__init__()
         self.alpha = alpha

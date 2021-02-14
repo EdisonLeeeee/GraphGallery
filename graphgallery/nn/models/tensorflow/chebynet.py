@@ -4,7 +4,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tensorflow import ChebyConvolution
+from graphgallery.nn.layers.tensorflow import ChebConv
 from graphgallery.nn.models import TFKeras
 from graphgallery import floatx
 
@@ -26,13 +26,13 @@ class ChebyNet(TFKeras):
 
         h = x
         for hid, act in zip(hids, acts):
-            h = ChebyConvolution(hid, K=K, use_bias=bias,
-                                 activation=act,
-                                 kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
+            h = ChebConv(hid, K=K, use_bias=bias,
+                         activation=act,
+                         kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
             h = Dropout(rate=dropout)(h)
 
-        h = ChebyConvolution(out_features,
-                             K=K, use_bias=bias)([h, adj])
+        h = ChebConv(out_features,
+                     K=K, use_bias=bias)([h, adj])
 
         super().__init__(inputs=[x, *adj], outputs=h)
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),

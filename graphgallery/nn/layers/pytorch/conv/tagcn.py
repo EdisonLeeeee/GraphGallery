@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 
-class TAGConvolution(nn.Module):
+class TAGConv(nn.Module):
     def __init__(self,
                  in_features,
                  out_features,

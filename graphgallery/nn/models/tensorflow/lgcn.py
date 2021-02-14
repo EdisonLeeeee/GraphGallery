@@ -4,7 +4,7 @@ from tensorflow.keras.optimizers import Nadam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tensorflow import Top_k_features, LGConvolution, DenseConvolution
+from graphgallery.nn.layers.tensorflow import Top_k_features, LGConv, DenseConv
 from graphgallery.nn.models import TFKeras
 from graphgallery import floatx
 
@@ -25,27 +25,27 @@ class LGCN(TFKeras):
         h = x
         for idx, hid in enumerate(hids):
             h = Dropout(rate=dropout)(h)
-            h = DenseConvolution(hid,
-                                 use_bias=bias,
-                                 activation=acts[idx],
-                                 kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
+            h = DenseConv(hid,
+                          use_bias=bias,
+                          activation=acts[idx],
+                          kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
 
         for idx, num_filter in enumerate(num_filters):
             top_k_h = Top_k_features(K=K)([h, adj])
-            cur_h = LGConvolution(num_filter,
-                                  kernel_size=K,
-                                  use_bias=bias,
-                                  dropout=dropout,
-                                  activation=acts[idx],
-                                  kernel_regularizer=regularizers.l2(weight_decay))(top_k_h)
+            cur_h = LGConv(num_filter,
+                           kernel_size=K,
+                           use_bias=bias,
+                           dropout=dropout,
+                           activation=acts[idx],
+                           kernel_regularizer=regularizers.l2(weight_decay))(top_k_h)
             cur_h = BatchNormalization()(cur_h)
             h = Concatenate()([h, cur_h])
 
         h = Dropout(rate=dropout)(h)
-        h = DenseConvolution(out_features,
-                             use_bias=bias,
-                             activation=acts[-1],
-                             kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
+        h = DenseConv(out_features,
+                      use_bias=bias,
+                      activation=acts[-1],
+                      kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
 
         super().__init__(inputs=[x, adj], outputs=h)
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),

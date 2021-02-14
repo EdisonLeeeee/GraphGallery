@@ -4,7 +4,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tensorflow import WaveletConvolution
+from graphgallery.nn.layers.tensorflow import WaveletConv
 from graphgallery import floatx
 from graphgallery.nn.models import TFKeras
 
@@ -28,11 +28,11 @@ class GWNN(TFKeras):
 
         h = x
         for hid, act in zip(hids, acts):
-            h = WaveletConvolution(hid, activation=act, use_bias=bias,
-                                   kernel_regularizer=regularizers.l2(weight_decay))([h, wavelet, inverse_wavelet])
+            h = WaveletConv(hid, activation=act, use_bias=bias,
+                            kernel_regularizer=regularizers.l2(weight_decay))([h, wavelet, inverse_wavelet])
             h = Dropout(rate=dropout)(h)
 
-        h = WaveletConvolution(out_features, use_bias=bias)(
+        h = WaveletConv(out_features, use_bias=bias)(
             [h, wavelet, inverse_wavelet])
 
         super().__init__(inputs=[x, wavelet, inverse_wavelet], outputs=h)

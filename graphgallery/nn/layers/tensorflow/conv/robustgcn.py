@@ -5,13 +5,13 @@ from tensorflow.keras.layers import Layer, Dropout, LeakyReLU
 import tensorflow as tf
 
 
-class GaussionConvolution_F(Layer):
+class GaussionConvF(Layer):
     """
         Robust graph convolution layer as in: 
         `Robust Graph Convolutional Networks Against Adversarial Attacks` <https://dl.acm.org/doi/10.1145/3292500.3330851>
         Tensorflow 1.x implementation: <https://github.com/thumanlab/nrlweb/blob/master/static/assets/download/RGCN.zip>
 
-        `GaussionConvolution_F` implements the GaussionConvolution operation
+        `GaussionConvF` implements the GaussionConvolution operation
            where the inputs is node attribute matrix and two adjacency matrices,
            the output is another distribution (represented with `mean vector` 
            and `variance vector`) 
@@ -142,13 +142,13 @@ class GaussionConvolution_F(Layer):
         return tf.TensorShape(output_shape), tf.TensorShape(output_shape)
 
 
-class GaussionConvolution_D(Layer):
+class GaussionConvD(Layer):
     """
         Robust graph convolution layer as in: 
         `Robust Graph Convolutional Networks Against Adversarial Attacks` <https://dl.acm.org/doi/10.1145/3292500.3330851>
         Tensorflow 1.x implementation: <https://github.com/thumanlab/nrlweb/blob/master/static/assets/download/RGCN.zip>
 
-        `GaussionConvolution_F` implements the GaussionConvolution operation
+        `GaussionConvF` implements the GaussionConvolution operation
            where the inputs are the distribution (represented with `mean vector` and `variance vector`) 
            and two adjacency matrices, the output is another distribution (represented with `mean vector` 
            and `variance vector`) 

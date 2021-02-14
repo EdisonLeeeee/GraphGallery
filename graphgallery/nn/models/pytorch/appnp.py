@@ -2,7 +2,7 @@ import torch.nn as nn
 from torch import optim
 
 from graphgallery.nn.models import TorchKeras
-from graphgallery.nn.layers.pytorch import APPNPropagation, PPNPropagation, activations
+from graphgallery.nn.layers.pytorch import APPNProp, PPNProp, activations
 from graphgallery.nn.metrics.pytorch import Accuracy
 
 
@@ -36,10 +36,10 @@ class APPNP(TorchKeras):
         lin = nn.Sequential(*lin)
         self.lin = lin
         if approximated:
-            self.propagation = APPNPropagation(alpha=alpha, K=K,
-                                               dropout=ppr_dropout)
+            self.propagation = APPNProp(alpha=alpha, K=K,
+                                        dropout=ppr_dropout)
         else:
-            self.propagation = PPNPropagation(dropout=ppr_dropout)
+            self.propagation = PPNProp(dropout=ppr_dropout)
         self.compile(loss=nn.CrossEntropyLoss(),
                      optimizer=optim.Adam([dict(params=lin[1].parameters(),
                                                 weight_decay=weight_decay),

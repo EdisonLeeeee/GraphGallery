@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 
-class PropConvolution(nn.Module):
+class PropConv(nn.Module):
     def __init__(self,
                  in_features,
                  out_features=1,

@@ -5,7 +5,7 @@ import torch.nn.functional as F
 from graphgallery.nn.init.pytorch import glorot_uniform, zeros
 
 
-class GraphAttention(nn.Module):
+class GATConv(nn.Module):
     def __init__(self,
                  in_features,
                  out_features,
@@ -99,7 +99,7 @@ class GraphAttention(nn.Module):
         return f"{self.__class__.__name__}({self.in_features}, {self.out_features})"
 
 
-#########################Sparse Version of `GraphAttention` layer###################
+#########################Sparse Version of `GATConv` layer###################
 class SpecialSpmmFunction(torch.autograd.Function):
     """Special function for only sparse region backpropataion layer."""
     @staticmethod
@@ -128,7 +128,7 @@ class SpecialSpmm(nn.Module):
         return SpecialSpmmFunction.apply(indices, values, shape, b)
 
 
-class SparseGraphAttention(nn.Module):
+class SparseGATConv(nn.Module):
     """
     Sparse version GAT layer, similar to https://arxiv.org/abs/1710.10903
     """

@@ -4,7 +4,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tensorflow import GraphEdgeConvolution
+from graphgallery.nn.layers.tensorflow import GCNEdgeConv
 from graphgallery.nn.models import TFKeras
 from graphgallery import floatx, intx
 
@@ -26,13 +26,13 @@ class EdgeGCN(TFKeras):
 
         h = x
         for hid, act in zip(hids, acts):
-            h = GraphEdgeConvolution(hid, use_bias=bias,
-                                     activation=act,
-                                     kernel_regularizer=regularizers.l2(weight_decay))([h, edge_index, edge_weight])
+            h = GCNEdgeConv(hid, use_bias=bias,
+                            activation=act,
+                            kernel_regularizer=regularizers.l2(weight_decay))([h, edge_index, edge_weight])
 
             h = Dropout(rate=dropout)(h)
 
-        h = GraphEdgeConvolution(out_features, use_bias=bias)(
+        h = GCNEdgeConv(out_features, use_bias=bias)(
             [h, edge_index, edge_weight])
 
         super().__init__(inputs=[x, edge_index, edge_weight], outputs=h)

@@ -2,7 +2,7 @@ import torch.nn as nn
 from torch import optim
 
 from graphgallery.nn.models import TorchKeras
-from graphgallery.nn.layers.pytorch import GraphAttention, SparseGraphAttention, Sequential, activations
+from graphgallery.nn.layers.pytorch import GATConv, SparseGATConv, Sequential, activations
 from graphgallery.nn.metrics.pytorch import Accuracy
 
 
@@ -24,7 +24,7 @@ class GAT(TorchKeras):
         conv = []
         conv.append(nn.Dropout(dropout))
         for hid, num_head, act in zip(hids, num_heads, acts):
-            conv.append(SparseGraphAttention(in_features * head,
+            conv.append(SparseGATConv(in_features * head,
                                              hid,
                                              attn_heads=num_head,
                                              reduction='concat',
@@ -33,7 +33,7 @@ class GAT(TorchKeras):
             conv.append(nn.Dropout(dropout))
             in_features = hid
             head = num_head
-        conv.append(SparseGraphAttention(in_features * head,
+        conv.append(SparseGATConv(in_features * head,
                                          out_features,
                                          attn_heads=1,
                                          reduction='average',

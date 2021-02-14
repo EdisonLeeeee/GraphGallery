@@ -4,14 +4,14 @@ from tensorflow.keras.layers import Layer
 import tensorflow as tf
 
 
-class GraphConvolution(Layer):
+class GCNConv(Layer):
     """
         Basic graph convolution layer as in: 
         [Semi-Supervised Classification with Graph Convolutional Networks](https://arxiv.org/abs/1606.09375)
         Tensorflow 1.x implementation: https://github.com/tkipf/gcn
         Pytorch implementation: https://github.com/tkipf/pygcn
 
-        `GraphConvolution` implements the operation:
+        `GCNConv` implements the operation:
         `output = activation(adj @ x @ kernel + bias)`
         where `x` is the node attribute matrix, `adj` is the adjacency matrix,
         `activation` is the element-wise activation function

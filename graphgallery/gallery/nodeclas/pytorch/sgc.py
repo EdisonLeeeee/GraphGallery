@@ -1,4 +1,4 @@
-from graphgallery.nn.layers.pytorch import SGConvolution
+from graphgallery.nn.layers.pytorch import SGConv
 from graphgallery.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
@@ -26,7 +26,7 @@ class SGC(Trainer):
 
         X, A = gf.astensors(node_attr, adj_matrix, device=self.device)
 
-        X = SGConvolution(K=K)(X, A)
+        X = SGConv(K=K)(X, A)
         # ``A`` and ``X`` are cached for later use
         self.register_cache(X=X, A=A)
 

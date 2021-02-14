@@ -2,7 +2,7 @@ import torch.nn as nn
 from torch import optim
 
 from graphgallery.nn.models import TorchKeras
-from graphgallery.nn.layers.pytorch import GraphConvolution, Sequential, activations
+from graphgallery.nn.layers.pytorch import GCNConv, Sequential, activations
 from graphgallery.nn.metrics.pytorch import Accuracy
 
 
@@ -21,13 +21,13 @@ class GCN(TorchKeras):
         conv = []
         conv.append(nn.Dropout(dropout))
         for hid, act in zip(hids, acts):
-            conv.append(GraphConvolution(in_features,
-                                         hid,
-                                         bias=bias))
+            conv.append(GCNConv(in_features,
+                                hid,
+                                bias=bias))
             conv.append(activations.get(act))
             conv.append(nn.Dropout(dropout))
             in_features = hid
-        conv.append(GraphConvolution(in_features, out_features, bias=bias))
+        conv.append(GCNConv(in_features, out_features, bias=bias))
         conv = Sequential(*conv)
 
         self.conv = conv

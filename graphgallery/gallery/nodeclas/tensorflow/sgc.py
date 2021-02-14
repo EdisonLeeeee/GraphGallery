@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 from graphgallery.sequence import FullBatchSequence
-from graphgallery.nn.layers.tensorflow import SGConvolution
+from graphgallery.nn.layers.tensorflow import SGConv
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import TensorFlow
 from graphgallery.gallery.nodeclas import Trainer
@@ -37,7 +37,7 @@ class SGC(Trainer):
             device = self.device
 
         with tf.device(device):
-            X = SGConvolution(K=K)([X, A])
+            X = SGConv(K=K)([X, A])
 
         with tf.device(self.device):
             # ``A`` and ``X`` are cached for later use

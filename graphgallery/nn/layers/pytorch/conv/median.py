@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 
 
-class MedianConvolution(nn.Module):
+class MedianConv(nn.Module):
     def __init__(self,
                  in_features,
                  out_features,

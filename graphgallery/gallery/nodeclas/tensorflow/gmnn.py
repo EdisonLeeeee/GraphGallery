@@ -6,7 +6,7 @@ from tensorflow.keras.optimizers import RMSprop, Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import CategoricalCrossentropy
 
-from graphgallery.nn.layers.tensorflow import GraphConvolution
+from graphgallery.nn.layers.tensorflow import GCNConv
 from graphgallery.sequence import FullBatchSequence
 from graphgallery.nn.models import TFKeras
 from graphgallery import functional as gf
@@ -63,7 +63,7 @@ class GMNN(Trainer):
         def build_GCN(x):
             h = x
             for hid, act in zip(hids, acts):
-                h = GraphConvolution(
+                h = GCNConv(
                     hid,
                     bias=bias,
                     activation=act,
@@ -71,8 +71,8 @@ class GMNN(Trainer):
                         [h, adj])
                 h = Dropout(rate=dropout)(h)
 
-            h = GraphConvolution(self.graph.num_node_classes,
-                                 bias=bias)([h, adj])
+            h = GCNConv(self.graph.num_node_classes,
+                        bias=bias)([h, adj])
 
             model = TFKeras(inputs=[x, adj], outputs=h)
             model.compile(loss=CategoricalCrossentropy(from_logits=True),
@@ -86,7 +86,7 @@ class GMNN(Trainer):
         model_q = build_GCN(x_q)
 
         model_q.custom_objects = model_p.custom_objects = {
-            'GraphConvolution': GraphConvolution,
+            'GCNConv': GCNConv,
             "TFKeras": TFKeras,
         }
         if use_tfn:

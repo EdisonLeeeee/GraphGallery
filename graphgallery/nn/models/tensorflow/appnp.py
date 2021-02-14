@@ -5,7 +5,7 @@ from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 
-from graphgallery.nn.layers.tensorflow import APPNPropagation, PPNPropagation
+from graphgallery.nn.layers.tensorflow import APPNProp, PPNProp
 from graphgallery import floatx
 from graphgallery.nn.models import TFKeras
 
@@ -42,9 +42,9 @@ class APPNP(TFKeras):
         h = Dense(out_features, use_bias=bias,
                   kernel_regularizer=regularizers.l2(weight_decay))(h)
         if approximated:
-            h = APPNPropagation(alpha=alpha, K=K, dropout=ppr_dropout)([h, adj])
+            h = APPNProp(alpha=alpha, K=K, dropout=ppr_dropout)([h, adj])
         else:
-            h = PPNPropagation(dropout=ppr_dropout)([h, adj])
+            h = PPNProp(dropout=ppr_dropout)([h, adj])
 
         super().__init__(inputs=[x, adj], outputs=h)
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),

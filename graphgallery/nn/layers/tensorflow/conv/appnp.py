@@ -3,7 +3,7 @@ from tensorflow.keras.layers import Layer
 from ..dropout import MixedDropout
 
 
-class APPNPropagation(Layer):
+class APPNProp(Layer):
 
     def __init__(self,
                  alpha=0.1,
@@ -38,7 +38,7 @@ class APPNPropagation(Layer):
         return tf.TensorShape(attributes_shape)
 
 
-class PPNPropagation(Layer):
+class PPNProp(Layer):
 
     def __init__(self,
                  dropout=0.,

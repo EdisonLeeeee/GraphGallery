@@ -1,7 +1,7 @@
 from torch.nn import Module
 
 
-class SGConvolution(Module):
+class SGConv(Module):
     def __init__(self, K=2, **kwargs):
         super().__init__()
         self.K = K

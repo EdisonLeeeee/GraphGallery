@@ -8,7 +8,7 @@ except ImportError:
     tfp = None
 
 
-class MedianConvolution(Layer):
+class MedianConv(Layer):
 
     def __init__(self, units,
                  use_bias=False,

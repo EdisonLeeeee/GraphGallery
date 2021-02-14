@@ -1,9 +1,9 @@
-from .gcn import GraphConvolution
-from .gat import GraphAttention, SparseGraphAttention
-from .sgc import SGConvolution
-from .trainable_sgc import TrainableSGConvolution
-from .median import MedianConvolution
-from .trimmed_conv import TrimmedConvolution
-from .dagnn import PropConvolution
-from .tagcn import TAGConvolution
-from .appnp import APPNPropagation, PPNPropagation
+from .gcn import GCNConv
+from .gat import GATConv, SparseGATConv
+from .sgc import SGConv
+from .trainable_sgc import TrainableSGConv
+from .median import MedianConv
+from .trimmed_conv import TrimmedConv
+from .dagnn import PropConv
+from .tagcn import TAGConv
+from .appnp import APPNProp, PPNProp

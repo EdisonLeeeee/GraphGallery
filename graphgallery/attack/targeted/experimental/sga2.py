@@ -6,7 +6,7 @@ from tensorflow.keras.losses import sparse_categorical_crossentropy
 from graphadv.attack.targeted.targeted_attacker import TargetedAttacker
 from graphadv.utils.surrogate_utils import train_a_surrogate
 
-from graphgallery.nn.layers import SGConvolution
+from graphgallery.nn.layers import SGConv
 from graphgallery.nn.models import SGC
 from graphgallery import tqdm, astensor, ego_graph
 
@@ -52,7 +52,7 @@ class SGA(TargetedAttacker):
             self.b = b
             self.XW = X @ W
             self.surrogate = surrogate
-            self.SGC = SGConvolution(hops)
+            self.SGC = SGConv(hops)
             self.loss_fn = sparse_categorical_crossentropy
 
     def reset(self):

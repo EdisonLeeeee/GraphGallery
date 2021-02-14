@@ -2,7 +2,7 @@ import torch.nn as nn
 from torch import optim
 
 from graphgallery.nn.models import TorchKeras
-from graphgallery.nn.layers.pytorch import MedianConvolution, Sequential, activations
+from graphgallery.nn.layers.pytorch import MedianConv, Sequential, activations
 from graphgallery.nn.metrics.pytorch import Accuracy
 
 
@@ -21,13 +21,13 @@ class MedianGCN(TorchKeras):
         conv = []
         conv.append(nn.Dropout(dropout))
         for hid, act in zip(hids, acts):
-            conv.append(MedianConvolution(in_features,
-                                          hid,
-                                          bias=bias))
+            conv.append(MedianConv(in_features,
+                                   hid,
+                                   bias=bias))
             conv.append(activations.get(act))
             conv.append(nn.Dropout(dropout))
             in_features = hid
-        conv.append(MedianConvolution(in_features, out_features, bias=bias))
+        conv.append(MedianConv(in_features, out_features, bias=bias))
         conv = Sequential(*conv)
 
         self.conv = conv

@@ -4,7 +4,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tensorflow import DenseConvolution
+from graphgallery.nn.layers.tensorflow import DenseConv
 from graphgallery.nn.models import TFKeras
 from graphgallery import floatx
 
@@ -25,13 +25,13 @@ class DenseGCN(TFKeras):
 
         h = x
         for hid, act in zip(hids, acts):
-            h = DenseConvolution(hid, use_bias=bias,
-                                 activation=act,
-                                 kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
+            h = DenseConv(hid, use_bias=bias,
+                          activation=act,
+                          kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
 
             h = Dropout(rate=dropout)(h)
 
-        h = DenseConvolution(out_features, use_bias=bias)([h, adj])
+        h = DenseConv(out_features, use_bias=bias)([h, adj])
 
         super().__init__(inputs=[x, adj], outputs=h)
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),

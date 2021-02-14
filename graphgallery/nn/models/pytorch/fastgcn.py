@@ -3,7 +3,7 @@ from torch import nn
 
 from graphgallery.nn.models import TorchKeras
 from graphgallery.nn.metrics.pytorch import Accuracy
-from graphgallery.nn.layers.pytorch import GraphConvolution, Sequential, activations
+from graphgallery.nn.layers.pytorch import GCNConv, Sequential, activations
 
 
 class FastGCN(TorchKeras):
@@ -21,7 +21,7 @@ class FastGCN(TorchKeras):
             conv.append(activations.get(act))
             conv.append(nn.Dropout(dropout))
             in_features = hid
-        conv.append(GraphConvolution(in_features, out_features, bias=bias))
+        conv.append(GCNConv(in_features, out_features, bias=bias))
         conv = Sequential(*conv)
         self.conv = conv
         self.compile(loss=nn.CrossEntropyLoss(),

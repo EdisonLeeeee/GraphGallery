@@ -4,7 +4,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tensorflow import GraphConvAttribute
+from graphgallery.nn.layers.tensorflow import GCNAConv
 from graphgallery import floatx
 from graphgallery.nn.models import TFKeras
 
@@ -25,13 +25,13 @@ class GCNA(TFKeras):
 
         h = x
         for hid, act in zip(hids, acts):
-            h = GraphConvAttribute(hid, use_bias=bias,
-                                   activation=act, concat=True,
-                                   kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
+            h = GCNAConv(hid, use_bias=bias,
+                         activation=act, concat=True,
+                         kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
 
             h = Dropout(rate=dropout)(h)
 
-        h = GraphConvAttribute(out_features, use_bias=bias)([h, adj])
+        h = GCNAConv(out_features, use_bias=bias)([h, adj])
 
         super().__init__(inputs=[x, adj], outputs=h)
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),

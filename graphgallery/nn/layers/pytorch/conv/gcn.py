@@ -1,7 +1,7 @@
 import torch.nn as nn
 
 
-class GraphConvolution(nn.Module):
+class GCNConv(nn.Module):
     def __init__(self,
                  in_features,
                  out_features,

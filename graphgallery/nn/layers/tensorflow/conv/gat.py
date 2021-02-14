@@ -4,7 +4,7 @@ from tensorflow.keras.layers import Layer, Dropout, LeakyReLU
 import tensorflow as tf
 
 
-class GraphAttention(Layer):
+class GATConv(Layer):
     """
         Basic graph attention layer as in: 
         [Graph Attention Networks](https://arxiv.org/abs/1710.10903)

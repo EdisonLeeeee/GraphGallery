@@ -4,7 +4,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tensorflow import GraphAttention
+from graphgallery.nn.layers.tensorflow import GATConv
 from graphgallery import floatx
 from graphgallery.nn.models import TFKeras
 
@@ -24,18 +24,18 @@ class GAT(TFKeras):
 
         h = x
         for hid, num_head, act in zip(hids, num_heads, acts):
-            h = GraphAttention(hid, attn_heads=num_head,
-                               reduction='concat',
-                               use_bias=bias,
-                               activation=act,
-                               kernel_regularizer=regularizers.l2(weight_decay),
-                               attn_kernel_regularizer=regularizers.l2(
-                                   weight_decay),
-                               )([h, adj])
+            h = GATConv(hid, attn_heads=num_head,
+                        reduction='concat',
+                        use_bias=bias,
+                        activation=act,
+                        kernel_regularizer=regularizers.l2(weight_decay),
+                        attn_kernel_regularizer=regularizers.l2(
+                            weight_decay),
+                        )([h, adj])
             h = Dropout(rate=dropout)(h)
 
-        h = GraphAttention(out_features, use_bias=bias,
-                           attn_heads=1, reduction='average')([h, adj])
+        h = GATConv(out_features, use_bias=bias,
+                    attn_heads=1, reduction='average')([h, adj])
 
         super().__init__(inputs=[x, adj], outputs=h)
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),

@@ -4,14 +4,14 @@ from tensorflow.keras.layers import Layer, Dropout, LeakyReLU
 import tensorflow as tf
 
 
-class ChebyConvolution(Layer):
+class ChebConv(Layer):
     """
         Basic Chebyshev graph convolution layer as in: 
         [Convolutional Neural Networks on Graphs with Fast Localized Spectral Filtering](https://arxiv.org/abs/1606.09375)
         Tensorflow 1.x implementation: https://github.com/mdeff/cnn_graph, https://github.com/tkipf/gcn
         Keras implementation: https://github.com/aclyde11/ChebyGCN
 
-        `ChebyConvolution` implements the operation:
+        `ChebConv` implements the operation:
         `output = activation(adj_0 @ x @ kernel + bias) + activation(adj_1 @ x @ kernel + bias) + ...`
         where `x` is the node attribute matrix, `adj_i` is the i-th adjacency matrix, 0<=i<=`K`,
         `activation` is the element-wise activation function

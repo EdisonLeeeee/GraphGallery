@@ -5,7 +5,7 @@ import torch.nn as nn
 from torch import optim
 
 from graphgallery.nn.models import TorchKeras
-from graphgallery.nn.layers.pytorch import GraphConvolution, activations
+from graphgallery.nn.layers.pytorch import GCNConv, activations
 from graphgallery.nn.metrics.pytorch import Accuracy
 from graphgallery.nn.init.pytorch import glorot_uniform, zeros
 
@@ -31,15 +31,15 @@ class SimPGCN(TorchKeras):
         act_layers = nn.ModuleList()
         inc = in_features
         for hid, act in zip(hids, acts):
-            layers.append(GraphConvolution(in_features,
-                                           hid,
-                                           bias=bias))
+            layers.append(GCNConv(in_features,
+                                  hid,
+                                  bias=bias))
             act_layers.append(activations.get(act))
             inc = hid
 
-        layers.append(GraphConvolution(inc,
-                                       out_features,
-                                       bias=bias))
+        layers.append(GCNConv(inc,
+                              out_features,
+                              bias=bias))
         act_layers.append(activations.get(None))
 
         self.layers = layers

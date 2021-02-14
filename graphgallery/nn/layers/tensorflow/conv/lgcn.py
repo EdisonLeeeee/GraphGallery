@@ -3,13 +3,13 @@ from tensorflow.keras import activations, constraints, initializers, regularizer
 from tensorflow.keras.layers import Layer, Dropout, Conv1D
 
 
-class LGConvolution(Layer):
+class LGConv(Layer):
     """
         Large-scale graph convolution layer as in:
         [Large-Scale Learnable Graph Convolutional Networks](https://arxiv.org/abs/1808.03965)
         Tensorflow 1.x implementation: https://github.com/divelab/lgcn
 
-        `LGConvolution` implements the operation:
+        `LGConv` implements the operation:
         `output = Conv1d(Conv1d(x))`, where `x` is the input node attribute matrix, 
         and the dropout will be used in `x` and hid outpus.
 

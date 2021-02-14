@@ -2,7 +2,7 @@ import torch.nn as nn
 from torch import optim
 
 from graphgallery.nn.models import TorchKeras
-from graphgallery.nn.layers.pytorch import TrimmedConvolution, Sequential, activations
+from graphgallery.nn.layers.pytorch import TrimmedConv, Sequential, activations
 from graphgallery.nn.metrics.pytorch import Accuracy
 
 
@@ -22,16 +22,16 @@ class TrimmedGCN(TorchKeras):
         conv = []
         conv.append(nn.Dropout(dropout))
         for hid, act in zip(hids, acts):
-            conv.append(TrimmedConvolution(in_features,
-                                           hid,
-                                           bias=bias,
-                                           tperc=tperc))
+            conv.append(TrimmedConv(in_features,
+                                    hid,
+                                    bias=bias,
+                                    tperc=tperc))
             conv.append(activations.get(act))
             conv.append(nn.Dropout(dropout))
             in_features = hid
-        conv.append(TrimmedConvolution(in_features, out_features,
-                                       bias=bias,
-                                       tperc=tperc))
+        conv.append(TrimmedConv(in_features, out_features,
+                                bias=bias,
+                                tperc=tperc))
         conv = Sequential(*conv)
 
         self.conv = conv

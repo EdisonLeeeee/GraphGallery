@@ -4,7 +4,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tensorflow import GraphConvolution
+from graphgallery.nn.layers.tensorflow import GCNConv
 from graphgallery.nn.models import TFKeras
 from graphgallery import floatx
 
@@ -26,8 +26,8 @@ class FastGCN(TFKeras):
                       kernel_regularizer=regularizers.l2(weight_decay))(h)
             h = Dropout(rate=dropout)(h)
 
-        h = GraphConvolution(out_features,
-                             use_bias=bias)([h, adj])
+        h = GCNConv(out_features,
+                    use_bias=bias)([h, adj])
 
         super().__init__(inputs=[x, adj], outputs=h)
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
