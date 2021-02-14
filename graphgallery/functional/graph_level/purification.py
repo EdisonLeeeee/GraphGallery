@@ -2,8 +2,8 @@ import warnings
 import numpy as np
 import scipy.sparse as sp
 
-from ..transforms import BaseTransform
-from ..get_transform import Transform
+from ..base_transforms import GraphTransform
+from ..transform import Transform
 from ..edge_level import singleton_filter
 from ..sparse import remove_edge
 import graphgallery as gg
@@ -55,7 +55,7 @@ def cosine_detection(adj_matrix, node_attr, threshold=0.01, allow_singleton=Fals
 
 
 @Transform.register()
-class JaccardDetection(BaseTransform):
+class JaccardDetection(GraphTransform):
 
     def __init__(self, threshold=0., allow_singleton=False):
         super().__init__()
@@ -82,7 +82,7 @@ class JaccardDetection(BaseTransform):
 
 
 @Transform.register()
-class CosineDetection(BaseTransform):
+class CosineDetection(GraphTransform):
 
     def __init__(self, threshold=0., allow_singleton=False):
         super().__init__()
@@ -110,13 +110,11 @@ class CosineDetection(BaseTransform):
 
 
 @Transform.register()
-class SVD(BaseTransform):
+class SVD(GraphTransform):
 
     def __init__(self, k=50, threshold=0.01, binaryzation=False):
         super().__init__()
-        self.k = k
-        self.threshold = threshold
-        self.binaryzation = binaryzation
+        self.collect(locals())
 
     def __call__(self, graph):
         assert isinstance(graph, gg.data.HomoGraph), type(graph)
@@ -128,9 +126,6 @@ class SVD(BaseTransform):
                          binaryzation=self.binaryzation)
         graph.update(adj_matrix=adj_matrix)
         return graph
-
-    def extra_repr(self):
-        return f"k={self.k}, threshold={self.threshold}, binaryzation={self.binaryzation}"
 
 
 def svd(adj_matrix, k=50, threshold=0.01, binaryzation=False):

@@ -1,24 +1,21 @@
 import numpy as np
 
-from ..transforms import BaseTransform
+from ..base_transforms import DenseTransform
 from ..decorators import multiple
-from ..get_transform import Transform
+from ..transform import Transform
 
 __all__ = ['onehot', 'Onehot']
 
 
 @Transform.register()
-class Onehot(BaseTransform):
+class Onehot(DenseTransform):
 
     def __init__(self, depth=None):
         super().__init__()
-        self.depth = depth
+        self.collect(locals())
 
     def __call__(self, *x):
         return onehot(*x, depth=self.depth)
-
-    def extra_repr(self):
-        return f"depth={self.depth}"
 
 
 @multiple()

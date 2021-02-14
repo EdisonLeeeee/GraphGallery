@@ -3,7 +3,6 @@ import scipy.sparse as sp
 
 from typing import Union
 from ..edge_level import augment_edge
-from ..functions import get_length
 
 
 def augment_adj(adj_matrix: sp.csr_matrix, nodes: Union[list, int, np.ndarray],

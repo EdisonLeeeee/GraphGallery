@@ -14,7 +14,7 @@ from graphgallery import functional as gf
 
 __all__ = ['asarray', 'index_to_mask',
            'repeat', 'get_length',
-           'nx_graph_to_sparse_adj', 
+           'nx_graph_to_sparse_adj',
            'largest_indices', 'least_indices']
 
 
@@ -62,7 +62,7 @@ def index_to_mask(indices: np.ndarray, shape: tuple) -> np.ndarray:
     return mask
 
 
-def repeat(src: Any, length: int=None) -> Any:
+def repeat(src: Any, length: int = None) -> Any:
     if src == [] or src == ():
         return []
     if length is None:
@@ -95,10 +95,14 @@ def nx_graph_to_sparse_adj(graph):
 
 def largest_indices(array: np.ndarray, n: int) -> tuple:
     """Returns the n largest indices from a numpy array.
-    Arguments:
+
+    Parameters:
+    ----------
         array {np.ndarray} -- data array
         n {int} -- number of elements to select
+
     Returns:
+    --------
         tuple[np.ndarray] -- tuple of ndarray
         each ndarray is index
     """
@@ -110,10 +114,14 @@ def largest_indices(array: np.ndarray, n: int) -> tuple:
 
 def least_indices(array: np.ndarray, n: int) -> tuple:
     """Returns the n least indices from a numpy array.
-    Arguments:
+
+    Parameters:
+    ----------
         array {np.ndarray} -- data array
         n {int} -- number of elements to select
+
     Returns:
+    --------
         tuple[np.ndarray] -- tuple of ndarray
         each ndarray is index
     """
@@ -121,4 +129,3 @@ def least_indices(array: np.ndarray, n: int) -> tuple:
     indices = np.argpartition(flat, n)[:n]
     indices = indices[np.argsort(flat[indices])]
     return np.unravel_index(indices, array.shape)
-

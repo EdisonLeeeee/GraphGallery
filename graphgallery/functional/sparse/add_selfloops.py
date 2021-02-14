@@ -2,13 +2,13 @@ import numpy as np
 import scipy.sparse as sp
 import graphgallery as gg
 
-from ..transforms import BaseTransform
+from ..base_transforms import SparseTransform
 from ..decorators import multiple
-from ..get_transform import Transform
+from ..transform import Transform
 
 
 @Transform.register()
-class AddSelfloops(BaseTransform):
+class AddSelfloops(SparseTransform):
     """Add self loops for adjacency matrix."""
 
     def __init__(self, fill_weight: float = 1.0):
@@ -19,7 +19,7 @@ class AddSelfloops(BaseTransform):
             weight of self loops for the adjacency matrix.
         """
         super().__init__()
-        self.fill_weight = fill_weight
+        self.collect(locals())
 
     def __call__(self, *adj_matrix):
         """
@@ -37,9 +37,6 @@ class AddSelfloops(BaseTransform):
         graphgallery.functional.add_selfloops
         """
         return add_selfloops(*adj_matrix, fill_weight=self.fill_weight)
-
-    def extra_repr(self):
-        return f"fill_weight={self.fill_weight}"
 
 
 @multiple()

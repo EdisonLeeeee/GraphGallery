@@ -1,18 +1,17 @@
 import sys
 import numpy as np
 
-from ..transforms import BaseTransform
-from ..get_transform import Transform
+from ..base_transforms import GraphTransform
+from ..transform import Transform
 
 __all__ = ['GenerateNodeAttr', 'GenerateEdgeAttr']
 
 
 @Transform.register()
-class GenerateNodeAttr(BaseTransform):
+class GenerateNodeAttr(GraphTransform):
     def __init__(self, N=None, fill_weight=1.0):
         super().__init__()
-        self.N = N
-        self.fill_weight = fill_weight
+        self.collect(locals())
 
     def __call__(self, graph):
         # TODO: multiple graph
@@ -28,16 +27,12 @@ class GenerateNodeAttr(BaseTransform):
             print("Node attribute matrix exists. Default to it.", file=sys.stderr)
         return graph
 
-    def extra_repr(self):
-        return f"N={self.N}, fill_weight={self.fill_weight}"
-
 
 @Transform.register()
-class GenerateEdgeAttr(BaseTransform):
+class GenerateEdgeAttr(GraphTransform):
     def __init__(self, N=None, fill_weight=1.0):
         super().__init__()
-        self.N = N
-        self.fill_weight = fill_weight
+        self.collect(locals())
 
     def __call__(self, graph):
         # TODO: multiple graph
@@ -52,6 +47,3 @@ class GenerateEdgeAttr(BaseTransform):
         else:
             print("Edge attribute matrix exists. Default to it.", file=sys.stderr)
         return graph
-
-    def extra_repr(self):
-        return f"N={self.N}, fill_weight={self.fill_weight}"

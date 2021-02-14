@@ -1,15 +1,15 @@
 import numpy as np
 import scipy.sparse as sp
 
-from ..transforms import BaseTransform
-from ..get_transform import Transform
+from ..base_transforms import SparseTransform
+from ..transform import Transform
 from ..decorators import multiple
 
 __all__ = ['SparseAdjToEdge', 'sparse_adj_to_edge']
 
 
 @Transform.register()
-class SparseAdjToEdge(BaseTransform):
+class SparseAdjToEdge(SparseTransform):
     def __call__(self, adj_matrix: sp.csr_matrix):
         return sparse_adj_to_edge(adj_matrix)
 

@@ -1,24 +1,21 @@
 import numpy as np
 import scipy.sparse as sp
 from .normalize_adj import normalize_adj
-from ..transforms import BaseTransform
+from ..base_transforms import SparseTransform
 from ..decorators import multiple
-from ..get_transform import Transform
+from ..transform import Transform
 
 
 @Transform.register()
-class PPR(BaseTransform):
+class PPR(SparseTransform):
     def __init__(self,
                  alpha: float = 0.1):
         super().__init__()
-        self.alpha = alpha
+        self.collect(locals())
 
     def __call__(self, adj_matrix):
         return ppr(adj_matrix,
                    alpha=self.alpha)
-
-    def extra_repr(self):
-        return f"alpha={self.alpha}"
 
 
 @multiple()

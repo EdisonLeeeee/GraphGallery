@@ -3,15 +3,15 @@ from sklearn.preprocessing import normalize
 from scipy.linalg import expm
 
 from .normalize_adj import normalize_adj
-from ..transforms import BaseTransform
+from ..base_transforms import SparseTransform
 from ..decorators import multiple
-from ..get_transform import Transform
+from ..transform import Transform
 from .topk import sparse_topk
 from .clip import sparse_clip
 
 
 @Transform.register()
-class GDC(BaseTransform):
+class GDC(SparseTransform):
     def __init__(self,
                  alpha: float = 0.3,
                  t: float = None,
@@ -19,11 +19,7 @@ class GDC(BaseTransform):
                  K: int = 128,
                  which: str = 'PPR'):
         super().__init__()
-        self.alpha = alpha
-        self.t = t
-        self.eps = eps
-        self.K = K
-        self.which = which
+        self.collect(locals())
 
     def __call__(self, adj_matrix):
         return gdc(adj_matrix,
@@ -32,9 +28,6 @@ class GDC(BaseTransform):
                    eps=self.eps,
                    K=self.K,
                    which=self.which)
-
-    def extra_repr(self):
-        return f"alpha={self.alpha}, t={self.t}, eps={self.eps}, K={self.K}, which={self.which}"
 
 
 @multiple()

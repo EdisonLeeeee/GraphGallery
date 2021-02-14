@@ -9,8 +9,8 @@ import scipy.sparse as sp
 from scipy.sparse.csgraph import connected_components
 from graphgallery import intx
 
-from ..transforms import BaseTransform
-from ..get_transform import Transform
+from ..base_transforms import GraphTransform
+from ..transform import Transform
 
 
 def metis_clustering(graph, num_clusters):
@@ -26,16 +26,13 @@ def random_clustering(num_nodes, num_clusters):
 
 
 @Transform.register()
-class GraphPartition(BaseTransform):
+class GraphPartition(GraphTransform):
     def __init__(self, num_clusters: int = None, metis_partition: bool = True):
-        self.num_clusters = num_clusters
-        self.metis_partition = metis_partition
+        super().__init__()
+        self.collect(locals())
 
     def __call__(self, graph):
         return graph_partition(graph, num_clusters=self.num_clusters, metis_partition=self.metis_partition)
-
-    def extra_repr(self):
-        return f"num_clusters={self.num_clusters}, metis_partition={self.metis_partition}"
 
 
 # TODO: accept a Graph and output a MultiGraph

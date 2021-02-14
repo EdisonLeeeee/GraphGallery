@@ -1,26 +1,22 @@
 import numpy as np
 import scipy.sparse as sp
 
-from ..transforms import BaseTransform
-from ..get_transform import Transform
+from ..base_transforms import SparseTransform
+from ..transform import Transform
 from graphgallery import intx
 
 
 @Transform.register()
-class NeighborSampler(BaseTransform):
+class NeighborSampler(SparseTransform):
 
     def __init__(self, max_degree: int = 25,
                  selfloop: bool = False):
         super().__init__()
-        self.max_degree = max_degree
-        self.selfloop = selfloop
+        self.collect(locals())
 
     def __call__(self, adj_matrix: sp.csr_matrix):
         return neighbor_sampler(adj_matrix, max_degree=self.max_degree,
                                 selfloop=self.selfloop)
-
-    def extra_repr(self):
-        return f"max_degree={self.max_degree}, selfloop={self.selfloop}"
 
 
 def neighbor_sampler(adj_matrix: sp.csr_matrix, max_degree: int = 25,

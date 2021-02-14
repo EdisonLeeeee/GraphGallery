@@ -1,23 +1,19 @@
 import scipy.sparse as sp
 
 from .normalize_adj import normalize_adj
-from ..transforms import BaseTransform
+from ..base_transforms import SparseTransform
 from ..decorators import multiple
-from ..get_transform import Transform
+from ..transform import Transform
 
 
 @Transform.register()
-class ChebyBasis(BaseTransform):
+class ChebyBasis(SparseTransform):
     def __init__(self, K=2, rate=-0.5):
         super().__init__()
-        self.K = K
-        self.rate = rate
+        self.collect(locals())
 
     def __call__(self, adj_matrix):
         return cheby_basis(adj_matrix, K=self.K, rate=self.rate)
-
-    def extra_repr(self):
-        return f"K={self.K}, rate={self.rate}"
 
 
 @multiple()

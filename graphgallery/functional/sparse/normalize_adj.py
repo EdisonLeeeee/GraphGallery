@@ -2,14 +2,13 @@ import numpy as np
 import scipy.sparse as sp
 import graphgallery as gg
 
-from ..transforms import BaseTransform
-from ..functions import repeat
+from ..base_transforms import SparseTransform
 from ..decorators import multiple
-from ..get_transform import Transform
+from ..transform import Transform
 
 
 @Transform.register()
-class NormalizeAdj(BaseTransform):
+class NormalizeAdj(SparseTransform):
     """Normalize adjacency matrix."""
 
     def __init__(self, rate=-0.5, fill_weight=1.0, symmetric=True):
@@ -30,9 +29,7 @@ class NormalizeAdj(BaseTransform):
             whether to use symmetrical  normalization
     """
         super().__init__()
-        self.rate = rate
-        self.fill_weight = fill_weight
-        self.symmetric = symmetric
+        self.collect(locals())
 
     def __call__(self, *adj_matrix):
         """
@@ -51,10 +48,8 @@ class NormalizeAdj(BaseTransform):
         """
         return normalize_adj(*adj_matrix,
                              rate=self.rate,
-                             fill_weight=self.fill_weight, symmetric=self.symmetric)
-
-    def extra_repr(self):
-        return f"normalize rate={self.rate}, fill_weight={self.fill_weight}"
+                             fill_weight=self.fill_weight,
+                             symmetric=self.symmetric)
 
 
 @multiple()

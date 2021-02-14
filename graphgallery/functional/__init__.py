@@ -9,8 +9,8 @@ from .network import *
 # functions
 from .bunchdict import BunchDict
 from .registry import Registry
-from .transforms import *
+from .base_transforms import *
 from .decorators import *
-from .get_transform import *
+from .transform import *
 from .tensor import *
 from .random import random_seed

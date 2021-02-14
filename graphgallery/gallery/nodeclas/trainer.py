@@ -99,7 +99,7 @@ class Trainer(Model):
         _, kwargs = gf.wrapper(self.process_step)(**kwargs)
         cfg.merge_from_dict(kwargs)
 
-        for k, v in cfg.items():
+        for k, v in kwargs.items():
             if k.endswith("transform"):
                 setattr(self.transform, k, gf.get(v))
 

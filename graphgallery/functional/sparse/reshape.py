@@ -1,13 +1,13 @@
 import numpy as np
 import scipy.sparse as sp
 
-from ..transforms import BaseTransform
+from ..base_transforms import SparseTransform
 from .to_edge import sparse_adj_to_edge
-from ..get_transform import Transform
+from ..transform import Transform
 
 
 @Transform.register()
-class SparseReshape(BaseTransform):
+class SparseReshape(SparseTransform):
     """Add self loops for adjacency matrix."""
 
     def __init__(self, shape: tuple = None):
@@ -17,7 +17,7 @@ class SparseReshape(BaseTransform):
             shape: new shape.
         """
         super().__init__()
-        self.shape = shape
+        self.collect(locals())
 
     def __call__(self, *adj_matrix: sp.csr_matrix) -> sp.csr_matrix:
         """
@@ -35,9 +35,6 @@ class SparseReshape(BaseTransform):
         graphgallery.functional.sparse_reshape
         """
         return sparse_reshape(*adj_matrix, shape=self.shape)
-
-    def extra_repr(self):
-        return f"shape={self.shape}"
 
 
 def sparse_reshape(adj_matrix: sp.csr_matrix, shape: tuple = None) -> sp.csr_matrix:

@@ -3,9 +3,9 @@ import numpy as np
 
 from sklearn.preprocessing import normalize
 
-from ..transforms import BaseTransform
+from ..base_transforms import SparseTransform
 from ..decorators import multiple
-from ..get_transform import Transform
+from ..transform import Transform
 
 # Version: Compute the exact signature
 # def laplacian(W, normalized=True):
@@ -85,17 +85,14 @@ from ..get_transform import Transform
 
 
 @Transform.register()
-class WaveletBasis(BaseTransform):
+class WaveletBasis(SparseTransform):
     def __init__(self,
                  K=3,
                  wavelet_s=1.2,
                  threshold=1e-4,
                  wavelet_normalize=True):
         super().__init__()
-        self.K = K
-        self.wavelet_s = wavelet_s
-        self.threshold = threshold
-        self.wavelet_normalize = wavelet_normalize
+        self.collect(locals())
 
     def __call__(self, adj_matrix):
         return wavelet_basis(adj_matrix,
@@ -103,9 +100,6 @@ class WaveletBasis(BaseTransform):
                              wavelet_s=self.wavelet_s,
                              threshold=self.threshold,
                              wavelet_normalize=self.wavelet_normalize)
-
-    def extra_repr(self):
-        return f"K={self.K}, wavelet_s={self.wavelet_s}, threshold={self.threshold}, wavelet_normalize={self.wavelet_normalize}"
 
 
 def laplacian(adj_matrix, normalized=True):
