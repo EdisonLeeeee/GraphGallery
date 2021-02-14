@@ -1,13 +1,8 @@
-import os
 import numpy as np
-import networkx as nx
 import scipy.sparse as sp
 from graphgallery import functional as gf
 
-from typing import Union, Optional, List, Tuple, Any
-
 from .homograph import HomoGraph
-from .preprocess import create_subgraph
 
 
 class Graph(HomoGraph):
@@ -33,19 +28,14 @@ class Graph(HomoGraph):
             raise RuntimeError(
                 "Convert to unweighted graph first. Using 'graph.to_unweighted()'."
             )
-        else:
-            G = self.copy()
-            A = G.adj_matrix
-            A = A.maximum(A.T)
-            G.adj_matrix = A
+        G = self.copy()
+        G.adj_matrix = gf.to_undirected(G.adj_matrix)
         return G
 
     def to_unweighted(self):
         """Convert to an unweighted graph (set all edge weights to 1)."""
         G = self.copy()
-        A = G.adj_matrix
-        G.adj_matrix = sp.csr_matrix(
-            (np.ones_like(A.data), A.indices, A.indptr), shape=A.shape)
+        G.adj_matrix = gf.to_unweighted(G.adj_matrix)
         return G
 
     def eliminate_classes(self, threshold=0):
@@ -84,15 +74,6 @@ class Graph(HomoGraph):
         nodes_to_keep = mask.nonzero()[0]
         return G.subgraph(nodes_to_keep=nodes_to_keep)
 
-#     def add_selfloops(self, value=1.0):
-#         """Set the diagonal."""
-#         G = self.eliminate_selfloops()
-#         A = G.adj_matrix
-#         A = A + sp.diags(A.diagonal() + value)
-#         A.eliminate_zeros()
-#         G.adj_matrix = A
-#         return G
-
     def from_flips(self, **flips):
         """Return a new graph from:
         'edge_flips' or 'nx_flips'
@@ -115,35 +96,31 @@ class Graph(HomoGraph):
         the unweighted/undirected/no-self-loop graph."""
         return gf.Standardize()(self)
 
-    def nxgraph(self, directed: bool = True):
+    def nxgraph(self, directed: bool = None):
         """Get the network graph from adj_matrix."""
-        if directed:
-            create_using = nx.DiGraph
-        else:
-            create_using = nx.Graph
-        return nx.from_scipy_sparse_matrix(self.adj_matrix,
-                                           create_using=create_using)
+        return gf.to_nxgraph(self.adj_matrix,
+                             directed=directed)
 
-    def subgraph(self, *, nodes_to_remove=None, nodes_to_keep=None):
-        return create_subgraph(self,
-                               nodes_to_remove=nodes_to_remove,
-                               nodes_to_keep=nodes_to_keep)
+    def subgraph(self, *, nodes_to_keep=None, nodes_to_remove=None):
+        return gf.subgraph(self, nodes_to_keep=nodes_to_keep,
+                           nodes_to_remove=nodes_to_remove)
 
     def erase_node_attr(self, nodes, missing_rate=0.1):
         """PairNorm: Tackling Oversmoothing in GNNs
         <https://openreview.net/forum?id=rkecl1rtwB>
         ICLR 2020"""
-        assert 0 <= missing_rate <= 1
-        if missing_rate > 0:
-            node_erased = np.random.choice(nodes, size=int(len(nodes) * missing_rate), replace=False)
-            self.node_attr[node_erased] = 0.
-
-        return self
+        G = self.copy()
+        G.node_attr = gf.erase_node_attr(G.node_attr,
+                                         nodes=nodes,
+                                         missing_rate=missing_rate)
+        return G
 
     def erase_node_attr_except(self, nodes, missing_rate=0.1):
         """PairNorm: Tackling Oversmoothing in GNNs
         <https://openreview.net/forum?id=rkecl1rtwB>
         ICLR 2020"""
-        mask = gf.index_to_mask(nodes, self.num_nodes)
-        erased = np.arange(self.num_nodes, dtype=nodes.dtype)
-        return self.erase_node_attr(erased[~mask], missing_rate=missing_rate)
+        G = self.copy()
+        G.node_attr = gf.erase_node_attr_except(G.node_attr,
+                                                nodes=nodes,
+                                                missing_rate=missing_rate)
+        return G

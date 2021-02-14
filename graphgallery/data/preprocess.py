@@ -5,9 +5,9 @@ import scipy.sparse as sp
 import pickle as pkl
 
 from typing import Optional, List, Tuple, Union
-from collections import Counter
 from sklearn.preprocessing import MultiLabelBinarizer, LabelBinarizer, normalize
 from sklearn.model_selection import train_test_split
+
 
 def train_val_test_split_tabular(N: int,
                                  train_size: float = 0.1,
@@ -34,82 +34,6 @@ def train_val_test_split_tabular(N: int,
                                           stratify=stratify)
 
     return idx_train, idx_val, idx_test
-
-
-def largest_connected_components(graph: "Graph") -> "Graph":
-    """Select the largest connected components in the graph.
-
-    Parameters
-    ----------
-    graph : Graph
-        Input graph.
-
-    Returns
-    -------
-    graph : Graph
-        Subgraph of the input graph where only the nodes in largest num_components are kept.
-    """
-    _, component_indices = sp.csgraph.connected_components(graph.adj_matrix)
-    component_sizes = np.bincount(component_indices)
-    components_to_keep = np.argsort(component_sizes)[-1]
-    nodes_to_keep = np.where(component_indices == components_to_keep)[0]
-    return create_subgraph(graph, nodes_to_keep=nodes_to_keep)
-
-
-def create_subgraph(graph: "Graph", *,
-                    nodes_to_remove=None,
-                    nodes_to_keep=None) -> "Graph":
-    r"""Create a graph with the specified subset of nodes.
-    Exactly one of (nodes_to_remove, nodes_to_keep) should be provided, while the other stays None.
-    Note that to avoid confusion, it is required to pass node indices as named Parameters to this function.
-
-    Parameters
-    ----------
-    graph : Graph
-        Input graph.
-    nodes_to_remove : array-like of int
-        Indices of nodes that have to removed.
-    nodes_to_keep : array-like of int
-        Indices of nodes that have to be kept.
-
-    Returns
-    -------
-    graph : Graph
-        Graph with specified nodes removed.
-    """
-    # Check that Parameters are passed correctly
-    if nodes_to_remove is None and nodes_to_keep is None:
-        raise ValueError(
-            "Either nodes_to_remove or nodes_to_keep must be provided.")
-    elif nodes_to_remove is not None and nodes_to_keep is not None:
-        raise ValueError(
-            "Only one of nodes_to_remove or nodes_to_keep must be provided.")
-    elif nodes_to_remove is not None:
-        if len(nodes_to_remove) == 0:
-            return graph.copy()
-        nodes_to_keep = np.setdiff1d(np.arange(graph.num_nodes), nodes_to_remove)
-    elif nodes_to_keep is not None:
-        nodes_to_keep = np.sort(nodes_to_keep)
-    else:
-        raise RuntimeError("This should never happen.")
-    # TODO: multiple graph
-    graph = graph.copy()
-
-    adj_matrix, node_attr, node_label = graph('adj_matrix',
-                                              'node_attr',
-                                              'node_label')
-    graph.adj_matrix = adj_matrix[nodes_to_keep][:, nodes_to_keep]
-    if node_attr is not None:
-        graph.node_attr = node_attr[nodes_to_keep]
-    if node_label is not None:
-        graph.node_label = node_label[nodes_to_keep]
-
-    # TODO: remove?
-    metadata = copy.deepcopy(graph.metadata)
-    if metadata is not None and 'node_names' in metadata:
-        graph.metadata['node_names'] = metadata['node_names'][nodes_to_keep]
-
-    return graph
 
 
 def binarize_labels(labels, sparse_output: bool = False, returnum_node_classes: bool = False):

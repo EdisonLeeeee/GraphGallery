@@ -7,7 +7,6 @@ from typing import Union, Optional, List, Tuple, Any, Callable
 from graphgallery import functional as gf
 
 from .base_graph import BaseGraph
-from .preprocess import create_subgraph
 from .utils import *
 
 

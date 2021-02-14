@@ -24,7 +24,7 @@ def largest_connected_components(A):
     component_sizes = np.bincount(component_indices)
     components_to_keep = np.argsort(component_sizes)[-1]
     nodes_to_keep = np.where(component_indices == components_to_keep)[0]
-    return A[nodes_to_keep][:, nodes_to_keep]
+    return nodes_to_keep
 
 
 def is_directed(A) -> bool:
