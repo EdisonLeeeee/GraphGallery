@@ -2,10 +2,9 @@
 Generators for some classic graphs.
 """
 # TODO: implement with sicpy sparse matrix
-
 import scipy.sparse as sp
 import networkx as nx
-from .to_networkx import from_nxgraph
+from .transform import from_nxgraph
 
 __all__ = ['complete_graph',
            'newman_watts_strogatz_graph',
