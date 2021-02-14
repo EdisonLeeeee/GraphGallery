@@ -1,7 +1,9 @@
 from ..bunchdict import BunchDict
-from ..transform import get, GraphTransform
+from ..base_transforms import GraphTransform
+from ..transform import Transform, get
 
 
+@Transform.register()
 class DictTransform(GraphTransform):
 
     def __init__(self, **transforms):
