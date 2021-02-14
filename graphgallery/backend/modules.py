@@ -25,6 +25,7 @@ class BackendModule:
 
     @property
     def abbr(self):
+        # used for specifying the module
         return NotImplementedError
 
     def __eq__(self, value) -> bool:
@@ -103,7 +104,6 @@ class PyGBackend(PyTorchBackend):
 
 
 class DGLTensorFlowBackend(TensorFlowBackend):
-
     alias = {"dgl_tf"}
 
     def __init__(self):

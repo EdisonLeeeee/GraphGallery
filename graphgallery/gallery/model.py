@@ -11,8 +11,7 @@ class Model:
         device: string. optional
             The device where the model running on.
         seed: interger scalar. optional
-            Used in combination with `tf.random.set_seed` & `np.random.seed`
-            & `random.seed` to create a reproducible sequence of tensors
+            Used to create a reproducible sequence of tensors
             across multiple calls.
         name: string. optional
             Specified name for the model. (default: :str: `class name`)

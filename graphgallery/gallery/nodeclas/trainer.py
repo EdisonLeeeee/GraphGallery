@@ -84,13 +84,16 @@ class Trainer(Model):
 
         Commonly used keyword arguments:
         --------------------------------
-        adj_transform: string, Callable function, or a tuple with function and dict arguments.
+        adj_transform: string, Callable function, 
+            or a tuple with function and dict arguments.
             transform for adjacency matrix.
-        attr_transform: string, Callable function, or a tuple with function and dict arguments.
+        attr_transform: string, Callable function, 
+            or a tuple with function and dict arguments.
             transform for attribute matrix.
-        graph_transform: string, Callable function, or a tuple with function and dict arguments.
+        graph_transform: string, Callable function, 
+            or a tuple with function and dict arguments.
             transform for the entire graph, it is used before 'adj_transform' and 'attr_transform'.
-        other arguments (if have) will be passed into your method 'process_step'.
+        other arguments (if have) will be passed into method 'process_step'.
         """
         cfg = self.cfg.process
         _, kwargs = gf.wrapper(self.process_step)(**kwargs)

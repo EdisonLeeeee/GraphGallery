@@ -3,7 +3,7 @@ import numpy as np
 import graphgallery as gg
 
 
-class Attacker(gg.gallery.nodeclas.Model):
+class Attacker(gg.gallery.Model):
     _max_perturbations = 0
     _allow_feature_attack = False
     _allow_structure_attack = True

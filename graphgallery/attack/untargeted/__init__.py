@@ -26,10 +26,15 @@ def is_enabled(attacker: str) -> bool:
 def enabled_models(with_common=True):
     """Return the models in the gallery enabled by the current backend.
 
+    Parameters
+    ----------
+    with_common : bool
+        Whether to return common models (framework-agnostic).
+
     Returns
     -------
-    tuple
-        A list of models enabled by the current backend.
+    graphgallry.functional.BuhcnDict
+        A dict of models enabled by the current backend.
     """
     return get_registry() + Common
 
