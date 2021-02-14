@@ -1,11 +1,8 @@
-import warnings
 import tensorflow as tf
 from tensorflow.keras import Model
 from tensorflow.keras.activations import softmax
 
 import graphgallery as gg
-from graphgallery.utils import merge_as_list
-from graphgallery import functional as gf
 from graphgallery.functional.tensor.tensorflow import gather
 
 from distutils.version import LooseVersion

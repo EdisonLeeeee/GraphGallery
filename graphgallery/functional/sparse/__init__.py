@@ -9,6 +9,6 @@ from .augment_adj import augment_adj
 from .reshape import SparseReshape, sparse_reshape
 from .sample import find_4o_nbrs
 from .flip import *
-from .ppr import ppr, PPR
+from .ppr import ppr, PPR, topk_ppr_matrix
 from .clip import sparse_clip
 from .topk import sparse_topk

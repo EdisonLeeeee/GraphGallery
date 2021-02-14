@@ -119,6 +119,7 @@ def set_floatx(dtype: str) -> str:
         )
     global _FLOATX
     _FLOATX = str(dtype)
+    # torch.set_default_tensor_type(torch.HalfTensor)
     return _FLOATX
 
 
