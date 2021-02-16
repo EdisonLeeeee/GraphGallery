@@ -1,5 +1,5 @@
 <p align="center">
-  <img width = "600" height = "300" src="https://github.com/EdisonLeeeee/GraphGallery/blob/master/imgs/graphgallery.svg" alt="logo"/>
+  <img width = "400" height = "200" src="https://github.com/EdisonLeeeee/GraphGallery/blob/master/imgs/graphgallery.svg" alt="logo"/>
   <br/>
 </p>
 
@@ -54,39 +54,34 @@ Please refer to the [examples](https://github.com/EdisonLeeeee/GraphGallery/blob
 # ⚡ Quick Start on GNNs
 ## Datasets
 more details please refer to [GraphData](https://github.com/EdisonLeeeee/GraphData).
-## Example of GCN
+## Example of GCN (Node Classification Task)
+It takes just a few lines of code.
 ```python
 from graphgallery.gallery.nodeclas import GCN
-
-# initialize a GNN trainer
 trainer = GCN(graph)
-# process your inputs, such as converting to tensors
 trainer.process()
-# build your GCN trainer with default hyper-parameters
 trainer.build()
-# train your trainer. here splits.train_nodes and splits.val_nodes are numpy arrays
-# verbose takes 0, 1, 2, 3, 4
-history = trainer.train(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
-# test your trainer
-# verbose takes 0, 1, 2
-results = trainer.test(splits.nodes, verbose=1)
+history = trainer.train(train_nodes, val_nodes)
+results = trainer.test(test_nodes)
 print(f'Test loss {results.loss:.5}, Test accuracy {results.accuracy:.2%}')
 ```
 Other models in the gallery are the same.
 
-## Using Other Backend
+## Other Backends
 ```python
 >>> import graphgallery
+# Default: TensorFlow backend
 >>> graphgallery.backend()
 TensorFlow 2.1.2 Backend
-
->>> graphgallery.set_backend("pytorch")
-PyTorch 1.6.0+cu101 Backend
-
-# DGL PyTorch backend
+# Switch to PyTorch backend
+>>> graphgallery.set_backend("torch")
+# Switch to TensorFlow backend
+>>> graphgallery.set_backend("tf")
+# Switch to PyTorch Geometric backend
+>>> graphgallery.set_backend("pyg")
+# Switch to DGL PyTorch backend
 >>> graphgallery.set_backend("dgl")
-
-# DGL TensorFlow backend
+# Switch to DGL TensorFlow backend
 >>> graphgallery.set_backend("dgl-tf")
 ```
 But your codes don't even need to change.
