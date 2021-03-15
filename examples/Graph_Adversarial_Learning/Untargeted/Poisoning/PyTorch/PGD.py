@@ -18,10 +18,10 @@ device = "gpu"
 
 ################### Surrogate model ############################
 trainer = gg.gallery.nodeclas.DenseGCN(graph, device=device, seed=123).process().build()
-his = trainer.train(splits.train_nodes,
-                    splits.val_nodes,
-                    verbose=1,
-                    epochs=100)
+his = trainer.fit(splits.train_nodes,
+                  splits.val_nodes,
+                  verbose=1,
+                  epochs=100)
 
 ################### Attacker model ############################
 attacker = gg.attack.untargeted.PGD(graph, device=device, seed=123).process(trainer, splits.train_nodes)
@@ -30,20 +30,20 @@ attacker.attack(0.05, CW_loss=False)
 ################### Victim model ############################
 # Before attack
 trainer = gg.gallery.nodeclas.GCN(graph, device=device, seed=123).process().build()
-his = trainer.train(splits.train_nodes,
-                    splits.val_nodes,
-                    verbose=1,
-                    epochs=100)
-original_result = trainer.test(splits.test_nodes)
+his = trainer.fit(splits.train_nodes,
+                  splits.val_nodes,
+                  verbose=1,
+                  epochs=100)
+original_result = trainer.evaluate(splits.test_nodes)
 
 # After attack
 # If a validation set is used, the attacker will be less effective, but we dont know why
 trainer = gg.gallery.nodeclas.GCN(attacker.g, device=device, seed=123).process().build()
-his = trainer.train(splits.train_nodes,
-                    #                     splits.val_nodes,
-                    verbose=1,
-                    epochs=100)
-perturbed_result = trainer.test(splits.test_nodes)
+his = trainer.fit(splits.train_nodes,
+                  #                     splits.val_nodes,
+                  verbose=1,
+                  epochs=100)
+perturbed_result = trainer.evaluate(splits.test_nodes)
 
 ################### Results ############################
 print(f"original prediction {original_result.accuracy:.2%}")

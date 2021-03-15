@@ -20,6 +20,6 @@ splits = data.split_nodes()
 
 from graphgallery.gallery.nodeclas import Deepwalk
 trainer = Deepwalk(graph).process().build()
-his = trainer.train(splits.train_nodes)
-results = trainer.test(splits.test_nodes)
+his = trainer.fit(splits.train_nodes)
+results = trainer.evaluate(splits.test_nodes)
 print(f'Test accuracy {results.accuracy:.2%}')

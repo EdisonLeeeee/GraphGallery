@@ -22,7 +22,7 @@ else:
 @TensorFlow.register()
 class SAT(Trainer):
     def custom_setup(self):
-        cfg = self.cfg.train
+        cfg = self.cfg.fit
         cfg.eps1 = 0.3,
         cfg.eps2 = 1.2,
         cfg.lamb1 = 0.8,
@@ -83,7 +83,7 @@ class SAT(Trainer):
     @tf.function(experimental_relax_shapes=True)
     def train_step(self, sequence):
         (X, A), y, out_weight = next(iter(sequence))
-        cfg = self.cfg.train
+        cfg = self.cfg.fit
 
         U, V = self.cache.U, self.cache.V
         model = self.model

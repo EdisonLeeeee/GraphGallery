@@ -33,7 +33,7 @@ class SBVAT(Trainer):
     """
 
     def custom_setup(self):
-        cfg = self.cfg.train
+        cfg = self.cfg.fit
         cfg.p1 = 1.
         cfg.p2 = 1.
         cfg.xi = 1e-6
@@ -82,7 +82,7 @@ class SBVAT(Trainer):
     @tf.function
     def train_step(self, sequence):
         model = self.model
-        cfg = self.cfg.train
+        cfg = self.cfg.fit
 
         loss_fn = getattr(model, LOSS)
         metrics = getattr(model, METRICS)
@@ -120,7 +120,7 @@ class SBVAT(Trainer):
             return dict(zip(model.metrics_names, results))
 
     def virtual_adversarial_loss(self, x, adj, logit, adv_mask):
-        cfg = self.cfg.train
+        cfg = self.cfg.fit
         d = tf.random.normal(shape=tf.shape(x), dtype=self.floatx)
         model = self.model
         for _ in range(cfg.n_power_iterations):
@@ -145,7 +145,7 @@ class SBVAT(Trainer):
                                        labels,
                                        out_weight=index,
                                        neighbors=self.cache.neighbors,
-                                       num_samples=self.cfg.train.num_samples,
+                                       num_samples=self.cfg.fit.num_samples,
                                        device=self.device)
 
         return sequence

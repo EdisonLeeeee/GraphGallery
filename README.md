@@ -61,8 +61,8 @@ from graphgallery.gallery.nodeclas import GCN
 trainer = GCN(graph)
 trainer.process()
 trainer.build()
-history = trainer.train(train_nodes, val_nodes)
-results = trainer.test(test_nodes)
+history = trainer.fit(train_nodes, val_nodes)
+results = trainer.evaluate(test_nodes)
 print(f'Test loss {results.loss:.5}, Test accuracy {results.accuracy:.2%}')
 ```
 Other models in the gallery are the same.

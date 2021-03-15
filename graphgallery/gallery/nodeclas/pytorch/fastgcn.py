@@ -16,11 +16,11 @@ class FastGCN(Trainer):
     """
 
     def custom_setup(self):
-        cfg = self.cfg.train
+        cfg = self.cfg.fit
         cfg.batch_size = 256
         cfg.rank = 100
 
-        cfg = self.cfg.test
+        cfg = self.cfg.evaluate
         cfg.batch_size = None
         cfg.rank = None
 
@@ -59,7 +59,7 @@ class FastGCN(Trainer):
         return model
 
     def train_sequence(self, index):
-        cfg = self.cfg.train
+        cfg = self.cfg.fit
 
         labels = self.graph.node_label[index]
         adj_matrix = self.graph.adj_matrix[index][:, index]
@@ -74,7 +74,7 @@ class FastGCN(Trainer):
         return sequence
 
     def test_sequence(self, index):
-        cfg = self.cfg.test
+        cfg = self.cfg.evaluate
 
         labels = self.graph.node_label[index]
         A = self.cache.A[index]

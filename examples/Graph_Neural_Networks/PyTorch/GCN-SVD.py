@@ -22,6 +22,6 @@ graphgallery.set_backend("pytorch")
 
 from graphgallery.gallery.nodeclas import GCN
 trainer = GCN(graph, device="gpu", seed=123).process(graph_transform="SVD").build()
-history = trainer.train(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
-results = trainer.test(splits.test_nodes)
+history = trainer.fit(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
+results = trainer.evaluate(splits.test_nodes)
 print(f'Test loss {results.loss:.5}, Test accuracy {results.accuracy:.2%}')

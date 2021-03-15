@@ -96,13 +96,13 @@ class GMNN(Trainer):
         self.model_p, self.model_q = model_p, model_q
         return model_q
 
-    def train(self, train_data, val_data=None, **kwargs):
+    def fit(self, train_data, val_data=None, **kwargs):
         histories = []
 
         # pre train model_q
         self.model = self.model_q
-        history = super().train(train_data, val_data,
-                                ModelCheckpoint=dict(save_weights_only=False), **kwargs)
+        history = super().fit(train_data, val_data,
+                              ModelCheckpoint=dict(save_weights_only=False), **kwargs)
 
         histories.append(history)
 
@@ -122,8 +122,8 @@ class GMNN(Trainer):
             val_sequence = None
 
         self.model = self.model_p
-        history = super().train(train_sequence, val_sequence,
-                                ModelCheckpoint=dict(save_weights_only=True), **kwargs)
+        history = super().fit(train_sequence, val_sequence,
+                              ModelCheckpoint=dict(save_weights_only=True), **kwargs)
         histories.append(history)
         # then train model_q again
         label_predict = self.model.predict_step_on_batch(x=(label_predict, self.cache.A),
@@ -139,8 +139,8 @@ class GMNN(Trainer):
         train_sequence = FullBatchSequence([self.cache.X, self.cache.A],
                                            label_predict,
                                            device=self.device)
-        history = super().train(train_sequence, val_data,
-                                ModelCheckpoint=dict(save_weights_only=True), **kwargs)
+        history = super().fit(train_sequence, val_data,
+                              ModelCheckpoint=dict(save_weights_only=True), **kwargs)
 
         histories.append(history)
 

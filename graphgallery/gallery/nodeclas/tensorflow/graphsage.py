@@ -20,8 +20,8 @@ class GraphSAGE(Trainer):
     def custom_setup(self,
                      num_samples_train=[15, 5],
                      num_samples_test=[15, 5]):
-        self.cfg.train.num_samples = num_samples_train
-        self.cfg.test.num_samples = num_samples_test
+        self.cfg.fit.num_samples = num_samples_train
+        self.cfg.evaluate.num_samples = num_samples_test
 
     def process_step(self,
                      adj_transform="neighbor_sampler",

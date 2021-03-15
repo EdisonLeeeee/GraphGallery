@@ -15,10 +15,10 @@ device = "gpu"
 
 ################### Surrogate model ############################
 trainer = gg.gallery.nodeclas.GCN(graph, device=device, seed=None).process().build()
-his = trainer.train(splits.train_nodes,
-                    splits.val_nodes,
-                    verbose=1,
-                    epochs=200)
+his = trainer.fit(splits.train_nodes,
+                  splits.val_nodes,
+                  verbose=1,
+                  epochs=200)
 
 ################### Attacker model ############################
 unlabeled_nodes = np.hstack([splits.val_nodes, splits.test_nodes])
@@ -34,13 +34,13 @@ attacker.attack(0.05)
 ################### Victim model ############################
 # This is a white-box attack
 # Before attack
-original_result = trainer.test(splits.test_nodes)
+original_result = trainer.evaluate(splits.test_nodes)
 
 # After attack
 trainer.graph = attacker.g
 # reprocess after the graph has changed
 trainer.process()  # important!
-perturbed_result = trainer.test(splits.test_nodes)
+perturbed_result = trainer.evaluate(splits.test_nodes)
 
 ################### Results ############################
 print(f"original prediction {original_result.accuracy:.2%}")

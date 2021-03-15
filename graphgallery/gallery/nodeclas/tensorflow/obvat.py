@@ -28,7 +28,7 @@ class OBVAT(Trainer):
     """
 
     def custom_setup(self):
-        cfg = self.cfg.train
+        cfg = self.cfg.fit
         cfg.pretrain_epochs = 10
         cfg.stddev = 1e-2
 
@@ -116,7 +116,7 @@ class OBVAT(Trainer):
 
     @tf.function
     def pretrain(self, x, adj, r_vadv):
-        cfg = self.cfg.train
+        cfg = self.cfg.fit
         with tf.device(self.device):
             optimizer = self.adv_optimizer
             r_vadv.assign(TruncatedNormal(stddev=cfg.stddev)(shape=tf.shape(r_vadv)))

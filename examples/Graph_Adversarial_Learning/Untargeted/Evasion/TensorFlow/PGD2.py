@@ -12,10 +12,10 @@ device = "gpu"
 
 ################### Surrogate model ############################
 trainer = gg.gallery.nodeclas.DenseGCN(graph, device=device, seed=123).process().build(hids=32)
-his = trainer.train(splits.train_nodes,
-                    splits.val_nodes,
-                    verbose=1,
-                    epochs=200)
+his = trainer.fit(splits.train_nodes,
+                  splits.val_nodes,
+                  verbose=1,
+                  epochs=200)
 
 ################### Attacker model ############################
 attacker = gg.attack.untargeted.PGD(graph, device=device, seed=None).process(
@@ -25,13 +25,13 @@ attacker.attack(0.05, CW_loss=0, C=100)
 ################### Victim model ############################
 # This is a white-box attack
 # Before attack
-original_result = trainer.test(splits.test_nodes)
+original_result = trainer.evaluate(splits.test_nodes)
 
 # After attack
 trainer.graph = attacker.g
 # reprocess after the graph has changed
 trainer.process()  # important!
-perturbed_result = trainer.test(splits.test_nodes)
+perturbed_result = trainer.evaluate(splits.test_nodes)
 
 ################### Results ############################
 print(f"original prediction {original_result.accuracy:.2%}")

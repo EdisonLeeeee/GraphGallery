@@ -6,11 +6,13 @@ import os.path as osp
 import numpy as np
 import tensorflow as tf
 
+from collections import Iterable
 from tensorflow.keras.utils import Sequence
 from tensorflow.python.keras import callbacks as callbacks_module
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, TerminateOnNaN
 from tensorflow.keras.callbacks import History
 from graphgallery.utils import Progbar
+from torch.utils.data import DataLoader, Dataset
 
 import graphgallery as gg
 from graphgallery import functional as gf
@@ -166,9 +168,9 @@ class Trainer(Model):
     def builder(self, *args, **kwargs):
         raise NotImplementedError
 
-    def train(self, train_data, val_data=None, **kwargs):
+    def fit(self, train_data, val_data=None, **kwargs):
         cache = self.cache
-        cfg = self.cfg.train
+        cfg = self.cfg.fit
         cfg.merge_from_dict(kwargs)
         ckpt_cfg = cfg.ModelCheckpoint
         es_cfg = cfg.EarlyStopping
@@ -180,7 +182,7 @@ class Trainer(Model):
                 'You must compile your model before training/testing/predicting. Use `trainer.build()`.'
             )
 
-        if not isinstance(train_data, Sequence):
+        if not isinstance(train_data, (Sequence, DataLoader, Dataset)):
             train_data = self.train_sequence(train_data)
 
         if cfg.cache_train_data:
@@ -188,7 +190,7 @@ class Trainer(Model):
 
         validation = val_data is not None
         if validation:
-            if not isinstance(val_data, Sequence):
+            if not isinstance(val_data, (Sequence, DataLoader, Dataset)):
                 val_data = self.test_sequence(val_data)
             if cfg.cache_val_data:
                 cache.val_data = val_data
@@ -256,7 +258,7 @@ class Trainer(Model):
 
         return history
 
-    def test(self, data, **kwargs):
+    def evaluate(self, test_data, **kwargs):
 
         if not self.model:
             raise RuntimeError(
@@ -264,13 +266,11 @@ class Trainer(Model):
             )
 
         cache = self.cache
-        cfg = self.cfg.test
+        cfg = self.cfg.evaluate
         cfg.merge_from_dict(kwargs)
 
-        if isinstance(data, Sequence):
-            test_data = data
-        else:
-            test_data = self.test_sequence(data)
+        if not isinstance(test_data, (Sequence, DataLoader, Dataset)):
+            test_data = self.test_sequence(test_data)
 
         if cfg.cache_test_data:
             cache.test_data = test_data
@@ -405,7 +405,7 @@ class Trainer(Model):
         model.optimizer.learning_rate.assign(value)
 
     def remove_weights(self):
-        filepath = self.cfg.train.ModelCheckpoint.path
+        filepath = self.cfg.fit.ModelCheckpoint.path
         if self.backend == "tensorflow":
             remove_extra_tf_files(filepath)
 
