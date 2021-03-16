@@ -35,7 +35,6 @@ def load_models(package, mapping, backend_name=None, sub_module=None):
     # where ``module_path=graphgallery.gallery.nodeclas`` and
     # ``package=tensorflow``
     importlib.import_module(module_path, package)
-
     for model, model_class in registry.items():
         setattr(thismod, model, model_class)
 

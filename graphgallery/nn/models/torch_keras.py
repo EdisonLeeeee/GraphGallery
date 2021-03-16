@@ -57,7 +57,7 @@ class TorchKeras(nn.Module):
                             y=None,
                             out_weight=None,
                             device="cpu"):
-        self.fit()
+        self.train()
         optimizer = self.optimizer
         loss_fn = self.loss
         metrics = self.metrics
