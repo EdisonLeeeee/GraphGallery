@@ -24,8 +24,8 @@ def default_cfg(model):
     cfg.process.label_transform = None
 
     # Configs for model building
-    cfg.model = gg.CfgNode()
-    cfg.model.build_from_other_model = False
+    cfg.build = gg.CfgNode()
+    cfg.build.build_from_other_model = False
 
     # Configs for model training
     cfg.fit = gg.CfgNode()
@@ -62,6 +62,12 @@ def default_cfg(model):
     cfg.fit.TerminateOnNaN = gg.CfgNode()
     cfg.fit.TerminateOnNaN.enabled = False
 
+    cfg.fit.Logger = gg.CfgNode()
+    cfg.fit.Logger.enabled = False
+    cfg.fit.Logger.name = None
+    cfg.fit.Logger.filepath = None
+    cfg.fit.Logger.level = 'INFO'
+
     cfg.fit.TensorBoard = gg.CfgNode()
     cfg.fit.TensorBoard.enabled = False
     cfg.fit.TensorBoard.log_dir = './logs'
@@ -80,5 +86,6 @@ def default_cfg(model):
 
     # Configs for model predicting
     cfg.predict = gg.CfgNode()
-    cfg.predict.return_logits = True
+    cfg.predict.transform = None
+    cfg.predict.cache_predict_data = False
     return cfg

@@ -8,18 +8,28 @@ class Sequential(nn.Sequential):
         self.inverse = inverse
 
     def forward(self, *input):
-        if self.inverse:
-            *others, input = input
-        else:
-            input, *others = input
+        input, others = split_input(input, inverse=self.inverse)
         for module in self:
-            # TODO: if some modules don't have method `forward`? maybe `__call__`?
-            num_paras = len(inspect.signature(module.forward).parameters)
-            if num_paras == 1:
+            assert hasattr(module, 'forward')
+            para_required = len(inspect.signature(module.forward).parameters)
+            if para_required == 1:
                 input = module(input)
             else:
                 if self.inverse:
                     input = module(*others, input)
                 else:
                     input = module(input, *others)
+
+            if isinstance(input, tuple):
+                input, others = split_input(input,
+                                            inverse=self.inverse)
+
         return input
+
+
+def split_input(input, inverse=True):
+    if inverse:
+        *others, input = input
+    else:
+        input, *others = input
+    return input, others

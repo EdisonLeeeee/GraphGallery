@@ -57,7 +57,7 @@ class LGCN(Trainer):
         cache = self.cache
         mask = gf.index_to_mask(index, self.graph.num_nodes)
         index = get_indice_graph(cache.A, index, batch_size)
-        while index.size < self.cfg.model.K:
+        while index.size < self.cfg.build.K:
             index = get_indice_graph(cache.A, index)
 
         A = cache.A[index][:, index]

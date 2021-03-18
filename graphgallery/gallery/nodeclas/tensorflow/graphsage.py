@@ -75,6 +75,6 @@ class GraphSAGE(Trainer):
         sequence = SAGEMiniBatchSequence(
             [self.cache.X, self.cache.A, index],
             labels,
-            num_samples=self.cfg.model.num_samples,
+            num_samples=self.cfg.build.num_samples,
             device=self.device)
         return sequence

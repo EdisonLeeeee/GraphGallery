@@ -16,7 +16,6 @@ from torch.utils.data import DataLoader, Dataset
 
 import graphgallery as gg
 from graphgallery import functional as gf
-from graphgallery.nn.functions import softmax
 from graphgallery.data.io import makedirs_from_filepath
 from graphgallery.gallery import Model
 
@@ -149,7 +148,7 @@ class Trainer(Model):
         else:
             model, kwargs = gf.wrapper(self.builder)(**kwargs)
             self.model = model.to(self.device)
-        self.cfg.model.merge_from_dict(kwargs)
+        self.cfg.build.merge_from_dict(kwargs)
         return self
 
     def build_from_other_model(self, model):
@@ -162,7 +161,7 @@ class Trainer(Model):
         else:
             self.model = model.to(self.device)
 
-        self.cfg.model.build_from_other_model = False
+        self.cfg.build.build_from_other_model = False
         return self
 
     def builder(self, *args, **kwargs):
@@ -175,6 +174,12 @@ class Trainer(Model):
         ckpt_cfg = cfg.ModelCheckpoint
         es_cfg = cfg.EarlyStopping
         pb_cfg = cfg.Progbar
+        log_cfg = cfg.Logger
+
+        if log_cfg.enabled:
+            log_cfg.name = log_cfg.name or self.name
+            logger = gg.utils.set_logger(log_cfg.name,
+                        log_cfg.filepath, log_cfg.level)
 
         model = self.model
         if model is None:
@@ -204,6 +209,8 @@ class Trainer(Model):
         model.stop_training = False
 
         verbose = cfg.verbose
+        assert not (verbose and log_cfg.enabled), "Progbar and Logger cannot be used together!"
+
         if verbose:
             if verbose <= 2:
                 progbar = Progbar(target=cfg.epochs,
@@ -235,10 +242,12 @@ class Trainer(Model):
                 callbacks.on_epoch_end(epoch, logs)
 
                 if verbose > 2:
-                    print(f"Epoch {epoch+1}/{epochs}")
+                    print(f"Epoch {epoch+1}/{cfg.epochs}")
                     progbar.update(len(train_data), logs.items())
                 elif verbose:
                     progbar.update(epoch + 1, logs.items())
+                elif log_cfg.enabled:
+                    logger.info(gg.utils.dict_to_string(logs, fmt="%.4f"))
 
                 if model.stop_training:
                     print(f"Early Stopping at Epoch {epoch}", file=sys.stderr)
@@ -250,7 +259,6 @@ class Trainer(Model):
                     model.load_weights(ckpt_cfg.path)
                 else:
                     self.model = model.load(ckpt_cfg.path)
-
         finally:
             # to avoid unexpected termination of the model
             if ckpt_cfg.enabled and ckpt_cfg.remove_weights:
@@ -312,7 +320,7 @@ class Trainer(Model):
                                                device=sequence.device)
         return results
 
-    def predict(self, predict_data=None, return_logits=True):
+    def predict(self, predict_data=None, transform=None):
 
         if not self.model:
             raise RuntimeError(
@@ -321,7 +329,7 @@ class Trainer(Model):
 
         cache = self.cache
         cfg = self.cfg.predict
-        cfg.return_logits = return_logits
+        cfg.transform = transform
 
         if predict_data is None:
             predict_data = np.arange(self.graph.num_nodes)
@@ -329,14 +337,14 @@ class Trainer(Model):
         if not isinstance(predict_data, Sequence):
             predict_data = gf.asarray(predict_data)
             predict_data = self.predict_sequence(predict_data)
-
-        cache.predict_data = predict_data
+        if cfg.cache_predict_data:
+            cache.predict_data = predict_data
 
         logits = self.predict_step(predict_data)
 
-        if not return_logits:
-            logits = softmax(logits)
-
+        T = gf.get(transform)
+        self.transform.logit_transform = T
+        logits = T(logits)
         return logits.squeeze()
 
     def predict_step(self, sequence):
@@ -385,17 +393,18 @@ class Trainer(Model):
     @model.setter
     def model(self, m):
         # Back up
-        if isinstance(m, tf.keras.Model) and m.weights:
-            self.backup = tf.identity_n(m.weights)
+        # if isinstance(m, tf.keras.Model) and m.weights:
+        #     self.backup = tf.identity_n(m.weights)
         # TODO assert m is None or isinstance(m, tf.keras.Model) or torch.nn.Module
         self._model = m
 
     def reset_optimizer(self):
         # TODO: add pytorch support
         model = self.model
-        if hasattr(model, 'optimizer'):
-            for var in model.optimizer.variables():
-                var.assign(tf.zeros_like(var))
+        if not hasattr(model, 'optimizer'):
+            raise RuntimeError("The model has not attribute `optimizer`!")
+        for var in model.optimizer.variables():
+            var.assign(tf.zeros_like(var))
 
     def reset_lr(self, value):
         # TODO: add pytorch support
@@ -432,9 +441,9 @@ def remove_extra_tf_files(filepath):
         if osp.exists(path):
             os.remove(path)
 
-    file_dir = osp.split(osp.realpath(filepath))[0]
+    filedir = osp.split(osp.realpath(filepath))[0]
 
-    path = osp.join(file_dir, "checkpoint")
+    path = osp.join(filedir, "checkpoint")
     if osp.exists(path):
         os.remove(path)
 

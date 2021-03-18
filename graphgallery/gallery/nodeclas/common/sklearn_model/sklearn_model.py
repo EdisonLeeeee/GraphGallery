@@ -22,7 +22,7 @@ class SklearnModel(Trainer):
         cfg.backend = self.backend
         cfg.normalize_embedding = True
 
-        cfg.model = gg.CfgNode()
+        cfg.build = gg.CfgNode()
         cfg.process = gg.CfgNode()
 
         cfg.classifier = gg.CfgNode()
@@ -36,7 +36,7 @@ class SklearnModel(Trainer):
 
     def build(self, **kwargs):
         self.model, kwargs = gf.wrapper(self.model_builder)(**kwargs)
-        self.cfg.model.merge_from_dict(kwargs)
+        self.cfg.build.merge_from_dict(kwargs)
         self.classifier = self.classifier_builder()
         return self
 
