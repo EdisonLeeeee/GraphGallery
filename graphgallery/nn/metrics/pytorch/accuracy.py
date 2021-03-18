@@ -25,6 +25,8 @@ class Accuracy(Metric):
             raise NotImplementedError("out_weight")
         if y_pred.ndim == 2:
             y_pred = y_pred.argmax(1)
+        if y_true.ndim ==2:
+            y_true = y_true.argmax(1)
         self.correct += torch.sum(y_pred == y_true)
         self.total += y_true.numel()
 
