@@ -11,10 +11,11 @@ from graphgallery import data
 from graphgallery import datasets
 from graphgallery import functional
 from graphgallery import attack
+from graphgallery import embedding
 
 from .version import __version__
 
 __all__ = [
-    "graphgallery", "nn", "gallery", "utils", "sequence", "data", "datasets",
+    "graphgallery", "nn", "gallery", "utils", "sequence", "data", "datasets", "embedding",
     "backend", "functional", "attack", "__version__"
 ]
