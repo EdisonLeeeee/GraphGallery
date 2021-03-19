@@ -10,6 +10,20 @@ __all__ = ["RandomWalker", "BiasedRandomWalker", "BiasedRandomWalkerAlias"]
 
 @njit
 def random_choice(arr, p):
+    """Similar to `numpy.random.choice` and it suppors p=option in numba.
+    refer to <https://github.com/numba/numba/issues/2539#issuecomment-507306369>
+
+    Parameters
+    ----------
+    arr : 1-D array-like
+    p : 1-D array-like
+        The probabilities associated with each entry in arr
+
+    Returns
+    -------
+    samples : ndarray
+        The generated random samples
+    """
     return arr[np.searchsorted(np.cumsum(p), np.random.random(), side="right")]
 
 
