@@ -1,5 +1,7 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
+
 from torch import optim
 
 from graphgallery.nn.models import TorchKeras
@@ -32,6 +34,7 @@ class GraphSAGE(TorchKeras):
             act_layers.append(activations.get(act))
             dropout_layers.append(nn.Dropout(dropout))
             in_features = hid * 2 if concat else hid
+            
         aggregators.append(Agg(in_features, out_features, use_bias=bias))
 
         self.aggregators = aggregators
@@ -53,13 +56,13 @@ class GraphSAGE(TorchKeras):
             for hop in range(len(num_samples) - agg_i):
                 neighbor_shape = [-1, num_samples[hop], attribute_shape]
                 # x, neigh_x
-                h[hop] = aggregator(h[hop], torch.reshape(h[hop + 1], neighbor_shape))
+                h[hop] = aggregator(h[hop], h[hop + 1].view(neighbor_shape))
                 if hop != len(num_samples) - 1:
                     h[hop] = self.act_layers[hop](h[hop])
                     h[hop] = self.dropout_layers[hop](h[hop])
             h.pop()
         h = h[0]
         if self.output_normalize:
-            h = nn.functional.normalize(h, dim=1,p=2)
+            h = F.normalize(h, dim=1,p=2)
 
         return h

@@ -1,8 +1,8 @@
 import numpy as np
 from graphgallery.sequence import SAGEMiniBatchSequence
 from graphgallery import functional as gf
-from graphgallery.gallery import PyTorch
-from graphgallery.gallery import Trainer
+from graphgallery.gallery.nodeclas import PyTorch
+from graphgallery.gallery.nodeclas import Trainer
 from graphgallery.nn.models import get_model
 
 @PyTorch.register()
@@ -17,8 +17,8 @@ class GraphSAGE(Trainer):
     def custom_setup(self,
                      num_samples_train=[15, 5],
                      num_samples_test=[15, 5]):
-        self.cfg.train.num_samples = num_samples_train
-        self.cfg.test.num_samples = num_samples_test
+        self.cfg.fit.num_samples = num_samples_train
+        self.cfg.evaluate.num_samples = num_samples_test
 
     def process_step(self,
                      adj_transform="neighbor_sampler",
@@ -28,7 +28,7 @@ class GraphSAGE(Trainer):
         graph = gf.get(graph_transform)(self.graph)
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
         node_attr = gf.get(attr_transform)(graph.node_attr)
-       # pad with a dummy zero vector
+        # pad with a dummy zero vector
         node_attr = np.vstack([node_attr, np.zeros(node_attr.shape[1],
                                                    dtype=self.floatx)])
 
@@ -67,6 +67,6 @@ class GraphSAGE(Trainer):
         sequence = SAGEMiniBatchSequence(
             [self.cache.X, self.cache.A, index],
             labels,
-            num_samples=self.cfg.model.num_samples,
+            num_samples=self.cfg.build.num_samples,
             device=self.device)
         return sequence
