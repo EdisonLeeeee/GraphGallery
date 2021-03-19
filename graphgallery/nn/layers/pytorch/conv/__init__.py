@@ -7,3 +7,4 @@ from .trimmed_conv import TrimmedConvolution
 from .dagnn import PropConvolution
 from .tagcn import TAGConvolution
 from .appnp import APPNPropagation, PPNPropagation
+from .graphsage import MeanAggregator

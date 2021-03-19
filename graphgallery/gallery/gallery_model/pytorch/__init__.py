@@ -8,6 +8,7 @@ from .simpgcn import SimPGCN
 from .mlp import MLP
 from .tagcn import TAGCN
 from .appnp import APPNP, PPNP
+from .graphsage import GraphSAGE
 
 # experimantal model
 from .experimental.median_gcn import MedianGCN
