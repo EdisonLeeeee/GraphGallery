@@ -19,6 +19,6 @@ graph = data.graph
 splits = data.split_nodes()
 
 from graphgallery.gallery.nodeclas import GraphSAGE
-trainer = GraphSAGE(graph, device="gpu", seed=123).process(attr_transform="normalize_attr")..build()
+trainer = GraphSAGE(graph, device="gpu", seed=123).process(attr_transform="normalize_attr").build()
 his = trainer.fit(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
 results = trainer.evaluate(splits.test_nodes)
