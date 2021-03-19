@@ -1,9 +1,8 @@
 import numpy as np
 import networkx as nx
-from gensim.models.word2vec import Word2Vec
-from diffuser import EulerianDiffuser
 from sklearn import preprocessing
-
+from .diffuser import EulerianDiffuser
+from .utils import Word2Vec
 
 class Diff2Vec:
     r"""An implementation of `"Diff2Vec" <http://homepages.inf.ed.ac.uk/s1668259/papers/sequence.pdf>`_
@@ -43,7 +42,7 @@ class Diff2Vec:
                          negative=self.negative,
                          seed=self.seed)
 
-        self._embedding = model.wv.vectors[np.fromiter(map(int, model.wv.index2word), np.int32).argsort()]
+        self._embedding = model.get_embedding()
 
     def get_embedding(self, normalize=True) -> np.array:
         """Getting the node embedding."""

@@ -1,8 +1,8 @@
 import numpy as np
 import scipy.sparse as sp
-from gensim.models.word2vec import Word2Vec
 from sklearn import preprocessing
-from walker import BiasedRandomWalker, BiasedRandomWalkerAlias
+from .walker import BiasedRandomWalker, BiasedRandomWalkerAlias
+from .utils import Word2Vec
 
 
 class Node2Vec:
@@ -47,7 +47,7 @@ class Node2Vec:
                          negative=self.negative,
                          seed=self.seed)
 
-        self._embedding = model.wv.vectors[np.fromiter(map(int, model.wv.index2word), np.int32).argsort()]
+        self._embedding = model.get_embedding()
 
     def get_embedding(self, normalize=True) -> np.array:
         """Getting the node embedding."""

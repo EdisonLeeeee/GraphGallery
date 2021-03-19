@@ -4,7 +4,6 @@ from .registered_models import (TensorFlow, PyTorch, PyG,
                                 Common,
                                 MAPPING)
 
-# from .common import *
 
 import graphgallery
 from functools import partial

@@ -2,12 +2,8 @@
 # coding: utf-8
 
 import graphgallery
-import tensorflow as tf
-
-graphgallery.set_memory_growth()
 
 print("GraphGallery version: ", graphgallery.__version__)
-print("TensorFlow version: ", tf.__version__)
 
 '''
 Load Datasets
@@ -18,8 +14,27 @@ data = Planetoid('cora', root="~/GraphData/datasets/", verbose=False)
 graph = data.graph
 splits = data.split_nodes()
 
-from graphgallery.gallery.nodeclas import Deepwalk
-trainer = Deepwalk(graph).process().build()
-his = trainer.fit(splits.train_nodes)
-results = trainer.evaluate(splits.test_nodes)
-print(f'Test accuracy {results.accuracy:.2%}')
+
+from graphgallery.embedding import DeepWalk
+model = DeepWalk()
+model.fit(graph.adj_matrix)
+embedding = model.get_embedding()
+
+
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
+
+x_train = embedding[splits.train_nodes]
+x_test = embedding[splits.test_nodes]
+y_train = graph.node_label[splits.train_nodes]
+y_test = graph.node_label[splits.test_nodes]
+
+clf = LogisticRegression(solver="lbfgs",
+                         max_iter=1000,
+                         multi_class='auto',
+                         random_state=None)
+clf.fit(x_train, y_train)
+y_pred = clf.predict(x_test)
+accuracy = accuracy_score(y_test, y_pred)
+
+print(f'Test accuracy {accuracy:.2%}')
