@@ -3,11 +3,11 @@ from graphgallery import functional as gf
 
 
 class Model:
-    def __init__(self, graph, device="cpu", seed=None, name=None, **kwargs):
+    def __init__(self, graph=None, *, device="cpu", seed=None, name=None, **kwargs):
         """
         Parameters:
         ----------
-        graph: Any ``Graph`` in graphgallery
+        graph: Any ``Graph`` in graphgallery or None
         device: string. optional
             The device where the model running on.
         seed: interger scalar. optional
@@ -17,7 +17,7 @@ class Model:
             Specified name for the model. (default: :str: `class name`)
         kwargs: other custom keyword arguments. 
         """
-        if not isinstance(graph, gg.data.BaseGraph):
+        if graph is not None and not isinstance(graph, gg.data.BaseGraph):
             raise ValueError(f"Unrecognized graph: {graph}.")
 
         # It currently takes no keyword arguments
@@ -30,7 +30,7 @@ class Model:
 
         self.seed = seed
         self.name = name or self.__class__.__name__
-        self.graph = graph.copy()
+        self.graph = graph.copy() if graph is not None else graph
         self.device = gf.device(device, _backend)
         self.backend = _backend
 

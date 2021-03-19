@@ -72,7 +72,7 @@ def calc_ppr(indptr, indices, deg, alpha, epsilon, nodes):
 
 @numba.njit(cache=True, parallel=True)
 def calc_ppr_topk_parallel(indptr, indices, deg, alpha, epsilon, nodes, topk):
-    js = [np.zeros(0, dtype=np.int32)] * len(nodes)
+    js = [np.zeros(0, dtype=np.int64)] * len(nodes)
     vals = [np.zeros(0, dtype=np.float32)] * len(nodes)
     for i in numba.prange(len(nodes)):
         j, val = _calc_ppr_node(nodes[i], indptr, indices, deg, alpha, epsilon)

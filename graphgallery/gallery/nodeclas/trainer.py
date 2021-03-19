@@ -152,8 +152,6 @@ class Trainer(Model):
         return self
 
     def build_from_other_model(self, model):
-        if not self.is_processed:
-            raise RuntimeError("Please call 'trainer.process()' first.")
 
         if self.backend == "tensorflow":
             with tf.device(self.device):
@@ -167,7 +165,10 @@ class Trainer(Model):
     def builder(self, *args, **kwargs):
         raise NotImplementedError
 
-    def fit(self, train_data, val_data=None, **kwargs):
+    def fit(self, train_data, val_data=None, device=None, **kwargs):
+        
+        device = device or self.device
+        
         cache = self.cache
         cfg = self.cfg.fit
         cfg.merge_from_dict(kwargs)
@@ -229,14 +230,16 @@ class Trainer(Model):
 
                 callbacks.on_epoch_begin(epoch)
                 callbacks.on_train_batch_begin(0)
-                train_logs = self.train_step(train_data)
-                train_data.on_epoch_end()
+                train_logs = self.train_step(train_data, device=device)
+                if hasattr(train_data, 'on_epoch_end'):
+                    train_data.on_epoch_end()
                 logs.update(train_logs)
 
                 if validation:
-                    valid_logs = self.test_step(val_data)
+                    valid_logs = self.test_step(val_data, device=device)
                     logs.update({("val_" + k): v for k, v in valid_logs.items()})
-                    val_data.on_epoch_end()
+                    if hasattr(val_data, 'on_epoch_end'):
+                        val_data.on_epoch_end()                    
 
                 callbacks.on_train_batch_end(len(train_data), logs)
                 callbacks.on_epoch_end(epoch, logs)
@@ -266,13 +269,14 @@ class Trainer(Model):
 
         return history
 
-    def evaluate(self, test_data, **kwargs):
+    def evaluate(self, test_data, device=None, **kwargs):
 
         if not self.model:
             raise RuntimeError(
                 'You must compile your model before training/testing/predicting. Use `trainer.build()`.'
             )
 
+        device = device or self.device
         cache = self.cache
         cfg = self.cfg.evaluate
         cfg.merge_from_dict(kwargs)
@@ -289,12 +293,12 @@ class Trainer(Model):
         progbar = Progbar(target=len(test_data),
                           width=cfg.Progbar.width,
                           verbose=cfg.verbose)
-        logs = gf.BunchDict(**self.test_step(test_data))
+        logs = gf.BunchDict(**self.test_step(test_data, device=device))
         logs.update({k: v.numpy().item() for k, v in logs.items()})
         progbar.update(len(test_data), logs.items())
         return logs
 
-    def train_step(self, sequence):
+    def train_step(self, sequence, device='cpu'):
         model = self.model
         model.reset_metrics()
 
@@ -304,10 +308,10 @@ class Trainer(Model):
             results = model.train_step_on_batch(x=inputs,
                                                 y=labels,
                                                 out_weight=out_weight,
-                                                device=sequence.device)
+                                                device=device)
         return results
 
-    def test_step(self, sequence):
+    def test_step(self, sequence, device='cpu'):
         model = self.model
         model.reset_metrics()
 
@@ -317,16 +321,17 @@ class Trainer(Model):
             results = model.test_step_on_batch(x=inputs,
                                                y=labels,
                                                out_weight=out_weight,
-                                               device=sequence.device)
+                                               device=device)
         return results
 
-    def predict(self, predict_data=None, transform=None):
+    def predict(self, predict_data=None, transform=None, device=None):
 
         if not self.model:
             raise RuntimeError(
                 'You must compile your model before training/testing/predicting. Use `trainer.build()`.'
             )
 
+        device = device or self.device
         cache = self.cache
         cfg = self.cfg.predict
         cfg.transform = transform
@@ -340,21 +345,21 @@ class Trainer(Model):
         if cfg.cache_predict_data:
             cache.predict_data = predict_data
 
-        logits = self.predict_step(predict_data)
+        logits = self.predict_step(predict_data, device=device)
 
         T = gf.get(transform)
         self.transform.logit_transform = T
         logits = T(logits)
         return logits.squeeze()
 
-    def predict_step(self, sequence):
+    def predict_step(self, sequence, device='cpu'):
         logits = []
         model = self.model
         for batch in sequence:
             inputs, labels, out_weight = unravel_batch(batch)
             logit = model.predict_step_on_batch(x=inputs,
                                                 out_weight=out_weight,
-                                                device=sequence.device)
+                                                device=device)
             logits.append(logit)
 
         return np.vstack(logits)
@@ -456,12 +461,12 @@ def setup_callbacks(cfg, callbacks, validation):
     if not validation:
         if ckpt_cfg.enabled and ckpt_cfg.monitor.startswith("val_"):
             ckpt_cfg.monitor = ckpt_cfg.monitor[4:]
-            warnings.warn(f"The metric 'val_{ckpt_cfg.monitor}' is invalid without validation "
-                          f"and has been automatically replaced with '{ckpt_cfg.monitor}'.", UserWarning)
+#             warnings.warn(f"The metric 'val_{ckpt_cfg.monitor}' is invalid without validation "
+#                           f"and has been automatically replaced with '{ckpt_cfg.monitor}'.", UserWarning)
         if es_cfg.enabled and es_cfg.monitor.startswith("val_"):
             es_cfg.monitor = es_cfg.monitor[4:]
-            warnings.warn(f"The metric 'val_{es_cfg.monitor}' is invalid without validation "
-                          f"and has been automatically replaced with '{es_cfg.monitor}'.", UserWarning)
+#             warnings.warn(f"The metric 'val_{es_cfg.monitor}' is invalid without validation "
+#                           f"and has been automatically replaced with '{es_cfg.monitor}'.", UserWarning)
 
     if es_cfg.enabled:
         es_callback = EarlyStopping(monitor=es_cfg.monitor,
