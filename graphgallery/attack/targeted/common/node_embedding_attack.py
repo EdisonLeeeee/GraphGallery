@@ -17,10 +17,12 @@ from ..targeted_attacker import TargetedAttacker
 class NodeEmbeddingAttack(TargetedAttacker):
     def process(self, K=50, reset=True):
         self.nodes_set = set(range(self.num_nodes))
-
-        deg_matrix = sp.diags(self.degree, dtype="float64")
-        self.vals_org, self.vecs_org = sp.linalg.eigsh(
-            self.graph.adj_matrix.astype('float64'), k=K, M=deg_matrix)
+        adj_matrix = self.graph.adj_matrix
+        deg_matrix = sp.diags(self.degree, dtype=adj_matrix.dtype)
+        if K:
+            self.vals_org, self.vecs_org = sp.linalg.eigsh(adj_matrix, k=K, M=deg_matrix)
+        else:
+            self.vals_org, self.vecs_org = spl.eigh(adj_matrix.toarray(), deg_matrix.toarray())
         if reset:
             self.reset()
         return self
@@ -30,7 +32,6 @@ class NodeEmbeddingAttack(TargetedAttacker):
                num_budgets=None,
                dim=32,
                window_size=5,
-               n_neg_samples=3,
                direct_attack=True,
                structure_attack=True,
                feature_attack=False):

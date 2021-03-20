@@ -29,7 +29,7 @@ his = trainer.fit(splits.train_nodes,
                   splits.val_nodes,
                   verbose=1,
                   epochs=100)
-original_predict = trainer.predict(target, return_logits=False)
+original_predict = trainer.predict(target, transform="softmax")
 
 # After attack
 trainer = gg.gallery.nodeclas.GCN(attacker.g, seed=123).process().build()
@@ -37,7 +37,7 @@ his = trainer.fit(splits.train_nodes,
                   splits.val_nodes,
                   verbose=1,
                   epochs=100)
-perturbed_predict = trainer.predict(target, return_logits=False)
+perturbed_predict = trainer.predict(target, transform="softmax")
 
 ################### Results ############################
 print("original prediction", original_predict)

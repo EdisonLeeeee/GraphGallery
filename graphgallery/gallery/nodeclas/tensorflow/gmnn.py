@@ -127,7 +127,7 @@ class GMNN(Trainer):
         histories.append(history)
         # then train model_q again
         label_predict = self.model.predict_step_on_batch(x=(label_predict, self.cache.A),
-                                                         return_logits=False,
+                                                         transform="softmax",
                                                          device=self.device)
 
         if tf.is_tensor(label_predict):

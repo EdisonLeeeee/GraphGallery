@@ -28,7 +28,9 @@ class Attacker(gg.gallery.Model):
         self.degree = graph.degree
         # TODO: more?
 
-    def process(self):
+    def process(self, reset=True):
+        if reset:
+            self.reset()
         return self
 
     def reset(self):
