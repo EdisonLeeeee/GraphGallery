@@ -24,7 +24,7 @@ class SGA(TargetedAttacker):
 
         with tf.device(self.device):
             W, b = surrogate.model.weights
-            X = gf.astensor(self.graph.node_attr)
+            X = gf.astensor(self.graph.node_attr, device=self.device)
             self.b = b
             self.XW = X @ W
             self.SGC = SGConv(hops)
@@ -206,7 +206,8 @@ class SGA(TargetedAttacker):
         self.non_edge_weights = tf.Variable(non_edge_weights,
                                             dtype=self.floatx)
         self.self_loop_weights = gf.astensor(self_loop_weights,
-                                             dtype=self.floatx)
+                                             dtype=self.floatx,
+                                             device=self.device)
         self.edge_index = sub_edges
         self.non_edge_index = potential_edges
         self.self_loop = self_loop
