@@ -1,15 +1,45 @@
+import torch
+import torch.nn as nn
 import numpy as np
-import tensorflow as tf
-from tensorflow.keras.losses import sparse_categorical_crossentropy
 
 import graphgallery as gg
 from graphgallery import functional as gf
 from graphgallery.utils import tqdm
-from graphgallery.attack.targeted import TensorFlow
-from ..targeted_attacker import TargetedAttacker
+from graphgallery.attack.targeted import PyTorch
+from graphgallery.attack.targeted.targeted_attacker import TargetedAttacker
+
+from torch_geometric.typing import Adj, OptTensor
+from torch import Tensor
+from torch_sparse import SparseTensor, matmul
+from torch_geometric.nn.conv import MessagePassing
 
 
-@TensorFlow.register()
+class SGConv(MessagePassing):
+    def __init__(self, K=2, **kwargs):
+        kwargs.setdefault('aggr', 'add')
+        super(SGConv, self).__init__(**kwargs)
+
+        self.K = K
+
+    def forward(self, x: Tensor, edge_index: Adj,
+                edge_weight: OptTensor = None) -> Tensor:
+        for k in range(self.K):
+            x = self.propagate(edge_index, x=x, edge_weight=edge_weight,
+                               size=None)
+
+        return x
+
+    def message(self, x_j: Tensor, edge_weight: Tensor) -> Tensor:
+        return edge_weight.view(-1, 1) * x_j
+
+    def message_and_aggregate(self, adj_t: SparseTensor, x: Tensor) -> Tensor:
+        return matmul(adj_t, x, reduce=self.aggr)
+
+    def __repr__(self):
+        return '{}(K={})'.format(self.__class__.__name__, self.K)
+
+
+@PyTorch.register()
 class SGA(TargetedAttacker):
     def process(self, surrogate, reset=True):
         assert isinstance(surrogate, gg.gallery.nodeclas.SGC), surrogate
@@ -21,15 +51,15 @@ class SGA(TargetedAttacker):
             for c in range(self.num_classes)
         ]
 
-        with tf.device(self.device):
-            W, b = surrogate.model.weights
-            X = tf.convert_to_tensor(self.graph.node_attr,
-                                     dtype=self.floatx)
-            self.b = b
-            self.XW = X @ W
-            self.K = K
-            self.surrogate = surrogate
-            self.loss_fn = sparse_categorical_crossentropy
+        W, b = surrogate.model.parameters()
+        W, b = W.to(self.device), b.to(self.device)
+        X = torch.tensor(self.graph.node_attr).to(self.device)
+        self.b = b
+        self.XW = X @ W.T
+        self.SGC = SGConv(K)
+        self.K = K
+        self.surrogate = surrogate
+        self.loss_fn = nn.CrossEntropyLoss()
         if reset:
             self.reset()
         return self
@@ -37,7 +67,7 @@ class SGA(TargetedAttacker):
     def reset(self):
         super().reset()
         # for the added self-loop
-        self.selfloop_degree = (self.degree + 1.).astype(self.floatx)
+        self.selfloop_degree = torch.tensor(self.degree + 1.).to(self.device)
         self.adj_flips = {}
         self.wrong_label = None
         return self
@@ -62,37 +92,34 @@ class SGA(TargetedAttacker):
         wrong_label = np.setdiff1d(top2, self.target_label)[0]
         assert wrong_label != self.target_label
 
-        with tf.device(self.device):
-            self.wrong_label = wrong_label
-            self.true_label = tf.convert_to_tensor(self.target_label,
-                                                   dtype=self.floatx)
-            self.subgraph_preprocessing(attacker_nodes)
+        self.wrong_label = torch.LongTensor([wrong_label]).to(self.device)
+        self.true_label = torch.LongTensor([self.target_label]).to(self.device)
 
+        self.subgraph_preprocessing(attacker_nodes)
         offset = self.edge_weights.shape[0]
-        with tf.device(self.device):
-            for it in tqdm(range(self.num_budgets),
-                           desc='Peturbing Graph',
-                           disable=disable):
-                edge_grad, non_edge_grad = self.compute_gradient()
-                edge_grad = normalize_GCN(self.edge_index, edge_grad,
-                                          self.selfloop_degree)
-                non_edge_grad = normalize_GCN(self.non_edge_index, non_edge_grad,
-                                              self.selfloop_degree)
-                edge_grad *= (-2 * self.edge_weights + 1)
-                non_edge_grad *= (-2 * self.non_edge_weights + 1)
-                gradients = tf.concat([edge_grad, non_edge_grad], axis=0)
-                index = tf.argmax(gradients)
-                if index < offset:
-                    u, v = self.edge_index[:, index]
-                    add = False
-                else:
-                    index -= offset
-                    u, v = self.non_edge_index[:, index]
-                    add = True
 
-                assert not self.is_modified(u, v)
-                self.adj_flips[(u, v)] = it
-                self.update_subgraph(u, v, index, add=add)
+        for it in tqdm(range(self.num_budgets),
+                       desc='Peturbing Graph',
+                       disable=disable):
+            edge_grad, non_edge_grad = self.compute_gradient()
+            edge_grad *= (-2 * self.edge_weights + 1)
+            non_edge_grad *= (-2 * self.non_edge_weights + 1)
+            edge_grad = normalize_GCN(self.edge_index, edge_grad,
+                                      self.selfloop_degree)
+            non_edge_grad = normalize_GCN(self.non_edge_index, non_edge_grad,
+                                          self.selfloop_degree)
+            gradients = torch.cat([edge_grad, non_edge_grad], dim=0)
+            index = torch.argmax(gradients)
+            if index < offset:
+                u, v = self.edge_index[:, index]
+                add = False
+            else:
+                index -= offset
+                u, v = self.non_edge_index[:, index]
+                add = True
+            assert not self.is_modified(u, v)
+            self.adj_flips[(u, v)] = it
+            self.update_subgraph(u, v, index, add=add)
         return self
 
     def subgraph_preprocessing(self, attacker_nodes=None):
@@ -109,13 +136,14 @@ class SGA(TargetedAttacker):
         else:
             influence_nodes = neighbors
 
-        self.construct_sub_adj(influence_nodes, wrong_label_nodes, sub_nodes, sub_edges)
+        self.construct_sub_adj(influence_nodes, wrong_label_nodes, sub_nodes,
+                               sub_edges)
 
         if attacker_nodes is not None:
             if self.direct_attack:
                 influence_nodes = [target]
                 wrong_label_nodes = self.top_k_wrong_labels_nodes(
-                    k=self.num_budgets)
+                    k=self.num_budgets + 2)
 
             else:
                 influence_nodes = neighbors
@@ -125,14 +153,8 @@ class SGA(TargetedAttacker):
             self.construct_sub_adj(influence_nodes, wrong_label_nodes,
                                    sub_nodes, sub_edges)
 
-    @tf.function
-    def SGC_conv(self, XW, adj):
-        out = XW
-        for _ in range(self.K):
-            out = tf.sparse.sparse_dense_matmul(adj, out)
-        return out
-
     def compute_gradient(self, eps=5.0):
+
         edge_weights = normalize_GCN(self.edge_index, self.edge_weights,
                                      self.selfloop_degree)
         non_edge_weights = normalize_GCN(self.non_edge_index,
@@ -142,27 +164,19 @@ class SGA(TargetedAttacker):
                                           self.self_loop_weights,
                                           self.selfloop_degree)
 
-        with tf.GradientTape() as tape:
-            tape.watch([edge_weights, non_edge_weights])
+        weights = torch.cat([
+            edge_weights, edge_weights, non_edge_weights, non_edge_weights,
+            self_loop_weights
+        ], dim=0)
 
-            weights = tf.concat([
-                edge_weights, edge_weights, non_edge_weights, non_edge_weights,
-                self_loop_weights
-            ],
-                axis=0)
+        output = self.SGC(self.XW, self.indices, weights)
 
-            adj = tf.sparse.SparseTensor(self.indices.T, weights,
-                                         self.graph.adj_matrix.shape)
-
-            output = self.SGC_conv(self.XW, adj)
-            logit = output[self.target] + self.b
-            # model calibration
-            logit = tf.nn.softmax(logit / eps)
-            # cross-entropy loss
-            loss = self.loss_fn(self.true_label, logit) - self.loss_fn(self.wrong_label, logit)
-
-        edge_grad, non_edge_grad = tape.gradient(loss, [edge_weights, non_edge_weights])
-        return edge_grad, non_edge_grad
+        logit = output[self.target] + self.b
+        # model calibration
+        logit = logit.view(1, -1) / eps
+        loss = self.loss_fn(logit, self.true_label) - self.loss_fn(logit, self.wrong_label)  # nll_loss
+        gradients = torch.autograd.grad(loss, [edge_weights, non_edge_weights], create_graph=False)
+        return gradients
 
     def ego_subgraph(self):
         return gf.ego_graph(self.graph.adj_matrix, self.target, self.K)
@@ -183,46 +197,44 @@ class SGA(TargetedAttacker):
 
         nodes = np.union1d(sub_nodes, wrong_label_nodes)
         edge_weights = np.ones(sub_edges.shape[1], dtype=self.floatx)
-        non_edge_weights = np.zeros(non_edges.shape[1],
-                                    dtype=self.floatx)
+        non_edge_weights = np.zeros(non_edges.shape[1], dtype=self.floatx)
         self_loop_weights = np.ones(nodes.shape[0], dtype=self.floatx)
         self_loop = np.row_stack([nodes, nodes])
 
-        self.indices = np.hstack([
+        indices = np.hstack([
             sub_edges, sub_edges[[1, 0]], non_edges,
             non_edges[[1, 0]], self_loop
         ])
-        with tf.device(self.device):
-            self.edge_weights = tf.Variable(edge_weights, dtype=self.floatx)
-            self.non_edge_weights = tf.Variable(non_edge_weights, dtype=self.floatx)
-            self.self_loop_weights = tf.convert_to_tensor(self_loop_weights,
-                                                          dtype=self.floatx)
+
+        self.indices = torch.LongTensor(indices).to(self.device)
+        self.edge_weights = nn.Parameter(torch.tensor(edge_weights)).to(self.device)
+        self.non_edge_weights = nn.Parameter(torch.tensor(non_edge_weights)).to(self.device)
+        self.self_loop_weights = torch.tensor(self_loop_weights).to(self.device)
+
         self.edge_index = sub_edges
         self.non_edge_index = non_edges
         self.self_loop = self_loop
 
     def top_k_wrong_labels_nodes(self, k):
-        with tf.device(self.device):
-            _, non_edge_grad = self.compute_gradient()
-            _, index = tf.math.top_k(non_edge_grad, k=k, sorted=False)
+        _, non_edge_grad = self.compute_gradient()
+        _, index = torch.topk(non_edge_grad, k=k, sorted=False)
 
-        wrong_label_nodes = self.non_edge_index[1][index.numpy()]
+        wrong_label_nodes = self.non_edge_index[1][index.cpu()]
         return wrong_label_nodes
 
     def update_subgraph(self, u, v, index, add=True):
         if add:
-            self.non_edge_weights[index].assign(1.0)
-            degree_delta = 1.0
+            self.non_edge_weights[index] = 1.0
+            self.selfloop_degree[u] += 1
+            self.selfloop_degree[v] += 1
         else:
-            self.edge_weights[index].assign(0.0)
-            degree_delta = -1.0
-
-        self.selfloop_degree[u] += degree_delta
-        self.selfloop_degree[v] += degree_delta
+            self.edge_weights[index] = 0.0
+            self.selfloop_degree[u] -= 1
+            self.selfloop_degree[v] -= 1
 
 
 def normalize_GCN(indices, weights, degree):
     row, col = indices
-    inv_degree = tf.pow(degree, -0.5)
-    normed_weights = weights * tf.gather(inv_degree, row) * tf.gather(inv_degree, col)
+    inv_degree = torch.pow(degree, -0.5)
+    normed_weights = weights * inv_degree[row] * inv_degree[col]
     return normed_weights

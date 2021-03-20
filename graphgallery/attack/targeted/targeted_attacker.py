@@ -69,8 +69,7 @@ class TargetedAttacker(FlipAttacker):
     def is_modified(self, u, v):
         assert self.target is not None, self.target
         if self.direct_attack:
-            return any((u == v, self.target not in (u, v), (u, v)
-                        in self.adj_flips, (v, u) in self.adj_flips))
+            return any((u == v, (u, v) in self.adj_flips, (v, u) in self.adj_flips))
         else:
             return any((u == v, self.target in (u, v), (u, v)
                         in self.adj_flips, (v, u) in self.adj_flips))
