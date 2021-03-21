@@ -16,7 +16,9 @@ class Trainer(Model):
         default_cfg_setup(self.cfg)
 
     def fit(self, graph):
+        graph = getattr(graph, "adj_matrix", graph)
         self.fit_step(graph)
+        return self
 
     def get_embedding(self, normalize=True) -> np.array:
         """Getting the node embedding."""

@@ -143,4 +143,6 @@ def merge_dict(a, b):
         if not isinstance(v, dict):
             a[k] = v
         else:
+            if k not in a:
+                a[k] = CfgNode()
             merge_dict(a[k], b[k])
