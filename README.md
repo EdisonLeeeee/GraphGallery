@@ -58,8 +58,8 @@ more details please refer to [GraphData](https://github.com/EdisonLeeeee/GraphDa
 It takes just a few lines of code.
 ```python
 from graphgallery.gallery.nodeclas import GCN
-trainer = GCN(graph)
-trainer.process()
+trainer = GCN()
+trainer.make_data(graph)
 trainer.build()
 history = trainer.fit(train_nodes, val_nodes)
 results = trainer.evaluate(test_nodes)
@@ -117,3 +117,12 @@ mydataset = Graph.from_npz('path/to/mydataset.npz')
 This project is motivated by [Pytorch Geometric](https://github.com/rusty1s/pytorch_geometric), [Tensorflow Geometric](https://github.com/CrawlScript/tf_geometric), [Stellargraph](https://github.com/stellargraph/stellargraph) and [DGL](https://github.com/dmlc/dgl), etc., and the original implementations of the authors, thanks for their excellent works!
 
 # Cite
+Please cite our [paper](https://arxiv.org/abs/2102.07933) (and the respective papers of the methods used) if you use this code in your own work:
+```bibtex
+@article{li2021graphgallery,
+  title={GraphGallery: A Platform for Fast Benchmarking and Easy Development of Graph Neural Networks Based Intelligent Software},
+  author={Li, Jintang and Xu, Kun and Chen, Liang and Zheng, Zibin and Liu, Xiao},
+  journal={arXiv preprint arXiv:2102.07933},
+  year={2021}
+}
+```
