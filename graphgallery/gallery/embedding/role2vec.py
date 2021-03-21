@@ -4,6 +4,7 @@ from treefeatures import WeisfeilerLehmanHashing
 
 from walker import RandomWalker
 from sklearn import preprocessing
+from .trainer import Trainer
 
 
 class Role2Vec:
@@ -73,13 +74,12 @@ class Role2Vec:
                         alpha=self.learning_rate,
                         negative=1,
                         seed=self.seed or 42)
-        
+
         self._embedding = model.docvecs.vectors_docs
 
     def get_embedding(self, normalize=True) -> np.array:
         """Getting the node embedding."""
         embedding = self._embedding
         if normalize:
-            embedding = preprocessing.normalize(embedding)            
+            embedding = preprocessing.normalize(embedding)
         return embedding
-

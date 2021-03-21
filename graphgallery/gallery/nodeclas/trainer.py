@@ -19,7 +19,7 @@ from graphgallery import functional as gf
 from graphgallery.data.io import makedirs_from_filepath
 from graphgallery.gallery import Model
 
-from .default import default_cfg
+from .default import default_cfg_setup
 
 # TensorFlow 2.1.x
 # Ignora warnings:
@@ -69,12 +69,8 @@ def unravel_batch(batch):
 
 
 class Trainer(Model):
-    def custom_setup(self):
-        pass
-
     def setup_cfg(self):
-        self.cfg = default_cfg(self)
-        self.custom_setup()
+        default_cfg_setup(self.cfg)
 
     def make_data(self, graph, graph_transform=None, device=None, **kwargs):
         """This method is used for process your inputs, which accepts

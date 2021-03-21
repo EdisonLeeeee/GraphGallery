@@ -3,17 +3,9 @@ import os.path as osp
 import graphgallery as gg
 
 
-def default_cfg(model):
+def default_cfg_setup(cfg):
     # Base configs for model
-    cfg = gg.CfgNode()
-    cfg.name = model.name
-    cfg.seed = model.seed
-    cfg.device = str(model.device)
     cfg.task = "Node Classification"
-    cfg.intx = model.intx
-    cfg.floatx = model.floatx
-    cfg.boolx = model.boolx
-    cfg.backend = getattr(model.backend, "name", None)
 
     # Configs for model preprocessing
     cfg.data = gg.CfgNode()

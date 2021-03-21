@@ -14,27 +14,12 @@ data = Planetoid('cora', root="~/GraphData/datasets/", verbose=False)
 graph = data.graph
 splits = data.split_nodes()
 
-
-from graphgallery.embedding import Node2Vec
-model = Node2Vec()
-model.fit(graph.adj_matrix)
-embedding = model.get_embedding()
-
-
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score
-
-x_train = embedding[splits.train_nodes]
-x_test = embedding[splits.test_nodes]
-y_train = graph.node_label[splits.train_nodes]
-y_test = graph.node_label[splits.test_nodes]
-
-clf = LogisticRegression(solver="lbfgs",
-                         max_iter=1000,
-                         multi_class='auto',
-                         random_state=None)
-clf.fit(x_train, y_train)
-y_pred = clf.predict(x_test)
-accuracy = accuracy_score(y_test, y_pred)
+from graphgallery.gallery.embedding import Node2Vec
+trainer = Node2Vec()
+trainer.fit(graph.adj_matrix)
+# embedding = trainer.get_embedding()
+accuracy = trainer.evaluate_nodeclas(graph.node_label,
+                                     splits.train_nodes,
+                                     splits.test_nodes)
 
 print(f'Test accuracy {accuracy:.2%}')

@@ -19,33 +19,41 @@ class Model:
         # if graph is not None and not isinstance(graph, gg.data.BaseGraph):
         #     raise ValueError(f"Unrecognized graph: {graph}.")
 
-        # It currently takes no keyword arguments
-        gg.utils.raise_error.raise_if_kwargs(kwargs)
+        kwargs.pop("self", None)
+        kwargs.pop("__class__", None)
 
+        cfg = gg.CfgNode()
+        cfg.merge_from_dict(kwargs)
+        cfg.intx = self.intx = gg.intx()
+        cfg.floatx = self.floatx = gg.floatx()
+        cfg.boolx = self.boolx = gg.boolx()
+        cfg.seed = self.seed = seed
+        cfg.name = self.name = name or self.__class__.__name__
+        cfg.device = device
         _backend = gg.backend()
+        cfg.backend = getattr(_backend, "name", None)
 
         if seed:
             gf.random_seed(seed, _backend)
 
-        self.seed = seed
-        self.name = name or self.__class__.__name__
         self.device = gf.device(device, _backend)
         self.data_device = self.device
         self.backend = _backend
 
         # data types, default: `float32`,`int32` and `bool`
-        self.floatx = gg.floatx()
-        self.intx = gg.intx()
-        self.boolx = gg.boolx()
         self._cache = gf.BunchDict()
         self.transform = gf.BunchDict()
 
-        self.cfg = None
         self._model = None
         self._graph = None
+        self.cfg = cfg
         self.setup_cfg()
+        self.custom_setup()
 
     def setup_cfg(self):
+        pass
+
+    def custom_setup(self):
         pass
 
     @property
