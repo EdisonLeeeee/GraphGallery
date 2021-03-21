@@ -14,11 +14,6 @@ class GCNA(GCN):
     GCN + node attribute matrix
 
     Implementation of Graph Convolutional Networks(GCN) concated with node attribute matrix.
-    `Semi - Supervised Classification with Graph Convolutional Networks 
-    <https://arxiv.org/abs/1609.02907>`
-    GCN Tensorflow 1.x implementation: <https://github.com/tkipf/gcn>
-    GCN Pytorch implementation: <https://github.com/tkipf/pygcn>
-
     """
 
     def model_step(self,
@@ -27,8 +22,7 @@ class GCNA(GCN):
                    dropout=0.5,
                    weight_decay=5e-4,
                    lr=0.01,
-                   bias=False,
-                   use_tfn=True):
+                   bias=False):
 
         model = get_model("GCNA", self.backend)
         model = model(self.graph.num_node_attrs,

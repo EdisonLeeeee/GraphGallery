@@ -1,7 +1,6 @@
 import scipy.sparse as sp
 import tensorflow as tf
 
-from graphgallery.nn.models import TFKeras
 from graphgallery.functional.tensor.tensorflow import gather
 from graphgallery.sequence import FullBatchSequence
 from graphgallery import functional as gf
@@ -31,7 +30,6 @@ class SAT(Trainer):
     def data_step(self,
                   adj_transform="normalize_adj",
                   attr_transform=None,
-                  graph_transform=None,
                   K=35,
                   re_decompose=False):
 

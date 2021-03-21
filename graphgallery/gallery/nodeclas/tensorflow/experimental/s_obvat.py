@@ -6,9 +6,7 @@ from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 from graphgallery.nn.layers.tensorflow import GCNConv, Gather
-from graphgallery.sequence import FullBatchSequence
 from graphgallery.gallery.nodeclas.utils.bvat_utils import kl_divergence_with_logit, entropy_y_x, get_normalized_vector
-from graphgallery import functional as gf
 from graphgallery.nn.models import TFKeras
 from graphgallery.gallery.nodeclas import TensorFlow
 
@@ -34,8 +32,7 @@ class SimplifiedOBVAT(OBVAT):
                    bias=False,
                    p1=1.4,
                    p2=0.7,
-                   epsilon=0.01,
-                   use_tfn=True):
+                   epsilon=0.01):
 
         x = Input(batch_shape=[None, self.graph.num_node_attrs],
                   dtype=self.floatx,

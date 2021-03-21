@@ -22,8 +22,7 @@ class EdgeGCN(Trainer):
 
     def data_step(self,
                   adj_transform="normalize_adj",
-                  attr_transform=None,
-                  graph_transform=None):
+                  attr_transform=None):
 
         graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
@@ -41,8 +40,7 @@ class EdgeGCN(Trainer):
                    dropout=0.5,
                    weight_decay=5e-4,
                    lr=0.01,
-                   bias=False,
-                   use_tfn=True):
+                   bias=False):
 
         model = get_model("EdgeGCN", self.backend)
         model = model(self.graph.num_node_attrs,
