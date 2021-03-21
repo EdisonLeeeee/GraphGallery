@@ -25,8 +25,12 @@ In detail, the following methods are currently implemented:
   [[🌈 Example]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Adversarial_Learning/Targeted/Poisoning/TensorFlow/IG.py)
 - **IGA**, from _Jinyin Chen et al._, [📝Link Prediction Adversarial Attack Via Iterative Gradient Attack](https://ieeexplore.ieee.org/abstract/document/9141291), _IEEE Trans 20_.
   [[🌈 Example]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Adversarial_Learning/Targeted/Poisoning/TensorFlow/IGA.py)
-- **SGA**, from.
+- **SGA**, from _Jintang Li et al._ [📝 Adversarial Attack on Large Scale Graph](https://arxiv.org/abs/2009.03488)
   [[🌈 Example]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Adversarial_Learning/Targeted/Poisoning/TensorFlow/SGA.py)
+
+#### PyTorch
+- **SGA**, from _Jintang Li et al._ [📝 Adversarial Attack on Large Scale Graph](https://arxiv.org/abs/2009.03488)
+  [[🌈 Example]](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Adversarial_Learning/Targeted/Poisoning/PyTorch/SGA.py)
 
 ### Untargeted Attack
 
