@@ -75,7 +75,7 @@ class SGA(TargetedAttacker):
         self.XW = X @ W.T
         self.SGC = SGConv(K).to(self.device)
         self.K = K
-        self.surrogate = surrogate
+        self.logits = surrogate.predict(np.arange(self.num_nodes))
         self.loss_fn = nn.CrossEntropyLoss()
         if reset:
             self.reset()
@@ -103,15 +103,11 @@ class SGA(TargetedAttacker):
                        feature_attack)
 
         if logit is None:
-            logit = self.surrogate.predict(target).ravel()
-
-        top2 = logit.argsort()[-2:]
-        wrong_label = np.setdiff1d(top2, self.target_label)[0]
-        assert wrong_label != self.target_label
-
+            logit = self.logits[target]
+        idx = list(set(range(logit.size)) - set([self.target_label]))
+        wrong_label = idx[logit[idx].argmax()]
         self.wrong_label = torch.LongTensor([wrong_label]).to(self.device)
         self.true_label = torch.LongTensor([self.target_label]).to(self.device)
-
         self.subgraph_preprocessing(attacker_nodes)
         offset = self.edge_weights.shape[0]
         edges = np.hstack([self.edge_index, self.non_edge_index])

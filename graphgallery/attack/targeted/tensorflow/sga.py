@@ -28,7 +28,7 @@ class SGA(TargetedAttacker):
             self.b = b
             self.XW = X @ W
             self.K = K
-            self.surrogate = surrogate
+            self.logits = surrogate.predict(np.arange(self.num_nodes))
             self.loss_fn = sparse_categorical_crossentropy
             self.shape = self.graph.adj_matrix.shape
         if reset:
@@ -57,11 +57,9 @@ class SGA(TargetedAttacker):
                        feature_attack)
 
         if logit is None:
-            logit = self.surrogate.predict(target).ravel()
-
-        top2 = logit.argsort()[-2:]
-        wrong_label = np.setdiff1d(top2, self.target_label)[0]
-        assert wrong_label != self.target_label
+            logit = self.logits[target]
+        idx = list(set(range(logit.size)) - set([self.target_label]))
+        wrong_label = idx[logit[idx].argmax()]
 
         with tf.device(self.device):
             self.wrong_label = wrong_label

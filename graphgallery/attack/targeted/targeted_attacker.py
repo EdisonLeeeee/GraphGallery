@@ -67,7 +67,6 @@ class TargetedAttacker(FlipAttacker):
         self.is_reseted = False
 
     def is_modified(self, u, v):
-        assert self.target is not None, self.target
         if self.direct_attack:
             return any((u == v, (u, v) in self.adj_flips, (v, u) in self.adj_flips))
         else:
