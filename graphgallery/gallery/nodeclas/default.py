@@ -16,23 +16,24 @@ def default_cfg(model):
     cfg.backend = getattr(model.backend, "name", None)
 
     # Configs for model preprocessing
-    cfg.process = gg.CfgNode()
-    cfg.process.graph_transform = None
-    cfg.process.edge_transform = None
-    cfg.process.adj_transform = None
-    cfg.process.attr_transform = None
-    cfg.process.label_transform = None
+    cfg.data = gg.CfgNode()
+    cfg.data.graph_transform = None
+    cfg.data.edge_transform = None
+    cfg.data.adj_transform = None
+    cfg.data.attr_transform = None
+    cfg.data.label_transform = None
+    cfg.data.device = None
 
     # Configs for model building
-    cfg.build = gg.CfgNode()
-    cfg.build.build_from_other_model = False
+    cfg.model = gg.CfgNode()
+    cfg.model.build_from_other_model = False
 
     # Configs for model training
     cfg.fit = gg.CfgNode()
     cfg.fit.epochs = 100
     cfg.fit.verbose = 1
-    cfg.fit.cache_train_data = True
-    cfg.fit.cache_val_data = True
+    cfg.fit.cache_train_data = False
+    cfg.fit.cache_val_data = False
 
     cfg.fit.EarlyStopping = gg.CfgNode()
     cfg.fit.EarlyStopping.enabled = False
@@ -79,7 +80,7 @@ def default_cfg(model):
     # Configs for model testing
     cfg.evaluate = gg.CfgNode()
     cfg.evaluate.verbose = 1
-    cfg.evaluate.cache_test_data = True
+    cfg.evaluate.cache_test_data = False
 
     cfg.evaluate.Progbar = gg.CfgNode()
     cfg.evaluate.Progbar.width = 20

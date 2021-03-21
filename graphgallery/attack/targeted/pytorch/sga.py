@@ -61,7 +61,7 @@ class SGA(TargetedAttacker):
     def process(self, surrogate, reset=True):
         assert isinstance(surrogate, gg.gallery.nodeclas.SGC), surrogate
 
-        K = surrogate.cfg.process.K  # NOTE: Be compatible with graphgallery
+        K = surrogate.cfg.data.K  # NOTE: Be compatible with graphgallery
         # nodes with the same class labels
         self.similar_nodes = [
             np.where(self.graph.node_label == c)[0]

@@ -1,4 +1,3 @@
-import numpy as np
 import tensorflow as tf
 from tensorflow.keras import Input
 from tensorflow.keras.layers import Dropout
@@ -12,7 +11,6 @@ from graphgallery.nn.models import TFKeras
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import TensorFlow
 from graphgallery.gallery.nodeclas import Trainer
-from graphgallery.nn.models import get_model
 
 
 @TensorFlow.register()
@@ -24,30 +22,28 @@ class GMNN(Trainer):
 
     """
 
-    def process_step(self,
-                     adj_transform="normalize_adj",
-                     attr_transform=None,
-                     graph_transform=None,
-                     label_transform="onehot"):
-        graph = gf.get(graph_transform)(self.graph)
+    def data_step(self,
+                  adj_transform="normalize_adj",
+                  attr_transform=None,
+                  label_transform="onehot"):
+        graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
         node_attr = gf.get(attr_transform)(graph.node_attr)
         label = gf.get(label_transform)(graph.node_label)
 
-        X, A = gf.astensors(node_attr, adj_matrix, device=self.device)
+        X, A = gf.astensors(node_attr, adj_matrix, device=self.data_device)
 
         # ``A`` and ``X`` are cached for later use
         self.register_cache(X=X, A=A, Y=label,
                             idx_all=tf.range(graph.num_nodes, dtype=self.intx))
 
-    def builder(self,
-                hids=[16],
-                acts=['relu'],
-                dropout=0.6,
-                weight_decay=5e-4,
-                lr=0.05,
-                bias=False,
-                use_tfn=True):
+    def model_step(self,
+                   hids=[16],
+                   acts=['relu'],
+                   dropout=0.6,
+                   weight_decay=5e-4,
+                   lr=0.05,
+                   bias=False):
 
         x_p = Input(batch_shape=[None, self.graph.num_node_classes],
                     dtype=self.floatx,
@@ -89,10 +85,6 @@ class GMNN(Trainer):
             'GCNConv': GCNConv,
             "TFKeras": TFKeras,
         }
-        if use_tfn:
-            model_p.use_tfn()
-            model_q.use_tfn()
-
         self.model_p, self.model_q = model_p, model_q
         return model_q
 
@@ -110,25 +102,25 @@ class GMNN(Trainer):
         label_predict[train_data] = self.graph.node_label[train_data]
         label_predict = tf.one_hot(label_predict, depth=self.graph.num_node_classes)
         # train model_p fitst
-        train_sequence = FullBatchSequence([label_predict, self.cache.A],
-                                           label_predict,
-                                           device=self.device)
+        train_loader = FullBatchSequence([label_predict, self.cache.A],
+                                         label_predict,
+                                         device=self.data_device)
         if val_data is not None:
-            val_sequence = FullBatchSequence([label_predict, self.cache.A],
-                                             self.cache.Y[val_data],
-                                             out_weight=val_data,
-                                             device=self.device)
+            val_loader = FullBatchSequence([label_predict, self.cache.A],
+                                           self.cache.Y[val_data],
+                                           out_weight=val_data,
+                                           device=self.data_device)
         else:
-            val_sequence = None
+            val_loader = None
 
         self.model = self.model_p
-        history = super().fit(train_sequence, val_sequence,
+        history = super().fit(train_loader, val_loader,
                               ModelCheckpoint=dict(save_weights_only=True), **kwargs)
         histories.append(history)
         # then train model_q again
         label_predict = self.model.predict_step_on_batch(x=(label_predict, self.cache.A),
                                                          transform="softmax",
-                                                         device=self.device)
+                                                         device=self.data_device)
 
         if tf.is_tensor(label_predict):
             label_predict = label_predict.numpy()
@@ -136,21 +128,21 @@ class GMNN(Trainer):
         label_predict[train_data] = self.cache.Y[train_data]
 
         self.model = self.model_q
-        train_sequence = FullBatchSequence([self.cache.X, self.cache.A],
-                                           label_predict,
-                                           device=self.device)
-        history = super().fit(train_sequence, val_data,
+        train_loader = FullBatchSequence([self.cache.X, self.cache.A],
+                                         label_predict,
+                                         device=self.data_device)
+        history = super().fit(train_loader, val_data,
                               ModelCheckpoint=dict(save_weights_only=True), **kwargs)
 
         histories.append(history)
 
         return histories
 
-    def train_sequence(self, index):
+    def train_loader(self, index):
 
         labels = self.cache.Y[index]
         sequence = FullBatchSequence([self.cache.X, self.cache.A],
                                      labels,
                                      out_weight=index,
-                                     device=self.device)
+                                     device=self.data_device)
         return sequence

@@ -14,28 +14,27 @@ class SGC(Trainer):
 
     """
 
-    def process_step(self,
-                     adj_transform=None,
-                     attr_transform=None,
-                     graph_transform=None):
+    def data_step(self,
+                  adj_transform=None,
+                  attr_transform=None):
 
-        graph = gf.get(graph_transform)(self.graph)
+        graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
         node_attr = gf.get(attr_transform)(graph.node_attr)
 
-        X, E = gf.astensors(node_attr, adj_matrix, device=self.device)
+        X, E = gf.astensors(node_attr, adj_matrix, device=self.data_device)
 
         # ``E`` and ``X`` are cached for later use
         self.register_cache(X=X, E=E)
 
-    def builder(self,
-                hids=[],
-                acts=[],
-                dropout=0.,
-                weight_decay=5e-5,
-                lr=0.2,
-                bias=True,
-                K=2):
+    def model_step(self,
+                   hids=[],
+                   acts=[],
+                   dropout=0.,
+                   weight_decay=5e-5,
+                   lr=0.2,
+                   bias=True,
+                   K=2):
 
         model = get_model("SGC", self.backend)
         model = model(self.graph.num_node_attrs,
@@ -49,11 +48,11 @@ class SGC(Trainer):
 
         return model
 
-    def train_sequence(self, index):
+    def train_loader(self, index):
 
         labels = self.graph.node_label[index]
         sequence = FullBatchSequence([self.cache.X, *self.cache.E],
                                      labels,
                                      out_weight=index,
-                                     device=self.device)
+                                     device=self.data_device)
         return sequence

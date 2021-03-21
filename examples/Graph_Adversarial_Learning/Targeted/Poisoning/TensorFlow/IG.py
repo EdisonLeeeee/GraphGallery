@@ -11,7 +11,7 @@ graph = data.graph
 splits = data.split_nodes(random_state=15)
 
 ################### Surrogate model ############################
-trainer = gg.gallery.nodeclas.DenseGCN(graph, seed=123).process().build()
+trainer = gg.gallery.nodeclas.DenseGCN(seed=123).make_data(graph).build()
 his = trainer.fit(splits.train_nodes,
                   splits.val_nodes,
                   verbose=1,
@@ -24,7 +24,7 @@ attacker.attack(target)
 
 ################### Victim model ############################
 # Before attack
-trainer = gg.gallery.nodeclas.GCN(graph, seed=123).process().build()
+trainer = gg.gallery.nodeclas.GCN(seed=123).make_data(graph).build()
 his = trainer.fit(splits.train_nodes,
                   splits.val_nodes,
                   verbose=1,
@@ -32,7 +32,7 @@ his = trainer.fit(splits.train_nodes,
 original_predict = trainer.predict(target, transform="softmax")
 
 # After attack
-trainer = gg.gallery.nodeclas.GCN(attacker.g, seed=123).process().build()
+trainer = gg.gallery.nodeclas.GCN(seed=123).make_data(attacker.g).build()
 his = trainer.fit(splits.train_nodes,
                   splits.val_nodes,
                   verbose=1,

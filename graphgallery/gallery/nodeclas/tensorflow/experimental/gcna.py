@@ -21,14 +21,14 @@ class GCNA(GCN):
 
     """
 
-    def builder(self,
-                hids=[16],
-                acts=['relu'],
-                dropout=0.5,
-                weight_decay=5e-4,
-                lr=0.01,
-                bias=False,
-                use_tfn=True):
+    def model_step(self,
+                   hids=[16],
+                   acts=['relu'],
+                   dropout=0.5,
+                   weight_decay=5e-4,
+                   lr=0.01,
+                   bias=False,
+                   use_tfn=True):
 
         model = get_model("GCNA", self.backend)
         model = model(self.graph.num_node_attrs,
@@ -39,7 +39,5 @@ class GCNA(GCN):
                       weight_decay=weight_decay,
                       lr=lr,
                       bias=bias)
-        if use_tfn:
-            model.use_tfn()
 
         return model

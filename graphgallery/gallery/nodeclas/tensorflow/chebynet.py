@@ -1,5 +1,3 @@
-import tensorflow as tf
-
 from graphgallery.sequence import FullBatchSequence
 from graphgallery.gallery.nodeclas import Trainer
 from graphgallery.nn.models import get_model
@@ -14,37 +12,28 @@ class ChebyNet(Trainer):
         `Convolutional Neural Networks on Graphs with Fast Localized Spectral Filtering <https://arxiv.org/abs/1606.09375>`
         Tensorflow 1.x implementation: <https://github.com/mdeff/cnn_graph>, <https://github.com/tkipf/gcn>
         Keras implementation: <https://github.com/aclyde11/ChebyGCN>
+    """
 
-        This can be instantiated in the following way:
+    def data_step(self,
+                  adj_transform="cheby_basis",
+                  attr_transform=None):
 
-            trainer = ChebyNet(graph)
-                with a `graphgallery.data.Graph` instance representing
-                A sparse, attributed, labeled graph.
-
-        """
-
-    def process_step(self,
-                     adj_transform="cheby_basis",
-                     attr_transform=None,
-                     graph_transform=None):
-
-        graph = gf.get(graph_transform)(self.graph)
+        graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
         node_attr = gf.get(attr_transform)(graph.node_attr)
 
-        X, A = gf.astensors(node_attr, adj_matrix, device=self.device)
+        X, A = gf.astensors(node_attr, adj_matrix, device=self.data_device)
 
         # ``A`` and ``X`` are cached for later use
         self.register_cache(X=X, A=A)
 
-    def builder(self,
-                hids=[16],
-                acts=['relu'],
-                dropout=0.5,
-                weight_decay=5e-4,
-                lr=0.01,
-                bias=False,
-                use_tfn=True):
+    def model_step(self,
+                   hids=[16],
+                   acts=['relu'],
+                   dropout=0.5,
+                   weight_decay=5e-4,
+                   lr=0.01,
+                   bias=False):
 
         model = get_model("ChebyNet", self.backend)
         model = model(self.graph.num_node_attrs,
@@ -55,16 +44,14 @@ class ChebyNet(Trainer):
                       weight_decay=weight_decay,
                       lr=lr,
                       bias=bias)
-        if use_tfn:
-            model.use_tfn()
 
         return model
 
-    def train_sequence(self, index):
+    def train_loader(self, index):
 
         labels = self.graph.node_label[index]
         sequence = FullBatchSequence([self.cache.X, *self.cache.A],
                                      labels,
                                      out_weight=index,
-                                     device=self.device)
+                                     device=self.data_device)
         return sequence

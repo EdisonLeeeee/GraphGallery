@@ -21,7 +21,7 @@ splits = data.split_nodes()
 graphgallery.set_backend("pyg")
 
 from graphgallery.gallery.nodeclas import PDN
-trainer = PDN(graph, device="gpu", seed=123).process().build()
+trainer = PDN(device="gpu", seed=123).make_data(graph).build()
 his = trainer.fit(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
 results = trainer.evaluate(splits.test_nodes)
 print(f'Test loss {results.loss:.5}, Test accuracy {results.accuracy:.2%}')

@@ -8,25 +8,24 @@ from graphgallery.nn.models import get_model
 @TensorFlow.register()
 class MLP(Trainer):
 
-    def process_step(self,
-                     attr_transform=None,
-                     graph_transform=None):
+    def data_step(self,
+                  attr_transform=None):
 
-        graph = gf.get(graph_transform)(self.graph)
+        graph = self.graph
         node_attr = gf.get(attr_transform)(graph.node_attr)
 
-        X = gf.astensors(node_attr, device=self.device)
+        X = gf.astensors(node_attr, device=self.data_device)
 
         # ``A`` and ``X`` are cached for later use
         self.register_cache(X=X)
 
-    def builder(self,
-                hids=[16],
-                acts=['relu'],
-                dropout=0.5,
-                weight_decay=5e-4,
-                lr=0.01,
-                bias=False):
+    def model_step(self,
+                   hids=[16],
+                   acts=['relu'],
+                   dropout=0.5,
+                   weight_decay=5e-4,
+                   lr=0.01,
+                   bias=False):
 
         model = get_model("MLP", self.backend)
         model = model(self.graph.num_node_attrs,
@@ -40,11 +39,11 @@ class MLP(Trainer):
 
         return model
 
-    def train_sequence(self, index):
+    def train_loader(self, index):
 
         labels = self.graph.node_label[index]
         sequence = FullBatchSequence(x=[self.cache.X],
                                      y=labels,
                                      out_weight=index,
-                                     device=self.device)
+                                     device=self.data_device)
         return sequence

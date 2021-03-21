@@ -10,8 +10,8 @@ class Attacker(gg.gallery.Model):
     _allow_singleton = False
 
     def __init__(self, graph, device="cpu", seed=None, name=None, **kwargs):
-        super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
-
+        super().__init__(device=device, seed=seed, name=name, **kwargs)
+        self.graph = graph.copy()
         self.is_reseted = False
 
         self.modified_adj = None  # adjacency matrix

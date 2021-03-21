@@ -12,9 +12,9 @@ class GCN_MIX(FastGCN):
 
     """
 
-    def train_sequence(self, index):
+    def train_loader(self, index):
         labels = self.graph.node_label[index]
 
         sequence = FullBatchSequence(
-            [self.cache.X, self.cache.A[index]], labels, device=self.device)
+            [self.cache.X, self.cache.A[index]], labels, device=self.data_device)
         return sequence

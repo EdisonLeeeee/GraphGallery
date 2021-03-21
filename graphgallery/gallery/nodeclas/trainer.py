@@ -69,8 +69,6 @@ def unravel_batch(batch):
 
 
 class Trainer(Model):
-    is_processed = False
-
     def custom_setup(self):
         pass
 
@@ -78,41 +76,49 @@ class Trainer(Model):
         self.cfg = default_cfg(self)
         self.custom_setup()
 
-    def process(self, **kwargs):
+    def make_data(self, graph, graph_transform=None, device=None, **kwargs):
         """This method is used for process your inputs, which accepts
-        only keyword arguments in your defined method 'process_step'.
+        only keyword arguments in your defined method 'data_step'.
         This method will process the inputs, and transform them into tensors.
 
         Commonly used keyword arguments:
         --------------------------------
-        adj_transform: string, Callable function, 
+        graph: graphgallery graph classes.
+        graph_transform: string, Callable function,
+            or a tuple with function and dict arguments.
+            transform for the entire graph, it is used first.
+        device: device for preparing data, if None, it defaults to `self.device`
+        adj_transform: string, Callable function,
             or a tuple with function and dict arguments.
             transform for adjacency matrix.
-        attr_transform: string, Callable function, 
+        attr_transform: string, Callable function,
             or a tuple with function and dict arguments.
             transform for attribute matrix.
-        graph_transform: string, Callable function, 
-            or a tuple with function and dict arguments.
-            transform for the entire graph, it is used before 'adj_transform' and 'attr_transform'.
-        other arguments (if have) will be passed into method 'process_step'.
+        other arguments (if have) will be passed into method 'data_step'.
         """
-        cfg = self.cfg.process
-        _, kwargs = gf.wrapper(self.process_step)(**kwargs)
+        self.graph = gf.get(graph_transform)(graph)
+        cfg = self.cfg.data
+        if device is not None:
+            self.data_device = gf.device(device, self.backend)
+        else:
+            self.data_device = self.device
+        cfg.device = device
+        _, kwargs = gf.wrapper(self.data_step)(**kwargs)
+        kwargs['graph_transform'] = graph_transform
         cfg.merge_from_dict(kwargs)
 
         for k, v in kwargs.items():
             if k.endswith("transform"):
                 setattr(self.transform, k, gf.get(v))
-
-        self.is_processed = True
         return self
 
-    def process_step(self, *args, **kwargs):
+    def data_step(self, *args, **kwargs):
+        """Implement you data processing function here"""
         raise NotImplementedError
 
     def build(self, **kwargs):
         """This method is used for build your model, which
-        accepts only keyword arguments in your defined method 'builder'.
+        accepts only keyword arguments in your defined method 'model_step'.
 
         Note:
         -----
@@ -137,21 +143,25 @@ class Trainer(Model):
             the model training and testing with `tf.function` (See `graphgallery.nn.modes.TFKeras`).
             By default, it was `True`, which can accelerate the training and inference, by it may cause
             several errors.
-        other arguments (if have) will be passed into your method 'builder'.
+        other arguments (if have) will be passed into your method 'model_step'.
         """
-        if not self.is_processed:
-            raise RuntimeError("Please call 'trainer.process()' first.")
+        if self._graph is None:
+            raise RuntimeError("Please call 'trainer.make_data(graph)' first.")
 
+        use_tfn = kwargs.get("use_tfn", True)
         if self.backend == "tensorflow":
             with tf.device(self.device):
-                self.model, kwargs = gf.wrapper(self.builder)(**kwargs)
+                self.model, kwargs = gf.wrapper(self.model_step)(**kwargs)
+                if use_tfn:
+                    self.model.use_tfn()
         else:
-            model, kwargs = gf.wrapper(self.builder)(**kwargs)
+            kwargs.pop("use_tfn", None)
+            model, kwargs = gf.wrapper(self.model_step)(**kwargs)
             self.model = model.to(self.device)
-        self.cfg.build.merge_from_dict(kwargs)
+        self.cfg.model.merge_from_dict(kwargs)
         return self
 
-    def build_from_other_model(self, model):
+    def build_from(self, model):
 
         if self.backend == "tensorflow":
             with tf.device(self.device):
@@ -159,16 +169,17 @@ class Trainer(Model):
         else:
             self.model = model.to(self.device)
 
-        self.cfg.build.build_from_other_model = False
+        # Configs for model building
+        self.cfg.model = gg.CfgNode()
+        self.cfg.model.build_from_other_model = True
         return self
 
-    def builder(self, *args, **kwargs):
+    def model_step(self, *args, **kwargs):
+        """Implement you model building function here"""
         raise NotImplementedError
 
-    def fit(self, train_data, val_data=None, device=None, **kwargs):
-        
-        device = device or self.device
-        
+    def fit(self, train_data, val_data=None, **kwargs):
+
         cache = self.cache
         cfg = self.cfg.fit
         cfg.merge_from_dict(kwargs)
@@ -180,7 +191,7 @@ class Trainer(Model):
         if log_cfg.enabled:
             log_cfg.name = log_cfg.name or self.name
             logger = gg.utils.set_logger(log_cfg.name,
-                        log_cfg.filepath, log_cfg.level)
+                                         log_cfg.filepath, log_cfg.level)
 
         model = self.model
         if model is None:
@@ -189,7 +200,7 @@ class Trainer(Model):
             )
 
         if not isinstance(train_data, (Sequence, DataLoader, Dataset)):
-            train_data = self.train_sequence(train_data)
+            train_data = self.train_loader(train_data)
 
         if cfg.cache_train_data:
             cache.train_data = train_data
@@ -197,7 +208,7 @@ class Trainer(Model):
         validation = val_data is not None
         if validation:
             if not isinstance(val_data, (Sequence, DataLoader, Dataset)):
-                val_data = self.test_sequence(val_data)
+                val_data = self.test_loader(val_data)
             if cfg.cache_val_data:
                 cache.val_data = val_data
 
@@ -230,16 +241,16 @@ class Trainer(Model):
 
                 callbacks.on_epoch_begin(epoch)
                 callbacks.on_train_batch_begin(0)
-                train_logs = self.train_step(train_data, device=device)
+                train_logs = self.train_step(train_data)
                 if hasattr(train_data, 'on_epoch_end'):
                     train_data.on_epoch_end()
                 logs.update(train_logs)
 
                 if validation:
-                    valid_logs = self.test_step(val_data, device=device)
+                    valid_logs = self.test_step(val_data)
                     logs.update({("val_" + k): v for k, v in valid_logs.items()})
                     if hasattr(val_data, 'on_epoch_end'):
-                        val_data.on_epoch_end()                    
+                        val_data.on_epoch_end()
 
                 callbacks.on_train_batch_end(len(train_data), logs)
                 callbacks.on_epoch_end(epoch, logs)
@@ -269,20 +280,19 @@ class Trainer(Model):
 
         return history
 
-    def evaluate(self, test_data, device=None, **kwargs):
+    def evaluate(self, test_data, **kwargs):
 
         if not self.model:
             raise RuntimeError(
                 'You must compile your model before training/testing/predicting. Use `trainer.build()`.'
             )
 
-        device = device or self.device
         cache = self.cache
         cfg = self.cfg.evaluate
         cfg.merge_from_dict(kwargs)
 
         if not isinstance(test_data, (Sequence, DataLoader, Dataset)):
-            test_data = self.test_sequence(test_data)
+            test_data = self.test_loader(test_data)
 
         if cfg.cache_test_data:
             cache.test_data = test_data
@@ -293,12 +303,12 @@ class Trainer(Model):
         progbar = Progbar(target=len(test_data),
                           width=cfg.Progbar.width,
                           verbose=cfg.verbose)
-        logs = gf.BunchDict(**self.test_step(test_data, device=device))
+        logs = gf.BunchDict(**self.test_step(test_data))
         logs.update({k: v.numpy().item() for k, v in logs.items()})
         progbar.update(len(test_data), logs.items())
         return logs
 
-    def train_step(self, sequence, device='cpu'):
+    def train_step(self, sequence):
         model = self.model
         model.reset_metrics()
 
@@ -308,10 +318,10 @@ class Trainer(Model):
             results = model.train_step_on_batch(x=inputs,
                                                 y=labels,
                                                 out_weight=out_weight,
-                                                device=device)
+                                                device=self.device)
         return results
 
-    def test_step(self, sequence, device='cpu'):
+    def test_step(self, sequence):
         model = self.model
         model.reset_metrics()
 
@@ -321,17 +331,16 @@ class Trainer(Model):
             results = model.test_step_on_batch(x=inputs,
                                                y=labels,
                                                out_weight=out_weight,
-                                               device=device)
+                                               device=self.device)
         return results
 
-    def predict(self, predict_data=None, transform=None, device=None):
+    def predict(self, predict_data=None, transform=None):
 
         if not self.model:
             raise RuntimeError(
                 'You must compile your model before training/testing/predicting. Use `trainer.build()`.'
             )
 
-        device = device or self.device
         cache = self.cache
         cfg = self.cfg.predict
         cfg.transform = transform
@@ -345,33 +354,33 @@ class Trainer(Model):
         if cfg.cache_predict_data:
             cache.predict_data = predict_data
 
-        logits = self.predict_step(predict_data, device=device)
+        logits = self.predict_step(predict_data)
 
         T = gf.get(transform)
         self.transform.logit_transform = T
         logits = T(logits)
         return logits.squeeze()
 
-    def predict_step(self, sequence, device='cpu'):
+    def predict_step(self, sequence):
         logits = []
         model = self.model
         for batch in sequence:
             inputs, labels, out_weight = unravel_batch(batch)
             logit = model.predict_step_on_batch(x=inputs,
                                                 out_weight=out_weight,
-                                                device=device)
+                                                device=self.device)
             logits.append(logit)
 
         return np.vstack(logits)
 
-    def train_sequence(self, inputs, **kwargs):
+    def train_loader(self, inputs, **kwargs):
         raise NotImplementedError
 
-    def test_sequence(self, inputs, **kwargs):
-        return self.train_sequence(inputs, **kwargs)
+    def test_loader(self, inputs, **kwargs):
+        return self.train_loader(inputs, **kwargs)
 
     def predict_sequence(self, inputs, **kwargs):
-        return self.test_sequence(inputs, **kwargs)
+        return self.test_loader(inputs, **kwargs)
 
     def _test_predict(self, index):
         logit = self.predict(index)
@@ -391,11 +400,11 @@ class Trainer(Model):
         for w, wb in zip(model.weights, self.backup):
             w.assign(wb)
 
-    @property
+    @ property
     def model(self):
         return self._model
 
-    @model.setter
+    @ model.setter
     def model(self, m):
         # Back up
         # if isinstance(m, tf.keras.Model) and m.weights:

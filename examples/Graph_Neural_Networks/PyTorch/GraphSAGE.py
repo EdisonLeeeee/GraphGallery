@@ -2,7 +2,7 @@
 # coding: utf-8
 
 import torch
-import graphgallery 
+import graphgallery
 
 print("GraphGallery version: ", graphgallery.__version__)
 print("Torch version: ", torch.__version__)
@@ -19,7 +19,7 @@ splits = data.split_nodes()
 graphgallery.set_backend("pytorch")
 
 from graphgallery.gallery.nodeclas import GraphSAGE
-trainer = GraphSAGE(graph, device="gpu", seed=123).process(attr_transform="normalize_attr").build()
+trainer = GraphSAGE(device="gpu", seed=123).make_data(graph, attr_transform="normalize_attr").build()
 his = trainer.fit(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
-results = trainer.evaluate(splits.test_nodes) 
+results = trainer.evaluate(splits.test_nodes)
 print(f'Test loss {results.loss:.5}, Test accuracy {results.accuracy:.2%}')

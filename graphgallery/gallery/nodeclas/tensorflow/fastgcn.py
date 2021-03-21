@@ -26,29 +26,27 @@ class FastGCN(Trainer):
         cfg.batch_size = None
         cfg.rank = None
 
-    def process_step(self,
-                     adj_transform="normalize_adj",
-                     attr_transform=None,
-                     graph_transform=None):
+    def data_step(self,
+                  adj_transform="normalize_adj",
+                  attr_transform=None):
 
-        graph = gf.get(graph_transform)(self.graph)
+        graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
         node_attr = gf.get(attr_transform)(graph.node_attr)
         node_attr = adj_matrix @ node_attr
 
-        X, A = gf.astensor(node_attr, device=self.device), adj_matrix
+        X, A = gf.astensor(node_attr, device=self.data_device), adj_matrix
 
         # ``A`` and ``X`` are cached for later use
         self.register_cache(X=X, A=A)
 
-    def builder(self,
-                hids=[32],
-                acts=['relu'],
-                dropout=0.5,
-                weight_decay=5e-4,
-                lr=0.01,
-                bias=False,
-                use_tfn=True):
+    def model_step(self,
+                   hids=[32],
+                   acts=['relu'],
+                   dropout=0.5,
+                   weight_decay=5e-4,
+                   lr=0.01,
+                   bias=False):
 
         model = get_model("FastGCN", self.backend)
         model = model(self.graph.num_node_attrs,
@@ -59,11 +57,10 @@ class FastGCN(Trainer):
                       weight_decay=weight_decay,
                       lr=lr,
                       bias=bias)
-        if use_tfn:
-            model.use_tfn()
+
         return model
 
-    def train_sequence(self, index):
+    def train_loader(self, index):
         cfg = self.cfg.fit
 
         labels = self.graph.node_label[index]
@@ -75,10 +72,10 @@ class FastGCN(Trainer):
                                         labels,
                                         batch_size=cfg.batch_size,
                                         rank=cfg.rank,
-                                        device=self.device)
+                                        device=self.data_device)
         return sequence
 
-    def test_sequence(self, index):
+    def test_loader(self, index):
         cfg = self.cfg.evaluate
 
         labels = self.graph.node_label[index]
@@ -88,5 +85,5 @@ class FastGCN(Trainer):
                                         labels,
                                         batch_size=cfg.batch_size,
                                         rank=cfg.rank,
-                                        device=self.device)
+                                        device=self.data_device)
         return sequence

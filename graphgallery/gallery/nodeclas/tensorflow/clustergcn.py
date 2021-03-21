@@ -1,13 +1,9 @@
 import numpy as np
-import tensorflow as tf
-
 from graphgallery.sequence import MiniBatchSequence
 from graphgallery.gallery.nodeclas import Trainer
 from graphgallery.nn.models import get_model
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import TensorFlow
-
-from distutils.version import LooseVersion
 
 
 @TensorFlow.register()
@@ -22,36 +18,33 @@ class ClusterGCN(Trainer):
         Pytorch implementation: 
         <https://github.com/benedekrozemberczki/ClusterGCN>
 
-
     """
 
-    def process_step(self,
-                     adj_transform="normalize_adj",
-                     attr_transform=None,
-                     graph_transform=None,
-                     num_clusters=10):
+    def data_step(self,
+                  adj_transform="normalize_adj",
+                  attr_transform=None,
+                  num_clusters=10):
 
-        graph = gf.get(graph_transform)(self.graph)
+        graph = self.graph
         batch_adj, batch_x, cluster_member = gf.graph_partition(
             graph, num_clusters=num_clusters, metis_partition=True)
 
         batch_adj = gf.get(adj_transform)(*batch_adj)
         batch_x = gf.get(attr_transform)(*batch_x)
 
-        batch_adj, batch_x = gf.astensors(batch_adj, batch_x, device=self.device)
+        batch_adj, batch_x = gf.astensors(batch_adj, batch_x, device=self.data_device)
 
         # ``A`` and ``X`` and ``cluster_member`` are cached for later use
         self.register_cache(batch_x=batch_x, batch_adj=batch_adj,
                             cluster_member=cluster_member)
 
-    def builder(self,
-                hids=[32],
-                acts=['relu'],
-                dropout=0.5,
-                weight_decay=0.,
-                lr=0.01,
-                bias=False,
-                use_tfn=True):
+    def model_step(self,
+                   hids=[32],
+                   acts=['relu'],
+                   dropout=0.5,
+                   weight_decay=0.,
+                   lr=0.01,
+                   bias=False):
 
         model = get_model("GCN", self.backend)
         model = model(self.graph.num_node_attrs,
@@ -64,19 +57,19 @@ class ClusterGCN(Trainer):
                       bias=bias,
                       experimental_run_tf_function=False)
 
-        if LooseVersion(tf.__version__) < LooseVersion("2.2.0") and use_tfn:
-            model.use_tfn()
+        # if LooseVersion(tf.__version__) < LooseVersion("2.2.0") and use_tfn:
+        #     model.use_tfn()
 
         return model
 
-    def train_sequence(self, index):
+    def train_loader(self, index):
         node_mask = gf.index_to_mask(index, self.graph.num_nodes)
         labels = self.graph.node_label
         cache = self.cache
 
         batch_mask, batch_y = [], []
         batch_x, batch_adj = [], []
-        for cluster in range(self.cfg.process.num_clusters):
+        for cluster in range(self.cfg.data.num_clusters):
             nodes = cache.cluster_member[cluster]
             mask = node_mask[nodes]
             y = labels[nodes][mask]
@@ -91,7 +84,7 @@ class ClusterGCN(Trainer):
         sequence = MiniBatchSequence(batch_inputs,
                                      batch_y,
                                      out_weight=batch_mask,
-                                     device=self.device)
+                                     device=self.data_device)
         return sequence
 
     def predict(self, index):
@@ -101,7 +94,7 @@ class ClusterGCN(Trainer):
         orders_dict = {idx: order for order, idx in enumerate(index)}
         batch_mask, orders = [], []
         batch_x, batch_adj = [], []
-        for cluster in range(self.cfg.process.num_clusters):
+        for cluster in range(self.cfg.data.num_clusters):
             nodes = cache.cluster_member[cluster]
             mask = node_mask[nodes]
             batch_nodes = np.asarray(nodes)[mask]
@@ -116,7 +109,7 @@ class ClusterGCN(Trainer):
 
         logit = np.zeros((index.size, self.graph.num_node_classes),
                          dtype=self.floatx)
-        batch_data, batch_mask = gf.astensors(batch_data, batch_mask, device=self.device)
+        batch_data, batch_mask = gf.astensors(batch_data, batch_mask, device=self.data_device)
 
         model = self.model
         for order, inputs, mask in zip(orders, batch_data, batch_mask):

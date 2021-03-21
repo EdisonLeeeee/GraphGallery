@@ -17,17 +17,16 @@ class SGC(Trainer):
 
     """
 
-    def process_step(self,
-                     adj_transform="normalize_adj",
-                     attr_transform=None,
-                     graph_transform=None,
-                     K=2):
+    def data_step(self,
+                  adj_transform="normalize_adj",
+                  attr_transform=None,
+                  K=2):
 
-        graph = gf.get(graph_transform)(self.graph)
+        graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
         node_attr = gf.get(attr_transform)(graph.node_attr)
 
-        X, A = gf.astensors(node_attr, adj_matrix, device=self.device)
+        X, A = gf.astensors(node_attr, adj_matrix, device=self.data_device)
 
         # To avoid this tensorflow error in large dataset:
         # InvalidArgumentError: Cannot use GPU when output.shape[1] * nnz(a) > 2^31 [Op:SparseTensorDenseMatMul]
@@ -43,14 +42,13 @@ class SGC(Trainer):
             # ``A`` and ``X`` are cached for later use
             self.register_cache(X=X, A=A)
 
-    def builder(self,
-                hids=[],
-                acts=[],
-                dropout=0.5,
-                weight_decay=5e-5,
-                lr=0.2,
-                bias=True,
-                use_tfn=True):
+    def model_step(self,
+                   hids=[],
+                   acts=[],
+                   dropout=0.5,
+                   weight_decay=5e-5,
+                   lr=0.2,
+                   bias=True):
 
         model = get_model("MLP", self.backend)
         model = model(self.graph.num_node_attrs,
@@ -62,15 +60,12 @@ class SGC(Trainer):
                       lr=lr,
                       bias=bias)
 
-        if use_tfn:
-            model.use_tfn()
-
         return model
 
-    def train_sequence(self, index):
+    def train_loader(self, index):
         labels = self.graph.node_label[index]
         index = gf.astensor(index)
 
         X = tf.gather(self.cache.X, index)
-        sequence = FullBatchSequence(X, labels, device=self.device)
+        sequence = FullBatchSequence(X, labels, device=self.data_device)
         return sequence

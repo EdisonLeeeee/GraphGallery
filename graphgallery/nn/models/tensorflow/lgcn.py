@@ -15,7 +15,8 @@ class LGCN(TFKeras):
                  hids=[32], num_filters=[8, 8],
                  acts=[None, None],
                  dropout=0.8,
-                 weight_decay=5e-4, lr=0.1, bias=False, K=8):
+                 weight_decay=5e-4,
+                 lr=0.1, bias=False, K=8):
 
         x = Input(batch_shape=[None, in_features],
                   dtype=floatx(), name='node_attr')

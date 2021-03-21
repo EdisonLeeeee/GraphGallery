@@ -15,13 +15,12 @@ class PDN(Trainer):
 
     """
 
-    def process_step(self,
-                     edge_transform=None,
-                     attr_transform=None,
-                     edge_attr_transform=None,
-                     graph_transform=None):
+    def data_step(self,
+                  edge_transform=None,
+                  attr_transform=None,
+                  edge_attr_transform=None):
 
-        graph = gf.get(graph_transform)(self.graph)
+        graph = self.graph
         edge_index, edge_weight = gf.get(edge_transform)(graph.edge_index, graph.edge_weight)
         node_attr = gf.get(attr_transform)(graph.node_attr)
         edge_attr = gf.get(edge_attr_transform)(graph.edge_attr)
@@ -29,17 +28,17 @@ class PDN(Trainer):
         X, edge_index, edge_x = gf.astensors(node_attr,
                                              edge_index,
                                              edge_attr,
-                                             device=self.device)
+                                             device=self.data_device)
         self.register_cache(X=X, edge_index=edge_index, edge_x=edge_x)
 
-    def builder(self,
-                hids=[32],
-                acts=['relu'],
-                pdn_hids=32,
-                dropout=0.5,
-                weight_decay=5e-5,
-                lr=0.01,
-                bias=True):
+    def model_step(self,
+                   hids=[32],
+                   acts=['relu'],
+                   pdn_hids=32,
+                   dropout=0.5,
+                   weight_decay=5e-5,
+                   lr=0.01,
+                   bias=True):
 
         model = get_model("PDN", self.backend)
         model = model(self.graph.num_node_attrs,
@@ -55,7 +54,7 @@ class PDN(Trainer):
 
         return model
 
-    def train_sequence(self, index):
+    def train_loader(self, index):
 
         labels = self.graph.node_label[index]
         sequence = FullBatchSequence([self.cache.X,
@@ -63,5 +62,5 @@ class PDN(Trainer):
                                       self.cache.edge_x],
                                      labels,
                                      out_weight=index,
-                                     device=self.device)
+                                     device=self.data_device)
         return sequence

@@ -1,5 +1,3 @@
-import tensorflow as tf
-
 from graphgallery.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import TensorFlow
@@ -18,30 +16,28 @@ class GAT(Trainer):
 
     """
 
-    def process_step(self,
-                     adj_transform="add_selfloops",
-                     attr_transform=None,
-                     graph_transform=None):
+    def data_step(self,
+                  adj_transform="add_selfloops",
+                  attr_transform=None):
 
-        graph = gf.get(graph_transform)(self.graph)
+        graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
         node_attr = gf.get(attr_transform)(graph.node_attr)
 
-        X, A = gf.astensors(node_attr, adj_matrix, device=self.device)
+        X, A = gf.astensors(node_attr, adj_matrix, device=self.data_device)
 
         # ``A`` and ``X`` are cached for later use
         self.register_cache(X=X, A=A)
 
-    def builder(self,
-                hids=[8],
-                num_heads=[8],
-                acts=['elu'],
-                dropout=0.6,
-                weight_decay=5e-4,
-                lr=0.01,
-                bias=True,
-                include=["num_heads"],
-                use_tfn=True):
+    def model_step(self,
+                   hids=[8],
+                   num_heads=[8],
+                   acts=['elu'],
+                   dropout=0.6,
+                   weight_decay=5e-4,
+                   lr=0.01,
+                   bias=True,
+                   include=["num_heads"]):
 
         model = get_model("GAT", self.backend)
         model = model(self.graph.num_node_attrs,
@@ -53,15 +49,14 @@ class GAT(Trainer):
                       weight_decay=weight_decay,
                       lr=lr,
                       bias=bias)
-        if use_tfn:
-            model.use_tfn()
+
         return model
 
-    def train_sequence(self, index):
+    def train_loader(self, index):
 
         labels = self.graph.node_label[index]
         sequence = FullBatchSequence([self.cache.X, self.cache.A],
                                      labels,
                                      out_weight=index,
-                                     device=self.device)
+                                     device=self.data_device)
         return sequence

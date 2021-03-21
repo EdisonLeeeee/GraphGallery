@@ -3,11 +3,10 @@ from graphgallery import functional as gf
 
 
 class Model:
-    def __init__(self, graph=None, *, device="cpu", seed=None, name=None, **kwargs):
+    def __init__(self, *, device="cpu", seed=None, name=None, **kwargs):
         """
         Parameters:
         ----------
-        graph: Any ``Graph`` in graphgallery or None
         device: string. optional
             The device where the model running on.
         seed: interger scalar. optional
@@ -17,8 +16,8 @@ class Model:
             Specified name for the model. (default: :str: `class name`)
         kwargs: other custom keyword arguments. 
         """
-        if graph is not None and not isinstance(graph, gg.data.BaseGraph):
-            raise ValueError(f"Unrecognized graph: {graph}.")
+        # if graph is not None and not isinstance(graph, gg.data.BaseGraph):
+        #     raise ValueError(f"Unrecognized graph: {graph}.")
 
         # It currently takes no keyword arguments
         gg.utils.raise_error.raise_if_kwargs(kwargs)
@@ -30,8 +29,8 @@ class Model:
 
         self.seed = seed
         self.name = name or self.__class__.__name__
-        self.graph = graph.copy() if graph is not None else graph
         self.device = gf.device(device, _backend)
+        self.data_device = self.device
         self.backend = _backend
 
         # data types, default: `float32`,`int32` and `bool`
@@ -43,11 +42,24 @@ class Model:
 
         self.cfg = None
         self._model = None
-
+        self._graph = None
         self.setup_cfg()
 
     def setup_cfg(self):
         pass
+
+    @property
+    def graph(self):
+        graph = self._graph
+        if graph is None:
+            raise KeyError("You haven't pass any graph instance.")
+        return graph
+
+    @graph.setter
+    def graph(self, graph):
+        assert graph is None or isinstance(graph, gg.data.BaseGraph)
+        if graph is not None:
+            self._graph = graph.copy()
 
     @property
     def cache(self):

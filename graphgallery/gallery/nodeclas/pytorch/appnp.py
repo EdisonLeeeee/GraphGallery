@@ -15,30 +15,29 @@ class APPNP(Trainer):
         Pytorch implementation: <https://github.com/klicperajo/ppnp>
     """
 
-    def process_step(self,
-                     adj_transform="normalize_adj",
-                     attr_transform=None,
-                     graph_transform=None):
+    def data_step(self,
+                  adj_transform="normalize_adj",
+                  attr_transform=None):
 
-        graph = gf.get(graph_transform)(self.graph)
+        graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
         node_attr = gf.get(attr_transform)(graph.node_attr)
 
-        X, A = gf.astensors(node_attr, adj_matrix, device=self.device)
+        X, A = gf.astensors(node_attr, adj_matrix, device=self.data_device)
 
         # ``A`` and ``X`` are cached for later use
         self.register_cache(X=X, A=A)
 
-    def builder(self,
-                hids=[64],
-                acts=['relu'],
-                alpha=0.1,
-                K=10,
-                ppr_dropout=0.,
-                dropout=0.5,
-                weight_decay=5e-4,
-                lr=0.01,
-                bias=True):
+    def model_step(self,
+                   hids=[64],
+                   acts=['relu'],
+                   alpha=0.1,
+                   K=10,
+                   ppr_dropout=0.,
+                   dropout=0.5,
+                   weight_decay=5e-4,
+                   lr=0.01,
+                   bias=True):
 
         model = get_model("APPNP", self.backend)
         model = model(self.graph.num_node_attrs,
@@ -56,13 +55,13 @@ class APPNP(Trainer):
 
         return model
 
-    def train_sequence(self, index):
+    def train_loader(self, index):
 
         labels = self.graph.node_label[index]
         sequence = FullBatchSequence(x=[self.cache.X, self.cache.A],
                                      y=labels,
                                      out_weight=index,
-                                     device=self.device)
+                                     device=self.data_device)
         return sequence
 
 
@@ -76,28 +75,27 @@ class PPNP(Trainer):
         Pytorch implementation: <https://github.com/klicperajo/ppnp>
     """
 
-    def process_step(self,
-                     adj_transform="PPR",
-                     attr_transform=None,
-                     graph_transform=None):
+    def data_step(self,
+                  adj_transform="PPR",
+                  attr_transform=None):
 
-        graph = gf.get(graph_transform)(self.graph)
+        graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
         node_attr = gf.get(attr_transform)(graph.node_attr)
 
-        X, A = gf.astensors(node_attr, adj_matrix, device=self.device)
+        X, A = gf.astensors(node_attr, adj_matrix, device=self.data_device)
 
         # ``A`` and ``X`` are cached for later use
         self.register_cache(X=X, A=A)
 
-    def builder(self,
-                hids=[64],
-                acts=['relu'],
-                ppr_dropout=0.,
-                dropout=0.5,
-                weight_decay=5e-4,
-                lr=0.01,
-                bias=True):
+    def model_step(self,
+                   hids=[64],
+                   acts=['relu'],
+                   ppr_dropout=0.,
+                   dropout=0.5,
+                   weight_decay=5e-4,
+                   lr=0.01,
+                   bias=True):
 
         model = get_model("APPNP", self.backend)
         model = model(self.graph.num_node_attrs,
@@ -113,11 +111,11 @@ class PPNP(Trainer):
 
         return model
 
-    def train_sequence(self, index):
+    def train_loader(self, index):
 
         labels = self.graph.node_label[index]
         sequence = FullBatchSequence(x=[self.cache.X, self.cache.A],
                                      y=labels,
                                      out_weight=index,
-                                     device=self.device)
+                                     device=self.data_device)
         return sequence

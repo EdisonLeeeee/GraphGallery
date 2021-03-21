@@ -28,14 +28,14 @@ class SAT(Trainer):
         cfg.lamb1 = 0.8,
         cfg.lamb2 = 0.8
 
-    def process_step(self,
-                     adj_transform="normalize_adj",
-                     attr_transform=None,
-                     graph_transform=None,
-                     K=35,
-                     re_decompose=False):
+    def data_step(self,
+                  adj_transform="normalize_adj",
+                  attr_transform=None,
+                  graph_transform=None,
+                  K=35,
+                  re_decompose=False):
 
-        graph = gf.get(graph_transform)(self.graph)
+        graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
         node_attr = gf.get(attr_transform)(graph.node_attr)
 
@@ -52,18 +52,18 @@ class SAT(Trainer):
                                   adj_matrix,
                                   U,
                                   V,
-                                  device=self.device)
+                                  device=self.data_device)
         # ``A`` , ``X`` , U`` and ``V`` are cached for later use
         self.register_cache(X=X, A=A, U=U, V=V)
 
-    def builder(self,
-                hids=[32],
-                acts=['relu'],
-                dropout=0.5,
-                weight_decay=5e-4,
-                lr=0.01,
-                bias=False,
-                use_tfn=True):
+    def model_step(self,
+                   hids=[32],
+                   acts=['relu'],
+                   dropout=0.5,
+                   weight_decay=5e-4,
+                   lr=0.01,
+                   bias=False,
+                   use_tfn=True):
 
         model = get_model("DenseGCN", self.backend)
         model = model(self.graph.num_node_attrs,
@@ -74,9 +74,6 @@ class SAT(Trainer):
                       weight_decay=weight_decay,
                       lr=lr,
                       bias=bias)
-
-        if use_tfn:
-            model.use_tfn()
 
         return model
 
@@ -132,10 +129,10 @@ class SAT(Trainer):
         ]
         return dict(zip(model.metrics_names, results))
 
-    def train_sequence(self, index):
+    def train_loader(self, index):
         labels = self.graph.node_label[index]
         sequence = FullBatchSequence([self.cache.X, self.cache.A],
                                      labels,
                                      out_weight=index,
-                                     device=self.device)
+                                     device=self.data_device)
         return sequence
