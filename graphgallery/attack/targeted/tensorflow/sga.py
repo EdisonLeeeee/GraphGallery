@@ -30,6 +30,7 @@ class SGA(TargetedAttacker):
             self.K = K
             self.surrogate = surrogate
             self.loss_fn = sparse_categorical_crossentropy
+            self.shape = self.graph.adj_matrix.shape
         if reset:
             self.reset()
         return self
@@ -67,17 +68,12 @@ class SGA(TargetedAttacker):
             self.true_label = tf.convert_to_tensor(self.target_label,
                                                    dtype=self.floatx)
             self.subgraph_preprocessing(attacker_nodes)
+            offset = self.edge_weights.shape[0]
 
-        offset = self.edge_weights.shape[0]
-        with tf.device(self.device):
             for it in tqdm(range(self.num_budgets),
                            desc='Peturbing Graph',
                            disable=disable):
                 edge_grad, non_edge_grad = self.compute_gradient()
-                edge_grad = normalize_GCN(self.edge_index, edge_grad,
-                                          self.selfloop_degree)
-                non_edge_grad = normalize_GCN(self.non_edge_index, non_edge_grad,
-                                              self.selfloop_degree)
                 edge_grad *= (-2 * self.edge_weights + 1)
                 non_edge_grad *= (-2 * self.non_edge_weights + 1)
                 gradients = tf.concat([edge_grad, non_edge_grad], axis=0)
@@ -133,14 +129,9 @@ class SGA(TargetedAttacker):
         return out
 
     def compute_gradient(self, eps=5.0):
-        edge_weights = normalize_GCN(self.edge_index, self.edge_weights,
-                                     self.selfloop_degree)
-        non_edge_weights = normalize_GCN(self.non_edge_index,
-                                         self.non_edge_weights,
-                                         self.selfloop_degree)
-        self_loop_weights = normalize_GCN(self.self_loop,
-                                          self.self_loop_weights,
-                                          self.selfloop_degree)
+        edge_weights = self.edge_weights
+        non_edge_weights = self.non_edge_weights
+        self_loop_weights = self.self_loop_weights
 
         with tf.GradientTape() as tape:
             tape.watch([edge_weights, non_edge_weights])
@@ -148,11 +139,10 @@ class SGA(TargetedAttacker):
             weights = tf.concat([
                 edge_weights, edge_weights, non_edge_weights, non_edge_weights,
                 self_loop_weights
-            ],
-                axis=0)
-
+            ], axis=0)
+            weights = normalize_GCN(self.indices, weights, self.selfloop_degree)
             adj = tf.sparse.SparseTensor(self.indices.T, weights,
-                                         self.graph.adj_matrix.shape)
+                                         self.shape)
 
             output = self.SGC_conv(self.XW, adj)
             logit = output[self.target] + self.b

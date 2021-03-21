@@ -1,4 +1,5 @@
 import torch
+from torch import Tensor
 import torch.nn as nn
 import numpy as np
 
@@ -8,35 +9,51 @@ from graphgallery.utils import tqdm
 from graphgallery.attack.targeted import PyTorch
 from graphgallery.attack.targeted.targeted_attacker import TargetedAttacker
 
-from torch_geometric.typing import Adj, OptTensor
-from torch import Tensor
-from torch_sparse import SparseTensor, matmul
-from torch_geometric.nn.conv import MessagePassing
 
+try:
+    """It will be faster with torch_geometric"""
+    from torch_geometric.typing import Adj, OptTensor
+    from torch_sparse import SparseTensor, matmul
+    from torch_geometric.nn.conv import MessagePassing
 
-class SGConv(MessagePassing):
-    def __init__(self, K=2, **kwargs):
-        kwargs.setdefault('aggr', 'add')
-        super(SGConv, self).__init__(**kwargs)
+    class SGConv(MessagePassing):
+        def __init__(self, K=2, **kwargs):
+            kwargs.setdefault('aggr', 'add')
+            super().__init__(**kwargs)
+            self.K = K
 
-        self.K = K
+        def forward(self, x: Tensor, edge_index: Adj,
+                    edge_weight: OptTensor = None) -> Tensor:
+            for _ in range(self.K):
+                x = self.propagate(edge_index, x=x, edge_weight=edge_weight,
+                                   size=None)
+            return x
 
-    def forward(self, x: Tensor, edge_index: Adj,
-                edge_weight: OptTensor = None) -> Tensor:
-        for k in range(self.K):
-            x = self.propagate(edge_index, x=x, edge_weight=edge_weight,
-                               size=None)
+        def message(self, x_j: Tensor, edge_weight: Tensor) -> Tensor:
+            return edge_weight.view(-1, 1) * x_j
 
-        return x
+        def message_and_aggregate(self, adj_t: SparseTensor, x: Tensor) -> Tensor:
+            return matmul(adj_t, x, reduce=self.aggr)
 
-    def message(self, x_j: Tensor, edge_weight: Tensor) -> Tensor:
-        return edge_weight.view(-1, 1) * x_j
+        def __repr__(self):
+            return '{}(K={})'.format(self.__class__.__name__, self.K)
 
-    def message_and_aggregate(self, adj_t: SparseTensor, x: Tensor) -> Tensor:
-        return matmul(adj_t, x, reduce=self.aggr)
+except ImportError:
+    class SGConv(nn.Module):
+        def __init__(self, K=2):
+            super().__init__()
+            self.K = K
 
-    def __repr__(self):
-        return '{}(K={})'.format(self.__class__.__name__, self.K)
+        def forward(self, x: Tensor, edge_index: Tensor,
+                    edge_weight: Tensor) -> Tensor:
+            N = x.size(0)
+            adj = torch.sparse.FloatTensor(edge_index, edge_weight, (N, N))
+            for _ in range(self.K):
+                x = torch.sparse.mm(adj, x)
+            return x
+
+        def __repr__(self):
+            return '{}(K={})'.format(self.__class__.__name__, self.K)
 
 
 @PyTorch.register()
@@ -56,7 +73,7 @@ class SGA(TargetedAttacker):
         X = torch.tensor(self.graph.node_attr).to(self.device)
         self.b = b
         self.XW = X @ W.T
-        self.SGC = SGConv(K)
+        self.SGC = SGConv(K).to(self.device)
         self.K = K
         self.surrogate = surrogate
         self.loss_fn = nn.CrossEntropyLoss()
@@ -97,18 +114,18 @@ class SGA(TargetedAttacker):
 
         self.subgraph_preprocessing(attacker_nodes)
         offset = self.edge_weights.shape[0]
-
+        edges = np.hstack([self.edge_index, self.non_edge_index])
         for it in tqdm(range(self.num_budgets),
                        desc='Peturbing Graph',
                        disable=disable):
             edge_grad, non_edge_grad = self.compute_gradient()
-            edge_grad *= (-2 * self.edge_weights + 1)
-            non_edge_grad *= (-2 * self.non_edge_weights + 1)
-            edge_grad = normalize_GCN(self.edge_index, edge_grad,
-                                      self.selfloop_degree)
-            non_edge_grad = normalize_GCN(self.non_edge_index, non_edge_grad,
-                                          self.selfloop_degree)
-            gradients = torch.cat([edge_grad, non_edge_grad], dim=0)
+
+            with torch.no_grad():
+                edge_grad *= (-2 * self.edge_weights + 1)
+                non_edge_grad *= (-2 * self.non_edge_weights + 1)
+                gradients = torch.cat([edge_grad, non_edge_grad], dim=0)
+                gradients = normalize_GCN(edges, gradients, self.selfloop_degree)
+
             index = torch.argmax(gradients)
             if index < offset:
                 u, v = self.edge_index[:, index]
@@ -136,14 +153,13 @@ class SGA(TargetedAttacker):
         else:
             influence_nodes = neighbors
 
-        self.construct_sub_adj(influence_nodes, wrong_label_nodes, sub_nodes,
-                               sub_edges)
+        self.construct_sub_adj(influence_nodes, wrong_label_nodes, sub_nodes, sub_edges)
 
         if attacker_nodes is not None:
             if self.direct_attack:
                 influence_nodes = [target]
                 wrong_label_nodes = self.top_k_wrong_labels_nodes(
-                    k=self.num_budgets + 2)
+                    k=self.num_budgets + 1)
 
             else:
                 influence_nodes = neighbors
@@ -155,20 +171,15 @@ class SGA(TargetedAttacker):
 
     def compute_gradient(self, eps=5.0):
 
-        edge_weights = normalize_GCN(self.edge_index, self.edge_weights,
-                                     self.selfloop_degree)
-        non_edge_weights = normalize_GCN(self.non_edge_index,
-                                         self.non_edge_weights,
-                                         self.selfloop_degree)
-        self_loop_weights = normalize_GCN(self.self_loop,
-                                          self.self_loop_weights,
-                                          self.selfloop_degree)
-
+        edge_weights = self.edge_weights
+        non_edge_weights = self.non_edge_weights
+        self_loop_weights = self.self_loop_weights
         weights = torch.cat([
             edge_weights, edge_weights, non_edge_weights, non_edge_weights,
             self_loop_weights
         ], dim=0)
 
+        weights = normalize_GCN(self.indices, weights, self.selfloop_degree)
         output = self.SGC(self.XW, self.indices, weights)
 
         logit = output[self.target] + self.b
