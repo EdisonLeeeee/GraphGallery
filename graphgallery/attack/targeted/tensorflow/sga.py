@@ -72,6 +72,11 @@ class SGA(TargetedAttacker):
                            desc='Peturbing Graph',
                            disable=disable):
                 edge_grad, non_edge_grad = self.compute_gradient()
+                edge_grad = normalize_GCN(self.edge_index, edge_grad,
+                                          self.selfloop_degree)
+                non_edge_grad = normalize_GCN(self.non_edge_index,
+                                              non_edge_grad,
+                                              self.selfloop_degree)
                 edge_grad *= (-2 * self.edge_weights + 1)
                 non_edge_grad *= (-2 * self.non_edge_weights + 1)
                 gradients = tf.concat([edge_grad, non_edge_grad], axis=0)
@@ -127,9 +132,18 @@ class SGA(TargetedAttacker):
         return out
 
     def compute_gradient(self, eps=5.0):
-        edge_weights = self.edge_weights
-        non_edge_weights = self.non_edge_weights
-        self_loop_weights = self.self_loop_weights
+        # edge_weights = self.edge_weights
+        # non_edge_weights = self.non_edge_weights
+        # self_loop_weights = self.self_loop_weights
+
+        edge_weights = normalize_GCN(self.edge_index, self.edge_weights,
+                                     self.selfloop_degree)
+        non_edge_weights = normalize_GCN(self.non_edge_index,
+                                         self.non_edge_weights,
+                                         self.selfloop_degree)
+        self_loop_weights = normalize_GCN(self.self_loop,
+                                          self.self_loop_weights,
+                                          self.selfloop_degree)
 
         with tf.GradientTape() as tape:
             tape.watch([edge_weights, non_edge_weights])
@@ -138,9 +152,8 @@ class SGA(TargetedAttacker):
                 edge_weights, edge_weights, non_edge_weights, non_edge_weights,
                 self_loop_weights
             ], axis=0)
-            weights = normalize_GCN(self.indices, weights, self.selfloop_degree)
-            adj = tf.sparse.SparseTensor(self.indices.T, weights,
-                                         self.shape)
+            # weights = normalize_GCN(self.indices, weights, self.selfloop_degree)
+            adj = tf.sparse.SparseTensor(self.indices.T, weights, self.shape)
 
             output = self.SGC_conv(self.XW, adj)
             logit = output[self.target] + self.b

@@ -110,7 +110,6 @@ class SGA(TargetedAttacker):
         self.true_label = torch.LongTensor([self.target_label]).to(self.device)
         self.subgraph_preprocessing(attacker_nodes)
         offset = self.edge_weights.shape[0]
-        edges = np.hstack([self.edge_index, self.non_edge_index])
         for it in tqdm(range(self.num_budgets),
                        desc='Peturbing Graph',
                        disable=disable):
@@ -120,7 +119,6 @@ class SGA(TargetedAttacker):
                 edge_grad *= (-2 * self.edge_weights + 1)
                 non_edge_grad *= (-2 * self.non_edge_weights + 1)
                 gradients = torch.cat([edge_grad, non_edge_grad], dim=0)
-                gradients = normalize_GCN(edges, gradients, self.selfloop_degree)
 
             index = torch.argmax(gradients)
             if index < offset:
