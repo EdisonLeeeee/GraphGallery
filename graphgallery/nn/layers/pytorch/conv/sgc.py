@@ -1,3 +1,4 @@
+import torch
 from torch.nn import Module
 
 
@@ -9,7 +10,7 @@ class SGConv(Module):
     def forward(self, x, adj):
 
         for _ in range(self.K):
-            x = adj.mm(x)
+            x = torch.spmm(adj, x)
 
         return x
 

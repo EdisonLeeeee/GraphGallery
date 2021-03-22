@@ -2,22 +2,18 @@ import tensorflow as tf
 from tensorflow.keras.layers import Layer
 
 
-class SGConv(Layer):
+class SSGConv(Layer):
     """
-        Simplifying graph convolution layer as in: 
-        [Simplifying Graph Convolutional Networks](https://arxiv.org/abs/1902.07153)
-        Pytorch implementation: https://github.com/Tiiiger/SGC
-
-        `SGConv` implements the operation:
-        `output = x @ adj^{K}`
-        where `x` is the node attribute matrix, `adj` is the adjacency matrix.
+        Simple spectral graph convolution layer as in: 
+        [Simple Spectral Graph Convolution](https://openreview.net/forum?id=CYO5T-YjWZV)
+        Pytorch implementation: https://github.com/allenhaozhu/SSGC   
 
         Note:
-          This `SGConv` layer has NOT any trainable parameters.
-
+          This `SSGConv` layer has NOT any trainable parameters.
 
         Parameters:
           K: Positive integer, the power of adjacency matrix, i.e., adj^{K}.
+          alpha: float
 
         Input shape:
           tuple/list with two 2-D tensor: Tensor `x` and SparseTensor `adj`: `[(num_nodes, num_node_attrs), (num_nodes, num_nodes)]`.
@@ -27,20 +23,24 @@ class SGConv(Layer):
           2-D tensor with shape: `(num_nodes, num_node_attrs)`.       
     """
 
-    def __init__(self, K=2, **kwargs):
+    def __init__(self, K=16, alpha=0.05, **kwargs):
         super().__init__(**kwargs)
         self.K = K
+        self.alpha = alpha
 
     def call(self, inputs):
         x, adj = inputs
-
+        x_in = x
+        x_out = x
         for _ in range(self.K):
-            x = tf.sparse.sparse_dense_matmul(adj, x)
-
-        return x
+            x = (1 - self.alpha) * tf.sparse.sparse_dense_matmul(adj, x)
+            x_out = x_out + x
+        x_out = x_out / self.K
+        x_out += self.alpha * x_in
+        return x_out
 
     def get_config(self):
-        config = {'K': self.K}
+        config = {'K': self.K, 'alpha': self.alpha}
 
         base_config = super().get_config()
         return {**base_config, **config}

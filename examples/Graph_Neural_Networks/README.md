@@ -147,7 +147,7 @@ In detail, the following methods are currently implemented:
 
 <details>
 <summary>
-<b>GCN</b> from <i>Du et al</i>,
+<b>TAGCN</b> from <i>Du et al</i>,
 <a href="https://arxiv.org/abs/1710.10370"> 📝<i>Topology Adaptive Graph Convolutional Networks (arxiv'17)</i> </a>
 </summary>
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/TAGCN.py"> [:octocat:TensorFLow] </a>
@@ -177,6 +177,17 @@ In detail, the following methods are currently implemented:
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyG/PDN.py"> [🔥PyG] </a>
 </details>
 </details>
+</details>
+
+<!-- 16 -->
+
+<details>
+<summary>
+<b>SSGC</b> from <i>Zhu et al</i>,
+<a href="https://openreview.net/forum?id=CYO5T-YjWZV"> 📝<i>Simple Spectral Graph Convolution (ICLR'21)</i> </a>
+</summary>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/SSGC.py"> [:octocat:TensorFLow] </a>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/SSGC.py"> [🔥PyTorch] </a>
 </details>
 
 ### Defense models (for Graph Adversarial Learning)

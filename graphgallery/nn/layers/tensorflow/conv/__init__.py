@@ -13,3 +13,4 @@ from .gcna import GCNAConv
 from .dagnn import PropConv
 from .tagcn import TAGConv
 from .appnp import APPNProp, PPNProp
+from .ssgc import SSGConv

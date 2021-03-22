@@ -10,6 +10,7 @@ from .tagcn import TAGCN
 from .appnp import APPNP, PPNP
 from .sgc import SGC
 from .graphsage import GraphSAGE
+from .ssgc import SSGC
 
 # experimantal model
 from .experimental.median_gcn import MedianGCN

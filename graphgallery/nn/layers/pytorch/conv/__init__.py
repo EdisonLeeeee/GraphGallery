@@ -8,3 +8,4 @@ from .dagnn import PropConv
 from .tagcn import TAGConv
 from .appnp import APPNProp, PPNProp
 from .graphsage import MeanAggregator
+from .ssgc import SSGConv
