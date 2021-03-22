@@ -19,7 +19,7 @@ class SSGC(Trainer):
                   adj_transform="normalize_adj",
                   attr_transform=None,
                   K=16, 
-                  alpha=0.05):
+                  alpha=0.1):
         graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
         node_attr = gf.get(attr_transform)(graph.node_attr)

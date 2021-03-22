@@ -23,7 +23,7 @@ class SSGConv(Layer):
           2-D tensor with shape: `(num_nodes, num_node_attrs)`.       
     """
 
-    def __init__(self, K=16, alpha=0.05, **kwargs):
+    def __init__(self, K=16, alpha=0.1, **kwargs):
         super().__init__(**kwargs)
         self.K = K
         self.alpha = alpha
@@ -31,11 +31,11 @@ class SSGConv(Layer):
     def call(self, inputs):
         x, adj = inputs
         x_in = x
-        x_out = x
+        x_out = tf.zeros_like(x)
         for _ in range(self.K):
-            x = (1 - self.alpha) * tf.sparse.sparse_dense_matmul(adj, x)
-            x_out = x_out + x
-        x_out = x_out / self.K
+            x = tf.sparse.sparse_dense_matmul(adj, x)
+            x_out += (1 - self.alpha) * x
+        x_out /= self.K
         x_out += self.alpha * x_in
         return x_out
 
