@@ -62,7 +62,9 @@ class TorchKeras(nn.Module):
         loss_fn = self.loss
         metrics = self.metrics
         optimizer.zero_grad()
-        x = [_x.to(device) for _x in x] if isinstance(x, (list, tuple)) else [x.to(device)]
+        if not isinstance(x, (list, tuple)):
+            x = [x]
+        x = [_x.to(device) if hasattr(x, 'to') else _x for _x in x]
         y = y.to(device)
         out = self(*x)
         if out_weight is not None:
@@ -85,7 +87,9 @@ class TorchKeras(nn.Module):
         self.eval()
         loss_fn = self.loss
         metrics = self.metrics
-        x = [_x.to(device) for _x in x] if isinstance(x, (list, tuple)) else [x.to(device)]
+        if not isinstance(x, (list, tuple)):
+            x = [x]
+        x = [_x.to(device) if hasattr(x, 'to') else _x for _x in x]
         y = y.to(device)
         out = self(*x)
         if out_weight is not None:
@@ -100,7 +104,9 @@ class TorchKeras(nn.Module):
     @torch.no_grad()
     def predict_step_on_batch(self, x, out_weight=None, device="cpu"):
         self.eval()
-        x = [_x.to(device) for _x in x] if isinstance(x, (list, tuple)) else [x.to(device)]
+        if not isinstance(x, (list, tuple)):
+            x = [x]
+        x = [_x.to(device) if hasattr(x, 'to') else _x for _x in x]
         out = self(*x)
         if out_weight is not None:
             out = out[out_weight]

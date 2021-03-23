@@ -43,7 +43,7 @@ class GraphSAGE(Trainer):
                    dropout=0.5,
                    weight_decay=5e-4,
                    lr=0.01,
-                   bias=True,
+                   bias=False,
                    output_normalize=False,
                    aggregator='mean',
                    num_samples=[15, 5]):

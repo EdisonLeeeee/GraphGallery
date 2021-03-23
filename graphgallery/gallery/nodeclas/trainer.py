@@ -157,7 +157,7 @@ class Trainer(Model):
         self.cfg.model.merge_from_dict(kwargs)
         return self
 
-    def build_from(self, model):
+    def build_from(self, model, **kwargs):
 
         if self.backend == "tensorflow":
             with tf.device(self.device):
@@ -168,6 +168,7 @@ class Trainer(Model):
         # Configs for model building
         self.cfg.model = gg.CfgNode()
         self.cfg.model.build_from_other_model = True
+        self.cfg.model.merge_from_dict(kwargs)
         return self
 
     def model_step(self, *args, **kwargs):
