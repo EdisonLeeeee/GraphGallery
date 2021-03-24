@@ -23,6 +23,12 @@ def cosine_similarity(A, B):
     C = inner_product / (np.sqrt(np.square(A).sum(1)) * np.sqrt(np.square(B).sum(1)) + gg.epsilon())
     return C
 
+# Using PyTorch
+# def cosine_similarity(A, B):
+#     inner_product = (A * B).sum(1)
+#     C = inner_product / (torch.norm(A, 2, 1) * torch.norm(B, 2, 1) + 1e-7)
+#     return C
+
 
 def filter_edges_by_similarity(adj_matrix, node_attr,
                                similarity_fn, threshold=0.01,

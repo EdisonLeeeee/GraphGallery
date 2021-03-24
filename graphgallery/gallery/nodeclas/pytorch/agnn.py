@@ -22,7 +22,7 @@ class AGNN(Trainer):
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
         node_attr = gf.get(attr_transform)(graph.node_attr)
 
-        X, A = gf.astensors(node_attr, adj_matrix.A, device=self.data_device)
+        X, A = gf.astensors(node_attr, adj_matrix, device=self.data_device)
 
         # ``A`` and ``X`` are cached for later use
         self.register_cache(X=X, A=A)

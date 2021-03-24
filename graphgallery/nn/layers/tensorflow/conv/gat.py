@@ -73,7 +73,7 @@ class GATConv(Layer):
         self.units = units  # Number of output attributes (F' in the paper)
         self.attn_heads = attn_heads  # Number of attention heads (K in the paper)
         self.reduction = reduction  # Eq. 5 and 6 in the paper
-        self.dropout = dropout  # Internal dropout rate
+        self.dropout = Dropout(dropout)  # Internal dropout rate
         self.activation = activations.get(activation)  # Eq. 4 in the paper
         self.use_bias = use_bias
 
@@ -181,10 +181,10 @@ class GATConv(Layer):
             # Apply dropout to attributes and attention coefficients
             if self.dropout:
                 attentions = tf.sparse.SparseTensor(indices=attentions.indices,
-                                                    values=Dropout(rate=self.dropout)(attentions.values),
+                                                    values=self.dropout(attentions.values),
                                                     dense_shape=attentions.dense_shape
                                                     )  # (N x N)
-                h = Dropout(self.dropout)(h)  # (N x F')
+                h = self.dropout(h)  # (N x F')
 
             # Linear combination with neighbors' attributes
             h = tf.sparse.sparse_dense_matmul(attentions, h)  # (N x F')
