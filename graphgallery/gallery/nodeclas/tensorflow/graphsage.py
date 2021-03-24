@@ -16,11 +16,11 @@ class GraphSAGE(Trainer):
         Pytorch implementation: <https://github.com/williamleif/graphsage-simple/>
     """
 
-    def custom_setup(self,
-                     num_samples_train=[15, 5],
-                     num_samples_test=[15, 5]):
-        self.cfg.fit.num_samples = num_samples_train
-        self.cfg.evaluate.num_samples = num_samples_test
+    # def custom_setup(self,
+    #                  sizes_train=[15, 5],
+    #                  sizes_test=[15, 5]):
+    #     self.cfg.fit.sizes = sizes_train
+    #     self.cfg.evaluate.sizes = sizes_test
 
     def data_step(self,
                   adj_transform="neighbor_sampler",
@@ -47,7 +47,7 @@ class GraphSAGE(Trainer):
                    bias=True,
                    output_normalize=False,
                    aggregator='mean',
-                   num_samples=[15, 5]):
+                   sizes=[15, 5]):
 
         model = get_model("GraphSAGE", self.backend)
         model = model(self.graph.num_node_attrs,
@@ -60,7 +60,7 @@ class GraphSAGE(Trainer):
                       bias=bias,
                       aggregator=aggregator,
                       output_normalize=output_normalize,
-                      num_samples=num_samples)
+                      sizes=sizes)
 
         return model
 
@@ -70,6 +70,6 @@ class GraphSAGE(Trainer):
         sequence = SAGEMiniBatchSequence(
             [self.cache.X, self.cache.A, index],
             labels,
-            num_samples=self.cfg.model.num_samples,
+            sizes=self.cfg.model.sizes,
             device=self.data_device)
         return sequence

@@ -5,12 +5,12 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tensorflow import MeanAggregator, GCNAggregator, MedianAggregator, MedianGCNAggregator
+from graphgallery.nn.layers.tensorflow import SAGEAggregator, GCNAggregator, MedianAggregator, MedianGCNAggregator
 from graphgallery import floatx, intx
 from graphgallery.nn.models import TFKeras
 
 
-_AGG = {'mean': MeanAggregator,
+_AGG = {'mean': SAGEAggregator,
         'gcn': GCNAggregator,
         'median': MedianAggregator,
         'mediangcn': MedianGCNAggregator
@@ -22,7 +22,7 @@ class GraphSAGE(TFKeras):
     def __init__(self, in_features, out_features,
                  hids=[32], acts=['relu'], dropout=0.5,
                  weight_decay=5e-4, lr=0.01, bias=True,
-                 aggregator='mean', output_normalize=False, num_samples=[15, 5]):
+                 aggregator='mean', output_normalize=False, sizes=[15, 5]):
 
         Agg = _AGG.get(aggregator, None)
         if not Agg:
@@ -34,7 +34,7 @@ class GraphSAGE(TFKeras):
                   dtype=floatx(), name='node_attr')
         nodes = Input(batch_shape=[None], dtype=_intx, name='nodes')
         neighbors = [Input(batch_shape=[None], dtype=_intx, name=f'neighbors_{hop}')
-                     for hop, num_sample in enumerate(num_samples)]
+                     for hop, num_sample in enumerate(sizes)]
 
         aggregators = []
         for hid, act in zip(hids, acts):
@@ -49,11 +49,11 @@ class GraphSAGE(TFKeras):
              for node in [nodes, *neighbors]]
         for agg_i, aggregator in enumerate(aggregators):
             attribute_shape = h[0].shape[-1]
-            for hop in range(len(num_samples) - agg_i):
-                neighbor_shape = [-1, num_samples[hop], attribute_shape]
+            for hop in range(len(sizes) - agg_i):
+                neighbor_shape = [-1, sizes[hop], attribute_shape]
                 h[hop] = aggregator(
                     [h[hop], tf.reshape(h[hop + 1], neighbor_shape)])
-                if hop != len(num_samples) - 1:
+                if hop != len(sizes) - 1:
                     h[hop] = Dropout(rate=dropout)(h[hop])
             h.pop()
 

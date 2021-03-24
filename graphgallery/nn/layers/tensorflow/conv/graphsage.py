@@ -4,7 +4,7 @@ from tensorflow.keras.layers import Layer
 import tensorflow as tf
 
 
-class MeanAggregator(Layer):
+class SAGEAggregator(Layer):
     """
         Basic graphSAGE convolution layer as in: 
         [Inductive Representation Learning on Large Graphs](https://arxiv.org/abs/1706.02216)
@@ -13,7 +13,7 @@ class MeanAggregator(Layer):
 
         Aggregates via mean followed by matmul and non-linearity.
 
-        `MeanAggregator` implements the operation:
+        `SAGEAggregator` implements the operation:
         `output = activation(Concat(x @ kernel_0, Agg(neigh_x) @ kernel_1) + bias)`
         where `x` is the node attribute matrix, `neigh_x` is the node attribute matrix of neighbors,
         `Agg` is the operation of aggregation (`mean`, `sum`, `max`, `min`) along the last dimension,
@@ -49,7 +49,7 @@ class MeanAggregator(Layer):
 
         Input shape:
           tuple/list with two tensor: 2-D Tensor `x` and 3-D Tensor `neigh_x`: 
-          `[(batch_num_nodes, num_node_attrs), (batch_num_nodes, num_samples, num_node_attrs)]`.
+          `[(batch_num_nodes, num_node_attrs), (batch_num_nodes, sizes, num_node_attrs)]`.
           The former one is the node attribute matrix (Tensor) and the last is the neighbor node attribute matrix (Tensor).
 
         Output shape:
@@ -209,7 +209,7 @@ class GCNAggregator(Layer):
 
         Input shape:
           tuple/list with two tensor: 2-D Tensor `x` and 3-D Tensor `neigh_x`: 
-          `[(batch_num_nodes, num_node_attrs), (batch_num_nodes, num_samples, num_node_attrs)]`.
+          `[(batch_num_nodes, num_node_attrs), (batch_num_nodes, sizes, num_node_attrs)]`.
           The former one is the node attribute matrix (Tensor) and the last is the neighbor node attribute matrix (Tensor).
 
         Output shape:
@@ -231,7 +231,7 @@ class GCNAggregator(Layer):
                  bias_constraint=None,
                  **kwargs):
 
-        kwargs.pop('concat', None)  # in order to be compatible with `MeanAggregator`
+        kwargs.pop('concat', None)  # in order to be compatible with `SAGEAggregator`
         super().__init__(**kwargs)
         self.units = units
         self.use_bias = use_bias

@@ -3,7 +3,7 @@ from .sgc import SGConv
 from .gat import GATConv
 from .gwnn import WaveletConv
 from .robustgcn import GaussionConvF, GaussionConvD
-from .graphsage import MeanAggregator, GCNAggregator
+from .graphsage import SAGEAggregator, GCNAggregator
 from .chebynet import ChebConv
 from .densegcn import DenseConv
 from .lgcn import LGConv

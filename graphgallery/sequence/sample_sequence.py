@@ -13,7 +13,7 @@ class SBVATSampleSequence(Sequence):
         y,
         neighbors,
         out_weight=None,
-        num_samples=50,
+        sizes=50,
         resample=True,
         *args, **kwargs
     ):
@@ -23,7 +23,7 @@ class SBVATSampleSequence(Sequence):
         self.out_weight = out_weight
         self.neighbors = neighbors
         self.num_nodes = x[0].shape[0]
-        self.num_samples = num_samples
+        self.sizes = sizes
         self.adv_mask = self.smple_nodes()
         self.resample = resample
 
@@ -40,8 +40,8 @@ class SBVATSampleSequence(Sequence):
     def smple_nodes(self):
         N = self.num_nodes
         flag = np.zeros(N, dtype=np.bool)
-        adv_index = np.zeros(self.num_samples, dtype='int32')
-        for i in range(self.num_samples):
+        adv_index = np.zeros(self.sizes, dtype='int32')
+        for i in range(self.sizes):
             n = np.random.randint(0, N)
             while flag[n]:
                 n = np.random.randint(0, N)

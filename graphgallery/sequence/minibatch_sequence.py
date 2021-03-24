@@ -50,7 +50,7 @@ class SAGEMiniBatchSequence(Sequence):
         x,
         y=None,
         out_weight=None,
-        num_samples=[5, 5],
+        sizes=[5, 5],
         shuffle=False,
         batch_size=512,
         *args, **kwargs
@@ -62,7 +62,7 @@ class SAGEMiniBatchSequence(Sequence):
         self.shuffle = shuffle
         self.batch_size = batch_size
         self.indices = np.arange(len(self.batch_nodes))
-        self.num_samples = num_samples
+        self.sizes = sizes
 
         self.node_attr = self.astensor(self.node_attr)
 
@@ -77,7 +77,7 @@ class SAGEMiniBatchSequence(Sequence):
             idx = slice(index * self.batch_size, (index + 1) * self.batch_size)
 
         nodes_input = [self.batch_nodes[idx]]
-        for num_sample in self.num_samples:
+        for num_sample in self.sizes:
             neighbors = sample_neighbors(
                 self.adj_matrix, nodes_input[-1], num_sample).ravel()
             nodes_input.append(neighbors)

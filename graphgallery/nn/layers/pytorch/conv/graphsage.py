@@ -2,12 +2,13 @@ import torch
 import torch.nn as nn
 from graphgallery.nn.init.pytorch import glorot_uniform, zeros
 
-class MeanAggregator(nn.Module):
-    def __init__(self, in_features, out_features, 
+
+class SAGEAggregator(nn.Module):
+    def __init__(self, in_features, out_features,
                  agg_method='mean',
-                 concat=False, 
+                 concat=False,
                  bias=False):
-        
+
         super().__init__()
         self.in_features = in_features
         self.out_features = out_features
@@ -23,7 +24,7 @@ class MeanAggregator(nn.Module):
     def reset_parameters(self):
         self.lin_l.reset_parameters()
         self.lin_r.reset_parameters()
-        
+
     def forward(self, x, neigh_x):
         neigh_x = self.lin_r(self.aggregator(neigh_x, dim=1))
         x = self.lin_l(x)

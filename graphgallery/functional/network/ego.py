@@ -65,6 +65,10 @@ def ego_graph(adj_matrix, targets, hops: int = 1):
 
     if np.ndim(targets) == 0:
         targets = [targets]
+    elif isinstance(targets, np.ndarray):
+        targets = targets.tolist()
+    else:
+        targets = list(targets)
 
     indices = adj_matrix.indices
     indptr = adj_matrix.indptr
