@@ -11,6 +11,7 @@ from .appnp import APPNP, PPNP
 from .sgc import SGC
 from .graphsage import GraphSAGE
 from .ssgc import SSGC
+from .agnn import AGNN
 
 # experimantal model
 from .experimental.median_gcn import MedianGCN
