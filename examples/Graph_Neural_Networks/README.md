@@ -190,6 +190,17 @@ In detail, the following methods are currently implemented:
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/SSGC.py"> [🔥PyTorch] </a>
 </details>
 
+<!-- 17 -->
+
+<details>
+<summary>
+<b>AGNN</b> from <i>Zhu et al</i>,
+<a href="https://arxiv.org/abs/1609.02907"> 📝<i>Attention-based Graph Neural Network for semi-supervised learning (ICLR'18 openreview)</i> </a>
+</summary>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/AGNN.py"> [:octocat:TensorFLow] </a>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/AGNN.py"> [🔥PyTorch] </a>
+</details>
+
 ### Defense models (for Graph Adversarial Learning)
 
 #### Robust Optimization
@@ -268,7 +279,7 @@ so, here we only give the examples of `GCN` with purification methods, other mod
 <!-- 1 -->
 <details>
 <summary>
-<b>Deepwalk</b> from <i>Zhijie Deng et al</i>,
+<b>Deepwalk</b> from <i>Bryan Perozzi et al</i>,
 <a href="https://arxiv.org/abs/1403.6652"> 📝<i>DeepWalk: Online Learning of Social Representations (KDD'14)</i> </a>
 </summary>
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/Common/Deepwalk.py"> [Example] </a>
@@ -277,7 +288,7 @@ so, here we only give the examples of `GCN` with purification methods, other mod
 <!-- 2 -->
 <details>
 <summary>
-<b>Node2vec</b> from <i>Zhijie Deng et al</i>,
+<b>Node2vec</b> from <i>Aditya Grover and Jure Leskovec</i>,
 <a href="https://arxiv.org/abs/1607.00653"> 📝<i>node2vec: Scalable Feature Learning for Networks (KDD'16)</i> </a>
 </summary>
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/Common/Node2vec.py"> [Example] </a>
