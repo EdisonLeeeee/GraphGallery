@@ -13,3 +13,4 @@ from .graphsage import GraphSAGE
 from .mlp import MLP
 from .tagcn import TAGCN
 from .appnp import APPNP
+from .agnn import AGNN

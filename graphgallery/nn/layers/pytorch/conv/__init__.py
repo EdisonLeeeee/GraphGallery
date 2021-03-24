@@ -9,3 +9,4 @@ from .tagcn import TAGConv
 from .appnp import APPNProp, PPNProp
 from .graphsage import SAGEAggregator
 from .ssgc import SSGConv
+from .sim_attention import SimilarityAttention

@@ -17,6 +17,7 @@ from .mlp import MLP
 from .tagcn import TAGCN
 from .appnp import APPNP, PPNP
 from .ssgc import SSGC
+from .agnn import AGNN
 
 # experimental model
 from .experimental.edgeconv import EdgeGCN

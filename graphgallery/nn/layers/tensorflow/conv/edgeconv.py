@@ -104,11 +104,10 @@ class GCNEdgeConv(Layer):
 
         row, col = tf.unstack(edge_index, axis=1)
 
-#         repeated_h = tf.gather(h, row)
-        neighbor_h = tf.gather(h, col)
+        neighbor_h = tf.gather(h, row)
 
         neighbor_msg = neighbor_h * tf.expand_dims(edge_weight, 1)
-        reduced_msg = tf.math.unsorted_segment_sum(neighbor_msg, row, num_segments=tf.shape(x)[0])
+        reduced_msg = tf.math.unsorted_segment_sum(neighbor_msg, col, num_segments=tf.shape(x)[0])
 
         output = reduced_msg
 
