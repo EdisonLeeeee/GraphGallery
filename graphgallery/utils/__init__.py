@@ -5,3 +5,4 @@ from .context_manager import nullcontext
 from .progbar import Progbar
 from .misc import *
 from .logging import set_logger, get_logger
+from .timeout import TimeOut

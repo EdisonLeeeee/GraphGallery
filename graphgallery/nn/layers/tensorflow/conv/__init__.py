@@ -15,3 +15,4 @@ from .tagcn import TAGConv
 from .appnp import APPNProp, PPNProp
 from .ssgc import SSGConv
 from .sim_attention import SimilarityAttention
+from .arma import ARMAConv

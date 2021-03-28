@@ -201,6 +201,17 @@ In detail, the following methods are currently implemented:
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/AGNN.py"> [🔥PyTorch] </a>
 </details>
 
+<!-- 18 -->
+
+<details>
+<summary>
+<b>ARMA</b> from <i>Bianchi et al.</i>,
+<a href="https://arxiv.org/abs/1901.01343"> 📝<i>Graph Neural Networks with convolutional ARMA filters (Arxiv'19)</i> </a>
+</summary>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/ARMA.py"> [:octocat:TensorFLow] </a>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/ARMA.py"> [🔥PyTorch] </a>
+</details>
+
 ### Defense models (for Graph Adversarial Learning)
 
 #### Robust Optimization

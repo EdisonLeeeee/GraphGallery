@@ -18,6 +18,7 @@ from .tagcn import TAGCN
 from .appnp import APPNP, PPNP
 from .ssgc import SSGC
 from .agnn import AGNN
+from .arma import ARMA
 
 # experimental model
 from .experimental.edgeconv import EdgeGCN

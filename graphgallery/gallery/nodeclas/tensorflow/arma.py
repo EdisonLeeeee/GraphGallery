@@ -6,13 +6,12 @@ from graphgallery.nn.models import get_model
 
 
 @TensorFlow.register()
-class GCN(Trainer):
+class ARMA(Trainer):
     """
-        Implementation of Graph Convolutional Networks (GCN).
-        `Semi-Supervised Classification with Graph Convolutional Networks
-        <https://arxiv.org/abs/1609.02907>`
-        Tensorflow 1.x implementation: <https://github.com/tkipf/gcn>
-        Pytorch implementation: <https://github.com/tkipf/pygcn>
+        Implementation of ARMA model.
+        `Graph Neural Networks with convolutional ARMA filters
+        <https://arxiv.org/abs/1901.01343>`
+        Tensorflow 2.x implementation: <https://github.com/danielegrattarola/spektral/blob/master/spektral/layers/convolutional/arma_conv.py>
     """
 
     def data_step(self,
@@ -30,17 +29,21 @@ class GCN(Trainer):
 
     def model_step(self,
                    hids=[16],
-                   acts=['relu'],
+                   acts=['elu'],
+                   order=2,
+                   iterations=1,
                    dropout=0.5,
-                   weight_decay=5e-4,
+                   weight_decay=5e-5,
                    lr=0.01,
-                   bias=False):
+                   bias=True):
 
-        model = get_model("GCN", self.backend)
+        model = get_model("ARMA", self.backend)
         model = model(self.graph.num_node_attrs,
                       self.graph.num_node_classes,
                       hids=hids,
                       acts=acts,
+                      order=order,
+                      iterations=iterations,
                       dropout=dropout,
                       weight_decay=weight_decay,
                       lr=lr,
