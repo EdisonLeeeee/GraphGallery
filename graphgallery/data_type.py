@@ -1,4 +1,5 @@
 import torch
+import collections
 import numpy as np
 import tensorflow as tf
 import graphgallery as gg
@@ -19,7 +20,7 @@ __all__ = [
 
 def is_iterable(x: Any) -> bool:
     """Check whether `x` is an iterable object except for string."""
-    return isinstance(x, Iterable) and not isinstance(x, str)
+    return isinstance(x, collections.abc.Iterable) and not isinstance(x, (str, bytes))
 
 
 def is_listlike(x: Any) -> bool:
