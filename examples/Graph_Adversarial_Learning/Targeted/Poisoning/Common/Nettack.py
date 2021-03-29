@@ -12,7 +12,7 @@ splits = data.split_nodes(random_state=15)
 
 ################### Surrogate model ############################
 # Nettack takes no activation layer
-trainer = gg.gallery.nodeclas.GCN(graph, seed=42).process().build(acts=None)
+trainer = gg.gallery.nodeclas.GCN(seed=42).make_data(graph).build(acts=None)
 his = trainer.fit(splits.train_nodes,
                   splits.val_nodes,
                   verbose=1,
