@@ -28,6 +28,7 @@ class GraphSAGE(TFKeras):
         if not Agg:
             raise ValueError(
                 f"Invalid value of 'aggregator', allowed values {tuple(_AGG.keys())}, but got '{aggregator}'.")
+        assert len(sizes) == len(hids) + 1
 
         _intx = intx()
         x = Input(batch_shape=[None, in_features],
@@ -47,13 +48,13 @@ class GraphSAGE(TFKeras):
 
         h = [tf.nn.embedding_lookup(x, node)
              for node in [nodes, *neighbors]]
-        for agg_i, aggregator in enumerate(aggregators):
+        for i, aggregator in enumerate(aggregators):
             attribute_shape = h[0].shape[-1]
-            for hop in range(len(sizes) - agg_i):
+            for hop in range(len(sizes) - i):
                 neighbor_shape = [-1, sizes[hop], attribute_shape]
                 h[hop] = aggregator(
                     [h[hop], tf.reshape(h[hop + 1], neighbor_shape)])
-                if hop != len(sizes) - 1:
+                if i != len(sizes) - 1:
                     h[hop] = Dropout(rate=dropout)(h[hop])
             h.pop()
 

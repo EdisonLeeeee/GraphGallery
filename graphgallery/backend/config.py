@@ -1,5 +1,4 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
-import logging
 import os
 import warnings
 from typing import IO, Any, Callable, Dict, List, Union

@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-from graphgallery.nn.init.pytorch import glorot_uniform, zeros
 
 
 class SAGEAggregator(nn.Module):
@@ -26,7 +25,14 @@ class SAGEAggregator(nn.Module):
         self.lin_r.reset_parameters()
 
     def forward(self, x, neigh_x):
-        neigh_x = self.lin_r(self.aggregator(neigh_x, dim=1))
+        if not isinstance(x, torch.Tensor):
+            x = torch.cat(x, dim=0)
+        if not isinstance(neigh_x, torch.Tensor):
+            neigh_x = torch.cat([self.aggregator(h, dim=1) for h in neigh_x], dim=0)
+        else:
+            neigh_x = self.aggregator(neigh_x, dim=1)
+
+        neigh_x = self.lin_r(neigh_x)
         x = self.lin_l(x)
         out = torch.cat([x, neigh_x], dim=1) if self.concat else x + neigh_x
         return out

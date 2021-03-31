@@ -187,8 +187,7 @@ class Trainer(Model):
 
         if log_cfg.enabled:
             log_cfg.name = log_cfg.name or self.name
-            logger = gg.utils.set_logger(log_cfg.name,
-                                         log_cfg.filepath, log_cfg.level)
+            logger = gg.utils.setup_logger(output=log_cfg.filepath, name=log_cfg.name)
 
         model = self.model
         if model is None:
@@ -218,7 +217,7 @@ class Trainer(Model):
         model.stop_training = False
 
         verbose = cfg.verbose
-        assert not (verbose and log_cfg.enabled), "Progbar and Logger cannot be used together!"
+        assert not (verbose and log_cfg.enabled), "Progbar and Logger cannot be used together! You must set `verbose=0` when Logger is enabled."
 
         if verbose:
             if verbose <= 2:
@@ -226,7 +225,9 @@ class Trainer(Model):
                                   width=pb_cfg.width,
                                   verbose=verbose)
             print("Training...")
-
+        elif log_cfg.enabled:
+            logger.info("Training...")
+            
         logs = gf.BunchDict()
         callbacks.on_train_begin()
         try:
@@ -258,10 +259,13 @@ class Trainer(Model):
                 elif verbose:
                     progbar.update(epoch + 1, logs.items())
                 elif log_cfg.enabled:
-                    logger.info(gg.utils.dict_to_string(logs, fmt="%.4f"))
+                    logger.info(f"Epoch {epoch+1}/{cfg.epochs}\n{gg.utils.create_table(logs)}")
 
                 if model.stop_training:
-                    print(f"Early Stopping at Epoch {epoch}", file=sys.stderr)
+                    if log_cfg.enabled:
+                        logger.info(f"Early Stopping at Epoch {epoch}")
+                    else:
+                        print(f"Early Stopping at Epoch {epoch}", file=sys.stderr)
                     break
 
             callbacks.on_train_end()

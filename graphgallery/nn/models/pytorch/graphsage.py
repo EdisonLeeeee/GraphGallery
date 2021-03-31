@@ -1,4 +1,3 @@
-import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -26,6 +25,7 @@ class GraphSAGE(TorchKeras):
 
         self.output_normalize = output_normalize
         self.sizes = sizes
+        assert len(sizes) == len(hids) + 1
 
         aggregators, act_layers = nn.ModuleList(), nn.ModuleList()
         for hid, act in zip(hids, acts):
@@ -47,17 +47,15 @@ class GraphSAGE(TorchKeras):
         sizes = self.sizes
 
         h = [x[node] for node in [nodes, *neighbors]]
-        for agg_i, aggregator in enumerate(self.aggregators):
-            attribute_shape = h[0].shape[-1]
-            for hop in range(len(sizes) - agg_i):
-                neighbor_shape = [-1, sizes[hop], attribute_shape]
+        for i, aggregator in enumerate(self.aggregators):
+            dim = h[0].size(-1)
+            for j in range(len(sizes) - i):
                 # x, neigh_x
-                h[hop] = aggregator(h[hop], h[hop + 1].view(neighbor_shape))
-                if hop != len(sizes) - 1:
-                    h[hop] = self.dropout(self.acts[hop](h[hop]))
+                h[j] = aggregator(h[j], h[j + 1].view(-1, sizes[j], dim))
+                if i != len(sizes) - 1:
+                    h[j] = self.dropout(self.acts[i](h[j]))
             h.pop()
         h = h[0]
         if self.output_normalize:
             h = F.normalize(h, dim=1, p=2)
-
         return h

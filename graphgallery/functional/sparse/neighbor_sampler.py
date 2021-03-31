@@ -5,7 +5,6 @@ from numba import njit
 from ..base_transforms import SparseTransform
 from ..transform import Transform
 from ..sparse import add_selfloops, eliminate_selfloops
-from graphgallery import intx
 
 
 @Transform.register()
@@ -21,22 +20,21 @@ class NeighborSampler(SparseTransform):
                                 selfloop=self.selfloop)
 
 
-
 @njit
 def sample(indices, indptr, max_degree=25):
-        N = len(indptr) - 1
-        M = N * np.ones((N + 1, max_degree), dtype=np.int32)
-        for n in range(N):
-            neighbors = indices[indptr[n]:indptr[n + 1]]
-            size = neighbors.size
-           
-            if size > max_degree:
-                neighbors = np.random.choice(neighbors, max_degree, replace=False)
-            elif size < max_degree:
-                neighbors = np.random.choice(neighbors, max_degree, replace=True)
-            M[n] = neighbors
-        return M
-           
+    N = len(indptr) - 1
+    M = N * np.ones((N + 1, max_degree), dtype=np.int32)
+    for n in range(N):
+        neighbors = indices[indptr[n]:indptr[n + 1]]
+        size = neighbors.size
+
+        if size > max_degree:
+            neighbors = np.random.choice(neighbors, max_degree, replace=False)
+        elif size < max_degree:
+            neighbors = np.random.choice(neighbors, max_degree, replace=True)
+        M[n] = neighbors
+    return M
+
 
 def neighbor_sampler(adj_matrix: sp.csr_matrix, max_degree: int = 25,
                      selfloop: bool = True):
@@ -44,7 +42,7 @@ def neighbor_sampler(adj_matrix: sp.csr_matrix, max_degree: int = 25,
         adj_matrix = add_selfloops(adj_matrix)
     else:
         adj_matrix = eliminate_selfloops(adj_matrix)
-    
+
     M = sample(adj_matrix.indices, adj_matrix.indptr, max_degree=max_degree)
     np.random.shuffle(M.T)
     return M

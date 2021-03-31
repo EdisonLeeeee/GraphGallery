@@ -1,5 +1,30 @@
 import six
-__all__ = ["dict_to_string", "merge_as_list", "ask_to_proceed_with_overwrite"]
+from tabulate import tabulate
+
+__all__ = ["dict_to_string", "merge_as_list",
+"ask_to_proceed_with_overwrite", "create_table"]
+
+
+def create_table(small_dict):
+    """
+    Create a small table using the keys of small_dict as headers. This is only
+    suitable for small dictionaries.
+    Args:
+        small_dict (dict): a result dictionary of only a few items.
+    Returns:
+        str: the table as a string.
+    """
+    keys, values = tuple(zip(*small_dict.items()))
+    table = tabulate(
+        [values],
+        headers=keys,
+        tablefmt="pipe",
+        floatfmt=".3f",
+        stralign="center",
+        numalign="center",
+    )
+    return table
+
 
 def dict_to_string(d, fmt="%.4f"):
     s = ""

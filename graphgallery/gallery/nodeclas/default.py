@@ -59,7 +59,6 @@ def default_cfg_setup(cfg):
     cfg.fit.Logger.enabled = False
     cfg.fit.Logger.name = None
     cfg.fit.Logger.filepath = None
-    cfg.fit.Logger.level = 'INFO'
 
     cfg.fit.TensorBoard = gg.CfgNode()
     cfg.fit.TensorBoard.enabled = False
