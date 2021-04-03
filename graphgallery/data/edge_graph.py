@@ -4,8 +4,6 @@ import networkx as nx
 import os.path as osp
 import scipy.sparse as sp
 
-from typing import Union, Optional, List, Tuple, Any
-
 from .hetegraph import HeteGraph
 
 

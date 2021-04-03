@@ -57,14 +57,14 @@ class ListGraph(BaseGraph):
         print(f"All the graphs are loaded from {filepath} (identified from 0 to {i-1})", file=sys.stderr)
         return cls(*graphs, copy=True)
 
-    def to_npz(self, filepath: str, apply_fn=sparse_apply):
+    def to_npz(self, filepath: str, apply_fn=sparse_apply, compressed=True):
         assert not filepath.endswith(".npz"), filepath
         filepath = osp.abspath(osp.expanduser(filepath))
         makedirs(filepath)
         name = osp.split(filepath)[1]
         for i, graph in enumerate(self.graphs):
             path = osp.join(filepath, f"{name}_{str(i)}")
-            graph.to_npz(path)
+            graph.to_npz(path, apply_fn=apply_fn, compressed=compressed)
         print(f"All the graphs are saved to {filepath} (identified from 0 to {i})", file=sys.stderr)
         return filepath
 

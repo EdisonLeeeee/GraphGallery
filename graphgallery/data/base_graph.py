@@ -191,8 +191,8 @@ class BaseGraph:
         for key in keys:
             yield getattr(self, key, None)
 
-    def __dir__(self):
-        return self.keys()
+    # def __dir__(self):
+    #     return self.keys()
 
     def __copy__(self):
         cls = self.__class__

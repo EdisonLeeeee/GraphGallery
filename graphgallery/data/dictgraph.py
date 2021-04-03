@@ -52,13 +52,13 @@ class DictGraph(BaseGraph):
         print(f"All the graphs are loaded from {filepath} (identified by its file name)", file=sys.stderr)
         return cls(**graphs, copy=True)
 
-    def to_npz(self, filepath: str, apply_fn=sparse_apply):
+    def to_npz(self, filepath: str, apply_fn=sparse_apply, compressed=True):
         assert not filepath.endswith(".npz"), filepath
         filepath = osp.abspath(osp.expanduser(filepath))
         makedirs(filepath)
         for graph_name, graph in self.graphs.items():
             path = osp.join(filepath, f"{graph_name}")
-            graph.to_npz(path)
+            graph.to_npz(path, apply_fn=apply_fn, compressed=compressed)
         print(f"All the graphs are saved to {filepath} (identified by its name)", file=sys.stderr)
         return filepath
 

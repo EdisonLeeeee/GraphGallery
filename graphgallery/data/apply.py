@@ -1,7 +1,6 @@
 import warnings
 import numpy as np
 import scipy.sparse as sp
-from typing import Union, Optional, List, Tuple, Any
 from graphgallery import functional as gf
 
 from ..data_type import is_multiobjects
