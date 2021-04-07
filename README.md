@@ -27,6 +27,9 @@
 # GraphGallery
 GraphGallery is a gallery for benchmarking Graph Neural Networks (GNNs) and Graph Adversarial Learning with [TensorFlow 2.x](https://github.com/tensorflow/tensorflow) and [PyTorch](https://github.com/pytorch/pytorch) backend. Besides, [Pytorch Geometric (PyG)](https://github.com/rusty1s/pytorch_geometric) backend and [Deep Graph Library (DGL)](https://github.com/dmlc/dgl) backend now are available in GraphGallery.
 
+
+![demo](./imgs/demo.gif)
+
 # 💨 NEWS
 We have integrated the **Adversarial Attacks** in this project, examples please refer to [Graph Adversarial Learning examples](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Adversarial_Learning).
 
