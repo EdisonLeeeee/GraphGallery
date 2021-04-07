@@ -4,7 +4,6 @@
 </p>
 
 <p align="center"><strong><em>TensorFLow</em> or <em>PyTorch</em>? Both!</strong></p>
-<!-- <p align="center"><strong>A <em>gallery</em> of state-of-the-art Graph Neural Networks (GNNs) for TensorFlow and PyTorch</strong>.</p> -->
 
 <p align=center>
   <a href="https://www.python.org/downloads/release/python-360/">
@@ -39,7 +38,7 @@ pip install -U graphgallery
 ```
 or
 ```bash
-https://github.com/EdisonLeeeee/GraphGallery.git
+git clone https://github.com/EdisonLeeeee/GraphGallery.git
 cd GraphGallery
 pip install -e .
 ```
