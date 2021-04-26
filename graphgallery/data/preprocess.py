@@ -70,6 +70,50 @@ def binarize_labels(labels, sparse_output: bool = False, returnum_node_classes: 
     return (label_matrix, binarizer.classes_) if returnum_node_classes else label_matrix
 
 
+
+def get_train_val_test_split_gcn(labels, num_samples=20, random_state=None):
+    """This setting follows gcn, where we randomly sample 'num_samples' instances for each class as training data, 500 instances as validation data, 1000 instances as test data.
+
+    Note here we are not using fixed splits. When random_state changes, the splits ofwill also change.
+
+    Parameters
+    ----------
+    labels : numpy.array
+        node labels
+    num_samples: int
+        the number of samples of each class for training
+    random_state : int or None
+        random random_state
+
+    Returns
+    -------
+    idx_train :
+        node training indices
+    idx_val :
+        node validation indices
+    idx_test :
+        node test indices
+    """
+    if random_state is not None:
+        np.random.seed(random_state)
+
+    idx = np.arange(len(labels))
+    nclass = labels.max() + 1
+    idx_train = []
+    idx_unlabeled = []
+    for i in range(nclass):
+        labels_i = idx[labels == i]
+        labels_i = np.random.permutation(labels_i)
+        idx_train.append(labels_i[:num_samples])
+        idx_unlabeled.append(labels_i[num_samples:])
+
+    idx_train = np.hstack(idx_train)
+    idx_unlabeled = np.hstack(idx_unlabeled)
+    idx_unlabeled = np.random.permutation(idx_unlabeled)
+    idx_val = idx_unlabeled[: 500]
+    idx_test = idx_unlabeled[500: 1500]
+    return idx_train, idx_val, idx_test
+
 def get_train_val_test_split(stratify,
                              trainum_examples_per_class: int,
                              val_examples_per_class: int,

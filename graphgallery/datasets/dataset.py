@@ -5,7 +5,9 @@ from typing import Union, Optional, List, Tuple, Callable
 from tabulate import tabulate
 
 from graphgallery import functional as gf
-from ..data.preprocess import train_val_test_split_tabular, get_train_val_test_split
+from ..data.preprocess import (train_val_test_split_tabular, 
+                                get_train_val_test_split, 
+                                get_train_val_test_split_gcn)
 
 
 class Dataset:
@@ -80,22 +82,39 @@ class Dataset:
                  test_nodes=test_nodes))
         return self.splits
 
+    def split_nodes_as_gcn(self,
+                              num_samples: int = 20,
+                              random_state: Optional[int] = None) -> dict:
+        graph = self.graph
+        assert not graph.multiple, "NOT Supported for multiple graph"
+
+        label = self._graph.node_label
+        train_nodes, val_nodes, test_nodes = get_train_val_test_split_gcn(
+            label,
+            num_samples,
+            random_state=random_state)
+        self.splits.update(
+            dict(train_nodes=train_nodes,
+                 val_nodes=val_nodes,
+                 test_nodes=test_nodes))
+        return self.splits
+
     def split_nodes_by_sample(self,
-                              trainum_examples_per_class: int,
-                              val_examples_per_class: int,
-                              test_examples_per_class: int,
+                              train_samples_per_class: int,
+                              val_samples_per_class: int,
+                              test_samples_per_class: int,
                               random_state: Optional[int] = None) -> dict:
 
         graph = self.graph
         assert not graph.multiple, "NOT Supported for multiple graph"
-        self._graph = graph.eliminate_classes(trainum_examples_per_class + val_examples_per_class).standardize()
+        self._graph = graph.eliminate_classes(train_samples_per_class + val_samples_per_class).standardize()
 
         label = self._graph.node_label
         train_nodes, val_nodes, test_nodes = get_train_val_test_split(
             label,
-            trainum_examples_per_class,
-            val_examples_per_class,
-            test_examples_per_class,
+            train_samples_per_class,
+            val_samples_per_class,
+            test_samples_per_class,
             random_state=random_state)
         self.splits.update(
             dict(train_nodes=train_nodes,

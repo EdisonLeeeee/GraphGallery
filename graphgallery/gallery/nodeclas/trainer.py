@@ -470,13 +470,11 @@ def setup_callbacks(cfg, callbacks, validation):
 
     if not validation:
         if ckpt_cfg.enabled and ckpt_cfg.monitor.startswith("val_"):
+            ckpt_cfg.enabled = False
             ckpt_cfg.monitor = ckpt_cfg.monitor[4:]
-#             warnings.warn(f"The metric 'val_{ckpt_cfg.monitor}' is invalid without validation "
-#                           f"and has been automatically replaced with '{ckpt_cfg.monitor}'.", UserWarning)
         if es_cfg.enabled and es_cfg.monitor.startswith("val_"):
+            es_cfg.enabled = False
             es_cfg.monitor = es_cfg.monitor[4:]
-#             warnings.warn(f"The metric 'val_{es_cfg.monitor}' is invalid without validation "
-#                           f"and has been automatically replaced with '{es_cfg.monitor}'.", UserWarning)
 
     if es_cfg.enabled:
         es_callback = EarlyStopping(monitor=es_cfg.monitor,
