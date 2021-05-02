@@ -60,8 +60,7 @@ class SAT(Trainer):
                    dropout=0.5,
                    weight_decay=5e-4,
                    lr=0.01,
-                   bias=False,
-                   use_tfn=True):
+                   bias=False):
 
         model = get_model("DenseGCN", self.backend)
         model = model(self.graph.num_node_attrs,

@@ -12,7 +12,5 @@ from .sgc import SGC
 from .graphsage import GraphSAGE
 from .ssgc import SSGC
 from .agnn import AGNN
-
-# experimantal model
-from .experimental.median_gcn import MedianGCN
-from .experimental.trimmed_gcn import TrimmedGCN
+from .median_gcn import MedianGCN
+from .trimmed_gcn import TrimmedGCN

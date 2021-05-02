@@ -22,10 +22,10 @@ class TrimmedGCN(Trainer):
         self.register_cache(X=X, A=A)
 
     def model_step(self,
-                   hids=[64],
+                   hids=[16],
                    acts=['relu'],
                    dropout=0.5,
-                   weight_decay=5e-5,
+                   weight_decay=1e-4,
                    lr=0.01,
                    tperc=0.45,
                    bias=False):
