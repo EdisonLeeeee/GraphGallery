@@ -10,3 +10,4 @@ from .appnp import APPNProp, PPNProp
 from .graphsage import SAGEAggregator
 from .ssgc import SSGConv
 from .sim_attention import SimilarityAttention
+from .sat import EigenConv, SpectralEigenConv

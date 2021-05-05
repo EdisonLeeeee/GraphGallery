@@ -12,3 +12,4 @@ from .appnp import APPNP
 from .label_propagation import LabelPropagation
 from .graphsage import GraphSAGE
 from .agnn import AGNN
+from .sat import SAT

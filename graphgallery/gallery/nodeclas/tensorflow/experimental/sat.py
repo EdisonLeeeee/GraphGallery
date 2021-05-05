@@ -38,8 +38,7 @@ class SAT(Trainer):
         node_attr = gf.get(attr_transform)(graph.node_attr)
 
         if re_decompose or not "U" in self.cache:
-            V, U = sp.linalg.eigs(adj_matrix.astype('float64'), k=K)
-            U, V = U.real, V.real
+            V, U = sp.linalg.eigsh(adj_matrix.astype('float64'), k=K)
         else:
             U, V = self.cache.U, self.cache.V
 

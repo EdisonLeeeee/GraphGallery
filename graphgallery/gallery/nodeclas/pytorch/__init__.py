@@ -14,3 +14,5 @@ from .ssgc import SSGC
 from .agnn import AGNN
 from .median_gcn import MedianGCN
 from .trimmed_gcn import TrimmedGCN
+
+from .experimental.sat import SAT
