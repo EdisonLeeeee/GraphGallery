@@ -30,17 +30,13 @@ class SAT(Trainer):
     def data_step(self,
                   adj_transform="normalize_adj",
                   attr_transform=None,
-                  K=35,
-                  re_decompose=False):
+                  K=35):
 
         graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
         node_attr = gf.get(attr_transform)(graph.node_attr)
 
-        if re_decompose or not "U" in self.cache:
-            V, U = sp.linalg.eigsh(adj_matrix.astype('float64'), k=K)
-        else:
-            U, V = self.cache.U, self.cache.V
+        V, U = sp.linalg.eigsh(adj_matrix, k=K)
 
         adj_matrix = (U * V) @ U.T
         adj_matrix = gf.get(adj_transform)(adj_matrix)

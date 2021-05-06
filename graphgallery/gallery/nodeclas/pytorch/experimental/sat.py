@@ -73,11 +73,11 @@ class SAT(Trainer):
                                      device=self.data_device)
         return sequence
 
-    def test_loader(self, index):
+#     def test_loader(self, index):
 
-        labels = self.graph.node_label[index]
-        sequence = FullBatchSequence(x=[self.cache.X, self.cache.A],
-                                     y=labels,
-                                     out_weight=index,
-                                     device=self.data_device)
-        return sequence
+#         labels = self.graph.node_label[index]
+#         sequence = FullBatchSequence(x=[self.cache.X, self.cache.A],
+#                                      y=labels,
+#                                      out_weight=index,
+#                                      device=self.data_device)
+#         return sequence
