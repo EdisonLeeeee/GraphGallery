@@ -22,10 +22,10 @@ else:
 class SAT(Trainer):
     def custom_setup(self):
         cfg = self.cfg.fit
-        cfg.eps1 = 0.3,
-        cfg.eps2 = 1.2,
-        cfg.lamb1 = 0.8,
-        cfg.lamb2 = 0.8
+        cfg.eps1 = 0.1,
+        cfg.eps2 = 0.1,
+        cfg.lamb1 = 0.5,
+        cfg.lamb2 = 0.5
 
     def data_step(self,
                   adj_transform="normalize_adj",

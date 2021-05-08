@@ -295,6 +295,16 @@ In detail, the following methods are currently implemented:
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/SimPGCN.py"> [🔥PyTorch] </a>
 </details>
 
+<!-- 5 -->
+<details>
+<summary>
+<b>GCN-VAT, GraphVAT</b> from <i>Fuli Feng et al</i>,
+<a href="https://arxiv.org/abs/1902.08226"> 📝<i>Graph Adversarial Training: Dynamically Regularizing Based on Graph Structure (TKDE'19)</i> </a>
+</summary>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/GCN-VAT.py"> [🔥GCN-VAT-PyTorch] </a>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/GraphVAT.py"> [🔥GraphVAT-PyTorch] </a>
+</details>
+
 #### Graph Purification
 
 The graph purification methods are universal for all models, just specify:

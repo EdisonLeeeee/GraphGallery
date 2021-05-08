@@ -64,7 +64,7 @@ class TorchKeras(nn.Module):
         optimizer.zero_grad()
         if not isinstance(x, (list, tuple)):
             x = [x]
-        x = [_x.to(device) if hasattr(x, 'to') else _x for _x in x]
+        x = [_x.to(device) if hasattr(_x, 'to') else _x for _x in x]
         y = y.to(device)
         out = self(*x)
         if out_weight is not None:

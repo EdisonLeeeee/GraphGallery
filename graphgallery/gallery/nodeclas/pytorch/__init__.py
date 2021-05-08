@@ -14,5 +14,7 @@ from .ssgc import SSGC
 from .agnn import AGNN
 from .median_gcn import MedianGCN
 from .trimmed_gcn import TrimmedGCN
+from .GraphAT.gcn_vat import GCN_VAT
+from .GraphAT.graph_vat import GraphVAT
 
 from .experimental.sat import SAT

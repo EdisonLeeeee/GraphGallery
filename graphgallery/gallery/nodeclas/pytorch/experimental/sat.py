@@ -20,9 +20,6 @@ class SAT(Trainer):
 
         V, U = sp.linalg.eigsh(adj_matrix, k=k)
 
-#         adj_matrix = (U * V) @ U.T
-#         adj_matrix = gf.get(adj_transform)(adj_matrix)
-
         X, A, U, V = gf.astensors(node_attr,
                                   adj_matrix,
                                   U,
@@ -37,10 +34,10 @@ class SAT(Trainer):
                    acts=['relu'],
                    K=10,
                    alpha=0.1,
-                   eps_U=0.3,
-                   eps_V=1.2,
-                   lamb_U=0.8,
-                   lamb_V=0.8,
+                   eps_U=0.1,
+                   eps_V=0.1,
+                   lamb_U=0.5,
+                   lamb_V=0.5,
                    dropout=0.5,
                    weight_decay=5e-4,
                    lr=0.01,
