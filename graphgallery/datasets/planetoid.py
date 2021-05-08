@@ -9,9 +9,12 @@ from ..data.io import makedirs, download_file
 from ..data.preprocess import process_planetoid_datasets
 from ..data.graph import Graph
 
-_DATASETS = gf.BunchDict(citeseer="citeseer citation dataset",
-                         cora="cora citation dataset",
-                         pubmed="pubmed citation dataset")
+_DATASETS = gf.BunchDict({"citeseer": "citeseer citation dataset",
+                         "cora": "cora citation dataset",
+                         "pubmed":"pubmed citation dataset",
+                         "nell.0.1": "NELL dataset",
+                          "nell.0.01": "NELL dataset",
+                          "nell.0.001": "NELL dataset", })
 
 _DATASET_URL = "https://github.com/EdisonLeeeee/" + \
     "GraphData/raw/master/datasets/planetoid"

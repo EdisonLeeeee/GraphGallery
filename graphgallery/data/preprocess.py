@@ -207,6 +207,17 @@ def process_planetoid_datasets(name: str, paths: List[str]) -> Tuple:
         ty_extended[test_idx_range - min(test_idx_range), :] = ty
         ty = ty_extended
 
+    elif 'nell.0' in name.lower():
+        # Find relation nodes, add them as zero-vecs into the right position
+        test_idx_range_full = np.arange(allx.shape[0], len(graph))
+        isolated_node_idx = np.setdiff1d(test_idx_range_full, test_idx_reorder)
+        tx_extended = sp.lil_matrix((len(test_idx_range_full), x.shape[1]))
+        tx_extended[test_idx_range - allx.shape[0], :] = tx
+        tx = tx_extended
+        ty_extended = np.zeros((len(test_idx_range_full), y.shape[1]))
+        ty_extended[test_idx_range - allx.shape[0], :] = ty
+        ty = ty_extended
+
     node_attr = sp.vstack((allx, tx)).tolil()
     node_attr[test_idx_reorder, :] = node_attr[test_idx_range, :]
 
