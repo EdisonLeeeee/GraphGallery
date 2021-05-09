@@ -1,29 +1,27 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch import optim
 
 from graphgallery.nn.models import TorchKeras
-from graphgallery.nn.models.pytorch.GraphAT.utils import *
+from graphgallery.nn.models.pytorch.BVAT.utils import *
 from graphgallery.nn.layers.pytorch import GCNConv, Sequential, activations
 from graphgallery.nn.metrics.pytorch import Accuracy
-from graphgallery import functional as gf
 
 
-class GraphVAT(TorchKeras):
+class SBVAT(TorchKeras):
     def __init__(self,
                  in_features,
                  out_features,
                  *,
-                 xi=1e-5,
-                 alpha=1.0,
-                 beta=1.0,
-                 num_neighbors=2,
-                 epsilon=1.0,
+                 xi=1e-6,
+                 p1=1.0,
+                 p2=1.0,
+                 epsilon=5e-2,
                  num_power_iterations=1,
-                 epsilon_graph=0.01,
                  hids=[16],
                  acts=['relu'],
-                 dropout=0.,
+                 dropout=0.5,
                  weight_decay=5e-4,
                  lr=0.01,
                  bias=False):
@@ -48,13 +46,10 @@ class GraphVAT(TorchKeras):
                                                 weight_decay=0.)], lr=lr),
                      metrics=[Accuracy()])
         self.xi = xi
-        self.alpha = alpha
-        self.beta = beta
+        self.p1 = p1
+        self.p2 = p2
         self.epsilon = epsilon
         self.num_power_iterations = num_power_iterations
-        self.num_neighbors = num_neighbors
-        self.epsilon_graph = epsilon_graph
-        self.sampler = gf.NeighborSampler(num_neighbors, selfloop=False, add_dummy=False)
 
     def forward(self, x, adj):
         return self.conv(x, adj)
@@ -69,18 +64,14 @@ class GraphVAT(TorchKeras):
         loss_fn = self.loss
         metrics = self.metrics
         optimizer.zero_grad()
-        inputs = [_x.to(device) if hasattr(x, 'to') else _x for _x in x]
+        x = [_x.to(device) if hasattr(_x, 'to') else _x for _x in x]
         y = y.to(device)
-
-        x, adj, adjacency = inputs
-        x = nn.Parameter(x)
-        neighbors = torch.LongTensor(self.sampler(adjacency))
-        logit = self(x, adj)
+        logit = self(*x[:-1])
         out = logit
         if out_weight is not None:
             out = logit[out_weight]
-        loss = loss_fn(out, y) + self.alpha * self.virtual_adversarial_loss((x, adj), logit) + \
-            self.beta * self.graph_adversarial_loss((x, adj), logit, neighbors)
+        loss = loss_fn(out, y) + self.p1 * self.virtual_adversarial_loss(x, logit) + \
+            self.p2 * self.entropy_loss(logit)
 
         loss.backward()
         optimizer.step()
@@ -91,33 +82,24 @@ class GraphVAT(TorchKeras):
         return dict(zip(self.metrics_names, results))
 
     def generate_virtual_adversarial_perturbation(self, inputs, logit):
-        x, adj = inputs
+        x, adj, adv_mask = inputs
         d = nn.Parameter(torch.randn_like(x))
         for _ in range(self.num_power_iterations):
             d = self.xi * l2_normalize(d)
             logit_p = logit
             logit_m = self(x + d, adj)
-            dist = kld_with_logits(logit_p, logit_m)
+            dist = masked_kld_with_logits(logit_p, logit_m, adv_mask)
             d = torch.autograd.grad(dist, d)[0].detach()
-
         return self.epsilon * l2_normalize(d)
 
     def virtual_adversarial_loss(self, inputs, logit):
-        x, adj = inputs
+        x, adj, adv_mask = inputs
         r_adv = self.generate_virtual_adversarial_perturbation(inputs, logit)
         logit_p = logit.detach()
         logit_q = self(x + r_adv, adj)
-        return kld_with_logits(logit_p, logit_q)
+        return masked_kld_with_logits(logit_p, logit_q, adv_mask)
 
-    def generate_graph_adversarial_perturbation(self, x, logit, neighbor_logits):
-        dist = neighbor_kld_with_logit(neighbor_logits, logit)
-        d = torch.autograd.grad(dist, x, retain_graph=True)[0].detach()
-        return self.epsilon_graph * l2_normalize(d)
-
-    def graph_adversarial_loss(self, inputs, logit, neighbors):
-        x, adj = inputs
-        neighbor_logits = logit[neighbors.t()].detach()
-        r_gadv = self.generate_graph_adversarial_perturbation(x, logit, neighbor_logits)
-        logit_m = self(x + r_gadv, adj)
-        gat_loss = neighbor_kld_with_logit(neighbor_logits, logit_m)
-        return gat_loss
+    def entropy_loss(self, logit):
+        q = F.softmax(logit, dim=-1)
+        cross_entropy = softmax_cross_entropy_with_logits(logits=logit, labels=q)
+        return cross_entropy.mean()

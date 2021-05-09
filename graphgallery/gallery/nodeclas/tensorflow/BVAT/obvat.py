@@ -8,11 +8,10 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 from graphgallery.nn.layers.tensorflow import GCNConv
 from graphgallery.sequence import FullBatchSequence
-from graphgallery.gallery.nodeclas.utils.bvat_utils import kl_divergence_with_logit, entropy_y_x
+from graphgallery.gallery.nodeclas.tensorflow.BVAT.utils import kl_divergence_with_logit, entropy_y_x
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import TensorFlow
 from graphgallery.gallery.nodeclas import Trainer
-from graphgallery.nn.models import get_model
 from graphgallery.nn.models import TFKeras
 
 
@@ -64,12 +63,12 @@ class OBVAT(Trainer):
                 GCNConv(
                     hid,
                     activation=act,
-                    bias=bias,
+                    use_bias=bias,
                     kernel_regularizer=regularizers.l2(weight_decay)))
 
         GCN_layers.append(
             GCNConv(self.graph.num_node_classes,
-                    bias=bias))
+                    use_bias=bias))
         self.GCN_layers = GCN_layers
         self.dropout = Dropout(rate=dropout)
 

@@ -9,8 +9,8 @@ from .fastgcn import FastGCN
 from .chebynet import ChebyNet
 from .densegcn import DenseGCN
 from .lgcn import LGCN
-from .obvat import OBVAT
-from .sbvat import SBVAT
+from .BVAT.obvat import OBVAT
+from .BVAT.sbvat import SBVAT
 from .gmnn import GMNN
 from .dagnn import DAGNN
 from .mlp import MLP

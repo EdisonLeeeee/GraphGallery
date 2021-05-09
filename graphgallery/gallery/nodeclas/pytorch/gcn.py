@@ -14,7 +14,6 @@ class GCN(Trainer):
         Tensorflow 1.x implementation: <https://github.com/tkipf/gcn>
         Pytorch implementation: <https://github.com/tkipf/pygcn>
 
-        Create a Graph Convolutional Networks (GCN) model.
     """
 
     def data_step(self,

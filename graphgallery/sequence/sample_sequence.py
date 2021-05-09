@@ -1,6 +1,5 @@
 
 import numpy as np
-import tensorflow as tf
 
 from .base_sequence import Sequence
 

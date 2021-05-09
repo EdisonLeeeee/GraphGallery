@@ -5,12 +5,12 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tensorflow import GCNConv, Gather
-from graphgallery.gallery.nodeclas.utils.bvat_utils import kl_divergence_with_logit, entropy_y_x, get_normalized_vector
+from graphgallery.nn.layers.tensorflow import GCNConv
+from graphgallery.gallery.nodeclas.tensorflow.BVAT.utils import kl_divergence_with_logit, entropy_y_x, get_normalized_vector
 from graphgallery.nn.models import TFKeras
 from graphgallery.gallery.nodeclas import TensorFlow
 
-from ..obvat import OBVAT
+from ..BVAT.obvat import OBVAT
 
 
 @TensorFlow.register()

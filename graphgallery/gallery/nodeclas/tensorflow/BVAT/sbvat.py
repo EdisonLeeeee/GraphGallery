@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 from graphgallery.sequence import SBVATSampleSequence, FullBatchSequence
-from graphgallery.gallery.nodeclas.utils.bvat_utils import get_normalized_vector, kl_divergence_with_logit, entropy_y_x
+from graphgallery.gallery.nodeclas.tensorflow.BVAT.utils import get_normalized_vector, kl_divergence_with_logit, entropy_y_x
 
 from graphgallery.functional.tensor.tensorflow import gather
 from graphgallery import functional as gf
@@ -27,8 +27,6 @@ class SBVAT(Trainer):
         `Batch Virtual Adversarial Training for Graph Convolutional Networks
         <https://arxiv.org/abs/1902.09192>`
         Tensorflow 1.x implementation: <https://github.com/thudzj/BVAT>
-
-
     """
 
     def custom_setup(self):
@@ -38,7 +36,7 @@ class SBVAT(Trainer):
         cfg.xi = 1e-6
         cfg.epsilon = 3e-2
         cfg.n_power_iterations = 1
-        cfg.num_samples = 50
+        cfg.sizes = 50
 
     def data_step(self,
                   adj_transform="normalize_adj",
@@ -139,7 +137,7 @@ class SBVAT(Trainer):
                                        labels,
                                        out_weight=index,
                                        neighbors=self.cache.neighbors,
-                                       num_samples=self.cfg.fit.num_samples,
+                                       sizes=self.cfg.fit.sizes,
                                        device=self.data_device)
 
         return sequence
