@@ -38,7 +38,7 @@ class SBVAT(Trainer):
                    xi=1e-6,
                    p1=1.0,
                    p2=1.0,
-                   epsilon=5e-2,
+                   epsilon=3e-2,
                    sizes=50,
                    num_power_iterations=1):
 

@@ -18,7 +18,7 @@ splits = data.split_nodes()
 
 graphgallery.set_backend("pytorch")
 
-from graphgallery.gallery.nodeclas import GCN
+from graphgallery.gallery.nodeclas import GCN_VAT
 trainer = GCN_VAT(device="gpu", seed=123).make_data(graph, attr_transform="normalize_attr").build()
 his = trainer.fit(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
 results = trainer.evaluate(splits.test_nodes)

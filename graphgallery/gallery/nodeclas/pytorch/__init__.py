@@ -17,5 +17,6 @@ from .trimmed_gcn import TrimmedGCN
 from .GraphAT.gcn_vat import GCN_VAT
 from .GraphAT.graph_vat import GraphVAT
 from .BVAT.sbvat import SBVAT
+from .BVAT.obvat import OBVAT
 
 from .experimental.sat import SAT
