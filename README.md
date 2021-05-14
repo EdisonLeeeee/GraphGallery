@@ -421,22 +421,16 @@ mydataset = Graph.from_npz('path/to/mydataset.npz')
 This project is motivated by [Pytorch Geometric](https://github.com/rusty1s/pytorch_geometric), [Tensorflow Geometric](https://github.com/CrawlScript/tf_geometric), [Stellargraph](https://github.com/stellargraph/stellargraph) and [DGL](https://github.com/dmlc/dgl), etc., and the original implementations of the authors, thanks for their excellent works!
 
 # Cite
-Please cite our [paper]([GraphGallery: A Platform for Fast Benchmarking and Easy Development of Graph Neural Networks Based Intelligent Software (computer.org)](https://www.computer.org/csdl/proceedings-article/icse-companion/2021/121900a013/1sET5DXNWJG)) (and the respective papers of the methods used) if you use this code in your own work:
+Please cite our [paper](https://www.computer.org/csdl/proceedings-article/icse-companion/2021/121900a013/1sET5DXNWJG) (and the respective papers of the methods used) if you use this code in your own work:
 ```bibtex
 @inproceedings{li2021graphgallery,
 author = {J. Li and K. Xu and L. Chen and Z. Zheng and X. Liu},
 booktitle = {2021 IEEE/ACM 43rd International Conference on Software Engineering: Companion Proceedings (ICSE-Companion)},
 title = {GraphGallery: A Platform for Fast Benchmarking and Easy Development of Graph Neural Networks Based Intelligent Software},
 year = {2021},
-volume = {},
-issn = {2574-1926},
 pages = {13-16},
-keywords = {training;benchmark testing;tools;software;graph neural networks;software reliability;software engineering},
-doi = {10.1109/ICSE-Companion52605.2021.00024},
-url = {https://doi.ieeecomputersociety.org/10.1109/ICSE-Companion52605.2021.00024},
 publisher = {IEEE Computer Society},
 address = {Los Alamitos, CA, USA},
-month = {may}
 }
 
 ```
