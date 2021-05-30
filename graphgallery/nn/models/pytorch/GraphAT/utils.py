@@ -1,4 +1,3 @@
-import torch
 import torch.nn.functional as F
 
 
@@ -27,7 +26,4 @@ def softmax_cross_entropy_with_logits(labels, logits, dim=-1):
 
 
 def l2_normalize(d):
-    norm = torch.norm(d, p=2, dim=1, keepdim=True)
-    norm = d / norm
-    norm[torch.isnan(norm)] = 0.
-    return norm
+    return F.normalize(d, p=2, dim=1)
