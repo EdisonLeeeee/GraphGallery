@@ -9,7 +9,7 @@ from ..transform import Transform
 
 @Transform.register()
 class AddSelfloops(SparseTransform):
-    """Add self loops for adjacency matrix."""
+    """Add selfloops for adjacency matrix."""
 
     def __init__(self, fill_weight: float = 1.0):
         """
@@ -38,15 +38,35 @@ class AddSelfloops(SparseTransform):
         """
         return add_selfloops(*adj_matrix, fill_weight=self.fill_weight)
 
+@Transform.register()
+class EliminateSelfloops(SparseTransform):
+    """Eliminate selfloops for adjacency matrix."""
+
+    def __call__(self, *adj_matrix):
+        """
+        Parameters
+        ----------
+        adj_matrix: Scipy matrix or Numpy array or a list of them 
+            Single or a list of Scipy sparse matrices or Numpy arrays.
+
+        Returns
+        -------
+        Single or a list of Scipy sparse matrix or Numpy matrices.
+
+        See also
+        ----------
+        graphgallery.functional.eliminate_selfloops
+        """
+        return eliminate_selfloops(*adj_matrix)
 
 @multiple()
 def add_selfloops(adj_matrix: sp.csr_matrix, fill_weight=1.0):
-    """Normalize adjacency matrix.
+    """add selfloops for adjacency matrix.
 
-    >>> add_selfloops(adj, fill_weight=1.0) # return a normalized adjacency matrix
+    >>>add_selfloops(adj, fill_weight=1.0) # return an adjacency matrix with selfloops
 
-    # return a list of normalized adjacency matrices
-    >>> add_selfloops(adj, adj, fill_weight=[1.0, 2.0]) 
+    # return a list of adjacency matrices with selfloops
+    >>>add_selfloops(adj, adj, fill_weight=[1.0, 2.0]) 
 
     Parameters
     ----------
@@ -80,6 +100,27 @@ def add_selfloops(adj_matrix: sp.csr_matrix, fill_weight=1.0):
 
 @multiple()
 def eliminate_selfloops(adj_matrix):
+    """eliminate selfloops for adjacency matrix.
+
+    >>>eliminate_selfloops(adj) # return an adjacency matrix without selfloops
+
+    # return a list of adjacency matrices without selfloops
+    >>>eliminate_selfloops(adj, adj) 
+
+    Parameters
+    ----------
+    adj_matrix: Scipy matrix or Numpy array or a list of them 
+        Single or a list of Scipy sparse matrices or Numpy arrays.
+
+    Returns
+    -------
+    Single or a list of Scipy sparse matrix or Numpy matrices.
+
+    See also
+    ----------
+    graphgallery.functional.EliminateSelfloops          
+
+    """    
     if sp.issparse(adj_matrix):
         adj_matrix = adj_matrix - sp.diags(adj_matrix.diagonal(), format='csr')
         adj_matrix.eliminate_zeros()

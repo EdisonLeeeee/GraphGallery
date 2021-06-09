@@ -18,5 +18,7 @@ from .GraphAT.gcn_vat import GCN_VAT
 from .GraphAT.graph_vat import GraphVAT
 from .BVAT.sbvat import SBVAT
 from .BVAT.obvat import OBVAT
+from .graphmlp import GMLP
+
 
 from .experimental.sat import SAT

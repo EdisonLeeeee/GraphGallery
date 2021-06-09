@@ -201,6 +201,17 @@ In detail, the following methods are currently implemented:
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/ARMA.py"> [🔥PyTorch] </a>
 </details>
 
+
+<!-- 19 -->
+
+<details>
+<summary>
+<b>GMLP</b> from <i>Yang Hu et al.</i>,
+<a href="https://arxiv.org/abs/2106.04051"> 📝<i>Graph-MLP: Node Classification without Message Passing in Graph (Arxiv'21)</i> </a>
+</summary>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/GraphMLP.py"> [🔥PyTorch] </a>
+</details>
+
 ### Defense models (for Graph Adversarial Learning)
 
 #### Robust Optimization
