@@ -4,20 +4,20 @@ from torch import optim
 import torch.nn.functional as F
 
 from graphgallery.nn.models import TorchKeras
-from graphgallery.nn.layers.pytorch import Sequential
+from graphgallery.nn.layers.pytorch import Sequential, activations
 from graphgallery.nn.metrics.pytorch import Accuracy
 
 
 class Mlp(nn.Module):
-    def __init__(self, in_features, out_features, dropout=0.6, bias=True):
+    def __init__(self, in_features, out_features, act='gelu', dropout=0.6, bias=True):
         super().__init__()
         self.fc1 = nn.Linear(in_features, out_features, bias=bias)
         self.fc2 = nn.Linear(out_features, out_features, bias=bias)
-        self.act_fn = torch.nn.functional.gelu
-        self.reset_parameters()
-
+        self.act = activations.get(act)
+        
         self.dropout = nn.Dropout(dropout)
         self.layernorm = nn.LayerNorm(out_features, eps=1e-6)
+        self.reset_parameters()
 
     def reset_parameters(self):
         nn.init.xavier_uniform_(self.fc1.weight)
@@ -27,7 +27,7 @@ class Mlp(nn.Module):
 
     def forward(self, x):
         x = self.fc1(x)
-        x = self.act_fn(x)
+        x = self.act(x)
         x = self.layernorm(x)
         x = self.dropout(x)
         x = self.fc2(x)
@@ -40,9 +40,9 @@ def get_feature_dis(x):
     x_dis(i,j):   item means the similarity between x(i) and x(j).
     """
     x_dis = x @ x.T
-    mask = torch.eye(x_dis.shape[0], device=x.device)
-    x_sum = torch.sum(x**2, 1).reshape(-1, 1)
-    x_sum = torch.sqrt(x_sum).reshape(-1, 1)
+    mask = torch.eye(x_dis.size(0), device=x.device)
+    x_sum = torch.sum(x**2, 1).view(-1, 1)
+    x_sum = torch.sqrt(x_sum).view(-1, 1)
     x_sum = x_sum @ x_sum.T
     x_dis = x_dis * (x_sum**(-1))
     x_dis = (1 - mask) * x_dis
@@ -66,7 +66,7 @@ class GMLP(TorchKeras):
                  tau=2,
                  alpha=10.0,
                  hids=[256],
-                 acts=None,
+                 acts=['gelu'],
                  dropout=0.6,
                  weight_decay=5e-3,
                  lr=0.001,
@@ -74,8 +74,8 @@ class GMLP(TorchKeras):
 
         super().__init__()
         mlp = []
-        for hid in hids:
-            mlp.append(Mlp(in_features, hid, dropout, bias=bias))
+        for hid, act in zip(hids, acts):
+            mlp.append(Mlp(in_features, hid, act=act, dropout=dropout, bias=bias))
             in_features = hid
         self.mlp = Sequential(*mlp)
         self.classifier = nn.Linear(in_features, out_features, bias=bias)
@@ -97,7 +97,6 @@ class GMLP(TorchKeras):
             x_dis = get_feature_dis(Z)
 
         out = self.classifier(feature_cls)
-#         out = F.log_softmax(out, dim=1)
 
         if self.training:
             return out, x_dis
@@ -119,11 +118,11 @@ class GMLP(TorchKeras):
         x = [_x.to(device) if hasattr(_x, 'to') else _x for _x in x]
         y = y.to(device)
         
-        out, x_dis = self(x[0])
+        out, x_dis = self(x[0]) # x[0] is the input node feature
         if out_weight is not None:
             out = out[out_weight]
             
-        loss = loss_fn(out, y) + Ncontrast(x_dis, x[1], tau=self.tau) * self.alpha
+        loss = loss_fn(out, y) + Ncontrast(x_dis, x[1], tau=self.tau) * self.alpha # x[1] is the input adj_label
         loss.backward()
         optimizer.step()
         for metric in metrics:

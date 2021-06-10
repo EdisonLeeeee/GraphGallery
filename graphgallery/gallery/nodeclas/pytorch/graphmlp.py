@@ -32,7 +32,7 @@ class GMLP(Trainer):
 
     def model_step(self,
                    hids=[256],
-                   acts=None,
+                   acts=['gelu'],
                    dropout=0.6,
                    weight_decay=5e-3,
                    lr=0.001,
