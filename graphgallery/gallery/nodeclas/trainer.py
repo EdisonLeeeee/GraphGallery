@@ -351,7 +351,7 @@ class Trainer(Model):
 
         if not isinstance(predict_data, Sequence):
             predict_data = gf.asarray(predict_data)
-            predict_data = self.predict_sequence(predict_data)
+            predict_data = self.predict_loader(predict_data)
         if cfg.cache_predict_data:
             cache.predict_data = predict_data
 
@@ -380,7 +380,7 @@ class Trainer(Model):
     def test_loader(self, inputs, **kwargs):
         return self.train_loader(inputs, **kwargs)
 
-    def predict_sequence(self, inputs, **kwargs):
+    def predict_loader(self, inputs, **kwargs):
         return self.test_loader(inputs, **kwargs)
 
     def _test_predict(self, index):

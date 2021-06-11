@@ -17,6 +17,11 @@ import graphgallery as gg
 from graphgallery import functional as gf
 from graphgallery.attack.targeted import Common
 from graphgallery.utils import tqdm
+
+from numba.errors import NumbaDeprecationWarning, NumbaPendingDeprecationWarning
+warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
+warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
+
 from ..targeted_attacker import TargetedAttacker
 
 
