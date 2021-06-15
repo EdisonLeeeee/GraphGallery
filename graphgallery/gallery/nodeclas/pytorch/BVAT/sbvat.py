@@ -42,7 +42,7 @@ class SBVAT(Trainer):
                    sizes=50,
                    num_power_iterations=1):
 
-        model = get_model("SBVAT", self.backend)
+        model = get_model("BVAT.SBVAT", self.backend)
         model = model(self.graph.num_node_attrs,
                       self.graph.num_node_classes,
                       xi=xi,

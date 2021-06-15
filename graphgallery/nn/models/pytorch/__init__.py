@@ -12,10 +12,9 @@ from .appnp import APPNP
 from .label_propagation import LabelPropagation
 from .graphsage import GraphSAGE
 from .agnn import AGNN
-from .sat import SAT
-from .GraphAT.gcn_vat import GCN_VAT
-from .GraphAT.graph_vat import GraphVAT
-from .BVAT.sbvat import SBVAT
-from .BVAT.obvat import OBVAT
 from .graphmlp import GMLP
 from .latgcn import LATGCN
+
+from . import SAT
+from . import GraphAT
+from . import BVAT

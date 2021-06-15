@@ -41,9 +41,10 @@ class SAT(Trainer):
                    dropout=0.5,
                    weight_decay=5e-4,
                    lr=0.01,
-                   bias=False):
+                   bias=False,
+                   name="SAT.SSGC"):
 
-        model = get_model("SAT", self.backend)
+        model = get_model(name, self.backend)
         model = model(self.graph.num_node_attrs,
                       self.graph.num_node_classes,
                       K=K,
@@ -70,11 +71,3 @@ class SAT(Trainer):
                                      device=self.data_device)
         return sequence
 
-#     def test_loader(self, index):
-
-#         labels = self.graph.node_label[index]
-#         sequence = FullBatchSequence(x=[self.cache.X, self.cache.A],
-#                                      y=labels,
-#                                      out_weight=index,
-#                                      device=self.data_device)
-#         return sequence

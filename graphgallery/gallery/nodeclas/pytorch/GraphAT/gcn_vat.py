@@ -39,7 +39,7 @@ class GCN_VAT(Trainer):
                    epsilon=5e-2,
                    num_power_iterations=1):
 
-        model = get_model("GCN_VAT", self.backend)
+        model = get_model("GraphAT.GCN_VAT", self.backend)
         model = model(self.graph.num_node_attrs,
                       self.graph.num_node_classes,
                       xi=xi,

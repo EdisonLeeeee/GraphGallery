@@ -38,9 +38,8 @@ pip install -U graphgallery
 ```
 or
 ```bash
-git clone https://github.com/EdisonLeeeee/GraphGallery.git
-cd GraphGallery
-pip install -e .
+git clone https://github.com/EdisonLeeeee/GraphGallery.git && cd GraphGallery
+pip install -e . --verbose
 ```
 GraphGallery has been tested on:
 + CPU, CUDA 10.1, CUDA 11.0

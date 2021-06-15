@@ -42,7 +42,7 @@ class GraphVAT(Trainer):
                    num_power_iterations=1,
                    epsilon_graph=1e-2):
 
-        model = get_model("GraphVAT", self.backend)
+        model = get_model("GraphAT.GraphVAT", self.backend)
         model = model(self.graph.num_node_attrs,
                       self.graph.num_node_classes,
                       xi=xi,
