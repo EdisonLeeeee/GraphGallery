@@ -30,13 +30,13 @@ class SAT(Trainer):
     def data_step(self,
                   adj_transform="normalize_adj",
                   attr_transform=None,
-                  K=35):
+                  k=35):
 
         graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
         node_attr = gf.get(attr_transform)(graph.node_attr)
 
-        V, U = sp.linalg.eigsh(adj_matrix, k=K)
+        V, U = sp.linalg.eigsh(adj_matrix, k=k)
 
         adj_matrix = (U * V) @ U.T
         adj_matrix = gf.get(adj_transform)(adj_matrix)

@@ -92,7 +92,7 @@ def normalize_adj(adj_matrix, rate=-0.5, fill_weight=1.0, symmetric=True):
         if r is None:
             return adj
 
-        degree = adj.sum(1).A1
+        degree = np.ravel(adj.sum(1))
         degree_power = np.power(degree, r)
 
         if sp.isspmatrix(adj):
@@ -106,7 +106,6 @@ def normalize_adj(adj_matrix, rate=-0.5, fill_weight=1.0, symmetric=True):
             adj = degree_power_matrix @ adj
             if symmetric:
                 adj = adj @ degree_power_matrix
-            adj = adj.A
         return adj
 
     if gg.is_listlike(rate):
