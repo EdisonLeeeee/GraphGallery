@@ -20,6 +20,7 @@ from .BVAT.sbvat import SBVAT
 from .BVAT.obvat import OBVAT
 from .graphmlp import GMLP
 from .latgcn import LATGCN
+from .dgat import DGAT
 
 
 from .experimental.sat import SAT

@@ -271,8 +271,18 @@ In detail, the following methods are currently implemented:
 <b>LATGCN</b> from <i>Hongwei Jin et al</i>,
 <a href="https://graphreason.github.io/papers/35.pdf"> 📝<i>Latent Adversarial Training of Graph Convolution Networks (ICML@LRGSD'19)</i> </a>
 </summary>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/LATGCN.py"> [🔥GCN-VAT-PyTorch] </a>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/LATGCN.py"> [🔥PyTorch] </a>
 </details>
+
+<!-- 7 -->
+<details>
+<summary>
+<b>DGAT</b> from <i>Weibo Hu et al</i>,
+<a href="https://link.springer.com/article/10.1007/s10489-021-02272-y"> 📝<i>Robust graph convolutional networks with directional graph adversarial training (Applied Intelligence'19)</i> </a>
+</summary>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/DGAT.py"> [🔥PyTorch] </a>
+</details>
+
 #### Graph Purification
 
 The graph purification methods are universal for all models, just specify:

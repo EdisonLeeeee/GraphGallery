@@ -14,6 +14,7 @@ from .graphsage import GraphSAGE
 from .agnn import AGNN
 from .graphmlp import GMLP
 from .latgcn import LATGCN
+from .dgat import DGAT
 
 from . import SAT
 from . import GraphAT

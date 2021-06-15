@@ -7,8 +7,8 @@ def l2_normalize(d):
 
 
 def get_normalized_vector(d):
-    d /= 1e-12 + d.abs().max(dim=1).values.view(-1, 1)
-    d /= 1e-6 + d.pow(2.0).sum(dim=1).view(-1, 1)
+    d = d / (1e-12 + d.abs().max(dim=1).values.view(-1, 1))
+    d = d / (1e-6 + d.pow(2.0).sum(dim=1).view(-1, 1))
     return d
 
 
