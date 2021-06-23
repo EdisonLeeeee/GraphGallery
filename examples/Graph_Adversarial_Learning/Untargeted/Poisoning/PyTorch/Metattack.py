@@ -47,7 +47,7 @@ original_result = trainer.evaluate(splits.test_nodes)
 
 # After attack
 # If a validation set is used, the attacker will be less effective, but we dont know why
-trainer = gg.gallery.nodeclas.GCN(attacker.g, device=device, seed=123).process().build()
+trainer = gg.gallery.nodeclas.GCN(device=device, seed=123).make_data(attacker.g,).build()
 his = trainer.fit(splits.train_nodes,
                   #                     splits.val_nodes,
                   verbose=1,
