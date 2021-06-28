@@ -65,6 +65,7 @@ class DropEdge(TorchKeras):
         super().__init__()
 
         conv = []
+        conv.append(nn.Dropout(dropout))
         for hid, act in zip(hids, acts):
             conv.append(GCNConv(in_features,
                                 hid,
@@ -81,11 +82,12 @@ class DropEdge(TorchKeras):
                             normalize=False))
         conv = Sequential(*conv)
 
+        self.p = p
         self.conv = conv
         self.compile(loss=nn.CrossEntropyLoss(),
-                     optimizer=optim.Adam([dict(params=conv[0].parameters(),
+                     optimizer=optim.Adam([dict(params=conv[1].parameters(),
                                                 weight_decay=weight_decay),
-                                           dict(params=conv[1:].parameters(),
+                                           dict(params=conv[2:].parameters(),
                                                 weight_decay=0.)], lr=lr),
                      metrics=[Accuracy()])
 

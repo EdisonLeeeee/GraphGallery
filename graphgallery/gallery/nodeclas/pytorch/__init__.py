@@ -1,4 +1,4 @@
-from .gcn import GCN, DenseGCN
+from .gcn import GCN, DenseGCN, DropEdge
 from .gat import GAT
 from .clustergcn import ClusterGCN
 from .fastgcn import FastGCN

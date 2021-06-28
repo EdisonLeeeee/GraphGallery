@@ -58,12 +58,6 @@ class GCN(Trainer):
                                      device=self.data_device)
         return sequence
 
-from graphgallery.sequence import FullBatchSequence
-from graphgallery import functional as gf
-from graphgallery.gallery.nodeclas import PyG
-from graphgallery.gallery.nodeclas import Trainer
-from graphgallery.nn.models import get_model
-
 
 @PyG.register()
 class DropEdge(Trainer):
