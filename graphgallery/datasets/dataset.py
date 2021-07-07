@@ -88,7 +88,7 @@ class Dataset:
         graph = self.graph
         assert not graph.multiple, "NOT Supported for multiple graph"
 
-        label = self._graph.node_label
+        label = graph.node_label
         train_nodes, val_nodes, test_nodes = get_train_val_test_split_gcn(
             label,
             num_samples,
