@@ -3,17 +3,17 @@ from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import Trainer
 from graphgallery.nn.models import get_model
 
-from graphgallery.gallery.nodeclas import DGL_TensorFlow
+from graphgallery.gallery.nodeclas import DGL
 
 
-@DGL_TensorFlow.register()
-class GCN(Trainer):
+@DGL.register()
+class GAT(Trainer):
     """
-        Implementation of Graph Convolutional Networks (GCN). 
-        `Semi-Supervised Classification with Graph Convolutional Networks 
-        <https://arxiv.org/abs/1609.02907>`
-        Tensorflow 1.x implementation: <https://github.com/tkipf/gcn>
-        Pytorch implementation: <https://github.com/tkipf/pygcn>
+        Implementation of Graph Attention Networks (GAT).
+        `Graph Attention Networks <https://arxiv.org/abs/1710.10903>`
+        Tensorflow 1.x implementation: <https://github.com/PetarV-/GAT>
+        Pytorch implementation: <https://github.com/Diego999/pyGAT>
+        Keras implementation: <https://github.com/danielegrattarola/keras-gat>
 
     """
 
@@ -29,22 +29,23 @@ class GCN(Trainer):
         self.register_cache(X=X, G=G)
 
     def model_step(self,
-                   hids=[16],
-                   acts=['relu'],
-                   dropout=0.5,
+                   hids=[8],
+                   num_heads=[8],
+                   acts=['elu'],
+                   dropout=0.6,
                    weight_decay=5e-4,
                    lr=0.01,
-                   bias=False):
+                   include=["num_heads"]):
 
-        model = get_model("GCN", self.backend)
+        model = get_model("GAT", self.backend)
         model = model(self.graph.num_node_attrs,
                       self.graph.num_node_classes,
                       hids=hids,
+                      num_heads=num_heads,
                       acts=acts,
                       dropout=dropout,
                       weight_decay=weight_decay,
-                      lr=lr,
-                      bias=bias)
+                      lr=lr)
 
         return model
 

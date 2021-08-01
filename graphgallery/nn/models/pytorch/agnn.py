@@ -2,7 +2,7 @@ import torch.nn as nn
 from torch import optim
 
 from graphgallery.nn.models import TorchKeras
-from graphgallery.nn.layers.pytorch import Sequential, activations, SimilarityAttention
+from graphgallery.nn.layers.pytorch import Sequential, activations, AGNNConv
 from graphgallery.nn.metrics.pytorch import Accuracy
 
 
@@ -30,9 +30,9 @@ class AGNN(TorchKeras):
 
         # for Cora dataset, the first propagation layer is non-trainable
         # and beta is fixed at 0
-        conv.append(SimilarityAttention(trainable=False))
+        conv.append(AGNNConv(trainable=False))
         for _ in range(1, num_attn):
-            conv.append(SimilarityAttention())
+            conv.append(AGNNConv())
 
         conv.append(nn.Linear(in_features, out_features, bias=bias))
         conv.append(nn.Dropout(dropout))

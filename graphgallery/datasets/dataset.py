@@ -5,9 +5,9 @@ from typing import Union, Optional, List, Tuple, Callable
 from tabulate import tabulate
 
 from graphgallery import functional as gf
-from ..data.preprocess import (train_val_test_split_tabular, 
-                                get_train_val_test_split, 
-                                get_train_val_test_split_gcn)
+from ..data.preprocess import (train_val_test_split_tabular,
+                               get_train_val_test_split,
+                               get_train_val_test_split_gcn)
 
 
 class Dataset:
@@ -26,7 +26,7 @@ class Dataset:
         root = osp.abspath(osp.expanduser(root))
 
         if url:
-            self._url = url
+            self.__url__ = url
 
         self.root = root
         self.name = str(name)
@@ -53,7 +53,7 @@ class Dataset:
 
     @property
     def url(self) -> str:
-        return self._url
+        return self.__url__
 
     def split_nodes(self,
                     train_size: float = 0.1,
@@ -83,8 +83,8 @@ class Dataset:
         return self.splits
 
     def split_nodes_as_gcn(self,
-                              num_samples: int = 20,
-                              random_state: Optional[int] = None) -> dict:
+                           num_samples: int = 20,
+                           random_state: Optional[int] = None) -> dict:
         graph = self.graph
         assert not graph.multiple, "NOT Supported for multiple graph"
 
@@ -152,5 +152,5 @@ class Dataset:
 
     def __repr__(self):
         return f"{self.__class__.__name__}({self.name}, root={self.root})"
-    
+
     __str__ = __repr__

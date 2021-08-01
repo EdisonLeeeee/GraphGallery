@@ -39,9 +39,9 @@ class TUDataset(InMemoryDataset):
 
         if name.endswith('_clean'):
             name = name[:-6]
-            self._url = _DATASET_CLEAN_URL
+            self.__url__ = _DATASET_CLEAN_URL
         else:
-            self._url = _DATASET_URL
+            self.__url__ = _DATASET_URL
 
         super().__init__(name=name, root=root,
                          transform=transform,
@@ -60,7 +60,7 @@ class TUDataset(InMemoryDataset):
             print('No connection. See {}'.format(_DATASET_URL))
             return []
 
-    def _download(self):
+    def __download__(self):
         req = requests.get(self.url)
         if req.status_code == 404:
             raise ValueError(
@@ -76,7 +76,7 @@ class TUDataset(InMemoryDataset):
         if self.remove_download:
             remove(self.download_paths)
 
-    def _process(self):
+    def __process__(self):
         folder = self.download_dir
         prefix = self.name
         files = glob.glob(osp.join(folder, f'{prefix}_*.txt'))
@@ -149,7 +149,7 @@ class TUDataset(InMemoryDataset):
 
     @property
     def url(self) -> str:
-        return '{}/{}.zip'.format(self._url, self.name)
+        return '{}/{}.zip'.format(self.__url__, self.name)
 
     @property
     def process_filename(self):

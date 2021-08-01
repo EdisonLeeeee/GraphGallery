@@ -10,7 +10,7 @@ def cosine_similarity(A, B):
     return C
 
 
-class SimilarityAttention(Layer):
+class AGNNConv(Layer):
 
     def __init__(self, trainable=True,
                  initializer='ones',

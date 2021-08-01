@@ -4,13 +4,13 @@ from tensorflow.keras.layers import Layer
 import tensorflow as tf
 
 
-class PropConv(Layer):
+class DAGNNConv(Layer):
     """
         Basic graph convolution layer as in: 
         [Towards Deeper Graph Neural Networks](https://arxiv.org/abs/2007.09296)
         Pytorch implementation: <https://github.com/mengliu1998/DeeperGNN>
 
-        `PropConv` implements the operation:
+        `DAGNNConv` implements the operation:
 
         `propagations = Stack(\sum_k^K adj^k @ x)
         output = activation(propagations @ kernel + bias).transpose([0, 2, 1])

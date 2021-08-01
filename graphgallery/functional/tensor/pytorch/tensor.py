@@ -62,7 +62,7 @@ def astensor(x, *, dtype=None, device=None, escape=None):
                         device=device,
                         escape=escape)
     elif sp.isspmatrix(x):
-        if gg.backend() == "dgl_torch":
+        if gg.backend() == "dgl":
             import dgl
             tensor = dgl.from_scipy(x, idtype=getattr(torch, gg.intx()))
         elif gg.backend() == "pyg":

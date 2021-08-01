@@ -39,7 +39,7 @@ class GAT(TorchKeras):
                             num_heads=1,
                             feat_drop=dropout,
                             attn_drop=dropout))
-        conv = Sequential(*conv, inverse=True)  # `inverse=True` is important
+        conv = Sequential(*conv, reverse=True)  # `reverse=True` is important
 
         self.conv = conv
         self.compile(loss=nn.CrossEntropyLoss(),

@@ -10,9 +10,9 @@ from ..data.preprocess import process_planetoid_datasets
 from ..data.graph import Graph
 
 _DATASETS = gf.BunchDict({"citeseer": "citeseer citation dataset",
-                         "cora": "cora citation dataset",
-                         "pubmed":"pubmed citation dataset",
-                         "nell.0.1": "NELL dataset",
+                          "cora": "cora citation dataset",
+                          "pubmed": "pubmed citation dataset",
+                          "nell.0.1": "NELL dataset",
                           "nell.0.01": "NELL dataset",
                           "nell.0.001": "NELL dataset", })
 
@@ -30,7 +30,7 @@ class Planetoid(InMemoryDataset):
     The original url is: <https://github.com/kimiyoung/planetoid/raw/master/data>
     """
 
-    _url = _DATASET_URL
+    __url__ = _DATASET_URL
 
     def __init__(self,
                  name,
@@ -54,7 +54,7 @@ class Planetoid(InMemoryDataset):
     def available_datasets():
         return _DATASETS
 
-    def _process(self):
+    def __process__(self):
 
         adj_matrix, node_attr, node_label, train_nodes, val_nodes, test_nodes = process_planetoid_datasets(
             self.name, self.raw_paths)
@@ -80,7 +80,7 @@ class Planetoid(InMemoryDataset):
 
     @property
     def urls(self):
-        return [f"{self._url}/{raw_filename}"
+        return [f"{self.__url__}/{raw_filename}"
                 for raw_filename in self.raw_filenames]
 
     @property

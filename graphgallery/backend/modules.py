@@ -4,7 +4,7 @@ import tensorflow
 
 __all__ = ['BackendModule', 'TensorFlowBackend',
            'PyTorchBackend', 'PyGBackend',
-           'DGLPyTorchBackend', 'DGLTensorFlowBackend']
+           'DGLBackend']
 
 
 class BackendModule:
@@ -103,31 +103,7 @@ class PyGBackend(PyTorchBackend):
         return f"{super().extra_repr()} (PyTorch {torch.__version__})"
 
 
-class DGLTensorFlowBackend(TensorFlowBackend):
-    alias = {"dgl_tf"}
-
-    def __init__(self):
-        super().__init__()
-        self.acceptable_names = self.acceptable_names.union({"dgl_tf"})
-
-    @property
-    def version(self):
-        import dgl
-        return dgl.__version__
-
-    @property
-    def name(self):
-        return "DGL TensorFlow"
-
-    @property
-    def abbr(self):
-        return "dgl_tf"
-
-    def extra_repr(self):
-        return f"{super().extra_repr()} (TensorFlow {tensorflow.__version__})"
-
-
-class DGLPyTorchBackend(PyTorchBackend):
+class DGLBackend(PyTorchBackend):
     alias = {"dgl_torch", "dgl_th", "dgl"}
 
     def __init__(self):
@@ -145,7 +121,7 @@ class DGLPyTorchBackend(PyTorchBackend):
 
     @property
     def abbr(self):
-        return "dgl_torch"
+        return "dgl"
 
     def extra_repr(self):
         return f"{super().extra_repr()} (PyTorch {torch.__version__})"

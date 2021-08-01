@@ -2,7 +2,8 @@ import torch.nn as nn
 from torch import optim
 
 from graphgallery.nn.models import TorchKeras
-from graphgallery.nn.layers.pytorch import DAGNNConv, activations
+from graphgallery.nn.layers.dgl import DAGNNConv
+from graphgallery.nn.layers.pytorch import activations
 from graphgallery.nn.metrics.pytorch import Accuracy
 
 
@@ -29,10 +30,9 @@ class DAGNN(TorchKeras):
         self.conv = DAGNNConv(out_features, K=K, bias=bias)
         self.compile(loss=nn.CrossEntropyLoss(),
                      optimizer=optim.Adam(self.parameters(),
-                                          weight_decay=weight_decay,
-                                          lr=lr),
+                                          weight_decay=weight_decay, lr=lr),
                      metrics=[Accuracy()])
 
-    def forward(self, x, adj):
+    def forward(self, x, g):
         x = self.lin(x)
-        return self.conv(x, adj)
+        return self.conv(x, g)

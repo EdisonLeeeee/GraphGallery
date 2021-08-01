@@ -17,7 +17,7 @@ def cosine_similarity(A, B):
     return C
 
 
-class SimilarityAttention(nn.Module):
+class AGNNConv(nn.Module):
 
     def __init__(self, trainable=True):
         super().__init__()
@@ -37,7 +37,6 @@ class SimilarityAttention(nn.Module):
 
         sim = self.beta * cosine_similarity(A, B)
         P = softmax(sim, row)
-        print(P)
         src = x[row] * P.view(-1, 1)
         out = scatter(src, col, dim=0, reduce="add")
         return out

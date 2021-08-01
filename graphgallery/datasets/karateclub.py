@@ -22,8 +22,8 @@ class KarateClub(InMemoryDataset):
     <https://github.com/benedekrozemberczki/karateclub>
     """
 
-    _node_level_url = "https://github.com/EdisonLeeeee/GraphData/raw/master/datasets/karateclub/node_level"
-    _graph_level_url = "https://github.com/EdisonLeeeee/GraphData/raw/master/datasets/karateclub/graph_level"
+    __node_level_url__ = "https://github.com/EdisonLeeeee/GraphData/raw/master/datasets/karateclub/node_level"
+    __graph_level_url__ = "https://github.com/EdisonLeeeee/GraphData/raw/master/datasets/karateclub/graph_level"
 
     def __init__(self,
                  name,
@@ -40,10 +40,10 @@ class KarateClub(InMemoryDataset):
 
         if name == 'reddit10k':
             self.level = "graph_level"
-            self._url = self._graph_level_url
+            self.__url__ = self.__graph_level_url__
         else:
             self.level = "node_level"
-            self._url = self._node_level_url
+            self.__url__ = self.__node_level_url__
 
         super().__init__(name=name, root=root,
                          transform=transform,
@@ -56,10 +56,10 @@ class KarateClub(InMemoryDataset):
 
     @property
     def urls(self):
-        return [f"{self._url}/{self.name}/{raw_filename}"
+        return [f"{self.__url__}/{self.name}/{raw_filename}"
                 for raw_filename in self.raw_filenames]
 
-    def _process(self):
+    def __process__(self):
         reader = Reader()
         filenames = self.raw_paths
         if self.level == "node_level":

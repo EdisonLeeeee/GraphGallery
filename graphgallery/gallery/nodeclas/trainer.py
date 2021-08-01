@@ -172,20 +172,6 @@ class Trainer(Model):
         self.cfg.model.merge_from_dict(kwargs)
         return self
 
-    def build_from(self, model, **kwargs):
-
-        if self.backend == "tensorflow":
-            with tf.device(self.device):
-                self.model = model
-        else:
-            self.model = model.to(self.device)
-
-        # Configs for model building
-        self.cfg.model = gg.CfgNode()
-        self.cfg.model.build_from_other_model = True
-        self.cfg.model.merge_from_dict(kwargs)
-        return self
-
     def model_step(self, *args, **kwargs):
         """Implement you model building function here"""
         raise NotImplementedError
@@ -373,8 +359,7 @@ class Trainer(Model):
 
         logits = self.predict_step(predict_data)
 
-        T = gf.get(transform)
-        self.transform.logit_transform = T
+        self.transform.logit_transform = T = gf.get(transform)
         logits = T(logits)
         return logits.squeeze()
 
@@ -452,7 +437,7 @@ class Trainer(Model):
         if osp.exists(filepath):
             os.remove(filepath)
 
-    def help(self):
+    def help(self, return_msg=False):
         """return help message for the `trainer`"""
 
         msg = f"""
@@ -466,7 +451,10 @@ class Trainer(Model):
 |Finall and optionally, evaluate your model, run `trainer.evaluate`, the reqiured argument are:   |
 {make_docs(self.evaluate)} 
 """
-        return msg
+        if return_msg:
+            return msg
+        else:
+            print(msg)
 
 #     def __getattr__(self, attr):
 #         ##### FIXME: This may cause ERROR ######

@@ -10,9 +10,9 @@ from .lgcn import LGConv
 from .edgeconv import GCNEdgeConv
 from .mediansage import MedianAggregator, MedianGCNAggregator
 from .gcna import GCNAConv
-from .dagnn import PropConv
+from .dagnn import DAGNNConv
 from .tagcn import TAGConv
 from .appnp import APPNProp, PPNProp
 from .ssgc import SSGConv
-from .sim_attention import SimilarityAttention
+from .agnn import AGNNConv
 from .arma import ARMAConv

@@ -4,7 +4,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
-from graphgallery.nn.layers.tensorflow import PropConv
+from graphgallery.nn.layers.tensorflow import DAGNNConv
 from graphgallery.nn.models import TFKeras
 from graphgallery import floatx
 
@@ -31,8 +31,8 @@ class DAGNN(TFKeras):
                   kernel_regularizer=regularizers.l2(weight_decay))(h)
         h = Dropout(dropout)(h)
 
-        h = PropConv(K, use_bias=bias, activation='sigmoid',
-                            kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
+        h = DAGNNConv(K, use_bias=bias, activation='sigmoid',
+                      kernel_regularizer=regularizers.l2(weight_decay))([h, adj])
 
         super().__init__(inputs=[x, adj], outputs=h)
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),

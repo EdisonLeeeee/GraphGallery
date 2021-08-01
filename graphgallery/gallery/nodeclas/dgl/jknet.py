@@ -3,16 +3,17 @@ from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import Trainer
 from graphgallery.nn.models import get_model
 
-from graphgallery.gallery.nodeclas import DGL_PyTorch
+from graphgallery.gallery.nodeclas import DGL
 
 
-@DGL_PyTorch.register()
-class SGC(Trainer):
+@DGL.register()
+class JKNet(Trainer):
     """
-        Implementation of Simplifying Graph Convolutional Networks (SGC). 
-        `Simplifying Graph Convolutional Networks <https://arxiv.org/abs/1902.07153>`
-        Pytorch implementation: <https://github.com/Tiiiger/SGC>
+        Implementation of Jumping Knowledge Networks (JKNet). 
+        `Representation Learning on Graphs with Jumping Knowledge Networks
+        <https://arxiv.org/abs/1806.03536>`
 
+        DGL implementation: <https://github.com/mori97/JKNet-dgl>
     """
 
     def data_step(self,
@@ -27,18 +28,17 @@ class SGC(Trainer):
         self.register_cache(X=X, G=G)
 
     def model_step(self,
-                   hids=[],
-                   acts=[],
-                   dropout=0.5,
-                   weight_decay=5e-5,
-                   lr=0.2,
-                   bias=True):
+                   hids=[16, 16], acts=['relu', 'relu'],
+                   mode='cat',
+                   dropout=0.5, weight_decay=5e-4,
+                   lr=0.005, bias=True):
 
-        model = get_model("SGC", self.backend)
+        model = get_model("JKNet", self.backend)
         model = model(self.graph.num_node_attrs,
                       self.graph.num_node_classes,
                       hids=hids,
                       acts=acts,
+                      mode=mode,
                       dropout=dropout,
                       weight_decay=weight_decay,
                       lr=lr,

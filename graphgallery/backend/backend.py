@@ -4,7 +4,7 @@ import importlib
 import sys
 from tensorflow.keras import backend as K
 
-from .modules import BackendModule, TensorFlowBackend, PyTorchBackend, PyGBackend, DGLPyTorchBackend, DGLTensorFlowBackend
+from .modules import BackendModule, TensorFlowBackend, PyTorchBackend, PyGBackend, DGLBackend
 
 __all__ = [
     'allowed_backends', 'backend_dict', 'backend', 'set_backend',
@@ -19,12 +19,11 @@ _EXT = ".h5"
 _TF = 'tensorflow'
 _TORCH = 'torch'
 
-_DEFAULT_BACKEND = TensorFlowBackend()
+_DEFAULT_BACKEND = PyTorchBackend()
 _BACKEND = _DEFAULT_BACKEND
 
 _ALL_BACKENDS = {
-    TensorFlowBackend, PyTorchBackend, PyGBackend, DGLPyTorchBackend,
-    DGLTensorFlowBackend
+    TensorFlowBackend, PyTorchBackend, PyGBackend, DGLBackend,
 }
 _BACKEND_DICT = {}
 
@@ -51,7 +50,7 @@ _INT_TYPES = {'uint8', 'int8', 'int16', 'int32', 'int64'}
 _FLOAT_TYPES = {'float16', 'float32', 'float64'}
 
 # The type of integer to use throughout a network
-_INTX = 'int32'
+_INTX = 'int64'
 # The type of float to use throughout a network
 _FLOATX = 'float32'
 # The type of bool to use throughout a network

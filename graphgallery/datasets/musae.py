@@ -29,7 +29,7 @@ class MUSAE(InMemoryDataset):
     <https://github.com/benedekrozemberczki/MUSAE/>
     """
 
-    _url = "https://github.com/EdisonLeeeee/GraphData/raw/master/datasets/musae"
+    __url__ = "https://github.com/EdisonLeeeee/GraphData/raw/master/datasets/musae"
 
     def __init__(self,
                  name,
@@ -55,10 +55,10 @@ class MUSAE(InMemoryDataset):
 
     @property
     def urls(self):
-        return [f"{self._url}/{self.name}/{raw_filename}"
+        return [f"{self.__url__}/{self.name}/{raw_filename}"
                 for raw_filename in self.raw_filenames]
 
-    def _process(self):
+    def __process__(self):
         reader = Reader()
         filenames = self.raw_paths
         if self.attenuated:

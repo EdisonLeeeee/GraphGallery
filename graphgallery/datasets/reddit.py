@@ -16,7 +16,7 @@ class Reddit(InMemoryDataset):
     Reddit posts belonging to different communities..
     """
 
-    _url = 'https://data.dgl.ai/dataset/reddit.zip'
+    __url__ = 'https://data.dgl.ai/dataset/reddit.zip'
 
     def __init__(self,
                  root=None,
@@ -35,7 +35,7 @@ class Reddit(InMemoryDataset):
     def available_datasets():
         return gf.BunchDict(reddit="reddit dataset")
 
-    def _process(self):
+    def __process__(self):
 
         data = np.load(osp.join(self.download_dir, 'reddit_data.npz'))
         adj_matrix = sp.load_npz(

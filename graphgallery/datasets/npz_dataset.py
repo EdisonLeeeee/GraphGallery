@@ -17,7 +17,7 @@ _DATASET_URL = "https://github.com/EdisonLeeeee/GraphData/raw/master/datasets"
 
 class NPZDataset(InMemoryDataset):
 
-    _url = _DATASET_URL
+    __url__ = _DATASET_URL
 
     def __init__(self,
                  name,
@@ -45,7 +45,7 @@ class NPZDataset(InMemoryDataset):
     def available_datasets():
         return _DATASETS
 
-    def _download(self) -> None:
+    def __download__(self) -> None:
         if not self.custom:
             makedirs(self.download_dir)
             download_file(self.download_paths, self.urls)
@@ -59,7 +59,7 @@ class NPZDataset(InMemoryDataset):
     def download_dir(self):
         return self.root
 
-    def _process(self) -> dict:
+    def __process__(self) -> dict:
         loader = load_npz(self.raw_paths[0])
         graph_cls = loader.pop("__class__", "Graph")
         assert graph_cls in {"Graph", "MultiGraph", "EdgeGraph", "MultiEdgeGraph"}, graph_cls
@@ -68,7 +68,7 @@ class NPZDataset(InMemoryDataset):
 
     @property
     def url(self) -> str:
-        return f'{self._url}/{self.name}.npz'
+        return f'{self.__url__}/{self.name}.npz'
 
     @property
     def raw_paths(self) -> List[str]:

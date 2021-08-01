@@ -43,12 +43,12 @@ class InMemoryDataset(Dataset):
         if self.verbose:
             print("Downloading...")
 
-        self._download()
+        self.__download__()
 
         if self.verbose:
             print("Downloading completed.")
 
-    def _download(self):
+    def __download__(self):
         makedirs(self.download_dir)
         download_file(self.download_paths, self.urls)
         extractall(self.download_paths)
@@ -66,19 +66,19 @@ class InMemoryDataset(Dataset):
         else:
             if self.verbose:
                 print(f"Processing dataset '{self.name}'...")
-            cache = self._process()
+            cache = self.__process__()
             if self.verbose:
                 print("Processing completed.")
 
         self._graph = cache.pop('graph')
         self.split_cache = cache
 
-    def _process(self):
+    def __process__(self):
         raise NotImplementedError
 
     @property
     def url(self):
-        return self._url
+        return self.__url__
 
     @property
     def urls(self):

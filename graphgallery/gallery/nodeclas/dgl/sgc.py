@@ -3,17 +3,15 @@ from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import Trainer
 from graphgallery.nn.models import get_model
 
-from graphgallery.gallery.nodeclas import DGL_PyTorch
+from graphgallery.gallery.nodeclas import DGL
 
 
-@DGL_PyTorch.register()
-class GAT(Trainer):
+@DGL.register()
+class SGC(Trainer):
     """
-        Implementation of Graph Attention Networks (GAT).
-        `Graph Attention Networks <https://arxiv.org/abs/1710.10903>`
-        Tensorflow 1.x implementation: <https://github.com/PetarV-/GAT>
-        Pytorch implementation: <https://github.com/Diego999/pyGAT>
-        Keras implementation: <https://github.com/danielegrattarola/keras-gat>
+        Implementation of Simplifying Graph Convolutional Networks (SGC). 
+        `Simplifying Graph Convolutional Networks <https://arxiv.org/abs/1902.07153>`
+        Pytorch implementation: <https://github.com/Tiiiger/SGC>
 
     """
 
@@ -29,23 +27,22 @@ class GAT(Trainer):
         self.register_cache(X=X, G=G)
 
     def model_step(self,
-                   hids=[8],
-                   num_heads=[8],
-                   acts=['elu'],
-                   dropout=0.6,
-                   weight_decay=5e-4,
-                   lr=0.01,
-                   include=["num_heads"]):
+                   hids=[],
+                   acts=[],
+                   dropout=0.5,
+                   weight_decay=5e-5,
+                   lr=0.2,
+                   bias=True):
 
-        model = get_model("GAT", self.backend)
+        model = get_model("SGC", self.backend)
         model = model(self.graph.num_node_attrs,
                       self.graph.num_node_classes,
                       hids=hids,
-                      num_heads=num_heads,
                       acts=acts,
                       dropout=dropout,
                       weight_decay=weight_decay,
-                      lr=lr)
+                      lr=lr,
+                      bias=bias)
 
         return model
 

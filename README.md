@@ -2,8 +2,7 @@
   <img width = "700" height = "300" src="https://github.com/EdisonLeeeee/GraphGallery/blob/master/imgs/graphgallery.svg" alt="banner"/>
   <br/>
 </p>
-
-<p align="center"><strong><em>TensorFLow</em> or <em>PyTorch</em>? Both!</strong></p>
+<p align="center"><strong><em>GraphGallery</em> is a <em>gallery</em>, not a <em>Library</em></strong></p>
 
 <p align=center>
   <a href="https://www.python.org/downloads/release/python-360/">
@@ -27,7 +26,7 @@
 GraphGallery is a gallery for benchmarking Graph Neural Networks (GNNs) and Graph Adversarial Learning with [TensorFlow 2.x](https://github.com/tensorflow/tensorflow) and [PyTorch](https://github.com/pytorch/pytorch) backend. Besides, [Pytorch Geometric (PyG)](https://github.com/rusty1s/pytorch_geometric) backend and [Deep Graph Library (DGL)](https://github.com/dmlc/dgl) backend now are available in GraphGallery.
 
 
-![demo](./imgs/demo.gif)
+
 
 # 💨 NEWS
 We have integrated the **Adversarial Attacks** in this project, examples please refer to [Graph Adversarial Learning examples](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Adversarial_Learning).
@@ -41,13 +40,6 @@ or
 git clone https://github.com/EdisonLeeeee/GraphGallery.git && cd GraphGallery
 pip install -e . --verbose
 ```
-GraphGallery has been tested on:
-+ CPU, CUDA 10.1, CUDA 11.0
-+ TensorFlow 2.1~2.4, 2.1.2 is recommended.
-+ PyTorch 1.4~1.7
-+ Pytorch Geometric (PyG) 1.6.1
-+ DGL 0.5.2, 0.5.3
-
 # 🤖 Implementations
 In detail, the following methods are currently implemented:
 
@@ -413,8 +405,6 @@ TensorFlow 2.1.2 Backend
 >>> graphgallery.set_backend("pyg")
 # Switch to DGL PyTorch backend
 >>> graphgallery.set_backend("dgl")
-# Switch to DGL TensorFlow backend
->>> graphgallery.set_backend("dgl-tf")
 ```
 But your codes don't even need to change.
 

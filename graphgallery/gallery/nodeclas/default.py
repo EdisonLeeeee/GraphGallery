@@ -18,7 +18,6 @@ def default_cfg_setup(cfg):
 
     # Configs for model building
     cfg.model = gg.CfgNode()
-    cfg.model.build_from_other_model = False
 
     # Configs for model training
     cfg.fit = gg.CfgNode()

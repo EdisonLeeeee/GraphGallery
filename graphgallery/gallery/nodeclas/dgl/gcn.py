@@ -3,10 +3,10 @@ from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import Trainer
 from graphgallery.nn.models import get_model
 
-from graphgallery.gallery.nodeclas import DGL_PyTorch
+from graphgallery.gallery.nodeclas import DGL
 
 
-@DGL_PyTorch.register()
+@DGL.register()
 class GCN(Trainer):
     """
         Implementation of Graph Convolutional Networks (GCN). 

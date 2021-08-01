@@ -23,9 +23,9 @@ class PPI(InMemoryDataset):
     The original url is: <https://data.dgl.ai/dataset/ppi.zip>
     """
 
-    #     _url = "https://raw.githubusercontent.com/EdisonLeeeee/"
+    #     __url__ = "https://raw.githubusercontent.com/EdisonLeeeee/"
     #     "GraphData/master/datasets/ppi/ppi.zip"
-    _url = 'https://data.dgl.ai/dataset/ppi.zip'
+    __url__ = 'https://data.dgl.ai/dataset/ppi.zip'
 
     def __init__(self,
                  root=None,
@@ -44,7 +44,7 @@ class PPI(InMemoryDataset):
     def available_datasets():
         return gf.BunchDict(ppi="ppi dataset")
 
-    def _process(self):
+    def __process__(self):
 
         adj_matrices = []
         node_attrs = []

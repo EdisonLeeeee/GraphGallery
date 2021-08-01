@@ -30,7 +30,7 @@ class GCN(TorchKeras):
             conv.append(nn.Dropout(dropout))
             in_features = hid
         conv.append(GraphConv(in_features, out_features))
-        conv = Sequential(*conv, inverse=True)  # `inverse=True` is important
+        conv = Sequential(*conv, reverse=True)  # `reverse=True` is important
 
         self.conv = conv
         self.compile(loss=nn.CrossEntropyLoss(),

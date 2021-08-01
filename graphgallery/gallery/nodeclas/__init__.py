@@ -1,6 +1,5 @@
 from .trainer import Trainer
-from .registered_models import (TensorFlow, PyTorch, PyG,
-                                DGL_PyTorch, DGL_TensorFlow,
+from .registered_models import (TensorFlow, PyTorch, PyG, DGL,
                                 Common,
                                 MAPPING)
 

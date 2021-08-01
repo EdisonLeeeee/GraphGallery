@@ -5,7 +5,7 @@ from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 
-from graphgallery.nn.layers.tensorflow import SimilarityAttention
+from graphgallery.nn.layers.tensorflow import AGNNConv
 from graphgallery import floatx
 from graphgallery.nn.models import TFKeras
 
@@ -32,9 +32,9 @@ class AGNN(TFKeras):
             h = Dropout(rate=dropout)(h)
         # for Cora dataset, the first propagation layer is non-trainable
         # and beta is fixed at 0
-        h = SimilarityAttention(trainable=False, regularizer=regularizers.l2(weight_decay))([h, adj])
+        h = AGNNConv(trainable=False, regularizer=regularizers.l2(weight_decay))([h, adj])
         for _ in range(1, num_attn):
-            h = SimilarityAttention(regularizer=regularizers.l2(weight_decay))([h, adj])
+            h = AGNNConv(regularizer=regularizers.l2(weight_decay))([h, adj])
 
         h = Dense(out_features, use_bias=bias)(h)
         h = Dropout(rate=dropout)(h)
