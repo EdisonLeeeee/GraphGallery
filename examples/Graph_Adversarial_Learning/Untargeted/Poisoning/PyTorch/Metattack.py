@@ -18,7 +18,7 @@ gg.set_backend("torch")
 device = "gpu"
 
 ################### Surrogate model ############################
-trainer = gg.gallery.nodeclas.GCN(device=device, seed=None).make_data(graph).build()
+trainer = gg.gallery.nodeclas.GCN(device=device, seed=None).setup_graph(graph).build()
 his = trainer.fit(splits.train_nodes,
                   splits.val_nodes,
                   verbose=1,
@@ -38,7 +38,7 @@ attacker.attack(0.05)
 
 ################### Victim model ############################
 # Before attack
-trainer = gg.gallery.nodeclas.GCN(device=device, seed=123).make_data(graph).build()
+trainer = gg.gallery.nodeclas.GCN(device=device, seed=123).setup_graph(graph).build()
 his = trainer.fit(splits.train_nodes,
                   splits.val_nodes,
                   verbose=1,
@@ -47,7 +47,7 @@ original_result = trainer.evaluate(splits.test_nodes)
 
 # After attack
 # If a validation set is used, the attacker will be less effective, but we dont know why
-trainer = gg.gallery.nodeclas.GCN(device=device, seed=123).make_data(attacker.g,).build()
+trainer = gg.gallery.nodeclas.GCN(device=device, seed=123).setup_graph(attacker.g,).build()
 his = trainer.fit(splits.train_nodes,
                   #                     splits.val_nodes,
                   verbose=1,

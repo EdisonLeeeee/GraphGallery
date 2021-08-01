@@ -11,8 +11,8 @@ class GCN(BaseSAT):
     def __init__(self,
                  in_features,
                  out_features,
-                 alpha=None, # not used
-                 K=None, # not used
+                 alpha=None, # unused
+                 K=None, # unused
                  eps_U=0.3,
                  eps_V=1.2,
                  lamb_U=0.8,

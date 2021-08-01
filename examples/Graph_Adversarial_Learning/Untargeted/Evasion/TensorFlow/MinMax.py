@@ -12,7 +12,7 @@ graph.update(node_attr=gf.normalize_attr(graph.node_attr))
 device = "gpu"
 
 ################### Surrogate model ############################
-trainer = gg.gallery.nodeclas.DenseGCN(device=device, seed=123).make_data(graph).build(hids=32)
+trainer = gg.gallery.nodeclas.DenseGCN(device=device, seed=123).setup_graph(graph).build(hids=32)
 his = trainer.fit(splits.train_nodes,
                   splits.val_nodes,
                   verbose=1,
@@ -30,7 +30,7 @@ original_result = trainer.evaluate(splits.test_nodes)
 
 # After attack
 # reprocess after the graph has changed
-trainer.make_data(attacker.g)  # important!
+trainer.setup_graph(attacker.g)  # important!
 perturbed_result = trainer.evaluate(splits.test_nodes)
 
 ################### Results ############################

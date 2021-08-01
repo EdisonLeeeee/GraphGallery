@@ -1,10 +1,5 @@
 import torch
-import torch.nn as nn
-from torch import optim
-
 from graphgallery.nn.models import TorchKeras
-from graphgallery.nn.metrics.pytorch import Accuracy
-from graphgallery.nn.layers.pytorch import activations, EigenConv
 
 
 class BaseSAT(TorchKeras):

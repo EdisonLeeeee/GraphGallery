@@ -6,13 +6,13 @@ import os.path as osp
 import numpy as np
 import tensorflow as tf
 
-from collections import Iterable
 from tensorflow.keras.utils import Sequence
 from tensorflow.python.keras import callbacks as callbacks_module
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, TerminateOnNaN
 from tensorflow.keras.callbacks import History
 from graphgallery.utils import Progbar
 from torch.utils.data import DataLoader, Dataset
+from numpy import deprecate
 
 import graphgallery as gg
 from graphgallery import functional as gf
@@ -27,7 +27,7 @@ from .default import default_cfg_setup
 #     This is caused by `tf.gather` and it will be solved in future tensorflow version.
 warnings.filterwarnings(
     'ignore',
-    '.*Converting sparse IndexedSlices to a dense Tensor of unknown shape.*')
+    message='.*Converting sparse IndexedSlices to a dense Tensor of unknown shape.*')
 
 # TensorFlow 2.4.0
 # Ignora warnings:
@@ -37,23 +37,32 @@ warnings.filterwarnings(
     'ignore', message='.*to a dense Tensor of unknown shape.*')
 
 
-# def format_doc(d):
-#     s = "This method currently accept the following arguments"
-#     for k, v in d.items():
-#         s += f"\n{k}: type {type(v)}, {v}"
-#     return s
+def format_doc(d):
+    msg = ""
+    for i, (k, v) in enumerate(d.items()):
+        if v != "UNSPECIDIED":
+            msg += f"({i + 1}) `{k}`, Default is `{v}` \n"
+        else:
+            msg += f"({i + 1}) `{k}`, UNSPECIDIED argument\n"
+    return msg
 
 
-# def make_doc(func):
-#     ArgSpec = inspect.getfullargspec(func)
-#     print(func, ArgSpec)
-#     args = ArgSpec.args if ArgSpec.args else []
-#     args = args[1:] if args[0] == "self" else args
-#     defaults = ArgSpec.defaults if ArgSpec.defaults else []
-#     delta_l = len(args) - len(defaults)
-#     defaults = ["unspecidied"] * delta_l + list(defaults)
-#     d = dict(zip(args, defaults))
-#     return format_doc(d)
+def doc_dict(func):
+    ArgSpec = inspect.getfullargspec(func)
+    args = ArgSpec.args if ArgSpec.args else []
+    args = args[1:] if args[0] == "self" else args
+    defaults = ArgSpec.defaults if ArgSpec.defaults else []
+    delta_l = len(args) - len(defaults)
+    defaults = ["UNSPECIDIED"] * delta_l + list(defaults)
+    d = dict(zip(args, defaults))
+    return d
+
+
+def make_docs(*func):
+    d = {}
+    for f in func:
+        d.update(doc_dict(f))
+    return format_doc(d)
 
 
 def unravel_batch(batch):
@@ -72,7 +81,13 @@ class Trainer(Model):
     def setup_cfg(self):
         default_cfg_setup(self.cfg)
 
-    def make_data(self, graph, graph_transform=None, device=None, **kwargs):
+    @deprecate(old_name="make_data",
+               message=("the method `make_data` is currently deprecated from 0.9.0,"
+                        " please use `setup_graph` instead."))
+    def make_data(self, *args, **kwargs):
+        return self.setup_graph(*args, **kwargs)
+
+    def setup_graph(self, graph, graph_transform=None, device=None, **kwargs):
         """This method is used for process your inputs, which accepts
         only keyword arguments in your defined method 'data_step'.
         This method will process the inputs, and transform them into tensors.
@@ -142,7 +157,7 @@ class Trainer(Model):
         other arguments (if have) will be passed into your method 'model_step'.
         """
         if self._graph is None:
-            raise RuntimeError("Please call 'trainer.make_data(graph)' first.")
+            raise RuntimeError("Please call 'trainer.setup_graph(graph)' first.")
 
         use_tfn = kwargs.get("use_tfn", True)
         if self.backend == "tensorflow":
@@ -214,6 +229,7 @@ class Trainer(Model):
         callbacks.append(history)
         cfg, callbacks = setup_callbacks(cfg, callbacks, validation)
         callbacks.set_model(model)
+        self.callbacks = callbacks
         model.stop_training = False
 
         verbose = cfg.verbose
@@ -227,7 +243,7 @@ class Trainer(Model):
             print("Training...")
         elif log_cfg.enabled:
             logger.info("Training...")
-            
+
         logs = gf.BunchDict()
         callbacks.on_train_begin()
         try:
@@ -238,7 +254,6 @@ class Trainer(Model):
                                       verbose=verbose - 2)
 
                 callbacks.on_epoch_begin(epoch)
-                callbacks.on_train_batch_begin(0)
                 train_logs = self.train_step(train_data)
                 if hasattr(train_data, 'on_epoch_end'):
                     train_data.on_epoch_end()
@@ -314,7 +329,8 @@ class Trainer(Model):
         model.reset_metrics()
 
         results = None
-        for batch in sequence:
+        for epoch, batch in enumerate(sequence):
+            self.callbacks.on_train_batch_begin(epoch)
             inputs, labels, out_weight = unravel_batch(batch)
             results = model.train_step_on_batch(x=inputs,
                                                 y=labels,
@@ -435,6 +451,22 @@ class Trainer(Model):
 
         if osp.exists(filepath):
             os.remove(filepath)
+
+    def help(self):
+        """return help message for the `trainer`"""
+
+        msg = f"""
+**************************************Help Message for {self.name}******************************************
+|First, setup a graph, run `trainer.setup_graph`, the reqiured argument are:                      |
+{make_docs(self.setup_graph, self.data_step)}
+|Second, build your model, run `trainer.build`, the reqiured argument are:                        |
+{make_docs(self.build, self.model_step)} 
+|Third, train your model, run `trainer.fit`, the reqiured argument are:                           |
+{make_docs(self.fit)} 
+|Finall and optionally, evaluate your model, run `trainer.evaluate`, the reqiured argument are:   |
+{make_docs(self.evaluate)} 
+"""
+        return msg
 
 #     def __getattr__(self, attr):
 #         ##### FIXME: This may cause ERROR ######

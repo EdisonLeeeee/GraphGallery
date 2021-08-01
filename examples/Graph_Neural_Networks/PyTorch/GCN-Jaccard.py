@@ -21,7 +21,7 @@ splits = data.split_nodes(random_state=15)
 graphgallery.set_backend("pytorch")
 
 from graphgallery.gallery.nodeclas import GCN
-trainer = GCN(device="gpu", seed=123).make_data(graph, graph_transform="jaccard_detection").build()
+trainer = GCN(device="gpu", seed=123).setup_graph(graph, graph_transform="jaccard_detection").build()
 history = trainer.fit(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
 results = trainer.evaluate(splits.test_nodes)
 print(f'Test loss {results.loss:.5}, Test accuracy {results.accuracy:.2%}')

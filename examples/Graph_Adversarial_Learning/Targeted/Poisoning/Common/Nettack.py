@@ -12,7 +12,7 @@ splits = data.split_nodes(random_state=15)
 
 ################### Surrogate model ############################
 # Nettack takes no activation layer
-trainer = gg.gallery.nodeclas.GCN(seed=42).make_data(graph).build(acts=None)
+trainer = gg.gallery.nodeclas.GCN(seed=42).setup_graph(graph).build(acts=None)
 his = trainer.fit(splits.train_nodes,
                   splits.val_nodes,
                   verbose=1,
@@ -36,7 +36,7 @@ attacker.attack(target,
 
 ################### Victim model ############################
 # Before attack
-trainer = gg.gallery.nodeclas.GCN(seed=123).make_data(graph).build()
+trainer = gg.gallery.nodeclas.GCN(seed=123).setup_graph(graph).build()
 his = trainer.fit(splits.train_nodes,
                   splits.val_nodes,
                   verbose=1,
@@ -44,7 +44,7 @@ his = trainer.fit(splits.train_nodes,
 original_predict = trainer.predict(target, transform="softmax")
 
 # After attack
-trainer = gg.gallery.nodeclas.GCN(seed=123).make_data(attacker.g).build()
+trainer = gg.gallery.nodeclas.GCN(seed=123).setup_graph(attacker.g).build()
 his = trainer.fit(splits.train_nodes,
                   splits.val_nodes,
                   verbose=1,

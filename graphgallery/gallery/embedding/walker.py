@@ -21,8 +21,8 @@ def random_choice(arr, p):
 
     Returns
     -------
-    samples : ndarray
-        The generated random samples
+    sample : ndarray with 1 element
+        The generated random sample
     """
     return arr[np.searchsorted(np.cumsum(p), np.random.random(), side="right")]
 

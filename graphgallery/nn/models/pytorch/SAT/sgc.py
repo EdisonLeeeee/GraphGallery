@@ -1,4 +1,3 @@
-import torch
 import torch.nn as nn
 from torch import optim
 
@@ -11,7 +10,7 @@ class SGC(BaseSAT):
     def __init__(self,
                  in_features,
                  out_features,
-                 alpha=None, # not used
+                 alpha=None,  # unused
                  K=2,
                  eps_U=0.3,
                  eps_V=1.2,

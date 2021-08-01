@@ -391,7 +391,7 @@ It takes just a few lines of code.
 ```python
 from graphgallery.gallery.nodeclas import GCN
 trainer = GCN()
-trainer.make_data(graph)
+trainer.setup_graph(graph)
 trainer.build()
 history = trainer.fit(train_nodes, val_nodes)
 results = trainer.evaluate(test_nodes)
