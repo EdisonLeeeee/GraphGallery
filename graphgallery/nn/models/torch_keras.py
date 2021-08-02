@@ -69,6 +69,8 @@ class TorchKeras(nn.Module):
         loss = loss_fn(out, y)
         loss.backward()
         optimizer.step()
+        if self.scheduler is not None:
+            self.scheduler.step()
         for metric in metrics:
             metric.update_state(y.cpu(), out.detach().cpu())
 
@@ -108,9 +110,11 @@ class TorchKeras(nn.Module):
         # TODO
         pass
 
-    def compile(self, loss=None, optimizer=None, metrics=None):
+    def compile(self, loss=None, optimizer=None, metrics=None,
+                scheduler=None):
         self.loss = loss
         self.optimizer = optimizer
+        self.scheduler = scheduler
         if not isinstance(metrics, (list, tuple)):
             metrics = [metrics]
         self.metrics = metrics

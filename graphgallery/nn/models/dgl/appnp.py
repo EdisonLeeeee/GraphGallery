@@ -44,8 +44,8 @@ class APPNP(TorchKeras):
                      metrics=[Accuracy()])
 
     def reset_parameters(self):
-        for layer in self.lin:
-            layer.reset_parameters()
+        for lin in self.lin:
+            lin.reset_parameters()
 
     def forward(self, x, g):
         x = self.lin(x)

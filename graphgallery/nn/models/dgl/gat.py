@@ -49,6 +49,9 @@ class GAT(TorchKeras):
                                                 weight_decay=0.)], lr=lr),
                      metrics=[Accuracy()])
 
+    def reset_parameters(self):
+        for conv in self.conv:
+            conv.reset_parameters()
     def forward(self, x, g):
         x = self.conv(g, x).mean(1)
         return x

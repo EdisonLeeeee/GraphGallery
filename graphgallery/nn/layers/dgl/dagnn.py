@@ -21,7 +21,7 @@ class DAGNNConv(nn.Module):
     def reset_parameters(self):
         self.lin.reset_parameters()
 
-    def forward(self, x, graph):
+    def forward(self, graph, x):
 
         with graph.local_scope():
             results = [x]

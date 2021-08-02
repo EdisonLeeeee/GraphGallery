@@ -4,7 +4,7 @@ from torch import optim
 
 from graphgallery.nn.models import TorchKeras
 from graphgallery.nn.metrics.pytorch import Accuracy
-from graphgallery.nn.layers.pytorch import Sequential, activations
+from graphgallery.nn.layers.pytorch import activations
 
 import dgl.function as fn
 from dgl.nn.pytorch.conv import GraphConv
@@ -13,7 +13,7 @@ from dgl.nn.pytorch.conv import GraphConv
 class JKNet(TorchKeras):
     def __init__(self,
                  in_features, out_features, *,
-                 hids=[16, 16], acts=['relu', 'relu'],
+                 hids=[16] * 5, acts=['relu'] * 5,
                  mode='cat',
                  dropout=0.5, weight_decay=5e-4,
                  lr=0.005, bias=True):
@@ -24,19 +24,17 @@ class JKNet(TorchKeras):
         assert num_JK_layers >= 1 and len(set(hids)) == 1, 'the number of hidden layers should be greated than 2 and the hidden units must be equal'
 
         conv = []
-        acts_fn = []
         self.dropout = nn.Dropout(dropout)
         for hid, act in zip(hids, acts):
             conv.append(GraphConv(in_features,
                                   hid,
-                                  bias=bias))
-            acts_fn.append(activations.get(act))
+                                  bias=bias,
+                                  activation=activations.get(act)))
             in_features = hid
 
         assert len(conv) == num_JK_layers + 1
 
         self.conv = nn.ModuleList(conv)
-        self.acts = nn.ModuleList(acts_fn)
 
         if self.mode == 'cat':
             hid = hid * (num_JK_layers + 1)
@@ -50,7 +48,7 @@ class JKNet(TorchKeras):
                                           weight_decay=weight_decay, lr=lr),
                      metrics=[Accuracy()])
 
-    def reset_params(self):
+    def reset_parameters(self):
         for conv in self.conv:
             conv.reset_parameters()
         if self.mode == 'lstm':
@@ -60,8 +58,8 @@ class JKNet(TorchKeras):
 
     def forward(self, feats, g):
         feat_lst = []
-        for conv, act in zip(self.conv, self.acts):
-            feats = self.dropout(act(conv(g, feats)))
+        for conv in self.conv:
+            feats = self.dropout(conv(g, feats))
             feat_lst.append(feats)
 
         if self.mode == 'cat':

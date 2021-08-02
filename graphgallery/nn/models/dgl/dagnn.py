@@ -33,6 +33,11 @@ class DAGNN(TorchKeras):
                                           weight_decay=weight_decay, lr=lr),
                      metrics=[Accuracy()])
 
+    def reset_parameters(self):
+        for lin in self.lin:
+            lin.reset_parameters()
+        self.conv.reset_parameters()
+
     def forward(self, x, g):
         x = self.lin(x)
-        return self.conv(x, g)
+        return self.conv(g, x)

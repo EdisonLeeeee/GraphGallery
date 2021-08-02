@@ -25,8 +25,8 @@ class GCN(TorchKeras):
         for hid, act in zip(hids, acts):
             conv.append(GraphConv(in_features,
                                   hid,
-                                  bias=bias))
-            conv.append(activations.get(act))
+                                  bias=bias,
+                                  activation=activations.get(act)))
             conv.append(nn.Dropout(dropout))
             in_features = hid
         conv.append(GraphConv(in_features, out_features))
@@ -39,6 +39,11 @@ class GCN(TorchKeras):
                                            dict(params=conv[1:].parameters(),
                                                 weight_decay=0.)], lr=lr),
                      metrics=[Accuracy()])
+
+    def reset_parameters(self):
+        for conv in self.conv:
+            if hasattr(conv, 'reset_parameters'):
+                conv.reset_parameters()
 
     def forward(self, x, g):
         return self.conv(g, x)
