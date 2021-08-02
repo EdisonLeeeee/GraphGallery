@@ -3,7 +3,7 @@ from torch import optim
 
 from graphgallery.nn.models import TorchKeras
 from graphgallery.nn.metrics.pytorch import Accuracy
-from graphgallery.nn.layers.pytorch import Sequential, activations
+from graphgallery.nn.layers.pytorch import activations
 
 from dgl.nn.pytorch import APPNPConv
 

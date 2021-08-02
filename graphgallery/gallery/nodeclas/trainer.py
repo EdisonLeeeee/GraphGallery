@@ -232,6 +232,9 @@ class Trainer(Model):
 
         logs = gf.BunchDict()
         callbacks.on_train_begin()
+        # for some initialization
+        if hasattr(model, 'on_train_begin'):
+            model.on_train_begin()
         try:
             for epoch in range(cfg.epochs):
                 if verbose > 2:

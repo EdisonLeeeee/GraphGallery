@@ -91,6 +91,15 @@ class TFKeras(Model):
                 out = softmax(out)
         return out
 
+    def on_train_begin(self):
+        pass
+
+    def on_test_begin(self):
+        pass
+
+    def on_predict_begin(self):
+        pass
+
     def save_weights(self,
                      filepath,
                      overwrite=True,

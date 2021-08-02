@@ -129,6 +129,15 @@ class TorchKeras(nn.Module):
         assert self.metrics is not None
         return ['loss'] + [metric.name for metric in self.metrics]
 
+    def on_train_begin(self):
+        pass
+
+    def on_test_begin(self):
+        pass
+
+    def on_predict_begin(self):
+        pass
+
     def summary(self):
         # TODO
         pass
