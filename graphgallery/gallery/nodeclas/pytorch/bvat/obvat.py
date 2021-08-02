@@ -38,7 +38,7 @@ class OBVAT(Trainer):
                    p1=1.4,
                    p2=0.7):
 
-        model = get_model("BVAT.OBVAT", self.backend)
+        model = get_model("bvat.OBVAT", self.backend)
         model = model(self.graph.num_node_attrs,
                       self.graph.num_node_classes,
                       self.graph.num_nodes,

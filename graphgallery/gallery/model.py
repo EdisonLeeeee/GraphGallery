@@ -68,6 +68,9 @@ class Model:
         assert graph is None or isinstance(graph, gg.data.BaseGraph)
         if graph is not None:
             self._graph = graph.copy()
+            
+    def empty_cache(self):
+        self._cache = gf.BunchDict()
 
     @property
     def cache(self):

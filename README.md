@@ -66,8 +66,7 @@ In detail, the following methods are currently implemented:
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/GCN.py"> [:octocat:TensorFLow] </a>
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/GCN.py"> [🔥PyTorch] </a>
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyG/GCN.py"> [🔥PyG] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/DGL-PyTorch/GCN.py"> [🔥DGL-PyTorch] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/DGL-TensorFlow/GCN.py"> [:octocat:DGL-TensorFlow] </a>
+<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/DGL/GCN.py"> [🔥DGL] </a>
 </details>
 
 <!-- 3 -->

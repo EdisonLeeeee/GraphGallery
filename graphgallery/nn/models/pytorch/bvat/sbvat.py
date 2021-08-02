@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from torch import optim
 
 from graphgallery.nn.models import TorchKeras
-from graphgallery.nn.models.pytorch.BVAT.utils import *
+from graphgallery.nn.models.pytorch.bvat.utils import *
 from graphgallery.nn.layers.pytorch import GCNConv, Sequential, activations
 from graphgallery.nn.metrics.pytorch import Accuracy
 

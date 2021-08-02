@@ -45,7 +45,7 @@ class SAT(Trainer):
                    weight_decay=5e-4,
                    lr=0.01,
                    bias=False,
-                   name="SAT.SSGC"):
+                   name="sat.SSGC"):
 
         model = get_model(name, self.backend)
         model = model(self.graph.num_node_attrs,

@@ -107,6 +107,11 @@ class Trainer(Model):
             transform for attribute matrix.
         other arguments (if have) will be passed into method 'data_step'.
         """
+        self.empty_cache()
+        model = self.model
+        if model is not None and hasattr(model, 'empty_cache'):
+            model.empty_cache()
+                    
         self.graph = gf.get(graph_transform)(graph)
         cfg = self.cfg.data
         if device is not None:
@@ -121,6 +126,8 @@ class Trainer(Model):
         for k, v in kwargs.items():
             if k.endswith("transform"):
                 setattr(self.transform, k, gf.get(v))
+                
+
         return self
 
     def data_step(self, *args, **kwargs):
