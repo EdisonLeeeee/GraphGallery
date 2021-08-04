@@ -12,6 +12,5 @@ from .ppr import ppr, PPR, topk_ppr_matrix
 from .clip import sparse_clip
 from .topk import sparse_topk
 from .power import adj_power, AdjPower
-from .to_dense import to_dense, ToDense
 from .to_edge import sparse_adj_to_edge, SparseAdjToEdge
 from .to_dense import to_dense, ToDense

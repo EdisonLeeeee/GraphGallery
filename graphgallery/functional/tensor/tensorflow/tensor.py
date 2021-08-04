@@ -46,6 +46,16 @@ def astensor(x, *, dtype=None, device=None, escape=None):
             return x
     except TypeError:
         raise TypeError(f"argument 'escape' must be a type or tuple of types.")
+        
+    # update: accept `dict` instance
+    if isinstance(x, dict):
+        for k, v in x.items():
+            try:
+                x[k] = astensor(v, dtype=dtype, device=device, escape=escape)
+            except TypeError:
+                pass
+        return x
+            
     if dtype is None:
         dtype = gf.infer_type(x)
     elif isinstance(dtype, tf.dtypes.DType):

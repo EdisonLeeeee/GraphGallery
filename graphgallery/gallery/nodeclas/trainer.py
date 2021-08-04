@@ -10,14 +10,13 @@ from tensorflow.keras.utils import Sequence
 from tensorflow.python.keras import callbacks as callbacks_module
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, TerminateOnNaN
 from tensorflow.keras.callbacks import History
-from graphgallery.utils import Progbar
 from torch.utils.data import DataLoader, Dataset
-from numpy import deprecate
 
 import graphgallery as gg
 from graphgallery import functional as gf
 from graphgallery.data.io import makedirs_from_filepath
 from graphgallery.gallery import Model
+from graphgallery.utils import Progbar
 
 from .default import default_cfg_setup
 
@@ -81,9 +80,9 @@ class Trainer(Model):
     def setup_cfg(self):
         default_cfg_setup(self.cfg)
 
-    @deprecate(old_name="make_data",
-               message=("the method `make_data` is currently deprecated from 0.9.0,"
-                        " please use `setup_graph` instead."))
+    @np.deprecate(old_name="make_data",
+                  message=("the method `trainer.make_data` is currently deprecated from 0.9.0,"
+                        " please use `trainer.setup_graph` instead."))
     def make_data(self, *args, **kwargs):
         return self.setup_graph(*args, **kwargs)
 
@@ -126,7 +125,6 @@ class Trainer(Model):
         for k, v in kwargs.items():
             if k.endswith("transform"):
                 setattr(self.transform, k, gf.get(v))
-                
 
         return self
 
@@ -316,7 +314,7 @@ class Trainer(Model):
                           width=cfg.Progbar.width,
                           verbose=cfg.verbose)
         logs = gf.BunchDict(**self.test_step(test_data))
-        logs.update({k: v.numpy().item() for k, v in logs.items()})
+        logs.update({k: v.numpy().item() if hasattr(v, 'numpy') else v.item() for k, v in logs.items()})
         progbar.update(len(test_data), logs.items())
         return logs
 
@@ -480,8 +478,7 @@ class Trainer(Model):
 
 def remove_extra_tf_files(filepath):
     # for tensorflow weights that saved without h5 formate
-    for ext in (".data-00000-of-00001", ".data-00000-of-00002",
-                ".data-00001-of-00002", ".index"):
+    for ext in (".data-00000-of-00001", ".index"):
         path = filepath + ext
         if osp.exists(path):
             os.remove(path)
@@ -491,7 +488,6 @@ def remove_extra_tf_files(filepath):
     path = osp.join(filedir, "checkpoint")
     if osp.exists(path):
         os.remove(path)
-
 
 def setup_callbacks(cfg, callbacks, validation):
     ckpt_cfg = cfg.ModelCheckpoint

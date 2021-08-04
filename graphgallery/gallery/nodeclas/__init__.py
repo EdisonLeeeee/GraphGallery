@@ -1,8 +1,5 @@
 from .trainer import Trainer
-from .registered_models import (TensorFlow, PyTorch, PyG, DGL,
-                                Common,
-                                MAPPING)
-
+from .registered_models import (TensorFlow, PyTorch, PyG, DGL, MAPPING)
 
 import graphgallery
 from functools import partial
@@ -24,20 +21,15 @@ def is_enabled(model: str) -> bool:
     return model in enabled_models()
 
 
-def enabled_models(with_common=True):
+def enabled_models():
     """Return the models in the gallery enabled by the current backend.
-
-    Parameters
-    ----------
-    with_common : bool
-        Whether to return common models (framework-agnostic).
 
     Returns
     -------
     graphgallry.functional.BuhcnDict
         A dict of models enabled by the current backend.
     """
-    return get_registry() + Common
+    return get_registry()
 
 
 graphgallery.load_models(__name__, mapping=MAPPING)

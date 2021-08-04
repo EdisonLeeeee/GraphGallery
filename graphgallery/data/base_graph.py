@@ -85,6 +85,10 @@ class BaseGraph:
     def is_graph_labeled(self):
         """Whether the graph has graph labels (for multiple graph)"""
         return getattr(self, "graph_label", None)
+    
+    def is_multiple(self):
+        """Whether the graph is a multiple graph instance"""
+        return self.multiple
 
     def keys(self):
         # maybe using `tuple`?

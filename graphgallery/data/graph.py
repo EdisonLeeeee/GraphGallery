@@ -9,6 +9,11 @@ class Graph(HomoGraph):
     """Attributed labeled homogeneous graph stored in sparse matrix form."""
     multiple = False
 
+    @property
+    def edge_index(self):
+        edge_index, edge_weight = gf.sparse_adj_to_edge(self.adj_matrix)
+        return edge_index
+        
     def to_EdgeGraph(self):
         raise NotImplementedError
 
@@ -31,6 +36,15 @@ class Graph(HomoGraph):
         G = self.copy()
         G.adj_matrix = gf.to_undirected(G.adj_matrix)
         return G
+    
+    def to_directed(self):
+        """Convert to a directed graph."""
+        G = self.copy()
+        if self.is_directed():
+            return G
+        else:
+            G.adj_matrix = gf.to_directed(G.adj_matrix)
+        return G    
 
     def to_unweighted(self):
         """Convert to an unweighted graph (set all edge weights to 1)."""

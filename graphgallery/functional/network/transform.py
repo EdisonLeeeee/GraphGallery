@@ -4,7 +4,7 @@ import scipy.sparse as sp
 from .property import is_directed, is_weighted
 from ..decorators import multiple
 
-__all__ = ["from_nxgraph", "to_nxgraph",
+__all__ = ["from_nxgraph", "to_nxgraph", "to_directed",
            "to_undirected", "to_unweighted"]
 
 
@@ -61,6 +61,13 @@ def to_undirected(A):
     A = A.maximum(A.T)
     return A
 
+@multiple()
+def to_directed(A):
+    """Convert to a directed graph."""
+    if is_directed(A):
+        return A.copy()
+    A = sp.triu(A)
+    return A
 
 @multiple()
 def to_unweighted(A):

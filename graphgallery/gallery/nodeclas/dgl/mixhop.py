@@ -31,7 +31,7 @@ class MixHop(Trainer):
                    dropout=0.5,
                    weight_decay=5e-4,
                    bias=False,
-                   lr=0.5,
+                   lr=0.1,
                    step_size=40,
                    gamma=0.01):
 

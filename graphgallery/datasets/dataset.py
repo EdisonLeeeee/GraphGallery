@@ -1,4 +1,6 @@
 import glob
+import math
+import numpy as np
 import os.path as osp
 
 from typing import Union, Optional, List, Tuple, Callable
@@ -63,7 +65,7 @@ class Dataset:
 
         assert all((train_size, val_size))
         graph = self.graph
-        assert not graph.multiple, "NOT Supported for multiple graph"
+        assert not graph.is_multiple(), "NOT Supported for multiple graph"
         if test_size is None:
             test_size = 1.0 - train_size - val_size
         assert train_size + val_size + test_size <= 1.0
@@ -86,7 +88,7 @@ class Dataset:
                            num_samples: int = 20,
                            random_state: Optional[int] = None) -> dict:
         graph = self.graph
-        assert not graph.multiple, "NOT Supported for multiple graph"
+        assert not graph.is_multiple(), "NOT Supported for multiple graph"
 
         label = graph.node_label
         train_nodes, val_nodes, test_nodes = get_train_val_test_split_gcn(
@@ -106,7 +108,7 @@ class Dataset:
                               random_state: Optional[int] = None) -> dict:
 
         graph = self.graph
-        assert not graph.multiple, "NOT Supported for multiple graph"
+        assert not graph.is_multiple(), "NOT Supported for multiple graph"
         self._graph = graph.eliminate_classes(train_samples_per_class + val_samples_per_class).standardize()
 
         label = self._graph.node_label
@@ -122,12 +124,70 @@ class Dataset:
                  test_nodes=test_nodes))
         return self.splits
 
-    def split_edges(self,
-                    train_size=None,
-                    val_size=None,
-                    test_size=None,
+    def split_edges(self, val_size: float = 0.05,
+                    test_size: float = 0.1,
                     random_state: Optional[int] = None) -> dict:
-        raise NotImplementedError
+        
+        graph = self.graph
+
+        assert not graph.is_multiple(), "NOT Supported for multiple graph"
+        assert val_size + test_size < 1
+        np.random.seed(random_state)
+
+        is_directed = graph.is_directed()
+        graph = graph.to_directed()
+
+        num_nodes = graph.num_nodes
+        row, col = graph.edge_index
+
+        splits = gf.BunchDict()
+
+        # Return upper triangular portion.
+        mask = row < col
+        row, col = row[mask], col[mask]
+
+        # TODO: `edge_attr` processing
+        edge_attr = getattr(graph, "edge_attr", None)
+        if edge_attr is not None:
+            edge_attr = edge_attr[mask]
+
+        n_v = int(math.floor(val_size * row.shape[0]))
+        n_t = int(math.floor(test_size * row.shape[0]))
+
+        # Positive edges.
+        perm = np.random.permutation(row.shape[0])
+        row, col = row[perm], col[perm]
+
+        r, c = row[n_v + n_t:], col[n_v + n_t:]
+        splits.train_pos_edge_index = np.stack([r, c], axis=0)
+
+        if not is_directed:
+            splits.train_pos_edge_index = gf.asedge(splits.train_pos_edge_index, shape='col_wise', symmetric=True)
+            
+        r, c = row[:n_v], col[:n_v]
+        splits.val_pos_edge_index = np.stack([r, c], axis=0)
+
+        r, c = row[n_v:n_v + n_t], col[n_v:n_v + n_t]
+        splits.test_pos_edge_index = np.stack([r, c], axis=0)            
+
+        # Negative edges.
+        neg_adj_mask = np.ones((num_nodes, num_nodes), dtype=np.bool)
+        neg_adj_mask = np.triu(neg_adj_mask, k=1)
+        neg_adj_mask[row, col] = False
+
+        neg_row, neg_col = neg_adj_mask.nonzero()
+        perm = np.random.permutation(neg_row.shape[0])[:n_v + n_t]
+        neg_row, neg_col = neg_row[perm], neg_col[perm]
+
+        row, col = neg_row[:n_v], neg_col[:n_v]
+        splits.val_neg_edge_index = np.stack([row, col], axis=0)
+
+        row, col = neg_row[n_v:n_v + n_t], neg_col[n_v:n_v + n_t]
+        splits.test_neg_edge_index = np.stack([row, col], axis=0)
+
+        self.splits.update(**splits)
+        return self.splits
+
 
     def split_graphs(self,
                      train_size=None,
