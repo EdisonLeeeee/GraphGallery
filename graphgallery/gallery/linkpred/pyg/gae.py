@@ -8,8 +8,10 @@ from graphgallery.nn.models import get_model
 
 @PyG.register()
 class GAE(Trainer):
-    """
-
+    """Implementation of Graph AutoEncoder (GAE) in
+    `Variational Graph Auto-Encoders
+    <https://arxiv.org/abs/1611.07308>`
+    TensorFlow 1.x implementation <https://github.com/tkipf/gae>
     """
 
     def data_step(self,

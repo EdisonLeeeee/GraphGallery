@@ -8,7 +8,7 @@ from graphgallery.nn.models.pytorch.autoencoder.decoder import InnerProductDecod
 from torch_geometric.nn import GCNConv
 
 from .autoencoder import AutoEncoder
-from .loss import LogLoss
+from .loss import BCELoss
 
 
 class GAE(AutoEncoder):
@@ -42,7 +42,7 @@ class GAE(AutoEncoder):
 
         self.encoder = Sequential(*encoder)
         self.decoder = InnerProductDecoder()
-        self.compile(loss=LogLoss(),
+        self.compile(loss=BCELoss(),
                      optimizer=optim.Adam(self.parameters(),
                                           weight_decay=weight_decay, lr=lr),
                      metrics=[AUC(), AveragePrecision()])

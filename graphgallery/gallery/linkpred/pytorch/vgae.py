@@ -7,8 +7,8 @@ from graphgallery.nn.models import get_model
 
 
 @PyTorch.register()
-class GAE(Trainer):
-    """Implementation of Graph AutoEncoder (GAE) in
+class VGAE(Trainer):
+    """Implementation of Variational Graph AutoEncoder (VGAE) in
     `Variational Graph Auto-Encoders
     <https://arxiv.org/abs/1611.07308>`
     TensorFlow 1.x implementation <https://github.com/tkipf/gae>
@@ -39,7 +39,7 @@ class GAE(Trainer):
         num_nodes = self.graph.adj_matrix.shape[0]
         pos_weight = (num_nodes**2 - num_edges) / num_edges
 
-        model = get_model("autoencoder.GAE", self.backend)
+        model = get_model("autoencoder.VGAE", self.backend)
         model = model(self.graph.num_node_attrs,
                       out_features=out_features,
                       hids=hids,

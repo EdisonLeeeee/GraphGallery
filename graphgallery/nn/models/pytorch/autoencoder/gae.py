@@ -6,7 +6,8 @@ from graphgallery.nn.layers.pytorch import GCNConv, Sequential, activations
 from graphgallery.nn.metrics.pytorch import AveragePrecision, AUC
 from .decoder import InnerProductDecoder
 from .autoencoder import AutoEncoder
-from .loss import LogLoss
+from .loss import BCELoss
+
 
 class GAE(AutoEncoder):
     def __init__(self,
@@ -35,7 +36,7 @@ class GAE(AutoEncoder):
 
         self.encoder = encoder
         self.decoder = InnerProductDecoder()
-        self.compile(loss=LogLoss(pos_weight=pos_weight),
+        self.compile(loss=BCELoss(pos_weight=pos_weight),
                      optimizer=optim.Adam(self.parameters(),
                                           weight_decay=weight_decay, lr=lr),
                      metrics=[AUC(), AveragePrecision()])

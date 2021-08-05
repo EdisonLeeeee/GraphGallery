@@ -1,4 +1,5 @@
-from .gae import GAE
 from .decoder import InnerProductDecoder
 from .autoencoder import AutoEncoder
-from .loss import LogLoss
+from .loss import BCELoss, BCELossWithKLLoss
+from .gae import GAE
+from .vgae import VGAE

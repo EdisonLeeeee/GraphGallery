@@ -5,7 +5,8 @@ EPS = 1e-7
 
 REDUCTION = {'mean': torch.mean, 'sum': torch.sum, 'none': lambda x: x}
 
-class LogLoss(torch.nn.Module):
+
+class BCELoss(torch.nn.Module):
     def __init__(self, pos_weight=1.0, reduction='mean'):
         super().__init__()
         assert reduction in REDUCTION
