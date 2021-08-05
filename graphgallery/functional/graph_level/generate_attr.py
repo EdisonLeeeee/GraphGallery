@@ -15,7 +15,7 @@ class GenerateNodeAttr(GraphTransform):
 
     def __call__(self, graph):
         # TODO: multiple graph
-        assert not graph.multiple
+        assert not graph.is_multiple(), "NOT Supported for multiple graph"
         N = self.N
         if not N:
             N = graph.num_nodes
@@ -36,7 +36,7 @@ class GenerateEdgeAttr(GraphTransform):
 
     def __call__(self, graph):
         # TODO: multiple graph
-        assert not graph.multiple
+        assert not graph.is_multiple(), "NOT Supported for multiple graph"
         N = self.N
         if not N:
             N = graph.num_edges

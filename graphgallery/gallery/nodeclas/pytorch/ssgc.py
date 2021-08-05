@@ -2,7 +2,7 @@ from graphgallery.nn.layers.pytorch import SSGConv
 from graphgallery.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
-from graphgallery.gallery.nodeclas import Trainer
+from graphgallery.gallery import Trainer
 from graphgallery.nn.models import get_model
 
 
@@ -18,7 +18,7 @@ class SSGC(Trainer):
     def data_step(self,
                   adj_transform="normalize_adj",
                   attr_transform=None,
-                  K=16, 
+                  K=16,
                   alpha=0.1):
         graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)

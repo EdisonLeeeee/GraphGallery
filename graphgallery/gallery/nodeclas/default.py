@@ -46,13 +46,11 @@ def default_cfg_setup(cfg):
     cfg.fit.ModelCheckpoint.monitor = 'val_accuracy'
     cfg.fit.ModelCheckpoint.save_best_only = True
     cfg.fit.ModelCheckpoint.save_weights_only = True
-    cfg.fit.ModelCheckpoint.vervose = 0
+    cfg.fit.ModelCheckpoint.verbose = 0
+    cfg.fit.ModelCheckpoint.mode = 'auto'
 
     cfg.fit.Progbar = gg.CfgNode()
     cfg.fit.Progbar.width = 20
-
-    cfg.fit.TerminateOnNaN = gg.CfgNode()
-    cfg.fit.TerminateOnNaN.enabled = False
 
     cfg.fit.Logger = gg.CfgNode()
     cfg.fit.Logger.enabled = False

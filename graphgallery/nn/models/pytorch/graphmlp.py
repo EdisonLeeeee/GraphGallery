@@ -8,13 +8,13 @@ from graphgallery.nn.layers.pytorch import Sequential, activations
 from graphgallery.nn.metrics.pytorch import Accuracy
 
 
-class Mlp(nn.Module):
+class MLP(nn.Module):
     def __init__(self, in_features, out_features, act='gelu', dropout=0.6, bias=True):
         super().__init__()
         self.fc1 = nn.Linear(in_features, out_features, bias=bias)
         self.fc2 = nn.Linear(out_features, out_features, bias=bias)
         self.act = activations.get(act)
-        
+
         self.dropout = nn.Dropout(dropout)
         self.layernorm = nn.LayerNorm(out_features, eps=1e-6)
         self.reset_parameters()
@@ -48,17 +48,19 @@ def get_feature_dis(x):
     x_dis = (1 - mask) * x_dis
     return x_dis
 
+
 def Ncontrast(x_dis, adj_label, tau=1):
     """
     compute the Ncontrast loss
     """
-    x_dis = torch.exp( tau * x_dis)
+    x_dis = torch.exp(tau * x_dis)
     x_dis_sum = torch.sum(x_dis, 1)
-    x_dis_sum_pos = torch.sum(x_dis*adj_label, 1)
+    x_dis_sum_pos = torch.sum(x_dis * adj_label, 1)
     loss = -torch.log(x_dis_sum_pos * (x_dis_sum**(-1))).mean()
     return loss
 
-class GMLP(TorchKeras):
+
+class GraphMLP(TorchKeras):
     def __init__(self,
                  in_features,
                  out_features,
@@ -75,7 +77,7 @@ class GMLP(TorchKeras):
         super().__init__()
         mlp = []
         for hid, act in zip(hids, acts):
-            mlp.append(Mlp(in_features, hid, act=act, dropout=dropout, bias=bias))
+            mlp.append(MLP(in_features, hid, act=act, dropout=dropout, bias=bias))
             in_features = hid
         self.mlp = Sequential(*mlp)
         self.classifier = nn.Linear(in_features, out_features, bias=bias)
@@ -102,11 +104,11 @@ class GMLP(TorchKeras):
             return out, x_dis
         else:
             return out
-        
+
     def train_step_on_batch(self,
                             x,
                             y,
-                            out_weight=None,
+                            out_index=None,
                             device="cpu"):
         self.train()
         optimizer = self.optimizer
@@ -117,16 +119,16 @@ class GMLP(TorchKeras):
             x = [x]
         x = [_x.to(device) if hasattr(_x, 'to') else _x for _x in x]
         y = y.to(device)
-        
-        out, x_dis = self(x[0]) # x[0] is the input node feature
-        if out_weight is not None:
-            out = out[out_weight]
-            
-        loss = loss_fn(out, y) + Ncontrast(x_dis, x[1], tau=self.tau) * self.alpha # x[1] is the input adj_label
+
+        out, x_dis = self(x[0])  # x[0] is the input node feature
+        if out_index is not None:
+            out = out[out_index]
+
+        loss = loss_fn(out, y) + Ncontrast(x_dis, x[1], tau=self.tau) * self.alpha  # x[1] is the input adj_label
         loss.backward()
         optimizer.step()
         for metric in metrics:
             metric.update_state(y.cpu(), out.detach().cpu())
 
         results = [loss.cpu().detach()] + [metric.result() for metric in metrics]
-        return dict(zip(self.metrics_names, results))        
+        return dict(zip(self.metrics_names, results))

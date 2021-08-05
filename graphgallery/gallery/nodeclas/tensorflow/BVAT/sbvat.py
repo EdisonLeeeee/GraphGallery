@@ -1,12 +1,12 @@
 import tensorflow as tf
 
 from graphgallery.sequence import SBVATSampleSequence, FullBatchSequence
-from graphgallery.gallery.nodeclas.tensorflow.BVAT.utils import get_normalized_vector, kl_divergence_with_logit, entropy_y_x
+from graphgallery.gallery.nodeclas.tensorflow.bvat.utils import get_normalized_vector, kl_divergence_with_logit, entropy_y_x
 
 from graphgallery.functional.tensor.tensorflow import gather
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import TensorFlow
-from graphgallery.gallery.nodeclas import Trainer
+from graphgallery.gallery import Trainer
 from graphgallery.nn.models import get_model
 
 from distutils.version import LooseVersion
@@ -82,11 +82,11 @@ class SBVAT(Trainer):
 
         with tf.device(self.device):
 
-            for inputs, y, out_weight in sequence:
+            for inputs, y, out_index in sequence:
                 x, adj, adv_mask = inputs
                 with tf.GradientTape() as tape:
                     logit = model([x, adj], training=True)
-                    out = gather(logit, out_weight)
+                    out = gather(logit, out_index)
                     loss = loss_fn(y, out)
                     entropy_loss = entropy_y_x(logit)
                     vat_loss = self.virtual_adversarial_loss(x,
@@ -135,7 +135,7 @@ class SBVAT(Trainer):
         labels = self.graph.node_label[index]
         sequence = SBVATSampleSequence([self.cache.X, self.cache.A],
                                        labels,
-                                       out_weight=index,
+                                       out_index=index,
                                        neighbors=self.cache.neighbors,
                                        sizes=self.cfg.fit.sizes,
                                        device=self.data_device)
@@ -146,7 +146,7 @@ class SBVAT(Trainer):
         labels = self.graph.node_label[index]
         sequence = FullBatchSequence([self.cache.X, self.cache.A],
                                      labels,
-                                     out_weight=index,
+                                     out_index=index,
                                      device=self.data_device)
 
         return sequence

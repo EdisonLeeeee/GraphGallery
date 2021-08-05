@@ -8,7 +8,7 @@ from graphgallery import functional as gf
 
 __all__ = ["gather", "sparse_adj_to_sparse_tensor", "sparse_tensor_to_sparse_adj",
            "sparse_edge_to_sparse_tensor", "normalize_adj_tensor",
-           "add_selfloops_edge", "normalize_edge_tensor"
+           "add_selfloops_edge_tensor", "normalize_edge_tensor"
            ]
 
 _DTYPE_TO_CLASS = {
@@ -23,9 +23,9 @@ _DTYPE_TO_CLASS = {
 }
 
 
-def gather(out, out_weight):
-    if out_weight is not None:
-        return out[out_weight]
+def gather(out, out_index):
+    if out_index is not None:
+        return out[out_index]
     return out
 
 
@@ -97,7 +97,7 @@ def normalize_adj_tensor(adj, rate=-0.5, fill_weight=1.0):
     return d_power_mat @ adj @ d_power_mat
 
 
-def add_selfloops_edge(edge_index,
+def add_selfloops_edge_tensor(edge_index,
                        edge_weight,
                        num_nodes=None,
                        fill_weight=1.0):

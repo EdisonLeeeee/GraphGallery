@@ -50,6 +50,7 @@ class GCN(TorchKeras):
     def forward(self, x, edge_index, edge_weight=None):
         return self.conv(x, edge_index, edge_weight)
 
+
 class DropEdge(TorchKeras):
     def __init__(self,
                  in_features,

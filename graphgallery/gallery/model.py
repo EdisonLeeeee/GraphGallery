@@ -21,7 +21,6 @@ class Model:
 
         kwargs.pop("self", None)
         kwargs.pop("__class__", None)
-
         cfg = gg.CfgNode()
         cfg.merge_from_dict(kwargs)
         cfg.intx = self.intx = gg.intx()
@@ -68,7 +67,7 @@ class Model:
         assert graph is None or isinstance(graph, gg.data.BaseGraph)
         if graph is not None:
             self._graph = graph.copy()
-            
+
     def empty_cache(self):
         self._cache = gf.BunchDict()
 

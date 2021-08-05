@@ -4,6 +4,7 @@ import numpy as np
 
 import graphgallery as gg
 
+
 class Progbar:
     """Displays a progress bar.
 
@@ -21,7 +22,7 @@ class Progbar:
                  verbose=1,
                  interval=0.05,
                  unit_name='step'):
-        
+
         assert gg.is_intscalar(target), target
         self.target = target
         self.width = width
@@ -61,7 +62,9 @@ class Progbar:
             message = ''
             for k, v in values:
                 message += ' - %s:' % k
-                if v > 1e-3:
+                if v is None:
+                    message += ' None'
+                elif v > 1e-3:
                     message += ' %.3f' % v
                 else:
                     message += ' %.3e' % v

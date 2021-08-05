@@ -51,7 +51,7 @@ class DGAT(TorchKeras):
     def train_step_on_batch(self,
                             x,
                             y,
-                            out_weight=None,
+                            out_index=None,
                             device="cpu"):
         self.train()
         optimizer = self.optimizer
@@ -63,10 +63,10 @@ class DGAT(TorchKeras):
 
         logit = self(*x)
         out = logit
-        
-        if out_weight is not None:
-            out = logit[out_weight]
-        loss = loss_fn(out, y) + self.alpha * self.DGAT_loss(x, logit) 
+
+        if out_index is not None:
+            out = logit[out_index]
+        loss = loss_fn(out, y) + self.alpha * self.DGAT_loss(x, logit)
 
         loss.backward()
         optimizer.step()
@@ -80,12 +80,12 @@ class DGAT(TorchKeras):
         x, adj = inputs
         adj_para = nn.Parameter(adj)
         x_new = self.generate_x(x, adj)
-        
+
         logit_p = logit.detach()
         logit_m = self(x_new, adj_para)
         dist = kld_with_logits(logit_p, logit_m)
         grad = torch.autograd.grad(dist, adj_para, retain_graph=True)[0].detach()
-        
+
         adj_new = self.epsilon * get_normalized_vector(grad * adj)
         x_new = self.generate_x(x, adj_new)
 
@@ -93,10 +93,9 @@ class DGAT(TorchKeras):
         logit_m = self(x_new, adj)
         loss = kld_with_logits(logit_p, logit_m)
         return loss
-    
+
     def generate_x(self, x, adj):
         D = torch.diag(adj.sum(dim=1))
         L = D - adj
         x_new = (torch.eye(L.size(0), device=L.device) - L) @ x
         return x_new
-

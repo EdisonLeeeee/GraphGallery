@@ -34,26 +34,26 @@ class LATGCN(TorchKeras):
             in_features = hid
         conv.append(GCNConv(in_features, out_features, bias=bias))
         conv = Sequential(*conv)
-        
+
         self.zeta = nn.Parameter(torch.randn(num_nodes, hids[0]))
-        self.conv1 = conv[:3] # includes dropout, ReLU and the first GCN layer
-        self.conv2 = conv[3:] # remainder
+        self.conv1 = conv[:3]  # includes dropout, ReLU and the first GCN layer
+        self.conv2 = conv[3:]  # remainder
         self.compile(loss=nn.CrossEntropyLoss(),
                      optimizer=optim.Adam([dict(params=self.conv1.parameters(),
                                                 weight_decay=weight_decay),
                                            dict(params=self.conv2.parameters(),
                                                 weight_decay=0.)], lr=lr),
                      metrics=[Accuracy()])
-        
+
         self.zeta_opt = optim.Adam([self.zeta], lr=lr)
-        
+
         self.gamma = gamma
         self.eta = eta
 
     def forward(self, x, adj):
         h = self.conv1(x, adj)
         logit = self.conv2(h, adj)
-        
+
         if self.training:
             self.zeta.data = clip_by_norm(self.zeta, self.eta)
             hp = h + self.zeta
@@ -62,14 +62,11 @@ class LATGCN(TorchKeras):
             return logit, reg_loss
         else:
             return logit
-        
-         
-            
-        
+
     def train_step_on_batch(self,
                             x,
                             y,
-                            out_weight=None,
+                            out_index=None,
                             device="cpu"):
         self.train()
         optimizer = self.optimizer
@@ -79,7 +76,7 @@ class LATGCN(TorchKeras):
             x = [x]
         x = [_x.to(device) if hasattr(_x, 'to') else _x for _x in x]
         y = y.to(device)
-        
+
         zeta_opt = self.zeta_opt
         for _ in range(20):
             zeta_opt.zero_grad()
@@ -87,11 +84,11 @@ class LATGCN(TorchKeras):
             reg_loss = -reg_loss
             reg_loss.backward()
             zeta_opt.step()
-        
+
         optimizer.zero_grad()
         out, reg_loss = self(*x)
-        if out_weight is not None:
-            out = out[out_weight]
+        if out_index is not None:
+            out = out[out_index]
         loss = loss_fn(out, y) + self.gamma * reg_loss
         loss.backward()
         optimizer.step()
@@ -99,7 +96,8 @@ class LATGCN(TorchKeras):
             metric.update_state(y.cpu(), out.detach().cpu())
 
         results = [loss.cpu().detach()] + [metric.result() for metric in metrics]
-        return dict(zip(self.metrics_names, results))        
+        return dict(zip(self.metrics_names, results))
+
 
 @torch.no_grad()
 def clip_by_norm(tensor, clip_norm):

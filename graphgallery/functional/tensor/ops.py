@@ -148,16 +148,16 @@ def normalize_adj_tensor(adj,
     return module.normalize_adj_tensor(adj, rate=rate, fill_weight=fill_weight)
 
 
-def add_selfloops_edge(edge_index,
-                       edge_weight,
-                       num_nodes=None,
-                       fill_weight=1.0,
-                       backend=None):
+def add_selfloops_edge_tensor(edge_index,
+                              edge_weight,
+                              num_nodes=None,
+                              fill_weight=1.0,
+                              backend=None):
     module = get_module(backend)
-    return module.add_selfloops_edge(edge_index,
-                                     edge_weight,
-                                     num_nodes=num_nodes,
-                                     fill_weight=fill_weight)
+    return module.add_selfloops_edge_tensor(edge_index,
+                                            edge_weight,
+                                            num_nodes=num_nodes,
+                                            fill_weight=fill_weight)
 
 
 def normalize_edge_tensor(edge_index,

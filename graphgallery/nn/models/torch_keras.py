@@ -55,7 +55,7 @@ class TorchKeras(nn.Module):
     def train_step_on_batch(self,
                             x,
                             y,
-                            out_weight=None,
+                            out_index=None,
                             device="cpu"):
         self.train()
         optimizer = self.optimizer
@@ -64,8 +64,8 @@ class TorchKeras(nn.Module):
         optimizer.zero_grad()
         x, y = to_device(x, y, device=device)
         out = self(*x)
-        if out_weight is not None:
-            out = out[out_weight]
+        if out_index is not None:
+            out = out[out_index]
         loss = loss_fn(out, y)
         loss.backward()
         optimizer.step()
@@ -81,15 +81,15 @@ class TorchKeras(nn.Module):
     def test_step_on_batch(self,
                            x,
                            y,
-                           out_weight=None,
+                           out_index=None,
                            device="cpu"):
         self.eval()
         loss_fn = self.loss
         metrics = self.metrics
         x, y = to_device(x, y, device=device)
         out = self(*x)
-        if out_weight is not None:
-            out = out[out_weight]
+        if out_index is not None:
+            out = out[out_index]
         loss = loss_fn(out, y)
         for metric in metrics:
             metric.update_state(y.cpu(), out.detach().cpu())
@@ -98,12 +98,12 @@ class TorchKeras(nn.Module):
         return dict(zip(self.metrics_names, results))
 
     @torch.no_grad()
-    def predict_step_on_batch(self, x, out_weight=None, device="cpu"):
+    def predict_step_on_batch(self, x, out_index=None, device="cpu"):
         self.eval()
         x = to_device(x, device=device)
         out = self(*x)
-        if out_weight is not None:
-            out = out[out_weight]
+        if out_index is not None:
+            out = out[out_index]
         return out.cpu().detach()
 
     def build(self, inputs):
@@ -123,6 +123,9 @@ class TorchKeras(nn.Module):
         assert self.metrics is not None
         for metric in self.metrics:
             metric.reset_states()
+
+    def reset_parameter(self):
+        reset(self)
 
     @property
     def metrics_names(self):
@@ -195,12 +198,29 @@ def dummy_function(*args, **kwargs):
     ...
 
 
+def reset(nn):
+    def _reset(item):
+        if hasattr(item, 'reset_parameters'):
+            item.reset_parameters()
+
+    if nn is not None:
+        if hasattr(nn, 'children') and len(list(nn.children())) > 0:
+            for item in nn.children():
+                _reset(item)
+        else:
+            _reset(nn)
+
+
 def to_device(x, y=None, device='cpu'):
     if not isinstance(x, (list, tuple)):
         x = [x]
     x = [_x.to(device) if hasattr(x, 'to') else _x for _x in x]
+
     if y is not None:
-        y = y.to(device)
+        if isinstance(y, (list, tuple)):
+            y = [_y.to(device) if hasattr(y, 'to') else _y for _y in y]
+        else:
+            y = y.to(device)
         return x, y
     else:
         return x

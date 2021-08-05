@@ -5,7 +5,7 @@ from graphgallery.functional.tensor.tensorflow import gather
 from graphgallery.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import TensorFlow
-from graphgallery.gallery.nodeclas import Trainer
+from graphgallery.gallery import Trainer
 from graphgallery.nn.models import get_model
 
 from distutils.version import LooseVersion
@@ -71,7 +71,7 @@ class SAT(Trainer):
 
     @tf.function(experimental_relax_shapes=True)
     def train_step(self, sequence):
-        (X, A), y, out_weight = next(iter(sequence))
+        (X, A), y, out_index = next(iter(sequence))
         cfg = self.cfg.fit
 
         U, V = self.cache.U, self.cache.V
@@ -84,7 +84,7 @@ class SAT(Trainer):
             tape.watch([U, V])
             A0 = (U * V) @ tf.transpose(U)
             out = model([X, A0], training=True)
-            out = gather(out, out_weight)
+            out = gather(out, out_index)
             loss = loss_fn(y, out)
 
         U_grad, V_grad = tape.gradient(loss, [U, V])
@@ -99,11 +99,11 @@ class SAT(Trainer):
             A2 = (U * V_hat) @ tf.transpose(U)
 
             out0 = model([X, A0], training=True)
-            out0 = gather(out0, out_weight)
+            out0 = gather(out0, out_index)
             out1 = model([X, A1], training=True)
-            out1 = gather(out1, out_weight)
+            out1 = gather(out1, out_index)
             out2 = model([X, A2], training=True)
-            out2 = gather(out2, out_weight)
+            out2 = gather(out2, out_index)
 
             loss = loss_fn(y, out0) + tf.reduce_sum(model.losses)
             loss += cfg.lamb1 * loss_fn(y, out1) + cfg.lamb2 * loss_fn(y, out2)
@@ -125,6 +125,6 @@ class SAT(Trainer):
         labels = self.graph.node_label[index]
         sequence = FullBatchSequence([self.cache.X, self.cache.A],
                                      labels,
-                                     out_weight=index,
+                                     out_index=index,
                                      device=self.data_device)
         return sequence

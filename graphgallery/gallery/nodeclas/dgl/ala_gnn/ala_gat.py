@@ -1,7 +1,7 @@
 import torch
 from graphgallery.sequence import FullBatchSequence
 from graphgallery import functional as gf
-from graphgallery.gallery.nodeclas import Trainer
+from graphgallery.gallery import Trainer
 from graphgallery.nn.models import get_model
 
 from graphgallery.gallery.nodeclas import DGL
@@ -15,7 +15,7 @@ class ALaGAT(Trainer):
         <https://www.ijcai.org/Proceedings/2020/0181.pdf>`
         DGL implementation: <https://github.com/raspberryice/ala-gcn>
 
-    """    
+    """
 
     def data_step(self,
                   adj_transform="add_selfloops",
@@ -27,11 +27,10 @@ class ALaGAT(Trainer):
 
         # ``G`` and ``X`` are cached for later use
         self.register_cache(X=X, G=G)
-        
 
     def model_step(self,
-                   hids=[8]*5,
-                   acts=[None]*5,
+                   hids=[8] * 5,
+                   acts=[None] * 5,
                    num_heads=8,
                    dropout=0.5,
                    weight_decay=5e-4,
@@ -39,7 +38,7 @@ class ALaGAT(Trainer):
                    binary_reg=0.,
                    share_tau=True,
                    bias=False):
-        
+
         model = get_model("ala_gnn.ALaGAT", self.backend)
         model = model(self.graph.num_node_attrs,
                       self.graph.num_node_classes,
@@ -61,17 +60,16 @@ class ALaGAT(Trainer):
         self.model.cache.update(x=self.cache.X.to(self.device), y=gf.astensor(labels, device=self.device))
         sequence = FullBatchSequence([self.cache.X, self.cache.G],
                                      labels,
-                                     out_weight=index,
+                                     out_index=index,
                                      device=self.data_device,
                                      escape=type(self.cache.G))
         return sequence
-    
-    
+
     def test_loader(self, index):
         labels = self.graph.node_label[index]
         sequence = FullBatchSequence([self.cache.X, self.cache.G],
                                      labels,
-                                     out_weight=index,
+                                     out_index=index,
                                      device=self.device,
                                      escape=type(self.cache.G))
-        return sequence    
+        return sequence

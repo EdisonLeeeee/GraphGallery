@@ -12,7 +12,7 @@ from .appnp import APPNP
 from .label_propagation import LabelPropagation
 from .graphsage import GraphSAGE
 from .agnn import AGNN
-from .graphmlp import GMLP
+from .graphmlp import GraphMLP
 from .latgcn import LATGCN
 from .dgat import DGAT
 

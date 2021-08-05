@@ -3,7 +3,7 @@ import numpy as np
 from graphgallery.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import TensorFlow
-from graphgallery.gallery.nodeclas import Trainer
+from graphgallery.gallery import Trainer
 from graphgallery.nn.models import get_model
 
 
@@ -64,7 +64,7 @@ class LGCN(Trainer):
 
         sequence = FullBatchSequence([X, A],
                                      labels,
-                                     out_weight=mask,
+                                     out_index=mask,
                                      device=self.data_device)
         return sequence
 

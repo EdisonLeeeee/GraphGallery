@@ -1,6 +1,7 @@
 import os
 import sys
 import warnings
+import importlib
 import inspect
 import os.path as osp
 import numpy as np
@@ -8,7 +9,7 @@ import tensorflow as tf
 
 from tensorflow.keras.utils import Sequence
 from tensorflow.python.keras import callbacks as callbacks_module
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, TerminateOnNaN
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from tensorflow.keras.callbacks import History
 from torch.utils.data import DataLoader, Dataset
 
@@ -18,7 +19,6 @@ from graphgallery.data.io import makedirs_from_filepath
 from graphgallery.gallery import Model
 from graphgallery.utils import Progbar
 
-from .default import default_cfg_setup
 
 # TensorFlow 2.1.x
 # Ignora warnings:
@@ -65,24 +65,46 @@ def make_docs(*func):
 
 
 def unravel_batch(batch):
-    inputs = labels = out_weight = None
+    inputs = labels = out_index = None
     if isinstance(batch, (list, tuple)):
         inputs = batch[0]
         labels = batch[1]
         if len(batch) > 2:
-            out_weight = batch[-1]
+            out_index = batch[-1]
     else:
         inputs = batch
-    return inputs, labels, out_weight
+
+    if isinstance(labels, (list, tuple)) and len(labels) == 1:
+        labels = labels[0]
+    if isinstance(out_index, (list, tuple)) and len(out_index) == 1:
+        out_index = out_index[0]
+
+    return inputs, labels, out_index
 
 
 class Trainer(Model):
     def setup_cfg(self):
-        default_cfg_setup(self.cfg)
+        """load the default config function `default_cfg_setup` for the corresponding task.
+
+        Raises
+        ------
+        RuntimeError
+            the default config function `default_cfg_setup` not found in the file `graphgallery.gallery.[task].default`
+        """
+        # nodeclas/linkpred/...
+        task_module = self.__module__.split('.')[2]
+        # graphgallery.gallery
+        gallery_module = '.'.join(__name__.split('.')[:-1])
+        try:
+            default_setup = importlib.import_module(f".{task_module}.default", gallery_module)
+        except ModuleNotFoundError:
+            raise RuntimeError(f"default setup function `{gallery_module}.{task_module}.default.default_cfg_setup` not found!")
+
+        default_setup.default_cfg_setup(self.cfg)
 
     @np.deprecate(old_name="make_data",
                   message=("the method `trainer.make_data` is currently deprecated from 0.9.0,"
-                        " please use `trainer.setup_graph` instead."))
+                           " please use `trainer.setup_graph` instead."))
     def make_data(self, *args, **kwargs):
         return self.setup_graph(*args, **kwargs)
 
@@ -110,7 +132,7 @@ class Trainer(Model):
         model = self.model
         if model is not None and hasattr(model, 'empty_cache'):
             model.empty_cache()
-                    
+
         self.graph = gf.get(graph_transform)(graph)
         cfg = self.cfg.data
         if device is not None:
@@ -251,11 +273,11 @@ class Trainer(Model):
                 train_logs = self.train_step(train_data)
                 if hasattr(train_data, 'on_epoch_end'):
                     train_data.on_epoch_end()
-                logs.update(train_logs)
+                logs.update({k: to_item(v) for k, v in train_logs.items()})
 
                 if validation:
                     valid_logs = self.test_step(val_data)
-                    logs.update({("val_" + k): v for k, v in valid_logs.items()})
+                    logs.update({("val_" + k): to_item(v) for k, v in valid_logs.items()})
                     if hasattr(val_data, 'on_epoch_end'):
                         val_data.on_epoch_end()
 
@@ -314,7 +336,7 @@ class Trainer(Model):
                           width=cfg.Progbar.width,
                           verbose=cfg.verbose)
         logs = gf.BunchDict(**self.test_step(test_data))
-        logs.update({k: v.numpy().item() if hasattr(v, 'numpy') else v.item() for k, v in logs.items()})
+        logs.update({k: to_item(v) for k, v in logs.items()})
         progbar.update(len(test_data), logs.items())
         return logs
 
@@ -325,10 +347,10 @@ class Trainer(Model):
         results = None
         for epoch, batch in enumerate(sequence):
             self.callbacks.on_train_batch_begin(epoch)
-            inputs, labels, out_weight = unravel_batch(batch)
+            inputs, labels, out_index = unravel_batch(batch)
             results = model.train_step_on_batch(x=inputs,
                                                 y=labels,
-                                                out_weight=out_weight,
+                                                out_index=out_index,
                                                 device=self.device)
         return results
 
@@ -338,10 +360,10 @@ class Trainer(Model):
 
         results = None
         for batch in sequence:
-            inputs, labels, out_weight = unravel_batch(batch)
+            inputs, labels, out_index = unravel_batch(batch)
             results = model.test_step_on_batch(x=inputs,
                                                y=labels,
-                                               out_weight=out_weight,
+                                               out_index=out_index,
                                                device=self.device)
         return results
 
@@ -356,12 +378,9 @@ class Trainer(Model):
         cfg = self.cfg.predict
         cfg.transform = transform
 
-        if predict_data is None:
-            predict_data = np.arange(self.graph.num_nodes)
-
-        if not isinstance(predict_data, Sequence):
-            predict_data = gf.asarray(predict_data)
+        if not isinstance(predict_data, (Sequence, DataLoader, Dataset)):
             predict_data = self.predict_loader(predict_data)
+
         if cfg.cache_predict_data:
             cache.predict_data = predict_data
 
@@ -375,10 +394,11 @@ class Trainer(Model):
         logits = []
         model = self.model
         for batch in sequence:
-            inputs, labels, out_weight = unravel_batch(batch)
+            inputs, labels, out_index = unravel_batch(batch)
             logit = model.predict_step_on_batch(x=inputs,
-                                                out_weight=out_weight,
+                                                out_index=out_index,
                                                 device=self.device)
+
             logits.append(logit)
 
         return np.vstack(logits)
@@ -476,6 +496,18 @@ class Trainer(Model):
 #             )
 
 
+def to_item(value):
+    if value is None:
+        return value
+    elif hasattr(value, 'numpy'):
+        value = value.numpy()
+
+    if hasattr(value, 'item'):
+        value = value.item()
+
+    return value
+
+
 def remove_extra_tf_files(filepath):
     # for tensorflow weights that saved without h5 formate
     for ext in (".data-00000-of-00001", ".index"):
@@ -488,6 +520,7 @@ def remove_extra_tf_files(filepath):
     path = osp.join(filedir, "checkpoint")
     if osp.exists(path):
         os.remove(path)
+
 
 def setup_callbacks(cfg, callbacks, validation):
     ckpt_cfg = cfg.ModelCheckpoint
@@ -516,14 +549,12 @@ def setup_callbacks(cfg, callbacks, validation):
             ckpt_cfg.path += gg.file_ext()
         makedirs_from_filepath(ckpt_cfg.path)
         mc_callback = ModelCheckpoint(ckpt_cfg.path,
+                                      mode=ckpt_cfg.mode,
                                       monitor=ckpt_cfg.monitor,
                                       save_best_only=ckpt_cfg.save_best_only,
                                       save_weights_only=ckpt_cfg.save_weights_only,
-                                      verbose=ckpt_cfg.vervose)
+                                      verbose=ckpt_cfg.verbose)
         callbacks.append(mc_callback)
-
-    if cfg.TerminateOnNaN.enabled:
-        callbacks.append(TerminateOnNaN())
 
     if tb_cfg.enabled:
         callbacks.append(tf.keras.callbacks.TensorBoard(tb_cfg.log_dir,

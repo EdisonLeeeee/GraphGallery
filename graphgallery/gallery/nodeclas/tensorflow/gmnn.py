@@ -10,7 +10,7 @@ from graphgallery.sequence import FullBatchSequence
 from graphgallery.nn.models import TFKeras
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import TensorFlow
-from graphgallery.gallery.nodeclas import Trainer
+from graphgallery.gallery import Trainer
 
 
 @TensorFlow.register()
@@ -108,7 +108,7 @@ class GMNN(Trainer):
         if val_data is not None:
             val_loader = FullBatchSequence([label_predict, self.cache.A],
                                            self.cache.Y[val_data],
-                                           out_weight=val_data,
+                                           out_index=val_data,
                                            device=self.data_device)
         else:
             val_loader = None
@@ -143,6 +143,6 @@ class GMNN(Trainer):
         labels = self.cache.Y[index]
         sequence = FullBatchSequence([self.cache.X, self.cache.A],
                                      labels,
-                                     out_weight=index,
+                                     out_index=index,
                                      device=self.data_device)
         return sequence

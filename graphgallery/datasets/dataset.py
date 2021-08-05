@@ -125,13 +125,18 @@ class Dataset:
         return self.splits
 
     def split_edges(self, val_size: float = 0.05,
-                    test_size: float = 0.1,
+                    test_size: float = 0.1, train_size: Optional[float] = None,
                     random_state: Optional[int] = None) -> dict:
-        
+
         graph = self.graph
 
         assert not graph.is_multiple(), "NOT Supported for multiple graph"
-        assert val_size + test_size < 1
+        if train_size is not None:
+            train_size = 1 - (val_size + test_size)
+            assert train_size + val_size + test_size <= 1
+        else:
+            assert val_size + test_size < 1
+
         np.random.seed(random_state)
 
         is_directed = graph.is_directed()
@@ -151,24 +156,28 @@ class Dataset:
         if edge_attr is not None:
             edge_attr = edge_attr[mask]
 
-        n_v = int(math.floor(val_size * row.shape[0]))
-        n_t = int(math.floor(test_size * row.shape[0]))
+        n_val = int(math.floor(val_size * row.shape[0]))
+        n_test = int(math.floor(test_size * row.shape[0]))
 
         # Positive edges.
         perm = np.random.permutation(row.shape[0])
         row, col = row[perm], col[perm]
 
-        r, c = row[n_v + n_t:], col[n_v + n_t:]
+        r, c = row[n_val + n_test:], col[n_val + n_test:]
+        if train_size is not None:
+            n_train = int(math.floor(train_size * row.shape[0]))
+            r, c = row[:n_train], col[:n_train]
+
         splits.train_pos_edge_index = np.stack([r, c], axis=0)
 
         if not is_directed:
             splits.train_pos_edge_index = gf.asedge(splits.train_pos_edge_index, shape='col_wise', symmetric=True)
-            
-        r, c = row[:n_v], col[:n_v]
+
+        r, c = row[:n_val], col[:n_val]
         splits.val_pos_edge_index = np.stack([r, c], axis=0)
 
-        r, c = row[n_v:n_v + n_t], col[n_v:n_v + n_t]
-        splits.test_pos_edge_index = np.stack([r, c], axis=0)            
+        r, c = row[n_val:n_val + n_test], col[n_val:n_val + n_test]
+        splits.test_pos_edge_index = np.stack([r, c], axis=0)
 
         # Negative edges.
         neg_adj_mask = np.ones((num_nodes, num_nodes), dtype=np.bool)
@@ -176,18 +185,17 @@ class Dataset:
         neg_adj_mask[row, col] = False
 
         neg_row, neg_col = neg_adj_mask.nonzero()
-        perm = np.random.permutation(neg_row.shape[0])[:n_v + n_t]
+        perm = np.random.permutation(neg_row.shape[0])[:n_val + n_test]
         neg_row, neg_col = neg_row[perm], neg_col[perm]
 
-        row, col = neg_row[:n_v], neg_col[:n_v]
+        row, col = neg_row[:n_val], neg_col[:n_val]
         splits.val_neg_edge_index = np.stack([row, col], axis=0)
 
-        row, col = neg_row[n_v:n_v + n_t], neg_col[n_v:n_v + n_t]
+        row, col = neg_row[n_val:n_val + n_test], neg_col[n_val:n_val + n_test]
         splits.test_neg_edge_index = np.stack([row, col], axis=0)
 
         self.splits.update(**splits)
         return self.splits
-
 
     def split_graphs(self,
                      train_size=None,

@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.sparse as sp
 import tensorflow as tf
-from .to_adj import asedge
+from .edge_transform import asedge
 
 __all__ = ["jaccard_score", "cosine_score",
            "kld_score", "svd_score", "entropy_score"]

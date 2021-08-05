@@ -90,7 +90,7 @@ class ALaGCN(TorchKeras):
 
     def forward(self, x, g):
 
-        z = torch.FloatTensor([1.0,]).to(x.device)
+        z = torch.FloatTensor([1.0, ]).to(x.device)
         h = x
         list_z = []
         for lidx, layer in enumerate(self.conv):
@@ -113,7 +113,7 @@ class ALaGCN(TorchKeras):
         else:
             return out
 
-    def train_step_on_batch(self, x, y, out_weight=None, device="cpu"):
+    def train_step_on_batch(self, x, y, out_index=None, device="cpu"):
         self.train()
         optimizer = self.optimizer
         loss_fn = self.loss
@@ -121,8 +121,8 @@ class ALaGCN(TorchKeras):
         optimizer.zero_grad()
         x, y = to_device(x, y, device=device)
         out, z = self(*x)
-        if out_weight is not None:
-            out = out[out_weight]
+        if out_index is not None:
+            out = out[out_index]
         loss = (
             loss_fn(out, y)
             + torch.norm(z * (torch.ones_like(z) - z), p=1) * self.binary_reg

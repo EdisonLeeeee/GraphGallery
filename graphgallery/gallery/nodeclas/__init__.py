@@ -1,4 +1,3 @@
-from .trainer import Trainer
 from .registered_models import (TensorFlow, PyTorch, PyG, DGL, MAPPING)
 
 import graphgallery

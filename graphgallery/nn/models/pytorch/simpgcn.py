@@ -129,7 +129,7 @@ class SimPGCN(TorchKeras):
     def train_step_on_batch(self,
                             x,
                             y=None,
-                            out_weight=None,
+                            out_index=None,
                             device="cpu"):
         self.train()
         optimizer = self.optimizer
@@ -141,8 +141,8 @@ class SimPGCN(TorchKeras):
         *x, pseudo_labels, node_pairs = x
 
         out, embeddings = self(*x)
-        if out_weight is not None:
-            out = out[out_weight]
+        if out_index is not None:
+            out = out[out_index]
 
         # TODO
         loss = loss_fn(out, y) + self.lambda_ * self.regression_loss(embeddings, pseudo_labels, node_pairs)

@@ -38,23 +38,23 @@ class Accuracy(Metric):
 
     @torch.no_grad()
     def update_state(self, y_true, y_pred, sample_weight=None):
-        
+
         if y_pred.ndim == 2:
             y_pred = y_pred.argmax(1)
-        if y_true.ndim ==2:
-            y_true = y_true.argmax(1)        
-            
-        assert y_pred.size() == y_true.size(), 'size not equal'
-        
+        if y_true.ndim == 2:
+            y_true = y_true.argmax(1)
+
+        assert y_pred.size() == y_true.size(), f'Size {y_pred.size()} is not equal to {y_true.size()}'
+
         if sample_weight is not None:
-            assert y_pred.size() == sample_weight.size(), 'size not equal'
+            assert y_pred.size() == sample_weight.size(), f'Size {y_pred.size()} is not equal to {sample_weight.size()}'
             sample_weight = sample_weight.bool()
             y_pred = y_pred[sample_weight]
             y_true = y_true[sample_weight]
-            
+
         self.correct += torch.sum(y_pred == y_true)
         self.total += y_true.numel()
-    
+
     def reset_states(self):
         self.total = torch.tensor(0)
         self.correct = torch.tensor(0)
@@ -66,5 +66,4 @@ class Accuracy(Metric):
             return self.correct
         else:
             # won't be never heppen
-            pass   
-    
+            pass

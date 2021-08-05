@@ -8,10 +8,10 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 from graphgallery.nn.layers.tensorflow import GCNConv
 from graphgallery.sequence import FullBatchSequence
-from graphgallery.gallery.nodeclas.tensorflow.BVAT.utils import kl_divergence_with_logit, entropy_y_x
+from graphgallery.gallery.nodeclas.tensorflow.bvat.utils import kl_divergence_with_logit, entropy_y_x
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import TensorFlow
-from graphgallery.gallery.nodeclas import Trainer
+from graphgallery.gallery import Trainer
 from graphgallery.nn.models import TFKeras
 
 
@@ -128,6 +128,6 @@ class OBVAT(Trainer):
         labels = self.graph.node_label[index]
         sequence = FullBatchSequence([self.cache.X, self.cache.A],
                                      labels,
-                                     out_weight=index,
+                                     out_index=index,
                                      device=self.data_device)
         return sequence

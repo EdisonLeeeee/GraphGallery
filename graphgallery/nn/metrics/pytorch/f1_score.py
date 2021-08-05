@@ -15,25 +15,25 @@ class F1Score(Metric):
 
     @torch.no_grad()
     def update_state(self, y_true, y_pred, sample_weight=None):
-        
+
         if y_pred.ndim == 2:
             y_pred = y_pred.argmax(1)
-        if y_true.ndim ==2:
-            y_true = y_true.argmax(1)        
-            
-        assert y_pred.size() == y_true.size(), 'size not equal'
-        
+        if y_true.ndim == 2:
+            y_true = y_true.argmax(1)
+
+        assert y_pred.size() == y_true.size(), f'Size {y_pred.size()} is not equal to {y_true.size()}'
+
         if sample_weight is not None:
-            assert y_pred.size() == sample_weight.size(), 'size not equal'
+            assert y_pred.size() == sample_weight.size(), f'Size {y_pred.size()} is not equal to {sample_weight.size()}'
             # TODO
             raise NotImplementedError
-            
+
         if self.from_logits:
             y_pred = torch.sigmoid(y_pred)
-            
+
         self._targets.append(y_true)
         self._predictions.append(y_pred)
-    
+
     def reset_states(self):
         self._targets = []
         self._predictions = []
@@ -41,12 +41,9 @@ class F1Score(Metric):
     def result(self):
         _predictions = torch.cat(self._predictions, dim=0)
         _targets = torch.cat(self._targets, dim=0)
-        
+
         from sklearn.metrics import f1_score
 
         y_true = _targets.cpu().numpy()
         y_pred = _predictions.cpu().numpy()
-        return f1_score(y_true, y_pred, average=self.average)   
-        
-        
-    
+        return f1_score(y_true, y_pred, average=self.average)

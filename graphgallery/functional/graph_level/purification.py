@@ -72,7 +72,7 @@ class JaccardDetection(GraphTransform):
     def __call__(self, graph):
         assert isinstance(graph, gg.data.HomoGraph), type(graph)
         # TODO, multiple graph
-        assert not graph.multiple
+        assert not graph.is_multiple(), "NOT Supported for multiple graph"
         graph = graph.copy()
         adj_matrix = graph.adj_matrix
         node_attr = graph.node_attr
@@ -99,7 +99,7 @@ class CosineDetection(GraphTransform):
     def __call__(self, graph):
         assert isinstance(graph, gg.data.HomoGraph), type(graph)
         # TODO: multiple graph
-        assert not graph.multiple
+        assert not graph.is_multiple(), "NOT Supported for multiple graph"
         graph = graph.copy()
         adj_matrix = graph.adj_matrix
         node_attr = graph.node_attr
@@ -125,7 +125,7 @@ class SVD(GraphTransform):
     def __call__(self, graph):
         assert isinstance(graph, gg.data.HomoGraph), type(graph)
         # TODO: multiple graph
-        assert not graph.multiple
+        assert not graph.is_multiple(), "NOT Supported for multiple graph"
         graph = graph.copy()
         adj_matrix = svd(graph.adj_matrix, k=self.k,
                          threshold=self.threshold,

@@ -247,7 +247,7 @@ In detail, the following methods are currently implemented:
 
 <details>
 <summary>
-<b>GMLP</b> from <i>Yang Hu et al.</i>,
+<b>GraphMLP</b> from <i>Yang Hu et al.</i>,
 <a href="https://arxiv.org/abs/2106.04051"> 📝<i>Graph-MLP: Node Classification without Message Passing in Graph (Arxiv'21)</i> </a>
 </summary>
 <a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/GraphMLP.py"> [🔥PyTorch] </a>

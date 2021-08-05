@@ -57,7 +57,7 @@ class SBVAT(TorchKeras):
     def train_step_on_batch(self,
                             x,
                             y,
-                            out_weight=None,
+                            out_index=None,
                             device="cpu"):
         self.train()
         optimizer = self.optimizer
@@ -68,8 +68,8 @@ class SBVAT(TorchKeras):
         y = y.to(device)
         logit = self(*x[:-1])
         out = logit
-        if out_weight is not None:
-            out = logit[out_weight]
+        if out_index is not None:
+            out = logit[out_index]
         loss = loss_fn(out, y) + self.p1 * self.virtual_adversarial_loss(x, logit) + \
             self.p2 * self.entropy_loss(logit)
 

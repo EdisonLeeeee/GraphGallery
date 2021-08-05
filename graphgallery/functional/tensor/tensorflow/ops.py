@@ -7,12 +7,12 @@ from graphgallery import functional as gf
 from typing import Any
 
 
-def gather(out, out_weight):
-    if out_weight is not None:
-        if out_weight.dtype.is_bool:
-            return tf.boolean_mask(out, out_weight)
+def gather(out, out_index):
+    if out_index is not None:
+        if out_index.dtype.is_bool:
+            return tf.boolean_mask(out, out_index)
         else:
-            return tf.gather(out, out_weight)
+            return tf.gather(out, out_index)
     return out
 
 
@@ -65,10 +65,10 @@ def normalize_adj_tensor(adj, rate=-0.5, fill_weight=1.0):
     return d_power_mat @ adj @ d_power_mat
 
 
-def add_selfloops_edge(edge_index,
-                       edge_weight,
-                       num_nodes=None,
-                       fill_weight=1.0):
+def add_selfloops_edge_tensor(edge_index,
+                              edge_weight,
+                              num_nodes=None,
+                              fill_weight=1.0):
 
     if num_nodes is None:
         num_nodes = tf.reduce_max(edge_index) + 1
@@ -99,10 +99,10 @@ def normalize_edge_tensor(edge_index,
     if num_nodes is None:
         num_nodes = tf.reduce_max(edge_index) + 1
 
-    edge_index, edge_weight = add_selfloops_edge(edge_index,
-                                                 edge_weight,
-                                                 num_nodes=num_nodes,
-                                                 fill_weight=fill_weight)
+    edge_index, edge_weight = add_selfloops_edge_tensor(edge_index,
+                                                        edge_weight,
+                                                        num_nodes=num_nodes,
+                                                        fill_weight=fill_weight)
 
     row, col = tf.unstack(edge_index, axis=1)
     deg = tf.math.unsorted_segment_sum(edge_weight,

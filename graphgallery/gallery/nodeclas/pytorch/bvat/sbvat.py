@@ -1,7 +1,7 @@
 from graphgallery.sequence import FullBatchSequence, SBVATSampleSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
-from graphgallery.gallery.nodeclas import Trainer
+from graphgallery.gallery import Trainer
 from graphgallery.nn.models import get_model
 
 
@@ -63,7 +63,7 @@ class SBVAT(Trainer):
         labels = self.graph.node_label[index]
         sequence = SBVATSampleSequence([self.cache.X, self.cache.A],
                                        labels,
-                                       out_weight=index,
+                                       out_index=index,
                                        neighbors=self.cache.neighbors,
                                        sizes=self.cfg.model.sizes,
                                        device=self.data_device)
@@ -74,7 +74,7 @@ class SBVAT(Trainer):
         labels = self.graph.node_label[index]
         sequence = FullBatchSequence([self.cache.X, self.cache.A],
                                      labels,
-                                     out_weight=index,
+                                     out_index=index,
                                      device=self.data_device)
 
         return sequence

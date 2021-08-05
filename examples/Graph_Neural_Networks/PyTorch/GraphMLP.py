@@ -18,13 +18,13 @@ splits = data.split_nodes()
 
 graphgallery.set_backend("pytorch")
 
-from graphgallery.gallery.nodeclas import GMLP
+from graphgallery.gallery.nodeclas import GraphMLP
 # Cora
-trainer = GMLP(device="gpu", seed=123).setup_graph(graph, attr_transform="normalize_attr").build(tau=2, alpha=10.0)
+trainer = GraphMLP(device="gpu", seed=123).setup_graph(graph, attr_transform="normalize_attr").build(tau=2, alpha=10.0)
 # # Citeseer
-# trainer = GMLP(device="gpu", seed=123).setup_graph(graph, attr_transform="normalize_attr").build(tau=0.5, alpha=1.0)
+# trainer = GraphMLP(device="gpu", seed=123).setup_graph(graph, attr_transform="normalize_attr").build(tau=0.5, alpha=1.0)
 # # Pubmed
-# trainer = GMLP(device="gpu", seed=123).setup_graph(graph, attr_transform="normalize_attr").build(tau=1, alpha=100)
+# trainer = GraphMLP(device="gpu", seed=123).setup_graph(graph, attr_transform="normalize_attr").build(tau=1, alpha=100)
 
 his = trainer.fit(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
 results = trainer.evaluate(splits.test_nodes)

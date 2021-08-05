@@ -1,7 +1,7 @@
 from graphgallery.sequence import NullSequence, FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
-from graphgallery.gallery.nodeclas import Trainer
+from graphgallery.gallery import Trainer
 from graphgallery.nn.models import get_model
 
 
@@ -66,15 +66,15 @@ class GraphVAT(Trainer):
         labels = self.graph.node_label[index]
         sequence = NullSequence(x=[self.cache.X, self.cache.A, self.cache.adjacency],
                                 y=gf.astensor(labels, device=self.data_device),
-                                out_weight=gf.astensor(index, device=self.data_device),
+                                out_index=gf.astensor(index, device=self.data_device),
                                 device=self.data_device)
         return sequence
-    
+
     def test_loader(self, index):
 
         labels = self.graph.node_label[index]
         sequence = FullBatchSequence(x=[self.cache.X, self.cache.A],
                                      y=labels,
-                                     out_weight=index,
+                                     out_index=index,
                                      device=self.data_device)
-        return sequence  
+        return sequence

@@ -14,7 +14,6 @@ from graphgallery import attack
 
 from .version import __version__
 
-__all__ = [
-    "graphgallery", "nn", "gallery", "utils", "sequence", "data", "datasets",
-    "backend", "functional", "attack", "__version__"
-]
+__all__ = ["nn", "gallery", "utils", "sequence", "data", "datasets",
+           "backend", "functional", "attack", "__version__"
+           ]

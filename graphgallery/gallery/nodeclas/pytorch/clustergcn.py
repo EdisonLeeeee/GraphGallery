@@ -1,6 +1,6 @@
 import numpy as np
 from graphgallery.sequence import MiniBatchSequence
-from graphgallery.gallery.nodeclas import Trainer
+from graphgallery.gallery import Trainer
 from graphgallery.nn.models import get_model
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
@@ -78,7 +78,7 @@ class ClusterGCN(Trainer):
         batch_inputs = tuple(zip(batch_x, batch_adj))
         sequence = MiniBatchSequence(batch_inputs,
                                      batch_y,
-                                     out_weight=batch_mask,
+                                     out_index=batch_mask,
                                      device=self.data_device)
         return sequence
 
@@ -108,7 +108,7 @@ class ClusterGCN(Trainer):
 
         model = self.model
         for order, inputs, mask in zip(orders, batch_data, batch_mask):
-            output = model.predict_step_on_batch(inputs, out_weight=mask)
+            output = model.predict_step_on_batch(inputs, out_index=mask)
             logit[order] = output
 
         return logit

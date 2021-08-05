@@ -6,11 +6,11 @@ from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 from graphgallery.nn.layers.tensorflow import GCNConv
-from graphgallery.gallery.nodeclas.tensorflow.BVAT.utils import kl_divergence_with_logit, entropy_y_x, get_normalized_vector
+from graphgallery.gallery.nodeclas.tensorflow.bvat.utils import kl_divergence_with_logit, entropy_y_x, get_normalized_vector
 from graphgallery.nn.models import TFKeras
 from graphgallery.gallery.nodeclas import TensorFlow
 
-from ..BVAT.obvat import OBVAT
+from ..bvat.obvat import OBVAT
 
 
 @TensorFlow.register()

@@ -1,7 +1,7 @@
 from graphgallery.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
-from graphgallery.gallery.nodeclas import Trainer
+from graphgallery.gallery import Trainer
 from graphgallery.nn.models import get_model
 
 
@@ -34,7 +34,7 @@ class GCN_VAT(Trainer):
                    weight_decay=5e-4,
                    lr=0.01,
                    bias=False,
-                   xi=1e-4,                   
+                   xi=1e-4,
                    alpha=1.0,
                    epsilon=5e-2,
                    num_power_iterations=1):
@@ -60,6 +60,6 @@ class GCN_VAT(Trainer):
         labels = self.graph.node_label[index]
         sequence = FullBatchSequence(x=[self.cache.X, self.cache.A],
                                      y=labels,
-                                     out_weight=index,
+                                     out_index=index,
                                      device=self.data_device)
         return sequence

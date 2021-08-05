@@ -3,12 +3,12 @@ import numpy as np
 from graphgallery.sequence import FullBatchSequence, Sequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
-from graphgallery.gallery.nodeclas import Trainer
+from graphgallery.gallery import Trainer
 from graphgallery.nn.models import get_model
 
 
 @PyTorch.register()
-class GMLP(Trainer):
+class GraphMLP(Trainer):
     """
         Implementation of Graph-MLP.
         `Graph-MLP: Node Classification without Message Passing in Graph
@@ -40,7 +40,7 @@ class GMLP(Trainer):
                    alpha=10.0,
                    tau=2.0):
 
-        model = get_model("GMLP", self.backend)
+        model = get_model("GraphMLP", self.backend)
         model = model(self.graph.num_node_attrs,
                       self.graph.num_node_classes,
                       tau=tau,
@@ -59,7 +59,7 @@ class GMLP(Trainer):
         labels = self.graph.node_label[index]
         sequence = DenseBatchSequence(x=[self.cache.X, self.cache.A],
                                       y=labels,
-                                      out_weight=index,
+                                      out_index=index,
                                       batch_size=batch_size,
                                       device=self.data_device)
         return sequence
@@ -69,19 +69,19 @@ class GMLP(Trainer):
         labels = self.graph.node_label[index]
         sequence = FullBatchSequence(x=self.cache.X,
                                      y=labels,
-                                     out_weight=index,
+                                     out_index=index,
                                      device=self.data_device)
         return sequence
 
-    
+
 class DenseBatchSequence(Sequence):
 
-    def __init__(self, x, y=None, out_weight=None, batch_size=256, *args, **kwargs):
+    def __init__(self, x, y=None, out_index=None, batch_size=256, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.x = self.astensors(x, device=self.device)
         self.y = self.astensor(y, device=self.device)
-        self.out_weight = self.astensor(out_weight, device=self.device)
+        self.out_index = self.astensor(out_index, device=self.device)
         self.batch_size = batch_size
 
     def __len__(self):
@@ -90,8 +90,8 @@ class DenseBatchSequence(Sequence):
     def __getitem__(self, index):
         x, adj = self.x
         rand_indx = self.astensor(np.random.choice(np.arange(adj.shape[0]), self.batch_size), device=self.device)
-        if self.out_weight is not None:
-            rand_indx[:len(self.out_weight)] = self.out_weight
+        if self.out_index is not None:
+            rand_indx[:len(self.out_index)] = self.out_index
         features_batch = x[rand_indx]
-        adj_label_batch = adj[rand_indx,:][:,rand_indx]
-        return (features_batch, adj_label_batch), self.y, self.out_weight
+        adj_label_batch = adj[rand_indx, :][:, rand_indx]
+        return (features_batch, adj_label_batch), self.y, self.out_index

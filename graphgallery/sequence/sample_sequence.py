@@ -11,7 +11,7 @@ class SBVATSampleSequence(Sequence):
         x,
         y,
         neighbors,
-        out_weight=None,
+        out_index=None,
         sizes=50,
         resample=True,
         *args, **kwargs
@@ -19,7 +19,7 @@ class SBVATSampleSequence(Sequence):
         super().__init__(*args, **kwargs)
         self.x = x
         self.y = y
-        self.out_weight = out_weight
+        self.out_index = out_index
         self.neighbors = neighbors
         self.num_nodes = x[0].shape[0]
         self.sizes = sizes
@@ -30,7 +30,7 @@ class SBVATSampleSequence(Sequence):
         return 1
 
     def __getitem__(self, index):
-        return self.astensors(*self.x, self.adv_mask), self.astensor(self.y), self.astensor(self.out_weight)
+        return self.astensors(*self.x, self.adv_mask), self.astensor(self.y), self.astensor(self.out_index)
 
     def on_epoch_end(self):
         if self.resample:

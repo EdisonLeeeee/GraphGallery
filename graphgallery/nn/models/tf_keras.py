@@ -30,7 +30,7 @@ class TFKeras(Model):
             self.predict_step_on_batch, experimental_relax_shapes=True)
         self._use_tfn = True
 
-    def train_step_on_batch(self, x, y=None, out_weight=None, device="CPU"):
+    def train_step_on_batch(self, x, y=None, out_index=None, device="CPU"):
         # FIXME: self.metrics would return '[]' for tensorflow>=2.2.0
         # See <https://github.com/tensorflow/tensorflow/issues/37990>
         # the loss or metrics must be called to build the compiled_loss
@@ -42,7 +42,7 @@ class TFKeras(Model):
         with tf.device(device):
             with tf.GradientTape() as tape:
                 out = self(x, training=True)
-                out = gather(out, out_weight)
+                out = gather(out, out_index)
                 loss = loss_fn(y, out) + tf.reduce_sum(self.losses)
                 if isinstance(metrics, list):
                     for metric in metrics:
@@ -59,13 +59,13 @@ class TFKeras(Model):
             ]
             return dict(zip(self.metrics_names, results))
 
-    def test_step_on_batch(self, x, y=None, out_weight=None, device="CPU"):
+    def test_step_on_batch(self, x, y=None, out_index=None, device="CPU"):
         loss_fn = getattr(self, LOSS)
         metrics = getattr(self, METRICS)
 
         with tf.device(device):
             out = self(x, training=False)
-            out = gather(out, out_weight)
+            out = gather(out, out_index)
             loss = loss_fn(y, out) + tf.reduce_sum(self.losses)
             if isinstance(metrics, list):
                 for metric in metrics:
@@ -81,12 +81,12 @@ class TFKeras(Model):
 
     def predict_step_on_batch(self,
                               x,
-                              out_weight=None,
+                              out_index=None,
                               return_logits=True,
                               device="CPU"):
         with tf.device(device):
             out = self(x, training=False)
-            out = gather(out, out_weight)
+            out = gather(out, out_index)
             if not return_logits:
                 out = softmax(out)
         return out

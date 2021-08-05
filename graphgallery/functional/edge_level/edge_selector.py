@@ -1,5 +1,5 @@
 import numpy as np
-from .to_adj import asedge
+from .edge_transform import asedge
 __all__ = ["threshold_selector", "percent_selector"]
 
 

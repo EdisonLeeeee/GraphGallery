@@ -18,7 +18,7 @@ from .graphat.gcn_vat import GCN_VAT
 from .graphat.graph_vat import GraphVAT
 from .bvat.sbvat import SBVAT
 from .bvat.obvat import OBVAT
-from .graphmlp import GMLP
+from .graphmlp import GraphMLP
 from .latgcn import LATGCN
 from .dgat import DGAT
 

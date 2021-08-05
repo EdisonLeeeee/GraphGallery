@@ -55,7 +55,7 @@ class GCN_VAT(TorchKeras):
     def train_step_on_batch(self,
                             x,
                             y,
-                            out_weight=None,
+                            out_index=None,
                             device="cpu"):
         self.train()
         optimizer = self.optimizer
@@ -66,18 +66,17 @@ class GCN_VAT(TorchKeras):
         y = y.to(device)
         logit = self(*x)
         out = logit
-        if out_weight is not None:
-            out = logit[out_weight]
+        if out_index is not None:
+            out = logit[out_index]
         loss = loss_fn(out, y) + self.alpha * self.virtual_adversarial_loss(x, logit)
-        
+
         loss.backward()
         optimizer.step()
         for metric in metrics:
             metric.update_state(y.cpu(), out.detach().cpu())
 
         results = [loss.cpu().detach()] + [metric.result() for metric in metrics]
-        return dict(zip(self.metrics_names, results))    
-    
+        return dict(zip(self.metrics_names, results))
 
     def generate_virtual_adversarial_perturbation(self, inputs, logit):
         x, adj = inputs

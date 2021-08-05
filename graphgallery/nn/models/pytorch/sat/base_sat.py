@@ -6,7 +6,7 @@ class BaseSAT(TorchKeras):
     def train_step_on_batch(self,
                             x,
                             y,
-                            out_weight=None,
+                            out_index=None,
                             device="cpu"):
         self.train()
         optimizer = self.optimizer
@@ -24,8 +24,8 @@ class BaseSAT(TorchKeras):
         U.requires_grad = True
         V.requires_grad = True
         out = self(x, U, V)
-        if out_weight is not None:
-            out = out[out_weight]
+        if out_index is not None:
+            out = out[out_index]
         loss = loss_fn(out, y)
 
         U_grad, V_grad = torch.autograd.grad(loss, [U, V], retain_graph=True)
@@ -38,9 +38,9 @@ class BaseSAT(TorchKeras):
         out_U = self(x, U + U_grad, V)
         out_V = self(x, U, V + V_grad)
 
-        if out_weight is not None:
-            out_U = out_U[out_weight]
-            out_V = out_V[out_weight]
+        if out_index is not None:
+            out_U = out_U[out_index]
+            out_V = out_V[out_index]
 
         loss += self.lamb_U * loss_fn(out_U, y) + self.lamb_V * loss_fn(out_V, y)
         ########################

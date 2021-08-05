@@ -1,33 +1,17 @@
+import warnings
 import numpy as np
-import scipy.sparse as sp
 import graphgallery as gg
+import scipy.sparse as sp
+from typing import Optional
+from .shape import maybe_shape, maybe_num_nodes
 
-from typing import Union, Optional
-
-from .to_adj import asedge
 from ..functions import get_length
 
-
-__all__ = ['add_selfloops_edge', 'normalize_edge', 'augment_edge']
-
-
-def add_selfloops_edge(edge_index, edge_weight, num_nodes=None, fill_weight=1.0):
-    edge_index = asedge(edge_index, shape="col_wise")
-
-    if num_nodes is None:
-        num_nodes = edge_index.max() + 1
-
-    if edge_weight is None:
-        edge_weight = np.ones(edge_index.shape[1], dtype=gg.floatx())
-
-    diagnal_edge_index = np.asarray(np.diag_indices(num_nodes)).astype(edge_index.dtype, copy=False)
-
-    updated_edge_index = np.hstack([edge_index, diagnal_edge_index])
-
-    diagnal_edge_weight = np.zeros(num_nodes, dtype=gg.floatx()) + fill_weight
-    updated_edge_weight = np.hstack([edge_weight, diagnal_edge_weight])
-
-    return updated_edge_index, updated_edge_weight
+__all__ = ['remove_self_loops_edge',
+           'add_selfloops_edge', 'segregate_self_loops_edge',
+           'contains_self_loops_edge', 'add_remaining_self_loops',
+           'normalize_edge', 'augment_edge',
+           'asedge', 'edge_to_sparse_adj']
 
 
 def normalize_edge(edge_index, edge_weight=None, rate=-0.5, fill_weight=1.0):
@@ -125,3 +109,174 @@ def augment_edge(edge_index: np.ndarray, nodes: np.ndarray,
     augmented_edge_weight = np.hstack([edge_weight, added_edge_weight])
 
     return augmented_edge_index, augmented_edge_weight
+
+
+def contains_self_loops_edge(edge_index):
+    r"""Returns `True` if the graph given by `edge_index` contains self-loops.
+    """
+    edge_index = asedge(edge_index, shape="col_wise")
+    mask = edge_index[0] == edge_index[1]
+    return mask.sum().item() > 0
+
+
+def remove_self_loops_edge(edge_index: np.ndarray, edge_weight: Optional[np.ndarray] = None):
+    r"""Removes every self-loop in the graph given by :attr:`edge_index`, so
+    that :math:`(i,i) \not\in \mathcal{E}` for every :math:`i \in \mathcal{V}`.
+
+    """
+    edge_index = asedge(edge_index, shape="col_wise")
+    mask = edge_index[0] != edge_index[1]
+    edge_index = edge_index[:, mask]
+    if edge_weight is None:
+        return edge_index, np.ones(edge_index.shape[1], dtype=gg.floatx())
+    else:
+        return edge_index, edge_weight[mask]
+
+
+def segregate_self_loops_edge(edge_index, edge_weight: Optional[np.ndarray] = None):
+    r"""Segregates self-loops from the graph.
+    """
+
+    edge_index = asedge(edge_index, shape="col_wise")
+    mask = edge_index[0] != edge_index[1]
+    inv_mask = ~mask
+
+    loop_edge_index = edge_index[:, inv_mask]
+    loop_edge_weight = None if edge_weight is None else edge_weight[inv_mask]
+    edge_index = edge_index[:, mask]
+    edge_weight = None if edge_weight is None else edge_weight[mask]
+
+    return edge_index, edge_weight, loop_edge_index, loop_edge_weight
+
+
+def add_selfloops_edge(edge_index: np.ndarray, edge_weight: Optional[np.ndarray] = None,
+                       num_nodes: Optional[int] = None, fill_weight: float = 1.0):
+    r"""Adds a self-loop :math:`(i,i) \in \mathcal{E}` to every node
+    :math:`i \in \mathcal{V}` in the graph given by :attr:`edge_index`.
+    In case the graph is weighted, self-loops will be added with edge weights
+    denoted by :obj:`fill_value`.
+    """
+    edge_index = asedge(edge_index, shape="col_wise")
+    num_nodes = maybe_num_nodes(edge_index, num_nodes)
+
+    if edge_weight is None:
+        edge_weight = np.ones(edge_index.shape[1], dtype=gg.floatx())
+
+    diagnal_edge_index = np.asarray(np.diag_indices(num_nodes)).astype(edge_index.dtype, copy=False)
+
+    updated_edge_index = np.hstack([edge_index, diagnal_edge_index])
+
+    diagnal_edge_weight = np.zeros(num_nodes, dtype=gg.floatx()) + fill_weight
+    updated_edge_weight = np.hstack([edge_weight, diagnal_edge_weight])
+
+    return updated_edge_index, updated_edge_weight
+
+
+def add_remaining_self_loops(edge_index: np.ndarray,
+                             edge_weight: Optional[np.ndarray] = None,
+                             fill_value: float = 1.,
+                             num_nodes: Optional[int] = None):
+    r"""Adds remaining self-loop :math:`(i,i) \in \mathcal{E}` to every node
+    :math:`i \in \mathcal{V}` in the graph given by :attr:`edge_index`.
+    In case the graph is weighted and already contains a few self-loops, only
+    non-existent self-loops will be added with edge weights denoted by
+    :obj:`fill_value`.
+
+    """
+    edge_index = asedge(edge_index, shape="col_wise")
+    num_nodes = maybe_num_nodes(edge_index, num_nodes)
+    row, col = edge_index[0], edge_index[1]
+    mask = row != col
+
+    loop_index = np.asarray(np.diag_indices(num_nodes)).astype(edge_index.dtype, copy=False)
+    edge_index = np.hstack([edge_index[:, mask], loop_index])
+
+    if edge_weight is not None:
+        inv_mask = ~mask
+        loop_weight = np.full((num_nodes, ), fill_value, dtype=edge_weight.dtype)
+        remaining_edge_weight = edge_weight[inv_mask]
+        if remaining_edge_weight.size > 0:
+            loop_weight[row[inv_mask]] = remaining_edge_weight
+        edge_weight = np.hstack([edge_weight[mask], loop_weight])
+
+    return edge_index, edge_weight
+
+
+def asedge(edge: np.ndarray, shape="col_wise", symmetric=False, dtype=None):
+    """make sure the array as edge like,
+    shape [M, 2] or [2, M] with dtype 'dtype' (or 'int64')
+    if ``symmetric=True``, it wiil have shape
+    [2*M, 2] or [2, M*2].
+
+    Parameters
+    ----------
+    edge : List, np.ndarray
+        edge like list or array
+    shape : str, optional
+        row_wise: edge has shape [M, 2]
+        col_wise: edge has shape [2, M]
+        by default ``col_wise``
+    symmetric: bool, optional
+        if ``True``, the output edge will be 
+        symmectric, i.e., 
+        row_wise: edge has shape [2*M, 2]
+        col_wise: edge has shape [2, M*2]
+        by default ``False``
+    dtype: string, optional
+        data type for edges, if None, default to 'int64'
+
+    Returns
+    -------
+    np.ndarray
+        edge array
+    """
+    assert shape in ["row_wise", "col_wise"], shape
+    assert isinstance(edge, (np.ndarray, list, tuple)), edge
+    edge = np.asarray(edge, dtype=dtype or "int64")
+    assert edge.ndim == 2 and 2 in edge.shape, edge.shape
+    N, M = edge.shape
+    if N == M == 2 and shape == "col_wise":
+        # TODO: N=M=2 is confusing, we assume that edge was 'row_wise'
+        warnings.warn(f"The shape of the edge is {N}x{M}."
+                      f"we assume that {edge} was 'row_wise'")
+        edge = edge.T
+    elif (shape == "col_wise" and N != 2) or (shape == "row_wise" and M != 2):
+        edge = edge.T
+
+    if symmetric:
+        if shape == "col_wise":
+            edge = np.hstack([edge, edge[[1, 0]]])
+        else:
+            edge = np.vstack([edge, edge[:, [1, 0]]])
+
+    return edge
+
+
+def edge_to_sparse_adj(edge: np.ndarray,
+                       edge_weight: Optional[np.ndarray] = None,
+                       shape: Optional[tuple] = None) -> sp.csr_matrix:
+    """Convert (edge, edge_weight) representation to a Scipy sparse matrix
+
+    Parameters
+    ----------
+    edge : list or np.ndarray
+        edge index of sparse matrix, shape [2, M]
+    edge_weight : Optional[np.ndarray], optional
+        edge weight of sparse matrix, shape [M,], by default None
+    shape : Optional[tuple], optional
+        shape of sparse matrix, by default None
+
+    Returns
+    -------
+    scipy.sparse.csr_matrix
+
+    """
+
+    edge = asedge(edge, shape="col_wise")
+
+    if edge_weight is None:
+        edge_weight = np.ones(edge.shape[1], dtype=gg.floatx())
+
+    if shape is None:
+        shape = maybe_shape(edge)
+    return sp.csr_matrix((edge_weight, edge), shape=shape)

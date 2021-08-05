@@ -1,6 +1,6 @@
 from graphgallery.sequence import FullBatchSequence
 from graphgallery import functional as gf
-from graphgallery.gallery.nodeclas import Trainer
+from graphgallery.gallery import Trainer
 from graphgallery.nn.models import get_model
 
 from graphgallery.gallery.nodeclas import DGL
@@ -28,7 +28,7 @@ class JKNet(Trainer):
         self.register_cache(X=X, G=G)
 
     def model_step(self,
-                   hids=[16]*5, acts=['relu']*5,
+                   hids=[16] * 5, acts=['relu'] * 5,
                    mode='cat',
                    dropout=0.5, weight_decay=5e-4,
                    lr=0.005, bias=True):
@@ -50,7 +50,7 @@ class JKNet(Trainer):
         labels = self.graph.node_label[index]
         sequence = FullBatchSequence([self.cache.X, self.cache.G],
                                      labels,
-                                     out_weight=index,
+                                     out_index=index,
                                      device=self.data_device,
                                      escape=type(self.cache.G))
         return sequence

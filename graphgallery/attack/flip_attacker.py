@@ -8,7 +8,7 @@ from .attacker import Attacker
 class FlipAttacker(Attacker):
     def __init__(self, graph, device="cpu", seed=None, name=None, **kwargs):
         super().__init__(graph, device=device, seed=seed, name=name, **kwargs)
-        assert not graph.multiple
+        assert not graph.is_multiple(), "NOT Supported for multiple graph"
         self.nattr_flips = None
         self.eattr_flips = None
         self.adj_flips = None

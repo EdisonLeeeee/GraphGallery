@@ -1,7 +1,7 @@
 import warnings
 import numpy as np
 from scipy.sparse.csgraph import minimum_spanning_tree
-from .to_adj import asedge
+from .edge_transform import asedge
 
 __all__ = ["singleton_filter", "connected_filter"]
 

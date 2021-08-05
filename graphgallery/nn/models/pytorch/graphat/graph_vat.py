@@ -62,7 +62,7 @@ class GraphVAT(TorchKeras):
     def train_step_on_batch(self,
                             x,
                             y,
-                            out_weight=None,
+                            out_index=None,
                             device="cpu"):
         self.train()
         optimizer = self.optimizer
@@ -77,8 +77,8 @@ class GraphVAT(TorchKeras):
         neighbors = torch.LongTensor(self.sampler(adjacency))
         logit = self(x, adj)
         out = logit
-        if out_weight is not None:
-            out = logit[out_weight]
+        if out_index is not None:
+            out = logit[out_index]
         loss = loss_fn(out, y) + self.alpha * self.virtual_adversarial_loss((x, adj), logit) + \
             self.beta * self.graph_adversarial_loss((x, adj), logit, neighbors)
 

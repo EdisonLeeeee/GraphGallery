@@ -3,7 +3,7 @@ import numpy as np
 from graphgallery.sequence import SAGEMiniBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import TensorFlow
-from graphgallery.gallery.nodeclas import Trainer
+from graphgallery.gallery import Trainer
 from graphgallery.nn.models import get_model
 
 

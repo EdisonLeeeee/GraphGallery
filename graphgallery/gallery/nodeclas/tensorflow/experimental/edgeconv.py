@@ -3,7 +3,7 @@ import tensorflow as tf
 from graphgallery.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import TensorFlow
-from graphgallery.gallery.nodeclas import Trainer
+from graphgallery.gallery import Trainer
 from graphgallery.nn.models import get_model
 
 
@@ -59,6 +59,6 @@ class EdgeGCN(Trainer):
         labels = self.graph.node_label[index]
         sequence = FullBatchSequence([self.cache.X, *self.cache.E],
                                      labels,
-                                     out_weight=index,
+                                     out_index=index,
                                      device=self.data_device)
         return sequence
