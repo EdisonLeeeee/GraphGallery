@@ -16,6 +16,7 @@ class GAE(AutoEncoder):
                  hids=[32],
                  acts=['relu'],
                  dropout=0.,
+                 pos_weight=1.0,
                  weight_decay=0.,
                  lr=0.01,
                  bias=True):
@@ -34,7 +35,7 @@ class GAE(AutoEncoder):
 
         self.encoder = encoder
         self.decoder = InnerProductDecoder()
-        self.compile(loss=LogLoss(),
+        self.compile(loss=LogLoss(pos_weight=pos_weight),
                      optimizer=optim.Adam(self.parameters(),
                                           weight_decay=weight_decay, lr=lr),
                      metrics=[AUC(), AveragePrecision()])

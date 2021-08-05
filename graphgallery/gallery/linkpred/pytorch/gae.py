@@ -32,6 +32,10 @@ class GAE(Trainer):
                    weight_decay=0.,
                    lr=0.01,
                    bias=True):
+        
+        num_edges = self.graph.adj_matrix.sum()
+        num_nodes = self.graph.adj_matrix.shape[0]
+        pos_weight = (num_nodes**2-num_edges)/num_edges
 
         model = get_model("autoencoder.GAE", self.backend)
         model = model(self.graph.num_node_attrs,
@@ -41,6 +45,7 @@ class GAE(Trainer):
                       dropout=dropout,
                       weight_decay=weight_decay,
                       lr=lr,
+                      pos_weight=pos_weight,
                       bias=bias)
 
         return model

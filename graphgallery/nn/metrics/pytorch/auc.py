@@ -37,6 +37,7 @@ class AUC(Metric):
         self._predictions = []
 
     def result(self):
+        if not self._targets or not self._predictions: return None
         _predictions = torch.cat(self._predictions, dim=0)
         _targets = torch.cat(self._targets, dim=0)
 

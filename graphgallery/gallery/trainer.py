@@ -346,6 +346,8 @@ class Trainer(Model):
 
         results = None
         for epoch, batch in enumerate(sequence):
+
+
             self.callbacks.on_train_batch_begin(epoch)
             inputs, labels, out_index = unravel_batch(batch)
             results = model.train_step_on_batch(x=inputs,

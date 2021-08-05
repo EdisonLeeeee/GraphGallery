@@ -23,14 +23,16 @@ class AutoEncoder(TorchKeras):
         x, y = to_device(x, y, device=device)
         out = self(*x)
         if out_index is not None:
-            out = out[tuple(out_index)]
+            out = out[out_index[0], out_index[1]]
         loss = loss_fn(out, y)
         loss.backward()
         optimizer.step()
         if self.scheduler is not None:
             self.scheduler.step()
-        for metric in metrics:
-            metric.update_state(y.cpu(), out.detach().cpu())
+            
+        # HERE we dont not update metrics in training to save time
+#         for metric in metrics:
+#             metric.update_state(y.cpu(), out.detach().cpu())
 
         results = [loss.cpu().detach()] + [metric.result() for metric in metrics]
         return dict(zip(self.metrics_names, results))

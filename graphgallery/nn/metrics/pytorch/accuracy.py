@@ -60,6 +60,7 @@ class Accuracy(Metric):
         self.correct = torch.tensor(0)
 
     def result(self):
+        if self.total == 0: return None
         if self.reduction == 'mean':
             return self.correct.float() / self.total
         elif self.reduction == 'sum':
