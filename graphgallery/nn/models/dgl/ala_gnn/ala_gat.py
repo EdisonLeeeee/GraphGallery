@@ -43,24 +43,20 @@ class ALaGAT(TorchKeras):
         conv = []
         for ix, (hid, act) in enumerate(zip(hids, acts)):
             if ix == 0:
-                layer = GATConv(
-                    in_features,
-                    hid,
-                    num_heads=num_heads,
-                    feat_drop=dropout,
-                    attn_drop=dropout,
-                )
+                layer = GATConv(in_features, hid,
+                                num_heads=num_heads,
+                                feat_drop=dropout,
+                                attn_drop=dropout,
+                                )
             else:
-                layer = GatedAttnLayer(
-                    in_features,
-                    hid,
-                    num_nodes,
-                    num_heads,
-                    bias=bias,
-                    activation=act,
-                    share_tau=share_tau,
-                    lidx=ix,
-                )
+                layer = GatedAttnLayer(in_features, hid,
+                                       num_nodes,
+                                       num_heads,
+                                       bias=bias,
+                                       activation=act,
+                                       share_tau=share_tau,
+                                       lidx=ix,
+                                       )
 
             conv.append(layer)
             in_features = hid
@@ -106,11 +102,7 @@ class ALaGAT(TorchKeras):
 
     def forward(self, x, g):
 
-        z = torch.FloatTensor(
-            [
-                1.0,
-            ]
-        ).to(x.device)
+        z = torch.FloatTensor([1.0, ]).to(x.device)
         h = x
         list_z = []
         for lidx, layer in enumerate(self.conv):
@@ -120,46 +112,28 @@ class ALaGAT(TorchKeras):
                 h = layer(g, h)
             else:
                 logits = F.softmax(self.lin(h.reshape(h.size(0), -1)), dim=1)
-                h, z = layer(
-                    g,
-                    h,
-                    logits,
-                    old_z=z,
-                    attn_l=self.attn_l,
-                    attn_r=self.attn_r,
-                    tau1=self.global_tau1,
-                    tau2=self.global_tau2,
-                )
+                h, z = layer(g, h,
+                             logits,
+                             old_z=z,
+                             attn_l=self.attn_l,
+                             attn_r=self.attn_r,
+                             tau1=self.global_tau1,
+                             tau2=self.global_tau2,
+                             )
                 h = self.dropout(h)
                 list_z.append(z.flatten())
 
         out = self.lin(h.reshape(h.size(0), -1))
+
         if self.training:
-            all_z = torch.stack(list_z, dim=1)  # (n_nodes, n_layers)
-            return out, all_z
-        else:
-            return out
+            self.cache['z'] = torch.stack(list_z, dim=1)  # (n_nodes, n_layers)
 
-    def train_step_on_batch(self, x, y, out_index=None, device="cpu"):
-        self.train()
-        optimizer = self.optimizer
-        loss_fn = self.loss
-        metrics = self.metrics
-        optimizer.zero_grad()
-        x, y = to_device(x, y, device=device)
-        out, z = self(*x)
-        if out_index is not None:
-            out = out[out_index]
-        loss = (
-            loss_fn(out, y)
-            + torch.norm(z * (torch.ones_like(z) - z), p=1) * self.binary_reg
-        )
-        loss.backward()
-        optimizer.step()
-        if self.scheduler is not None:
-            self.scheduler.step()
-        for metric in metrics:
-            metric.update_state(y.cpu(), out.detach().cpu())
+        return out
 
-        results = [loss.cpu().detach()] + [metric.result() for metric in metrics]
-        return dict(zip(self.metrics_names, results))
+    def compute_loss(self, out, y):
+        loss = self.loss(out, y)
+
+        if self.training:
+            z = self.cache.pop('z')
+            loss += torch.norm(z * (torch.ones_like(z) - z), p=1) * self.binary_reg
+        return loss

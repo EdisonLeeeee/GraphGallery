@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch import optim
 
-from graphgallery.nn.models import TorchKeras
+from graphgallery.nn.models.torch_keras import TorchKeras, to_device
 from graphgallery.nn.models.pytorch.graphat.utils import *
 from graphgallery.nn.layers.pytorch import GCNConv, Sequential, activations
 from graphgallery.nn.metrics.pytorch import Accuracy
@@ -67,27 +67,21 @@ class GraphVAT(TorchKeras):
         self.train()
         optimizer = self.optimizer
         loss_fn = self.loss
-        metrics = self.metrics
         optimizer.zero_grad()
-        inputs = [_x.to(device) if hasattr(x, 'to') else _x for _x in x]
-        y = y.to(device)
-
+        inputs, y = to_device(x, y, device=device)
         x, adj, adjacency = inputs
         x = nn.Parameter(x)
         neighbors = torch.LongTensor(self.sampler(adjacency))
         logit = self(x, adj)
-        out = logit
-        if out_index is not None:
-            out = logit[out_index]
+        out = self.index_select(logit, out_index=out_index)
         loss = loss_fn(out, y) + self.alpha * self.virtual_adversarial_loss((x, adj), logit) + \
             self.beta * self.graph_adversarial_loss((x, adj), logit, neighbors)
 
         loss.backward()
         optimizer.step()
-        for metric in metrics:
-            metric.update_state(y.cpu(), out.detach().cpu())
+        self.update_metrics(out, y)
 
-        results = [loss.cpu().detach()] + [metric.result() for metric in metrics]
+        results = [loss.cpu().detach()] + [metric.result() for metric in self.metrics]
         return dict(zip(self.metrics_names, results))
 
     def generate_virtual_adversarial_perturbation(self, inputs, logit):

@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch import optim
 
-from graphgallery.nn.layers.pytorch import GCNConv, Sequential, Tree, MIMO, activations
+from graphgallery.nn.layers.pytorch import GCNConv, Sequential, Tree, MultiSequential, activations
 from graphgallery.nn.metrics.pytorch import AveragePrecision, AUC
 from .decoder import InnerProductDecoder
 from .autoencoder import AutoEncoder
@@ -32,7 +32,7 @@ class VGAE(AutoEncoder):
                  pos_weight=1.0,
                  weight_decay=0.,
                  lr=0.01,
-                 bias=True):
+                 bias=False):
         super().__init__()
         conv = []
         conv.append(nn.Dropout(dropout))
@@ -46,7 +46,7 @@ class VGAE(AutoEncoder):
         mu = GCNConv(in_features, out_features, bias=bias)
         logstd = GCNConv(in_features, out_features, bias=bias)
 
-        self.encoder = MIMO(Sequential(*conv, Tree(mu, logstd)), Reparameterize())
+        self.encoder = MultiSequential(Sequential(*conv, Tree(mu, logstd)), Reparameterize())
         self.decoder = InnerProductDecoder()
         self.compile(loss=BCELossWithKLLoss(pos_weight=pos_weight),
                      optimizer=optim.Adam(self.parameters(),

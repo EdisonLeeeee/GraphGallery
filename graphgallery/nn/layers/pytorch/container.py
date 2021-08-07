@@ -12,7 +12,7 @@ class Sequential(nn.Sequential):
         for module in self:
             assert hasattr(module, 'forward')
             para_required = len(inspect.signature(module.forward).parameters)
-            if para_required == 1 and not isinstance(module, (MIMO, Tree)):
+            if para_required == 1 and not isinstance(module, (MultiSequential, Tree)):
                 input = module(input)
             else:
                 if self.reverse:
@@ -20,13 +20,13 @@ class Sequential(nn.Sequential):
                 else:
                     input = module(input, *others)
 
-            if isinstance(input, tuple) and not isinstance(module, (MIMO, Tree)):
+            if isinstance(input, tuple) and not isinstance(module, (MultiSequential, Tree)):
                 input, others = split_input(input, reverse=self.reverse)
 
         return input
 
 
-class MIMO(nn.Sequential):
+class MultiSequential(nn.Sequential):
     """Multiple inputs and multiple outputs from multiple mudule"""
 
     def forward(self, *input):

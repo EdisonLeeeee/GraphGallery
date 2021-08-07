@@ -30,10 +30,10 @@ class VGAE(Trainer):
                    out_features=16,
                    hids=[32],
                    acts=['relu'],
-                   dropout=0.5,
+                   dropout=0.,
                    weight_decay=0.,
                    lr=0.01,
-                   bias=True):
+                   bias=False):
 
         num_edges = self.graph.adj_matrix.sum()
         num_nodes = self.graph.adj_matrix.shape[0]

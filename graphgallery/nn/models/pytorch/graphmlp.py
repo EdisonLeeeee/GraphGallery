@@ -1,9 +1,8 @@
 import torch
 import torch.nn as nn
 from torch import optim
-import torch.nn.functional as F
 
-from graphgallery.nn.models import TorchKeras
+from graphgallery.nn.models.torch_keras import TorchKeras, to_device
 from graphgallery.nn.layers.pytorch import Sequential, activations
 from graphgallery.nn.metrics.pytorch import Accuracy
 
@@ -93,14 +92,10 @@ class GraphMLP(TorchKeras):
         x = self.mlp(x)
 
         feature_cls = x
-        Z = x
-
-        if self.training:
-            x_dis = get_feature_dis(Z)
-
         out = self.classifier(feature_cls)
 
         if self.training:
+            x_dis = get_feature_dis(x)
             return out, x_dis
         else:
             return out
@@ -113,22 +108,14 @@ class GraphMLP(TorchKeras):
         self.train()
         optimizer = self.optimizer
         loss_fn = self.loss
-        metrics = self.metrics
         optimizer.zero_grad()
-        if not isinstance(x, (list, tuple)):
-            x = [x]
-        x = [_x.to(device) if hasattr(_x, 'to') else _x for _x in x]
-        y = y.to(device)
-
+        x, y = to_device(x, y, device=device)
         out, x_dis = self(x[0])  # x[0] is the input node feature
-        if out_index is not None:
-            out = out[out_index]
-
+        out = self.index_select(out, out_index=out_index)
         loss = loss_fn(out, y) + Ncontrast(x_dis, x[1], tau=self.tau) * self.alpha  # x[1] is the input adj_label
         loss.backward()
         optimizer.step()
-        for metric in metrics:
-            metric.update_state(y.cpu(), out.detach().cpu())
+        self.update_metrics(out, y)
 
-        results = [loss.cpu().detach()] + [metric.result() for metric in metrics]
+        results = [loss.cpu().detach()] + [metric.result() for metric in self.metrics]
         return dict(zip(self.metrics_names, results))

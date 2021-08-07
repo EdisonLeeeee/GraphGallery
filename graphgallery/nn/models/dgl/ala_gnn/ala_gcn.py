@@ -41,15 +41,13 @@ class ALaGCN(TorchKeras):
             if ix == 0:
                 layer = GraphConv(in_features, hid, bias=bias, activation=act)
             else:
-                layer = GatedLayer(
-                    in_features,
-                    hid,
-                    num_nodes,
-                    bias=bias,
-                    activation=act,
-                    share_tau=share_tau,
-                    lidx=ix,
-                )
+                layer = GatedLayer(in_features, hid,
+                                   num_nodes,
+                                   bias=bias,
+                                   activation=act,
+                                   share_tau=share_tau,
+                                   lidx=ix,
+                                   )
 
             conv.append(layer)
             in_features = hid
@@ -108,31 +106,14 @@ class ALaGCN(TorchKeras):
 
         out = self.lin(h)
         if self.training:
-            all_z = torch.stack(list_z, dim=1)  # (n_nodes, n_layers)
-            return out, all_z
-        else:
-            return out
+            self.cache['z'] = torch.stack(list_z, dim=1)  # (n_nodes, n_layers)
 
-    def train_step_on_batch(self, x, y, out_index=None, device="cpu"):
-        self.train()
-        optimizer = self.optimizer
-        loss_fn = self.loss
-        metrics = self.metrics
-        optimizer.zero_grad()
-        x, y = to_device(x, y, device=device)
-        out, z = self(*x)
-        if out_index is not None:
-            out = out[out_index]
-        loss = (
-            loss_fn(out, y)
-            + torch.norm(z * (torch.ones_like(z) - z), p=1) * self.binary_reg
-        )
-        loss.backward()
-        optimizer.step()
-        if self.scheduler is not None:
-            self.scheduler.step()
-        for metric in metrics:
-            metric.update_state(y.cpu(), out.detach().cpu())
+        return out
 
-        results = [loss.cpu().detach()] + [metric.result() for metric in metrics]
-        return dict(zip(self.metrics_names, results))
+    def compute_loss(self, out, y):
+        loss = self.loss(out, y)
+
+        if self.training:
+            z = self.cache.pop('z')
+            loss += torch.norm(z * (torch.ones_like(z) - z), p=1) * self.binary_reg
+        return loss

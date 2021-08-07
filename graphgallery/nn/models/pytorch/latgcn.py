@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch import optim
 
-from graphgallery.nn.models import TorchKeras
+from graphgallery.nn.models.torch_keras import TorchKeras, to_device
 from graphgallery.nn.layers.pytorch import GCNConv, Sequential, activations
 from graphgallery.nn.metrics.pytorch import Accuracy
 
@@ -71,12 +71,7 @@ class LATGCN(TorchKeras):
         self.train()
         optimizer = self.optimizer
         loss_fn = self.loss
-        metrics = self.metrics
-        if not isinstance(x, (list, tuple)):
-            x = [x]
-        x = [_x.to(device) if hasattr(_x, 'to') else _x for _x in x]
-        y = y.to(device)
-
+        x, y = to_device(x, y, device=device)
         zeta_opt = self.zeta_opt
         for _ in range(20):
             zeta_opt.zero_grad()
@@ -87,15 +82,15 @@ class LATGCN(TorchKeras):
 
         optimizer.zero_grad()
         out, reg_loss = self(*x)
-        if out_index is not None:
-            out = out[out_index]
+        out = self.index_select(out, out_index=out_index)
         loss = loss_fn(out, y) + self.gamma * reg_loss
         loss.backward()
         optimizer.step()
-        for metric in metrics:
-            metric.update_state(y.cpu(), out.detach().cpu())
+        if self.scheduler is not None:
+            self.scheduler.step()
+        self.update_metrics(out, y)
 
-        results = [loss.cpu().detach()] + [metric.result() for metric in metrics]
+        results = [loss.cpu().detach()] + [metric.result() for metric in self.metrics]
         return dict(zip(self.metrics_names, results))
 
 

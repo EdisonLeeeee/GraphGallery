@@ -1,5 +1,3 @@
-import numpy as np
-import graphgallery as gg
 from graphgallery import functional as gf
 from ..flip_attacker import FlipAttacker
 

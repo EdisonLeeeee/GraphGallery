@@ -2,11 +2,10 @@ import torch
 import torch.nn as nn
 from torch import optim
 
-from graphgallery.nn.models import TorchKeras
+from graphgallery.nn.models.torch_keras import TorchKeras, to_device
 from graphgallery.nn.models.pytorch.graphat.utils import *
 from graphgallery.nn.layers.pytorch import GCNConv, Sequential, activations
 from graphgallery.nn.metrics.pytorch import Accuracy
-from graphgallery import functional as gf
 
 
 class DGAT(TorchKeras):
@@ -56,11 +55,8 @@ class DGAT(TorchKeras):
         self.train()
         optimizer = self.optimizer
         loss_fn = self.loss
-        metrics = self.metrics
         optimizer.zero_grad()
-        inputs = [_x.to(device) if hasattr(x, 'to') else _x for _x in x]
-        y = y.to(device)
-
+        x, y = to_device(x, y, device=device)
         logit = self(*x)
         out = logit
 
@@ -70,10 +66,11 @@ class DGAT(TorchKeras):
 
         loss.backward()
         optimizer.step()
-        for metric in metrics:
-            metric.update_state(y.cpu(), out.detach().cpu())
+        if self.scheduler is not None:
+            self.scheduler.step()
+        self.update_metrics(out, y)
 
-        results = [loss.cpu().detach()] + [metric.result() for metric in metrics]
+        results = [loss.cpu().detach()] + [metric.result() for metric in self.metrics]
         return dict(zip(self.metrics_names, results))
 
     def DGAT_loss(self, inputs, logit):

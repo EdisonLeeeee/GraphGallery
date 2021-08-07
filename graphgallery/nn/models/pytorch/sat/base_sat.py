@@ -1,5 +1,5 @@
 import torch
-from graphgallery.nn.models import TorchKeras
+from graphgallery.nn.models.torch_keras import TorchKeras, to_device
 
 
 class BaseSAT(TorchKeras):
@@ -11,13 +11,8 @@ class BaseSAT(TorchKeras):
         self.train()
         optimizer = self.optimizer
         loss_fn = self.loss
-        metrics = self.metrics
         optimizer.zero_grad()
-
-        if not isinstance(x, (list, tuple)):
-            x = [x]
-        x = [_x.to(device) if hasattr(x, 'to') else _x for _x in x]
-        y = y.to(device)
+        x, y = to_device(x, y, device=device)
 
         ########################
         x, U, V = x
@@ -47,8 +42,7 @@ class BaseSAT(TorchKeras):
 
         loss.backward()
         optimizer.step()
-        for metric in metrics:
-            metric.update_state(y.cpu(), out.detach().cpu())
+        self.update_metrics(out, y)
 
-        results = [loss.cpu().detach()] + [metric.result() for metric in metrics]
+        results = [loss.cpu().detach()] + [metric.result() for metric in self.metrics]
         return dict(zip(self.metrics_names, results))

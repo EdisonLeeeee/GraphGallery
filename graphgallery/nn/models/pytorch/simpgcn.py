@@ -134,23 +134,23 @@ class SimPGCN(TorchKeras):
         self.train()
         optimizer = self.optimizer
         loss_fn = self.loss
-        metrics = self.metrics
         optimizer.zero_grad()
 
         assert len(x) == 5
         *x, pseudo_labels, node_pairs = x
 
         out, embeddings = self(*x)
-        if out_index is not None:
-            out = out[out_index]
+        out = self.index_select(out, out_index=out_index)
 
         # TODO
         loss = loss_fn(out, y) + self.lambda_ * self.regression_loss(embeddings, pseudo_labels, node_pairs)
 
         loss.backward()
         optimizer.step()
-        for metric in metrics:
-            metric.update_state(y.cpu(), out.detach().cpu())
+        if self.scheduler is not None:
+            self.scheduler.step()
 
-        results = [loss.cpu().detach()] + [metric.result() for metric in metrics]
+        self.update_metrics(out, y)
+        results = [loss.cpu().detach()] + [metric.result() for metric in self.metrics]
+
         return dict(zip(self.metrics_names, results))

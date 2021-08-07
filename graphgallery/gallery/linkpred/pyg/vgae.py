@@ -7,8 +7,8 @@ from graphgallery.nn.models import get_model
 
 
 @PyG.register()
-class GAE(Trainer):
-    """Implementation of Graph AutoEncoder (GAE) in
+class VGAE(Trainer):
+    """Implementation of Variational Graph AutoEncoder (VGAE) in
     `Variational Graph Auto-Encoders
     <https://arxiv.org/abs/1611.07308>`
     TensorFlow 1.x implementation <https://github.com/tkipf/gae>
@@ -35,7 +35,7 @@ class GAE(Trainer):
                    lr=0.01,
                    bias=False):
 
-        model = get_model("autoencoder.VGAE", self.backend)
+        model = get_model("autoencoder.GAE", self.backend)
         model = model(self.graph.num_node_attrs,
                       out_features=out_features,
                       hids=hids,

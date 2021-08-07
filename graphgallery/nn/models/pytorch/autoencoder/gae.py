@@ -20,7 +20,7 @@ class GAE(AutoEncoder):
                  pos_weight=1.0,
                  weight_decay=0.,
                  lr=0.01,
-                 bias=True):
+                 bias=False):
         super().__init__()
         encoder = []
         encoder.append(nn.Dropout(dropout))

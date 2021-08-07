@@ -2,7 +2,7 @@
   <img width = "700" height = "300" src="https://github.com/EdisonLeeeee/GraphGallery/blob/master/imgs/graphgallery.svg" alt="banner"/>
   <br/>
 </p>
-<p align="center"><strong><em>GraphGallery</em> is a <em>gallery</em>, not a <em>Library</em></strong></p>
+<p align="center"><strong><em>GraphGallery</em> is a <em>gallery</em>, not a <em>library</em></strong></p>
 
 <p align=center>
   <a href="https://www.python.org/downloads/release/python-360/">

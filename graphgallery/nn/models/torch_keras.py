@@ -1,4 +1,5 @@
 import torch
+import warnings
 import torch.nn as nn
 import os.path as osp
 
@@ -52,6 +53,24 @@ class TorchKeras(nn.Module):
     def empty_cache(self):
         self.cache = gf.BunchDict()
 
+    def compute_loss(self, out, y):
+        return self.loss(out, y)
+
+    def index_select(out, out_index=None):
+        if out_index is None:
+            return out
+        if out_index.ndim == 1:
+            out = out[out_index]
+        elif out_index.ndim == 2:
+            out = out[out_index[0], out_index[1]]
+        else:
+            warnings.warn(f'UNKNOWN out_index `{out_index}`', UserWarning)
+        return out
+
+    def update_metrics(self, out, y):
+        for metric in self.metrics:
+            metric.update_state(y.cpu(), out.detach().cpu())
+
     def train_step_on_batch(self,
                             x,
                             y,
@@ -59,22 +78,22 @@ class TorchKeras(nn.Module):
                             device="cpu"):
         self.train()
         optimizer = self.optimizer
-        loss_fn = self.loss
-        metrics = self.metrics
         optimizer.zero_grad()
         x, y = to_device(x, y, device=device)
+        # 1. forward
         out = self(*x)
-        if out_index is not None:
-            out = out[out_index]
-        loss = loss_fn(out, y)
+        # 2. index select or mask outputs
+        out = self.index_select(out, out_index=out_index)
+        # 3. compute loss and update model
+        loss = self.compute_loss(out, y)
         loss.backward()
         optimizer.step()
         if self.scheduler is not None:
             self.scheduler.step()
-        for metric in metrics:
-            metric.update_state(y.cpu(), out.detach().cpu())
+        # 4. update evaluation metrics
+        self.update_metrics(out, y)
 
-        results = [loss.cpu().detach()] + [metric.result() for metric in metrics]
+        results = [loss.cpu().detach()] + [metric.result() for metric in self.metrics]
         return dict(zip(self.metrics_names, results))
 
     @torch.no_grad()
@@ -84,26 +103,28 @@ class TorchKeras(nn.Module):
                            out_index=None,
                            device="cpu"):
         self.eval()
-        loss_fn = self.loss
         metrics = self.metrics
         x, y = to_device(x, y, device=device)
+        # 1. forward
         out = self(*x)
-        if out_index is not None:
-            out = out[out_index]
-        loss = loss_fn(out, y)
-        for metric in metrics:
-            metric.update_state(y.cpu(), out.detach().cpu())
+        # 2. index select or mask outputs
+        out = self.index_select(out, out_index=out_index)
+        # 3. compute loss
+        loss = self.compute_loss(out, y)
+        # 4. update evaluation metrics
+        self.update_metrics(out, y)
 
-        results = [loss.cpu().detach()] + [metric.result() for metric in metrics]
+        if loss is not None:
+            loss = loss.cpu().item()
+
+        results = [loss] + [metric.result() for metric in metrics]
         return dict(zip(self.metrics_names, results))
 
     @torch.no_grad()
     def predict_step_on_batch(self, x, out_index=None, device="cpu"):
         self.eval()
         x = to_device(x, device=device)
-        out = self(*x)
-        if out_index is not None:
-            out = out[out_index]
+        out = self.index_select(self(*x), out_index=out_index)
         return out.cpu().detach()
 
     def build(self, inputs):
@@ -192,6 +213,9 @@ class TorchKeras(nn.Module):
             filepath = filepath + ext
 
         return torch.load(filepath)
+
+    def extra_repr(self):
+        return f"(optimizer): {self.optimizer}"
 
 
 def dummy_function(*args, **kwargs):
