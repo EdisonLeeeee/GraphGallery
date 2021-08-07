@@ -35,7 +35,7 @@ class VGAE(Trainer):
                    lr=0.01,
                    bias=False):
 
-        model = get_model("autoencoder.GAE", self.backend)
+        model = get_model("autoencoder.VGAE", self.backend)
         model = model(self.graph.num_node_attrs,
                       out_features=out_features,
                       hids=hids,

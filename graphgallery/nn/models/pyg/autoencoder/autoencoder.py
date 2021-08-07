@@ -19,8 +19,6 @@ class AutoEncoder(TorchKeras):
                             device="cpu"):
         self.train()
         optimizer = self.optimizer
-        loss_fn = self.loss
-        metrics = self.metrics
         optimizer.zero_grad()
         x = to_device(x, device=device)
         z = self.encode(*x)
@@ -44,7 +42,7 @@ class AutoEncoder(TorchKeras):
             neg_edge_index = negative_sampling(pos_edge_index, z.size(0))
         neg_pred = self.decode(z, neg_edge_index)
 
-        loss = loss_fn(pos_pred, neg_pred)
+        loss = self.compute_loss(pos_pred, neg_pred)
         loss.backward()
         optimizer.step()
         if self.scheduler is not None:
@@ -54,10 +52,9 @@ class AutoEncoder(TorchKeras):
         y = torch.cat([pos_y, neg_y], dim=0)
         pred = torch.cat([pos_pred, neg_pred], dim=0)
 
-        for metric in metrics:
-            metric.update_state(y.cpu(), pred.detach().cpu())
+        self.update_metrics(pred, y)
 
-        results = [loss.cpu().detach()] + [metric.result() for metric in metrics]
+        results = [loss.cpu().detach()] + [metric.result() for metric in self.metrics]
         return dict(zip(self.metrics_names, results))
 
     @torch.no_grad()

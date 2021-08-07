@@ -56,7 +56,7 @@ class TorchKeras(nn.Module):
     def compute_loss(self, out, y):
         return self.loss(out, y)
 
-    def index_select(out, out_index=None):
+    def index_select(self, out, out_index=None):
         if out_index is None:
             return out
         if out_index.ndim == 1:

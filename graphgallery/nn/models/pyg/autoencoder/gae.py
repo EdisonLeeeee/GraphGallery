@@ -50,3 +50,6 @@ class GAE(AutoEncoder):
     def forward(self, x, edge_index, edge_weight=None):
         z = self.encode(x, edge_index, edge_weight)
         return z
+
+    def compute_loss(self, pos_pred, neg_pred):
+        return self.loss(pos_pred, neg_pred)

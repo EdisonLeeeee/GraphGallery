@@ -6,7 +6,7 @@ from graphgallery.nn.layers.pytorch import GCNConv, Sequential, Tree, MultiSeque
 from graphgallery.nn.metrics.pytorch import AveragePrecision, AUC
 from .decoder import InnerProductDecoder
 from .autoencoder import AutoEncoder
-from .loss import BCELossWithKLLoss
+from .loss import BCELoss
 
 
 class Reparameterize(nn.Module):
@@ -48,7 +48,7 @@ class VGAE(AutoEncoder):
 
         self.encoder = MultiSequential(Sequential(*conv, Tree(mu, logstd)), Reparameterize())
         self.decoder = InnerProductDecoder()
-        self.compile(loss=BCELossWithKLLoss(pos_weight=pos_weight),
+        self.compile(loss=BCELoss(pos_weight=pos_weight),
                      optimizer=optim.Adam(self.parameters(),
                                           weight_decay=weight_decay, lr=lr),
                      metrics=[AUC(), AveragePrecision()])
@@ -56,9 +56,18 @@ class VGAE(AutoEncoder):
     def forward(self, x, adj):
         if self.training:
             z, mu, logstd = self.encode(x, adj)
-            out = self.decode(z)
-            return out, mu, logstd
+            self.cache['mu'] = mu
+            self.cache['logstd'] = logstd
         else:
             z = self.encode(x, adj)
-            out = self.decode(z)
-            return out
+        out = self.decode(z)
+        return out
+
+    def compute_loss(self, out, y):
+        if self.training:
+            mu = self.cache.pop('mu')
+            logstd = self.cache.pop('logstd')
+            kl_loss = -0.5 / mu.size(0) * torch.mean(torch.sum(1 + 2 * logstd - mu.pow(2) - logstd.exp().pow(2), dim=1))
+        else:
+            kl_loss = 0.
+        return self.loss(out, y) + kl_loss

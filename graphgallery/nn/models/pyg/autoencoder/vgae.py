@@ -19,7 +19,7 @@ class Reparameterize(nn.Module):
             std = torch.exp(logstd)
             eps = torch.randn_like(std)
             z = eps.mul(std).add_(mu)
-            return z
+            return z, mu, logstd
         else:
             return mu
 
@@ -60,3 +60,19 @@ class VGAE(AutoEncoder):
     def forward(self, x, edge_index, edge_weight=None):
         z = self.encode(x, edge_index, edge_weight)
         return z
+
+    def encode(self, x, edge_index, edge_weight=None):
+        if self.training:
+            z, mu, logstd = self.encoder(x, edge_index, edge_weight)
+            self.cache['mu'] = mu
+            self.cache['logstd'] = logstd
+
+        else:
+            z = self.encoder(x, edge_index, edge_weight)
+        return z
+
+    def compute_loss(self, pos_pred, neg_pred):
+        mu = self.cache.pop('mu')
+        logstd = self.cache.pop('logstd')
+        kl_loss = -0.5 / mu.size(0) * torch.mean(torch.sum(1 + 2 * logstd - mu.pow(2) - logstd.exp().pow(2), dim=1))
+        return self.loss(pos_pred, neg_pred) + kl_loss
