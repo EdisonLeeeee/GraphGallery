@@ -27,10 +27,8 @@ def train_val_test_split_tabular(N: int,
     stratify = stratify[idx_train_and_val]
     idx_train, idx_val = train_test_split(idx_train_and_val,
                                           random_state=random_state,
-                                          train_size=(
-                                              train_size / (train_size + val_size)),
-                                          test_size=(
-                                              val_size / (train_size + val_size)),
+                                          train_size=(train_size / (train_size + val_size)),
+                                          test_size=1 - (train_size / (train_size + val_size)),
                                           stratify=stratify)
 
     return idx_train, idx_val, idx_test
@@ -68,7 +66,6 @@ def binarize_labels(labels, sparse_output: bool = False, returnum_node_classes: 
         binarizer = LabelBinarizer(sparse_output=sparse_output)
     label_matrix = binarizer.fit_transform(labels).astype(np.float32)
     return (label_matrix, binarizer.classes_) if returnum_node_classes else label_matrix
-
 
 
 def get_train_val_test_split_gcn(labels, num_samples=20, random_state=None):
@@ -113,6 +110,7 @@ def get_train_val_test_split_gcn(labels, num_samples=20, random_state=None):
     idx_val = idx_unlabeled[: 500]
     idx_test = idx_unlabeled[500: 1500]
     return idx_train, idx_val, idx_test
+
 
 def get_train_val_test_split(stratify,
                              trainum_examples_per_class: int,

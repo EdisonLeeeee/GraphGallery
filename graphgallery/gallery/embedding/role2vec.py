@@ -16,7 +16,7 @@ class Role2Vec:
     one gets structural node embeddings.
     """
 
-    def __init__(self, walk_number: int = 10, walk_length: int = 80, dimensions: int = 64, workers: int = 16,
+    def __init__(self, walk_number: int = 10, walk_length: int = 80, dimensions: int = 64, workers: int = 3,
                  window_size: int = 5, epochs: int = 1, learning_rate: float = 0.025, down_sampling: float = 0.0001,
                  min_count: int = 10, wl_iterations: int = 2, seed: int = 42):
 

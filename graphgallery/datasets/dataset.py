@@ -62,7 +62,7 @@ class Dataset:
                     val_size: float = 0.1,
                     test_size: float = 0.8,
                     random_state: Optional[int] = None) -> dict:
-
+        # TODO add val_size=None
         assert all((train_size, val_size))
         graph = self.graph
         assert not graph.is_multiple(), "NOT Supported for multiple graph"

@@ -13,7 +13,7 @@ class Diff2Vec(Trainer):
 
     def __init__(self, diffusion_cover: int = 80,
                  diffusion_number: int = 10, dimensions: int = 64,
-                 workers: int = 16, window_size: int = 5, epochs: int = 1,
+                 workers: int = 3, window_size: int = 5, epochs: int = 1,
                  learning_rate: float = 0.025, negative: int = 5,
                  name: str = None, seed: int = None):
         kwargs = locals()

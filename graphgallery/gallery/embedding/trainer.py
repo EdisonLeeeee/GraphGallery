@@ -28,6 +28,7 @@ class Trainer(Model):
         return embedding
 
     def evaluate_nodeclas(self, y, train_nodes, test_nodes):
+        # TODO more metrics
         embedding = self.get_embedding()
         x_train = embedding[train_nodes]
         x_test = embedding[test_nodes]

@@ -15,7 +15,7 @@ class Node2Vec(Trainer):
 
     def __init__(self, walk_length: int = 80, walk_number: int = 10,
                  p: float = 0.5, q: float = 0.5, dimensions: int = 64,
-                 workers: int = 16, window_size: int = 5, epochs: int = 1,
+                 workers: int = 3, window_size: int = 5, epochs: int = 1,
                  learning_rate: float = 0.025, negative: int = 1,
                  name: str = None,
                  seed: int = None):
