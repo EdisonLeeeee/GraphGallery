@@ -26,14 +26,14 @@ def default_cfg_setup(cfg):
     cfg.fit.cache_train_data = False
     cfg.fit.cache_val_data = False
 
-    cfg.fit.EarlyStopping = gg.CfgNode()
-    cfg.fit.EarlyStopping.enabled = False
-    cfg.fit.EarlyStopping.monitor = 'val_ap'
-    cfg.fit.EarlyStopping.verbose = 1
-    cfg.fit.EarlyStopping.mode = "auto"
-    cfg.fit.EarlyStopping.patience = 10
-    cfg.fit.EarlyStopping.restore_best_weights = True
-    cfg.fit.EarlyStopping.baseline = None
+    # cfg.fit.EarlyStopping = gg.CfgNode()
+    # cfg.fit.EarlyStopping.enabled = False
+    # cfg.fit.EarlyStopping.monitor = 'val_ap'
+    # cfg.fit.EarlyStopping.verbose = 1
+    # cfg.fit.EarlyStopping.mode = "auto"
+    # cfg.fit.EarlyStopping.patience = 10
+    # cfg.fit.EarlyStopping.restore_best_weights = True
+    # cfg.fit.EarlyStopping.baseline = None
 
     cfg.fit.ModelCheckpoint = gg.CfgNode()
     cfg.fit.ModelCheckpoint.enabled = True
@@ -57,13 +57,13 @@ def default_cfg_setup(cfg):
     cfg.fit.Logger.name = None
     cfg.fit.Logger.filepath = None
 
-    cfg.fit.TensorBoard = gg.CfgNode()
-    cfg.fit.TensorBoard.enabled = False
-    cfg.fit.TensorBoard.log_dir = './logs'
-    cfg.fit.TensorBoard.histogram_freq = 0
-    cfg.fit.TensorBoard.write_graph = True
-    cfg.fit.TensorBoard.write_images = True
-    cfg.fit.TensorBoard.update_freq = 'epoch'
+    # cfg.fit.TensorBoard = gg.CfgNode()
+    # cfg.fit.TensorBoard.enabled = False
+    # cfg.fit.TensorBoard.log_dir = './logs'
+    # cfg.fit.TensorBoard.histogram_freq = 0
+    # cfg.fit.TensorBoard.write_graph = True
+    # cfg.fit.TensorBoard.write_images = True
+    # cfg.fit.TensorBoard.update_freq = 'epoch'
 
     # Configs for model testing
     cfg.evaluate = gg.CfgNode()

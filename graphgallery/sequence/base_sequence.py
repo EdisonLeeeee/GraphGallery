@@ -1,28 +1,16 @@
-import numpy as np
-import tensorflow as tf
-
-
-from tensorflow.keras.utils import Sequence as tf_Sequence
 from functools import partial
 
 from graphgallery import functional as gf
+from torch.utils.data import DataLoader
 
 
-class Sequence(tf_Sequence):
+class Sequence(DataLoader):
 
-    def __init__(self, *args, **kwargs):
-        device = kwargs.pop('device', 'cpu')
-        escape = kwargs.pop('escape', None)
-        super().__init__(*args, **kwargs)
+    def __init__(self, dataset, device='cpu', escape=None, **kwargs):
+        super().__init__(dataset, **kwargs)
         self.astensor = partial(gf.astensor, device=device, escape=escape)
         self.astensors = partial(gf.astensors, device=device, escape=escape)
         self.device = device
-
-    def __len__(self):
-        raise NotImplementedError
-
-    def __getitem__(self, index):
-        raise NotImplementedError
 
     def on_epoch_begin(self):
         ...

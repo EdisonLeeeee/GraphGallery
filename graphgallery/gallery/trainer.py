@@ -5,11 +5,9 @@ import importlib
 import inspect
 import os.path as osp
 import numpy as np
-import tensorflow as tf
 
-from tensorflow.keras.utils import Sequence
 from tensorflow.python.keras import callbacks as callbacks_module
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.callbacks import History
 from torch.utils.data import DataLoader, Dataset
 
@@ -188,7 +186,7 @@ class Trainer(Model):
 
         use_tfn = kwargs.get("use_tfn", True)
         if self.backend == "tensorflow":
-            with tf.device(self.device):
+            with self.backend.device(self.device):
                 self.model, kwargs = gf.wrapper(self.model_step)(**kwargs)
                 if use_tfn:
                     self.model.use_tfn()
@@ -209,7 +207,6 @@ class Trainer(Model):
         cfg = self.cfg.fit
         cfg.merge_from_dict(kwargs)
         ckpt_cfg = cfg.ModelCheckpoint
-        es_cfg = cfg.EarlyStopping
         pb_cfg = cfg.Progbar
         log_cfg = cfg.Logger
 
@@ -223,7 +220,7 @@ class Trainer(Model):
                 'You must compile your model before training/testing/predicting. Use `trainer.build()`.'
             )
 
-        if not isinstance(train_data, (Sequence, DataLoader, Dataset)):
+        if not isinstance(train_data, (DataLoader, Dataset)):
             train_data = self.train_loader(train_data)
 
         if cfg.cache_train_data:
@@ -231,7 +228,7 @@ class Trainer(Model):
 
         validation = val_data is not None
         if validation:
-            if not isinstance(val_data, (Sequence, DataLoader, Dataset)):
+            if not isinstance(val_data, (DataLoader, Dataset)):
                 val_data = self.test_loader(val_data)
             if cfg.cache_val_data:
                 cache.val_data = val_data
@@ -323,7 +320,7 @@ class Trainer(Model):
         cfg = self.cfg.evaluate
         cfg.merge_from_dict(kwargs)
 
-        if not isinstance(test_data, (Sequence, DataLoader, Dataset)):
+        if not isinstance(test_data, (DataLoader, Dataset)):
             test_data = self.test_loader(test_data)
 
         if cfg.cache_test_data:
@@ -346,7 +343,6 @@ class Trainer(Model):
 
         results = None
         for epoch, batch in enumerate(sequence):
-
 
             self.callbacks.on_train_batch_begin(epoch)
             inputs, labels, out_index = unravel_batch(batch)
@@ -380,7 +376,7 @@ class Trainer(Model):
         cfg = self.cfg.predict
         cfg.transform = transform
 
-        if not isinstance(predict_data, (Sequence, DataLoader, Dataset)):
+        if not isinstance(predict_data, (DataLoader, Dataset)):
             predict_data = self.predict_loader(predict_data)
 
         if cfg.cache_predict_data:
@@ -444,13 +440,13 @@ class Trainer(Model):
         # TODO assert m is None or isinstance(m, tf.keras.Model) or torch.nn.Module
         self._model = m
 
-    def reset_optimizer(self):
-        # TODO: add pytorch support
-        model = self.model
-        if not hasattr(model, 'optimizer'):
-            raise RuntimeError("The model has not attribute `optimizer`!")
-        for var in model.optimizer.variables():
-            var.assign(tf.zeros_like(var))
+    # def reset_optimizer(self):
+    #     # TODO: add pytorch support
+    #     model = self.model
+    #     if not hasattr(model, 'optimizer'):
+    #         raise RuntimeError("The model has not attribute `optimizer`!")
+    #     for var in model.optimizer.variables():
+    #         var.assign(tf.zeros_like(var))
 
     def reset_lr(self, value):
         # TODO: add pytorch support
@@ -526,25 +522,11 @@ def remove_extra_tf_files(filepath):
 
 def setup_callbacks(cfg, callbacks, validation):
     ckpt_cfg = cfg.ModelCheckpoint
-    es_cfg = cfg.EarlyStopping
-    tb_cfg = cfg.TensorBoard
 
     if not validation:
         if ckpt_cfg.enabled and ckpt_cfg.monitor.startswith("val_"):
             ckpt_cfg.enabled = False
             ckpt_cfg.monitor = ckpt_cfg.monitor[4:]
-        if es_cfg.enabled and es_cfg.monitor.startswith("val_"):
-            es_cfg.enabled = False
-            es_cfg.monitor = es_cfg.monitor[4:]
-
-    if es_cfg.enabled:
-        es_callback = EarlyStopping(monitor=es_cfg.monitor,
-                                    patience=es_cfg.patience,
-                                    mode=es_cfg.mode,
-                                    verbose=es_cfg.verbose,
-                                    baseline=es_cfg.baseline,
-                                    restore_best_weights=es_cfg.restore_best_weights)
-        callbacks.append(es_callback)
 
     if ckpt_cfg.enabled:
         if not ckpt_cfg.path.endswith(gg.file_ext()):
@@ -557,11 +539,4 @@ def setup_callbacks(cfg, callbacks, validation):
                                       save_weights_only=ckpt_cfg.save_weights_only,
                                       verbose=ckpt_cfg.verbose)
         callbacks.append(mc_callback)
-
-    if tb_cfg.enabled:
-        callbacks.append(tf.keras.callbacks.TensorBoard(tb_cfg.log_dir,
-                                                        write_graph=tb_cfg.write_graph,
-                                                        update_freq=tb_cfg.update_freq,
-                                                        histogram_freq=tb_cfg.histogram_freq,
-                                                        write_images=tb_cfg.write_images))
     return cfg, callbacks

@@ -23,9 +23,11 @@ class Model:
         kwargs.pop("__class__", None)
         cfg = gg.CfgNode()
         cfg.merge_from_dict(kwargs)
+        # data types, default: `float32`,`int32` and `bool`
         cfg.intx = self.intx = gg.intx()
         cfg.floatx = self.floatx = gg.floatx()
         cfg.boolx = self.boolx = gg.boolx()
+
         cfg.seed = self.seed = seed
         cfg.name = self.name = name or self.__class__.__name__
         cfg.device = device
@@ -39,7 +41,6 @@ class Model:
         self.data_device = self.device
         self.backend = _backend
 
-        # data types, default: `float32`,`int32` and `bool`
         self._cache = gf.BunchDict()
         self.transform = gf.BunchDict()
 
@@ -70,6 +71,8 @@ class Model:
 
     def empty_cache(self):
         self._cache = gf.BunchDict()
+        import gc
+        gc.collect()
 
     @property
     def cache(self):

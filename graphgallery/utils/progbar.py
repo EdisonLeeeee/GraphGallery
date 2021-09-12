@@ -81,7 +81,6 @@ class Progbar:
         else:
             delta = ' %.2fus' % (delta * 1e6)
         info = ' - Total:%s' % delta
-
         if self.verbose == 1:
             if now - self._last_update < self.interval and not finalize:
                 return
@@ -110,7 +109,6 @@ class Progbar:
                 bar = '%7d/Unknown' % current
 
             self._total_width = len(bar)
-            sys.stdout.write(bar)
 
             if current:
                 time_per_unit = (now - self._start) / current
@@ -144,8 +142,8 @@ class Progbar:
 
             if finalize:
                 info += '\n'
-
-            sys.stdout.write(info)
+            # `\r` is necessary!
+            sys.stdout.write(f'\r{bar}{info}')
             sys.stdout.flush()
 
         elif self.verbose == 2:

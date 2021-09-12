@@ -1,3 +1,4 @@
+import torch
 import importlib
 
 __all__ = ['BackendModule', 'TensorFlowBackend',
@@ -44,6 +45,9 @@ class BackendModule:
 
     def extra_repr(self):
         return self.version
+
+    def device(self, ctx):
+        return self.module.device(ctx)
 
 
 class PyTorchBackend(BackendModule):
@@ -108,6 +112,9 @@ class PyGBackend(PyTorchBackend):
     def extra_repr(self):
         return f"{super().extra_repr()} (PyTorch {torch.__version__})"
 
+    def device(self, ctx):
+        return torch.device(ctx)
+
 
 class DGLBackend(PyTorchBackend):
     alias = {"dgl_torch", "dgl_th", "dgl"}
@@ -130,3 +137,6 @@ class DGLBackend(PyTorchBackend):
 
     def extra_repr(self):
         return f"{super().extra_repr()} (PyTorch {torch.__version__})"
+
+    def device(self, ctx):
+        return torch.device(ctx)

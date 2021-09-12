@@ -1,23 +1,9 @@
 from .base_sequence import Sequence
+from graphgallery import functional as gf
 
 
 class FullBatchSequence(Sequence):
 
-    def __init__(self, x, y=None, out_index=None, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.x = self.astensors(x, device=self.device)
-        self.y = self.astensors(y, device=self.device)
-        self.out_index = self.astensors(out_index, device=self.device)
-
-    def __len__(self):
-        return 1
-
-    def __getitem__(self, index):
-        return self.x, self.y, self.out_index
-
-    def on_epoch_begin(self):
-        ...
-
-    def on_epoch_end(self):
-        ...
+    def __init__(self, x, y=None, out_index=None, device='cpu', escape=None, **kwargs):
+        dataset = gf.astensors(x, y, out_index, device=device, escape=escape)
+        super().__init__([dataset], batch_size=None, collate_fn=lambda x: x, **kwargs)
