@@ -2,7 +2,6 @@
 
 import importlib
 import sys
-from tensorflow.keras import backend as K
 
 from .modules import BackendModule, TensorFlowBackend, PyTorchBackend, PyGBackend, DGLBackend
 
@@ -56,8 +55,38 @@ _FLOATX = 'float32'
 # The type of bool to use throughout a network
 _BOOLX = 'bool'
 
-epsilon = K.epsilon
-set_epsilon = K.set_epsilon
+_EPSILON = 1e-7
+
+
+def epsilon():
+    """Returns the value of the fuzz factor used in numeric expressions.
+
+    Returns:
+        A float.
+
+    Example:
+    >>> graphgallery.epsilon()
+    1e-07
+    """
+    return _EPSILON
+
+
+def set_epsilon(value):
+    """Sets the value of the fuzz factor used in numeric expressions.
+
+    Args:
+        value: float. New value of epsilon.
+
+    Example:
+    >>> graphgallery.epsilon()
+    1e-07
+    >>> graphgallery.set_epsilon(1e-5)
+    >>> graphgallery.epsilon()
+    1e-05
+     >>> graphgallery.set_epsilon(1e-7)
+    """
+    global _EPSILON
+    _EPSILON = value
 
 
 def boolx() -> str:

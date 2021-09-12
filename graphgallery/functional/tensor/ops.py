@@ -1,6 +1,5 @@
 import torch
 import numpy as np
-import tensorflow as tf
 import scipy.sparse as sp
 from typing import Any, Union, Optional
 

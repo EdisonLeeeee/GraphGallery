@@ -2,12 +2,9 @@ import torch
 import itertools
 
 import numpy as np
-import networkx as nx
-import tensorflow as tf
 import scipy.sparse as sp
 
 from typing import Any, Optional
-from numbers import Number
 
 import graphgallery as gg
 from graphgallery import functional as gf
@@ -36,6 +33,7 @@ def asarray(x: Any, dtype: Optional[str] = None) -> np.ndarray:
 
     if gf.is_tensor(x, backend="tensorflow"):
         if x.dtype != dtype:
+            import tensorflow as tf
             return tf.cast(x, dtype=dtype)
         else:
             return x

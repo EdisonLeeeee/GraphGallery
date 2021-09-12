@@ -3,7 +3,6 @@ import tensorflow as tf
 
 
 from tensorflow.keras.utils import Sequence as tf_Sequence
-from torch.nn import Module
 from functools import partial
 
 from graphgallery import functional as gf

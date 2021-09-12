@@ -1,6 +1,4 @@
-import torch
-import tensorflow
-
+import importlib
 
 __all__ = ['BackendModule', 'TensorFlowBackend',
            'PyTorchBackend', 'PyGBackend',
@@ -10,10 +8,19 @@ __all__ = ['BackendModule', 'TensorFlowBackend',
 class BackendModule:
     """Base Backend Module Class."""
 
-    alias = {}
+    alias = set()
 
-    def __init__(self):
+    def __init__(self, module=None):
         self.acceptable_names = self.alias
+
+        if module is not None:
+            try:
+                self.module = importlib.import_module(module)
+            except ImportError as e:
+                print(f"Something error when import `{module}`.")
+                raise e
+        else:
+            self.module = None
 
     @property
     def version(self):
@@ -43,12 +50,12 @@ class PyTorchBackend(BackendModule):
     alias = {"th", "torch", "pytorch"}
 
     def __init__(self):
-        super().__init__()
+        super().__init__(module='torch')
         self.acceptable_names = self.acceptable_names.union({"pth", "th", "torch", "pytorch"})
 
     @property
     def version(self):
-        return torch.__version__
+        return self.module.__version__
 
     @property
     def name(self):
@@ -63,12 +70,12 @@ class TensorFlowBackend(BackendModule):
     alias = {"tf", "tensorflow"}
 
     def __init__(self):
-        super().__init__()
+        super().__init__(module='tensorflow')
         self.acceptable_names = self.acceptable_names.union({"tf", "tensorflow"})
 
     @property
     def version(self):
-        return tensorflow.__version__
+        return self.module.__version__
 
     @property
     def name(self):
@@ -83,13 +90,12 @@ class PyGBackend(PyTorchBackend):
     alias = {"pyg"}
 
     def __init__(self):
-        super().__init__()
+        super().__init__(module='torch_geometric')
         self.acceptable_names = self.acceptable_names.union({"pyg"})
 
     @property
     def version(self):
-        import torch_geometric
-        return torch_geometric.__version__
+        return self.module.__version__
 
     @property
     def name(self):
@@ -107,13 +113,12 @@ class DGLBackend(PyTorchBackend):
     alias = {"dgl_torch", "dgl_th", "dgl"}
 
     def __init__(self):
-        super().__init__()
+        super().__init__(module='dgl')
         self.acceptable_names = self.acceptable_names.union({"dgl_torch", "dgl_th", "dgl"})
 
     @property
     def version(self):
-        import dgl
-        return dgl.__version__
+        return self.module.__version__
 
     @property
     def name(self):
