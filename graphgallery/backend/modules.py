@@ -53,8 +53,8 @@ class BackendModule:
 class PyTorchBackend(BackendModule):
     alias = {"th", "torch", "pytorch"}
 
-    def __init__(self):
-        super().__init__(module='torch')
+    def __init__(self, module='torch'):
+        super().__init__(module=module)
         self.acceptable_names = self.acceptable_names.union({"pth", "th", "torch", "pytorch"})
 
     @property
@@ -73,8 +73,8 @@ class PyTorchBackend(BackendModule):
 class TensorFlowBackend(BackendModule):
     alias = {"tf", "tensorflow"}
 
-    def __init__(self):
-        super().__init__(module='tensorflow')
+    def __init__(self, module='tensorflow'):
+        super().__init__(module=module)
         self.acceptable_names = self.acceptable_names.union({"tf", "tensorflow"})
 
     @property

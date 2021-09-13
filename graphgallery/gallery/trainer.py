@@ -415,17 +415,17 @@ class Trainer(Model):
         labels = self.graph.node_label[index]
         return (predict_class == labels).mean()
 
-    def reset_weights(self):
-        # TODO: add pytorch support
-        """reset the model to the first time."""
-        model = self.model
-        if self.backup is None:
-            raise RuntimeError(
-                "You must store the `backup` before `reset_weights`."
-                "`backup` will be automatically stored when the model is built."
-            )
-        for w, wb in zip(model.weights, self.backup):
-            w.assign(wb)
+    # def reset_weights(self):
+    #     # TODO: add pytorch support
+    #     """reset the model to the first time."""
+    #     model = self.model
+    #     if self.backup is None:
+    #         raise RuntimeError(
+    #             "You must store the `backup` before `reset_weights`."
+    #             "`backup` will be automatically stored when the model is built."
+    #         )
+    #     for w, wb in zip(model.weights, self.backup):
+    #         w.assign(wb)
 
     @ property
     def model(self):
