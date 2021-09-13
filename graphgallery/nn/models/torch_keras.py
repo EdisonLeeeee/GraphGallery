@@ -15,17 +15,18 @@ class TorchKeras(nn.Module):
 
         super().__init__(*args, **kwargs)
 
-        # To be compatible with TensorFlow
-        self._in_multi_worker_mode = dummy_function
-        self._is_graph_network = dummy_function
-        self.distribute_strategy = None
+        # # To be compatible with TensorFlow
+        # self._in_multi_worker_mode = dummy_function
+        # self._is_graph_network = dummy_function
+        # self.distribute_strategy = None
 
-        # To be compatible with TensorBoard callbacks
-        self._train_counter = 0
-        self._test_counter = 0
+        # # To be compatible with TensorBoard callbacks
+        # self._train_counter = 0
+        # self._test_counter = 0
 
         # initialize
         self.optimizer = None
+        self.scheduler = None
         self.metrics = None
         self.loss = None
 
@@ -52,6 +53,8 @@ class TorchKeras(nn.Module):
 
     def empty_cache(self):
         self.cache = gf.BunchDict()
+        import gc
+        gc.collect()
 
     def compute_loss(self, out, y):
         return self.loss(out, y)
@@ -216,10 +219,6 @@ class TorchKeras(nn.Module):
 
     def extra_repr(self):
         return f"(optimizer): {self.optimizer}"
-
-
-def dummy_function(*args, **kwargs):
-    ...
 
 
 def reset(nn):

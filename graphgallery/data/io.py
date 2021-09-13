@@ -16,7 +16,7 @@ from six.moves.urllib.request import urlretrieve
 from graphgallery.utils import Progbar
 
 __all__ = [
-    'download_file', 'files_exist', 'makedirs', 'makedirs_from_filepath',
+    'download_file', 'files_exist', 'makedirs', 'makedirs_from_filepath', 'makedirs_rm_exist',
     'extractall', 'remove', 'load_npz', 'read_csv', 'read_json', 'get_file',
 ]
 
@@ -235,6 +235,12 @@ def makedirs(folder: str):
 def makedirs_from_filepath(filepath: str, verbose: bool = True):
     folder = osp.dirname(osp.realpath(osp.expanduser(filepath)))
     makedirs(folder)
+
+
+def makedirs_rm_exist(dir):
+    if os.path.isdir(dir):
+        shutil.rmtree(dir)
+    os.makedirs(dir, exist_ok=True)
 
 
 def load_npz(filepath):

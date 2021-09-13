@@ -7,8 +7,7 @@ import os.path as osp
 import numpy as np
 
 from tensorflow.python.keras import callbacks as callbacks_module
-from tensorflow.keras.callbacks import ModelCheckpoint
-from tensorflow.keras.callbacks import History
+from graphgallery.gallery.callbacks import History, ModelCheckpoint
 from torch.utils.data import DataLoader, Dataset
 
 import graphgallery as gg
