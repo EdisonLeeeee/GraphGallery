@@ -18,11 +18,359 @@
 # limitations under the License.
 # ==============================================================================
 
-import numpy as np
-import os
+import time
 import logging
 import numpy as np
+
 from graphgallery import functional as gf
+from graphgallery.utils import Progbar
+
+
+class ModeKeys(object):
+    """Standard names for model modes.
+
+    The following standard keys are defined:
+
+    * `TRAIN`: training/fitting mode.
+    * `TEST`: testing/evaluation mode.
+    * `PREDICT`: prediction/inference mode.
+    """
+
+    TRAIN = 'train'
+    TEST = 'test'
+    PREDICT = 'predict'
+
+
+class CallbackList:
+    """Container abstracting a list of callbacks."""
+
+    def __init__(self,
+                 callbacks=None,
+                 add_history=False,
+                 add_progbar=False,
+                 model=None,
+                 **params):
+        """Container for `Callback` instances.
+
+        This object wraps a list of `Callback` instances, making it possible
+        to call them all at once via a single endpoint
+        (e.g. `callback_list.on_epoch_end(...)`).
+
+        Args:
+          callbacks: List of `Callback` instances.
+          add_history: Whether a `History` callback should be added, if one does not
+            already exist in the `callbacks` list.
+          add_progbar: Whether a `ProgbarLogger` callback should be added, if one
+            does not already exist in the `callbacks` list.
+          model: The `Model` these callbacks are used with.
+          **params: If provided, parameters will be passed to each `Callback` via
+            `Callback.set_params`.
+        """
+        self.callbacks = callbacks if callbacks else []
+        self._add_default_callbacks(add_history, add_progbar)
+
+        if model:
+            self.set_model(model)
+        if params:
+            self.set_params(params)
+
+        # Performance check: Check batch hooks for slowness compared to batch time.
+        # Only run check for custom callbacks (i.e. not present in this file).
+        self._check_timing = any(
+            cbk.__class__.__name__ not in globals() for cbk in self.callbacks)
+        self._num_batches_for_timing_check = 5
+        self._hook_times = {}
+        self._batch_start_time = None
+        self._batch_times = []
+
+    def _add_default_callbacks(self, add_history, add_progbar):
+        """Adds `Callback`s that are always present."""
+        self._progbar = None
+        self._history = None
+
+        for cb in self.callbacks:
+            if isinstance(cb, ProgbarLogger):
+                self._progbar = cb
+            elif isinstance(cb, History):
+                self._history = cb
+
+        if self._progbar is None and add_progbar:
+            self._progbar = ProgbarLogger()
+            self.callbacks.insert(0, self._progbar)
+
+        if self._history is None and add_history:
+            self._history = History()
+            self.callbacks.append(self._history)
+
+    def append(self, callback):
+        self.callbacks.append(callback)
+
+    def set_params(self, params):
+        self.params = params
+        for callback in self.callbacks:
+            callback.set_params(params)
+
+    def set_model(self, model):
+        self.model = model
+        if self._history:
+            model.history = self._history
+        for callback in self.callbacks:
+            callback.set_model(model)
+
+    def _call_batch_hook(self, mode, hook, batch, logs=None):
+        """Helper function for all batch_{begin | end} methods."""
+        if not self.callbacks:
+            return
+
+        if hook == 'begin':
+            self._call_batch_begin_hook(mode, batch, logs)
+        elif hook == 'end':
+            self._call_batch_end_hook(mode, batch, logs)
+        else:
+            raise ValueError('Unrecognized hook: {}'.format(hook))
+
+    def _call_batch_begin_hook(self, mode, batch, logs):
+        """Helper function for `on_*_batch_begin` methods."""
+        hook_name = 'on_{mode}_batch_begin'.format(mode=mode)
+        self._call_batch_hook_helper(hook_name, batch, logs)
+
+        if self._check_timing:
+            self._batch_start_time = time.time()
+
+    def _call_batch_end_hook(self, mode, batch, logs):
+        """Helper function for `on_*_batch_end` methods."""
+        hook_name = 'on_{mode}_batch_end'.format(mode=mode)
+
+        if self._check_timing and batch >= 1:
+            batch_time = time.time() - self._batch_start_time
+            self._batch_times.append(batch_time)
+
+        self._call_batch_hook_helper(hook_name, batch, logs)
+
+        if len(self._batch_times) >= self._num_batches_for_timing_check:
+            end_hook_name = hook_name
+            begin_hook_name = 'on_{mode}_batch_begin'.format(mode=mode)
+            avg_batch_time = sum(self._batch_times) / len(self._batch_times)
+            avg_end_hook_time = sum(self._hook_times[end_hook_name]) / len(
+                self._hook_times[end_hook_name])
+            avg_begin_hook_time = sum(self._hook_times[begin_hook_name]) / len(
+                self._hook_times[begin_hook_name])
+
+            threshold_time = 1.0 * avg_batch_time
+            warning_msg = ('Callback method `{hook}` is slow compared to '
+                           'the batch time (batch time: {batch_time:.4f}s vs '
+                           '`{hook}` time: {hook_time:.4f}s). Check your callbacks.')
+            if avg_begin_hook_time > threshold_time:
+                logging.warning(warning_msg.format(
+                    hook=begin_hook_name,
+                    batch_time=avg_batch_time,
+                    hook_time=avg_begin_hook_time))
+            if avg_end_hook_time > threshold_time:
+                logging.warning(warning_msg.format(
+                    hook=end_hook_name,
+                    batch_time=avg_batch_time,
+                    hook_time=avg_end_hook_time))
+            self._check_timing = False
+            self._batch_start_time = None
+            self._batch_times = []
+            self._hook_times = {}
+
+    def _call_batch_hook_helper(self, hook_name, batch, logs):
+        """Helper function for `on_*_batch_*` methods."""
+        logs = logs or {}
+        if self._check_timing:
+            start_time = time.time()
+
+        for callback in self.callbacks:
+            hook = getattr(callback, hook_name)
+            hook(batch, logs)
+
+        if self._check_timing:
+            if hook_name not in self._hook_times:
+                self._hook_times[hook_name] = []
+            self._hook_times[hook_name].append(time.time() - start_time)
+
+    def _call_begin_hook(self, mode):
+        """Helper function for on_{train|test|predict}_begin methods."""
+        if mode == ModeKeys.TRAIN:
+            self.on_train_begin()
+        elif mode == ModeKeys.TEST:
+            self.on_test_begin()
+        else:
+            self.on_predict_begin()
+
+    def _call_end_hook(self, mode):
+        """Helper function for on_{train|test|predict}_end methods."""
+        if mode == ModeKeys.TRAIN:
+            self.on_train_end()
+        elif mode == ModeKeys.TEST:
+            self.on_test_end()
+        else:
+            self.on_predict_end()
+
+    def on_batch_begin(self, batch, logs=None):
+        self._call_batch_hook(ModeKeys.TRAIN, 'begin', batch, logs=logs)
+
+    def on_batch_end(self, batch, logs=None):
+        self._call_batch_hook(ModeKeys.TRAIN, 'end', batch, logs=logs)
+
+    def on_epoch_begin(self, epoch, logs=None):
+        """Calls the `on_epoch_begin` methods of its callbacks.
+
+        This function should only be called during TRAIN mode.
+
+        Args:
+            epoch: Integer, index of epoch.
+            logs: Dict. Currently no data is passed to this argument for this method
+              but that may change in the future.
+        """
+        logs = logs or {}
+        for callback in self.callbacks:
+            callback.on_epoch_begin(epoch, logs)
+
+    def on_epoch_end(self, epoch, logs=None):
+        """Calls the `on_epoch_end` methods of its callbacks.
+
+        This function should only be called during TRAIN mode.
+
+        Args:
+            epoch: Integer, index of epoch.
+            logs: Dict, metric results for this training epoch, and for the
+              validation epoch if validation is performed. Validation result keys
+              are prefixed with `val_`.
+        """
+        logs = logs or {}
+        for callback in self.callbacks:
+            callback.on_epoch_end(epoch, logs)
+
+    def on_train_batch_begin(self, batch, logs=None):
+        """Calls the `on_train_batch_begin` methods of its callbacks.
+
+        Args:
+            batch: Integer, index of batch within the current epoch.
+            logs: Dict, contains the return value of `model.train_step`. Typically,
+              the values of the `Model`'s metrics are returned.  Example:
+              `{'loss': 0.2, 'accuracy': 0.7}`.
+        """
+        self._call_batch_hook(ModeKeys.TRAIN, 'begin', batch, logs=logs)
+
+    def on_train_batch_end(self, batch, logs=None):
+        """Calls the `on_train_batch_end` methods of its callbacks.
+
+        Args:
+            batch: Integer, index of batch within the current epoch.
+            logs: Dict. Aggregated metric results up until this batch.
+        """
+        self._call_batch_hook(ModeKeys.TRAIN, 'end', batch, logs=logs)
+
+    def on_test_batch_begin(self, batch, logs=None):
+        """Calls the `on_test_batch_begin` methods of its callbacks.
+
+        Args:
+            batch: Integer, index of batch within the current epoch.
+            logs: Dict, contains the return value of `model.test_step`. Typically,
+              the values of the `Model`'s metrics are returned.  Example:
+              `{'loss': 0.2, 'accuracy': 0.7}`.
+        """
+        self._call_batch_hook(ModeKeys.TEST, 'begin', batch, logs=logs)
+
+    def on_test_batch_end(self, batch, logs=None):
+        """Calls the `on_test_batch_end` methods of its callbacks.
+
+        Args:
+            batch: Integer, index of batch within the current epoch.
+            logs: Dict. Aggregated metric results up until this batch.
+        """
+        self._call_batch_hook(ModeKeys.TEST, 'end', batch, logs=logs)
+
+    def on_predict_batch_begin(self, batch, logs=None):
+        """Calls the `on_predict_batch_begin` methods of its callbacks.
+
+        Args:
+            batch: Integer, index of batch within the current epoch.
+            logs: Dict, contains the return value of `model.predict_step`,
+              it typically returns a dict with a key 'outputs' containing
+              the model's outputs.
+        """
+        self._call_batch_hook(ModeKeys.PREDICT, 'begin', batch, logs=logs)
+
+    def on_predict_batch_end(self, batch, logs=None):
+        """Calls the `on_predict_batch_end` methods of its callbacks.
+
+        Args:
+            batch: Integer, index of batch within the current epoch.
+            logs: Dict. Aggregated metric results up until this batch.
+        """
+        self._call_batch_hook(ModeKeys.PREDICT, 'end', batch, logs=logs)
+
+    def on_train_begin(self, logs=None):
+        """Calls the `on_train_begin` methods of its callbacks.
+
+        Args:
+            logs: Dict. Currently no data is passed to this argument for this method
+              but that may change in the future.
+        """
+        logs = logs or {}
+        for callback in self.callbacks:
+            callback.on_train_begin(logs)
+
+    def on_train_end(self, logs=None):
+        """Calls the `on_train_end` methods of its callbacks.
+
+        Args:
+            logs: Dict. Currently no data is passed to this argument for this method
+              but that may change in the future.
+        """
+        logs = logs or {}
+        for callback in self.callbacks:
+            callback.on_train_end(logs)
+
+    def on_test_begin(self, logs=None):
+        """Calls the `on_test_begin` methods of its callbacks.
+
+        Args:
+            logs: Dict. Currently no data is passed to this argument for this method
+              but that may change in the future.
+        """
+        logs = logs or {}
+        for callback in self.callbacks:
+            callback.on_test_begin(logs)
+
+    def on_test_end(self, logs=None):
+        """Calls the `on_test_end` methods of its callbacks.
+
+        Args:
+            logs: Dict. Currently no data is passed to this argument for this method
+              but that may change in the future.
+        """
+        logs = logs or {}
+        for callback in self.callbacks:
+            callback.on_test_end(logs)
+
+    def on_predict_begin(self, logs=None):
+        """Calls the 'on_predict_begin` methods of its callbacks.
+
+        Args:
+            logs: Dict. Currently no data is passed to this argument for this method
+              but that may change in the future.
+        """
+        logs = logs or {}
+        for callback in self.callbacks:
+            callback.on_predict_begin(logs)
+
+    def on_predict_end(self, logs=None):
+        """Calls the `on_predict_end` methods of its callbacks.
+
+        Args:
+            logs: Dict. Currently no data is passed to this argument for this method
+              but that may change in the future.
+        """
+        logs = logs or {}
+        for callback in self.callbacks:
+            callback.on_predict_end(logs)
+
+    def __iter__(self):
+        return iter(self.callbacks)
 
 
 class Callback:
@@ -32,11 +380,9 @@ class Callback:
     `predict` in order to hook into the various stages of the model training and
     inference lifecycle.
 
-    To create a custom callback, subclass `keras.callbacks.Callback` and override
-    the method associated with the stage of interest. See
-    https://www.tensorflow.org/guide/keras/custom_callback for more information.
+    See https://www.tensorflow.org/guide/keras/custom_callback for more information.
 
-    Example:
+    Example(From TensorFlow):
 
     >>> training_finished = False
     >>> class MyCallback(tf.keras.callbacks.Callback):
@@ -69,6 +415,7 @@ class Callback:
 
     def set_model(self, model):
         self.model = model
+        self.model.stop_training = False
 
     def on_batch_begin(self, batch, logs=None):
         """A backwards compatibility alias for `on_train_batch_begin`."""
@@ -273,7 +620,7 @@ class History(Callback):
     every Keras model. The `History` object
     gets returned by the `fit` method of models.
 
-    Example:
+    Example(From TensorFlow):
 
     >>> model = tf.keras.models.Sequential([tf.keras.layers.Dense(10)])
     >>> model.compile(tf.keras.optimizers.SGD(), loss='mse')
@@ -345,7 +692,7 @@ class ModelCheckpoint(Callback):
     available, skipping` see the description of the `monitor` argument for
     details on how to get this right.
 
-    Example:
+    Example(From TensorFlow):
 
     ```python
     model.compile(loss=..., optimizer=...,
@@ -521,6 +868,97 @@ class ModelCheckpoint(Callback):
         return file_path
 
 
+class ProgbarLogger(Callback):
+    """Callback that prints metrics to stdout.
+    TODO: on_[test/predict]_[begin/end] haven't been tested.
+    """
+
+    def __init__(self):
+        super(ProgbarLogger, self).__init__()
+        # Defaults to all Model's metrics except for loss.
+        self.seen = 0
+        self.progbar = None
+        self.target = None
+        self.verbose = 1
+        self.epochs = 1
+
+    def set_params(self, params):
+        self.verbose = params['verbose']
+        self.epochs = params['epochs']
+        if 0 < self.verbose <= 2:
+            self.target = params['epochs']
+        else:
+            # Will be inferred at the end of the first epoch.
+            self.target = None
+
+    def on_train_begin(self, logs=None):
+        self._reset_progbar()
+
+    def on_test_begin(self, logs=None):
+        self._reset_progbar()
+        self._maybe_init_progbar()
+
+    def on_predict_begin(self, logs=None):
+        self._reset_progbar()
+        self._maybe_init_progbar()
+
+    def on_epoch_begin(self, epoch, logs=None):
+        self._maybe_init_progbar()
+        if self.verbose > 2 and self.epochs > 1:
+            print('Epoch %d/%d' % (epoch + 1, self.epochs))
+
+    def on_train_batch_end(self, batch, logs=None):
+        self._batch_update_progbar(batch, logs)
+
+    def on_test_batch_end(self, batch, logs=None):
+        self._batch_update_progbar(batch, logs)
+
+    def on_predict_batch_end(self, batch, logs=None):
+        # Don't pass prediction results.
+        self._batch_update_progbar(batch, None)
+
+    def on_epoch_end(self, epoch, logs=None):
+        logs = logs or {}
+        if self.verbose > 2:
+            self._finalize_progbar(logs)
+        elif self.verbose > 0:
+            self.progbar.update(epoch + 1, logs.items())
+
+    def on_test_end(self, logs=None):
+        self._finalize_progbar(logs)
+
+    def on_predict_end(self, logs=None):
+        self._finalize_progbar(logs)
+
+    def _reset_progbar(self):
+        if self.verbose > 2:
+            self.seen = 0
+            self.progbar = None
+
+    def _maybe_init_progbar(self):
+        if self.progbar is None:
+            self.progbar = Progbar(
+                target=self.target,
+                verbose=self.verbose - 2 if self.verbose > 2 else self.verbose)
+
+    def _batch_update_progbar(self, batch, logs=None):
+        """Updates the progbar."""
+        logs = logs or {}
+        self._maybe_init_progbar()
+        self.seen = batch
+
+        if self.verbose > 2:
+            # Only block async when verbose = 1.
+            self.progbar.update(self.seen, logs.items(), finalize=False)
+
+    def _finalize_progbar(self, logs):
+        logs = logs or {}
+        if self.target is None:
+            self.progbar.target = self.target = self.seen
+        self.progbar.update(self.target, logs.items(), finalize=True)
+        self._reset_progbar()
+
+
 class LambdaCallback(Callback):
     r"""Callback for creating simple, custom callbacks on-the-fly.
 
@@ -543,7 +981,7 @@ class LambdaCallback(Callback):
         on_train_begin: called at the beginning of model training.
         on_train_end: called at the end of model training.
 
-    Example:
+    Example(From TensorFlow):
 
     ```python
     # Print the batch number at the beginning of every batch.

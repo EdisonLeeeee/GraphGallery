@@ -1,7 +1,5 @@
 import torch
-import tensorflow as tf
 import graphgallery as gg
-from typing import Optional, Union
 
 from .tensorflow import device as tf_device
 from .pytorch import device as th_device
@@ -76,6 +74,7 @@ def device(device=None, backend=None):
             return th_device.gpu(_device_id)
 
     # tensorflow backend returns 'string'
+    tf = backend.module
     if _device == "cpu":
         return tf_device.cpu(_device_id)
     # FIXME: Tensorflow 2.4.0 requires cuDNN 8.0 and CUDA 11.0

@@ -1,6 +1,5 @@
 import numpy as np
 import scipy.sparse as sp
-import tensorflow as tf
 from .edge_transform import asedge
 
 __all__ = ["jaccard_score", "cosine_score",
@@ -43,6 +42,7 @@ def kld_score(edge, adj_matrix, matrix):
     edge = asedge(edge, shape="row_wise")  # shape [M, 2]
     rows, cols = edge.T
     assert np.ndim(matrix) == 2
+    import tensorflow as tf
     A = tf.gather(matrix, rows)
     B = tf.gather(matrix, cols)
     D = kld_divergence(A, B)

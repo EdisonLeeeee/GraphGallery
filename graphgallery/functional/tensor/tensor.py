@@ -5,8 +5,6 @@ from typing import Any, Optional
 import graphgallery as gg
 from graphgallery import functional as gf
 
-from . import tensorflow
-from . import pytorch
 from .ops import get_module
 
 
@@ -191,6 +189,9 @@ def astensors(*xs, dtype=None, device=None,
 def tensor2tensor(tensor, *, device=None):
     """Convert a TensorFLow tensor to PyTorch Tensor, or vice versa.
     """
+    from . import tensorflow
+    from . import pytorch
+
     if tensorflow.is_tensor(tensor):
         m = tensoras(tensor)
         device = gf.device(device, backend="torch")
@@ -210,6 +211,9 @@ def tensoras(tensor):
     """Convert a TensorFLow tensor or PyTorch Tensor
         to Numpy array or Scipy sparse matrix.
     """
+    from . import tensorflow
+    from . import pytorch
+
     if tensorflow.is_dense(tensor):
         m = tensor.numpy()
     elif tensorflow.is_sparse(tensor):

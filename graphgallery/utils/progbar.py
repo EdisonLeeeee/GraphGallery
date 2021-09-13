@@ -20,9 +20,8 @@
 
 import time
 import sys
+import os
 import numpy as np
-
-import graphgallery as gg
 
 
 class Progbar:
@@ -43,7 +42,6 @@ class Progbar:
                  interval=0.05,
                  unit_name='step'):
 
-        assert gg.is_intscalar(target), target
         self.target = target
         self.width = width
         self.verbose = verbose
@@ -69,6 +67,9 @@ class Progbar:
             finalize: Whether this is the last update for the progress bar. If
               `None`, defaults to `current >= self.target`.
         """
+        if not self.verbose:
+            return
+
         if finalize is None:
             if self.target is None:
                 finalize = False

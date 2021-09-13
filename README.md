@@ -2,7 +2,7 @@
   <img width = "700" height = "300" src="https://github.com/EdisonLeeeee/GraphGallery/blob/master/imgs/graphgallery.svg" alt="banner"/>
   <br/>
 </p>
-<p align="center"><strong><em>GraphGallery</em> is a <em>gallery</em>, not a <em>library</em></strong></p>
+<p align="center"><strong><em>TensorFlow</em> or <em>PyTorch</em>, <em>both!</em></strong></p>
 
 <p align=center>
   <a href="https://www.python.org/downloads/release/python-360/">
@@ -33,13 +33,17 @@ We have integrated the **Adversarial Attacks** in this project, examples please 
 
 # 🚀 Installation
 ```bash
+# Outdated
 pip install -U graphgallery
 ```
 or
 ```bash
+# Recommended
 git clone https://github.com/EdisonLeeeee/GraphGallery.git && cd GraphGallery
 pip install -e . --verbose
 ```
+where `-e` means "editable" mode so you don't have to reinstall every time you make changes.
+
 # 🤖 Implementations
 In detail, the following methods are currently implemented:
 
@@ -433,6 +437,15 @@ mydataset = Graph.from_npz('path/to/mydataset.npz')
 - [x] Support for more types of graphs, e.g., Heterogeneous graph
 - [ ] Add Docstrings and Documentation (Building)
 - [ ] Comprehensive tutorials
+
+
+# ❓ FAQ
++ RuntimeError: Could not locate METIS dll. Please set the METIS_DLL environment variable to its full path.
+This error occurred because the metis library is not installed. you can simply run (for Ubuntu):
+```bash
+sudo apt-get install libmetis-dev
+```
+or you can uninstall metis python package `pip uninstall metis -y` if you don't plan to use `ClusterGCN` currently.
 
 # 😘 Acknowledgement
 This project is motivated by [Pytorch Geometric](https://github.com/rusty1s/pytorch_geometric), [Tensorflow Geometric](https://github.com/CrawlScript/tf_geometric), [Stellargraph](https://github.com/stellargraph/stellargraph) and [DGL](https://github.com/dmlc/dgl), etc., and the original implementations of the authors, thanks for their excellent works!

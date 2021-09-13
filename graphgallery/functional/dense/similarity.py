@@ -1,6 +1,5 @@
 import numpy as np
 import graphgallery as gg
-import tensorflow as tf
 
 __all__ = ["jaccard_similarity", "cosine_similarity",
            "kld_divergence", "neighborhood_entropy"]
@@ -19,6 +18,7 @@ def cosine_similarity(A, B):
 
 
 def kld_divergence(A, B):
+    import tensorflow as tf
     kl = tf.keras.losses.KLDivergence(reduction=tf.keras.losses.Reduction.NONE)
     D = kl(A, B) + kl(B, A)
     return D

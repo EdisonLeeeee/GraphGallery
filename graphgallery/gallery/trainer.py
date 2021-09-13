@@ -6,8 +6,7 @@ import inspect
 import os.path as osp
 import numpy as np
 
-from tensorflow.python.keras import callbacks as callbacks_module
-from graphgallery.gallery.callbacks import History, ModelCheckpoint
+from graphgallery.gallery.callbacks import ModelCheckpoint, CallbackList
 from torch.utils.data import DataLoader, Dataset
 
 import graphgallery as gg
@@ -206,14 +205,8 @@ class Trainer(Model):
         cfg = self.cfg.fit
         cfg.merge_from_dict(kwargs)
         ckpt_cfg = cfg.ModelCheckpoint
-        pb_cfg = cfg.Progbar
-        log_cfg = cfg.Logger
-
-        if log_cfg.enabled:
-            log_cfg.name = log_cfg.name or self.name
-            logger = gg.utils.setup_logger(output=log_cfg.filepath, name=log_cfg.name)
-
         model = self.model
+
         if model is None:
             raise RuntimeError(
                 'You must compile your model before training/testing/predicting. Use `trainer.build()`.'
@@ -233,38 +226,26 @@ class Trainer(Model):
                 cache.val_data = val_data
 
         # Setup callbacks
-        callbacks = callbacks_module.CallbackList()
-        history = History()
-        callbacks.append(history)
+        verbose = cfg.verbose
+        callbacks = CallbackList(add_history=True, add_progbar=True if verbose else False)
         cfg, callbacks = setup_callbacks(cfg, callbacks, validation)
         callbacks.set_model(model)
+        callbacks.set_params(dict(verbose=verbose, epochs=cfg.epochs))
+
         self.callbacks = callbacks
-        model.stop_training = False
-
-        verbose = cfg.verbose
-        assert not (verbose and log_cfg.enabled), "Progbar and Logger cannot be used together! You must set `verbose=0` when Logger is enabled."
-
-        if verbose:
-            if verbose <= 2:
-                progbar = Progbar(target=cfg.epochs,
-                                  width=pb_cfg.width,
-                                  verbose=verbose)
-            print("Training...")
-        elif log_cfg.enabled:
-            logger.info("Training...")
 
         logs = gf.BunchDict()
+
         callbacks.on_train_begin()
         # for some initialization
         if hasattr(model, 'on_train_begin'):
             model.on_train_begin()
+
+        if verbose:
+            print("Training...")
+
         try:
             for epoch in range(cfg.epochs):
-                if verbose > 2:
-                    progbar = Progbar(target=len(train_data),
-                                      width=pb_cfg.width,
-                                      verbose=verbose - 2)
-
                 callbacks.on_epoch_begin(epoch)
                 train_logs = self.train_step(train_data)
                 if hasattr(train_data, 'on_epoch_end'):
@@ -280,19 +261,8 @@ class Trainer(Model):
                 callbacks.on_train_batch_end(len(train_data), logs)
                 callbacks.on_epoch_end(epoch, logs)
 
-                if verbose > 2:
-                    print(f"Epoch {epoch+1}/{cfg.epochs}")
-                    progbar.update(len(train_data), logs.items())
-                elif verbose:
-                    progbar.update(epoch + 1, logs.items())
-                elif log_cfg.enabled:
-                    logger.info(f"Epoch {epoch+1}/{cfg.epochs}\n{gg.utils.create_table(logs)}")
-
                 if model.stop_training:
-                    if log_cfg.enabled:
-                        logger.info(f"Early Stopping at Epoch {epoch}")
-                    else:
-                        print(f"Early Stopping at Epoch {epoch}", file=sys.stderr)
+                    print(f"Early Stopping at Epoch {epoch}", file=sys.stderr)
                     break
 
             callbacks.on_train_end()
@@ -305,8 +275,6 @@ class Trainer(Model):
             # to avoid unexpected termination of the model
             if ckpt_cfg.enabled and ckpt_cfg.remove_weights:
                 self.remove_weights()
-
-        return history
 
     def evaluate(self, test_data, **kwargs):
 

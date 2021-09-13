@@ -49,13 +49,13 @@ def default_cfg_setup(cfg):
     cfg.fit.ModelCheckpoint.verbose = 0
     cfg.fit.ModelCheckpoint.mode = 'auto'
 
-    cfg.fit.Progbar = gg.CfgNode()
-    cfg.fit.Progbar.width = 20
+    # cfg.fit.Progbar = gg.CfgNode()
+    # cfg.fit.Progbar.width = 20
 
-    cfg.fit.Logger = gg.CfgNode()
-    cfg.fit.Logger.enabled = False
-    cfg.fit.Logger.name = None
-    cfg.fit.Logger.filepath = None
+    # cfg.fit.Logger = gg.CfgNode()
+    # cfg.fit.Logger.enabled = False
+    # cfg.fit.Logger.name = None
+    # cfg.fit.Logger.filepath = None
 
     # cfg.fit.TensorBoard = gg.CfgNode()
     # cfg.fit.TensorBoard.enabled = False

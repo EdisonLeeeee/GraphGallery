@@ -1,5 +1,4 @@
 import torch
-import tensorflow as tf
 
 __all__ = ['set_memory_growth', 'empty_cache', 'max_memory', 'gpu_memory']
 
@@ -12,6 +11,11 @@ def set_memory_growth():
     on a `PhysicalDevice` with virtual devices configured.
 
     """
+    backend = gg.backend()
+    if backend != 'tensorflow':
+        return
+
+    import tensorflow as tf
     gpus = tf.config.experimental.list_physical_devices('GPU')
     if gpus:
         try:
@@ -27,7 +31,7 @@ def set_memory_growth():
 
 def empty_cache():
     torch.cuda.empty_cache()
-    tf.keras.backend.clear_session()
+    # tf.keras.backend.clear_session()
 
 
 def max_memory():
