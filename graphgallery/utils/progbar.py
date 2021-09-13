@@ -162,8 +162,7 @@ class Progbar:
 
             if finalize:
                 info += '\n'
-            # `\r` is necessary!
-            sys.stdout.write(f'\r{bar}{info}')
+            sys.stdout.write(f'{bar}{info}')
             sys.stdout.flush()
 
         elif self.verbose == 2:

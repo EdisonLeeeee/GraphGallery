@@ -342,13 +342,13 @@ class Trainer(Model):
 
         results = None
         for epoch, batch in enumerate(sequence):
-
             self.callbacks.on_train_batch_begin(epoch)
             inputs, labels, out_index = unravel_batch(batch)
             results = model.train_step_on_batch(x=inputs,
                                                 y=labels,
                                                 out_index=out_index,
                                                 device=self.device)
+            self.callbacks.on_train_batch_end(epoch)
         return results
 
     def test_step(self, sequence):
@@ -356,12 +356,14 @@ class Trainer(Model):
         model.reset_metrics()
 
         results = None
-        for batch in sequence:
+        for epoch, batch in enumerate(sequence):
             inputs, labels, out_index = unravel_batch(batch)
+            self.callbacks.on_test_batch_begin(epoch)
             results = model.test_step_on_batch(x=inputs,
                                                y=labels,
                                                out_index=out_index,
                                                device=self.device)
+            self.callbacks.on_test_batch_end(epoch)
         return results
 
     def predict(self, predict_data=None, transform=None):
@@ -390,13 +392,15 @@ class Trainer(Model):
     def predict_step(self, sequence):
         logits = []
         model = self.model
-        for batch in sequence:
+        for epoch, batch in enumerate(sequence):
             inputs, labels, out_index = unravel_batch(batch)
+            self.callbacks.on_predict_batch_begin(epoch)
             logit = model.predict_step_on_batch(x=inputs,
                                                 out_index=out_index,
                                                 device=self.device)
 
             logits.append(logit)
+            self.callbacks.on_predict_batch_end(epoch)
 
         return np.vstack(logits)
 
