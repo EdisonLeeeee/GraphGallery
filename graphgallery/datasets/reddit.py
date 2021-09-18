@@ -61,17 +61,18 @@ class Reddit(InMemoryDataset):
             pkl.dump(cache, f)
         return cache
 
-    def split_nodes(self,
-                    train_size=None,
-                    val_size=None,
-                    test_size=None,
-                    random_state: Optional[int] = None):
-        if not all((train_size, val_size, test_size)):
+    def split_nodes(self, *,
+                    train: float = 0.1,
+                    test: float = 0.8,
+                    val: float = 0.1,
+                    fixed_splits=True,
+                    random_state: Optional[int] = None) -> dict:
+        if fixed_splits:
             self.splits.update(self.split_cache)
             return self.splits
         else:
-            return super().split_nodes(train_size, val_size, test_size,
-                                       random_state)
+            return super().split_nodes(train=train, val=val, test=test,
+                                       random_state=random_state)
 
     @property
     def process_filename(self):

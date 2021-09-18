@@ -65,18 +65,18 @@ class Planetoid(InMemoryDataset):
                     val_nodes=val_nodes,
                     test_nodes=test_nodes)
 
-    def split_nodes(self,
-                    train_size: float = None,
-                    val_size: float = None,
-                    test_size: float = None,
-                    random_state: Optional[int] = None):
-        # TODO: fix when val_size = None
-        if not all((train_size, val_size, test_size)):
+    def split_nodes(self, *,
+                    train: float = 0.1,
+                    test: float = 0.8,
+                    val: float = 0.1,
+                    fixed_splits=True,
+                    random_state: Optional[int] = None) -> dict:
+        if fixed_splits:
             self.splits.update(self.split_cache)
             return self.splits
         else:
-            return super().split_nodes(train_size, val_size, test_size,
-                                       random_state)
+            return super().split_nodes(train=train, val=val, test=test,
+                                       random_state=random_state)
 
     @property
     def urls(self):

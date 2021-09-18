@@ -57,25 +57,23 @@ class Dataset:
     def url(self) -> str:
         return self.__url__
 
-    def split_nodes(self,
-                    train_size: float = 0.1,
-                    val_size: float = 0.1,
-                    test_size: float = 0.8,
+    def split_nodes(self, *,
+                    train: float = 0.1,
+                    test: float = 0.8,
+                    val: float = 0.1,
                     random_state: Optional[int] = None) -> dict:
-        # TODO add val_size=None
-        assert all((train_size, val_size))
         graph = self.graph
         assert not graph.is_multiple(), "NOT Supported for multiple graph"
-        if test_size is None:
-            test_size = 1.0 - train_size - val_size
-        assert train_size + val_size + test_size <= 1.0
+
+        val = 0. if val is None else val
+        assert train + val + test <= 1.0
 
         label = graph.node_label
         train_nodes, val_nodes, test_nodes = train_val_test_split_tabular(
             label.shape[0],
-            train_size,
-            val_size,
-            test_size,
+            train=train,
+            val=val,
+            test=test,
             stratify=label,
             random_state=random_state)
         self.splits.update(
@@ -101,10 +99,10 @@ class Dataset:
                  test_nodes=test_nodes))
         return self.splits
 
-    def split_nodes_by_sample(self,
+    def split_nodes_by_sample(self, *,
                               train_samples_per_class: int,
-                              val_samples_per_class: int,
                               test_samples_per_class: int,
+                              val_samples_per_class: int,
                               random_state: Optional[int] = None) -> dict:
 
         graph = self.graph
@@ -124,18 +122,18 @@ class Dataset:
                  test_nodes=test_nodes))
         return self.splits
 
-    def split_edges(self, val_size: float = 0.05,
-                    test_size: float = 0.1, train_size: Optional[float] = None,
+    def split_edges(self, *, val: float = 0.05,
+                    test: float = 0.1, train: Optional[float] = None,
                     random_state: Optional[int] = None) -> dict:
 
         graph = self.graph
 
         assert not graph.is_multiple(), "NOT Supported for multiple graph"
-        if train_size is not None:
-            train_size = 1 - (val_size + test_size)
-            assert train_size + val_size + test_size <= 1
+        if train is not None:
+            train = 1 - (val + test)
+            assert train + val + test <= 1
         else:
-            assert val_size + test_size < 1
+            assert val + test < 1
 
         np.random.seed(random_state)
 
@@ -156,16 +154,16 @@ class Dataset:
         if edge_attr is not None:
             edge_attr = edge_attr[mask]
 
-        n_val = int(math.floor(val_size * row.shape[0]))
-        n_test = int(math.floor(test_size * row.shape[0]))
+        n_val = int(math.floor(val * row.shape[0]))
+        n_test = int(math.floor(test * row.shape[0]))
 
         # Positive edges.
         perm = np.random.permutation(row.shape[0])
         row, col = row[perm], col[perm]
 
         r, c = row[n_val + n_test:], col[n_val + n_test:]
-        if train_size is not None:
-            n_train = int(math.floor(train_size * row.shape[0]))
+        if train is not None:
+            n_train = int(math.floor(train * row.shape[0]))
             r, c = row[:n_train], col[:n_train]
 
         splits.train_pos_edge_index = np.stack([r, c], axis=0)
@@ -198,9 +196,9 @@ class Dataset:
         return self.splits
 
     def split_graphs(self,
-                     train_size=None,
-                     val_size=None,
-                     test_size=None,
+                     train=None,
+                     val=None,
+                     test=None,
                      split_by=None,
                      random_state: Optional[int] = None) -> dict:
         raise NotImplementedError

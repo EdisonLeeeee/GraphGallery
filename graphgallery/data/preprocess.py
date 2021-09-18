@@ -9,27 +9,27 @@ from sklearn.preprocessing import MultiLabelBinarizer, LabelBinarizer, normalize
 from sklearn.model_selection import train_test_split
 
 
-def train_val_test_split_tabular(N: int,
-                                 train_size: float = 0.1,
-                                 val_size: float = 0.1,
-                                 test_size: float = 0.8,
+def train_val_test_split_tabular(N: int, *,
+                                 train: float = 0.1,
+                                 test: float = 0.8,
+                                 val: float = 0.1,
                                  stratify=None,
                                  random_state: Optional[int] = None):
 
     idx = np.arange(N)
-    idx_train_and_val, idx_test = train_test_split(idx,
-                                                   random_state=random_state,
-                                                   train_size=(
-                                                       train_size + val_size),
-                                                   test_size=test_size,
-                                                   stratify=stratify)
-
-    stratify = stratify[idx_train_and_val]
-    idx_train, idx_val = train_test_split(idx_train_and_val,
-                                          random_state=random_state,
-                                          train_size=(train_size / (train_size + val_size)),
-                                          test_size=1 - (train_size / (train_size + val_size)),
-                                          stratify=stratify)
+    idx_train, idx_test = train_test_split(idx,
+                                           random_state=random_state,
+                                           train_size=train + val,
+                                           test_size=test,
+                                           stratify=stratify)
+    if val:
+        stratify = stratify[idx_train]
+        idx_train, idx_val = train_test_split(idx_train,
+                                              random_state=random_state,
+                                              train_size=train / (train + val),
+                                              stratify=stratify)
+    else:
+        idx_val = None
 
     return idx_train, idx_val, idx_test
 
