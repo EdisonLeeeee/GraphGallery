@@ -153,11 +153,19 @@ class BiasedRandomWalkerAlias:
     walk_length (int): Length of random walks. Default is 80.
     p (float): Return parameter (1/p transition probability) to move towards from previous node.
     q (float): In-out parameter (1/q transition probability) to move away from previous node.
-    extend (bool): whether to use the extended version (`node2vec`)
+    extend (bool): whether to use the extended version (`node2vec`). See below.    
+    mode (str): different modes including `PreComp` and `SparseOTF`. See below.
 
-    Specify `extend=True` for using node2vec+, which is a natural extension of 
-    node2vec and handles weighted graph more effectively. For more information, see 
+
+    Specify `extend=True` for using node2vec+, which is a natural extension of
+    node2vec and handles weighted graph more effectively. For more information, see
     `Accurately Modeling Biased Random Walks on Weighted Wraphs Using Node2vec+`(https://arxiv.org/abs/2109.08031)
+
+
+    `BiasedRandomWalkerAlias` operates in three different modes – PreComp and SparseOTF – that are optimized for networks of different sizes and densities:
+    - `PreComp` for networks that are small (≤10k nodes; any density),
+    - `SparseOTF` for networks that are large and sparse (>10k nodes; ≤10% of edges),
+    These modes appropriately take advantage of compact/dense graph data structures, precomputing transition probabilities, and computing 2nd-order transition probabilities during walk generation to achieve significant improvements in performance.
 
     """
 
@@ -165,7 +173,8 @@ class BiasedRandomWalkerAlias:
                  walk_number: int = 10,
                  p: float = 0.5,
                  q: float = 0.5,
-                 extend: bool = True):
+                 extend: bool = True,
+                 mode='PreComp'):
         self.walk_length = walk_length
         self.walk_number = walk_number
         try:
@@ -180,6 +189,13 @@ class BiasedRandomWalkerAlias:
         self.q = q
 
         self.extend = extend
+
+        if mode == 'PreComp':
+            self.get_move_forward = get_move_forward_PreComp
+        elif mode == 'SparseOTF':
+            self.get_move_forward = get_move_forward_SparseOTF
+        else:
+            raise ValueError("`mode` should be one of 'PreComp' and 'SparseOTF'")
 
     def walk(self, graph: sp.csr_matrix):
         """Generate walks starting from each nodes ``walk_number`` time.
@@ -203,7 +219,7 @@ class BiasedRandomWalkerAlias:
         start_nodes = np.concatenate([nodes] * walk_number)
         np.random.shuffle(start_nodes)
 
-        move_forward = self.get_move_forward(graph)
+        move_forward = self.get_move_forward(self, graph)
         has_nbrs = get_has_nbrs(graph)
 
         @njit(parallel=True, nogil=True)
@@ -296,53 +312,95 @@ class BiasedRandomWalkerAlias:
         self.alias_dim = alias_dim
         self.alias_indptr = alias_indptr
 
-    def get_move_forward(self, graph):
-        """Wrap ``move_forward``.
 
-        This function returns a ``numba.jit`` compiled function that takes
-        current vertex index (and the previous vertex index if available) and
-        return the next vertex index by sampling from a discrete random
-        distribution based on the transition probabilities that are read off
-        the precomputed transition probabilities table.
+def get_move_forward_PreComp(self, graph):
+    """Wrap ``move_forward``.
 
-        Note:
-            The returned function is used by the ``walk`` method.
+    This function returns a ``numba.jit`` compiled function that takes
+    current vertex index (and the previous vertex index if available) and
+    return the next vertex index by sampling from a discrete random
+    distribution based on the transition probabilities that are read off
+    the precomputed transition probabilities table.
 
-        """
-        alias_j = self.alias_j
-        alias_q = self.alias_q
-        alias_dim = self.alias_dim
-        alias_indptr = self.alias_indptr
-        p, q = self.p, self.q
-        data = graph.data
-        indices = graph.indices
-        indptr = graph.indptr
+    Note:
+        The returned function is used by the ``walk`` method.
 
+    """
+    alias_j = self.alias_j
+    alias_q = self.alias_q
+    alias_dim = self.alias_dim
+    alias_indptr = self.alias_indptr
+    p, q = self.p, self.q
+    data = graph.data
+    indices = graph.indices
+    indptr = graph.indptr
+
+    compute_fn = get_normalized_probs
+
+    @njit(nogil=True)
+    def move_forward(cur_idx, prev_idx=None):
+        """Move to next node based on transition probabilities."""
+        if prev_idx is None:
+            normalized_probs = compute_fn(data, indices, indptr, p, q, cur_idx, None, None)
+            cdf = np.cumsum(normalized_probs)
+            choice = np.searchsorted(cdf, np.random.random())
+        else:
+            # find index of neighbor for reading alias
+            start = indptr[cur_idx]
+            end = indptr[cur_idx + 1]
+            nbr_idx = np.searchsorted(indices[start:end], prev_idx)
+            if indices[start + nbr_idx] != prev_idx:
+                raise RuntimeError("FATAL ERROR! Neighbor not found.")
+
+            dim = alias_dim[cur_idx]
+            start = alias_indptr[cur_idx] + dim * nbr_idx
+            end = start + dim
+            choice = alias_draw(alias_j[start:end], alias_q[start:end])
+
+        return indices[indptr[cur_idx] + choice]
+
+    return move_forward
+
+
+def get_move_forward_SparseOTF(self, graph):
+    """Wrap ``move_forward``.
+
+    This function returns a ``numba.jit`` compiled function that takes
+    current vertex index (and the previous vertex index if available) and
+    return the next vertex index by sampling from a discrete random
+    distribution based on the transition probabilities that are calculated
+    on-the-fly.
+
+    Note:
+        The returned function is used by the ``walk`` method.
+
+    """
+    p, q = self.p, self.q
+    data = graph.data
+    indices = graph.indices
+    indptr = graph.indptr
+
+    if self.extend:
+        compute_fn = get_normalized_probs_extended
+        deg = graph.sum(1).A1
+        num_nbrs = indptr[1:] - indptr[:-1]  # number of nbrs per node
+        avg_wts = deg / num_nbrs  # average edge weights
+    else:
         compute_fn = get_normalized_probs
+        avg_wts = None
 
-        @njit(nogil=True)
-        def move_forward(cur_idx, prev_idx=None):
-            """Move to next node based on transition probabilities."""
-            if prev_idx is None:
-                normalized_probs = compute_fn(data, indices, indptr, p, q, cur_idx, None, None)
-                cdf = np.cumsum(normalized_probs)
-                choice = np.searchsorted(cdf, np.random.random())
-            else:
-                # find index of neighbor for reading alias
-                start = indptr[cur_idx]
-                end = indptr[cur_idx + 1]
-                nbr_idx = np.searchsorted(indices[start:end], prev_idx)
-                if indices[start + nbr_idx] != prev_idx:
-                    raise RuntimeError("FATAL ERROR! Neighbor not found.")
+    @njit(nogil=True)
+    def move_forward(cur_idx, prev_idx=None):
+        """Move to next node."""
+        normalized_probs = compute_fn(
+            # data, indices, indptr, p, q, cur_idx, prev_idx)
+            data, indices, indptr, p, q, cur_idx, prev_idx, avg_wts)
+        cdf = np.cumsum(normalized_probs)
+        choice = np.searchsorted(cdf, np.random.random())
 
-                dim = alias_dim[cur_idx]
-                start = alias_indptr[cur_idx] + dim * nbr_idx
-                end = start + dim
-                choice = alias_draw(alias_j[start:end], alias_q[start:end])
+        return indices[indptr[cur_idx] + choice]
 
-            return indices[indptr[cur_idx] + choice]
-
-        return move_forward
+    return move_forward
 
 
 @njit(nogil=True)
