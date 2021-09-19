@@ -62,7 +62,7 @@ class TorchKeras(nn.Module):
     def index_select(self, out, out_index=None):
         if out_index is None:
             return out
-        if out_index.ndim == 1:
+        if out_index.ndim <= 1:
             out = out[out_index]
         elif out_index.ndim == 2:
             out = out[out_index[0], out_index[1]]

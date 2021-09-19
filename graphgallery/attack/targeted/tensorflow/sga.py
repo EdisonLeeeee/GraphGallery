@@ -68,6 +68,13 @@ class SGA(TargetedAttacker):
             self.subgraph_preprocessing(attacker_nodes)
             offset = self.edge_weights.shape[0]
 
+            # for indirect attack, the edges related to targeted node should not be considered
+            if not direct_attack:
+                row, col = self.edge_index
+                mask = tf.convert_to_tensor(np.logical_and(row != target, col != target), dtype=gg.floatx())
+            else:
+                mask = 1.0
+
             for it in tqdm(range(self.num_budgets),
                            desc='Peturbing Graph',
                            disable=disable):
@@ -77,7 +84,7 @@ class SGA(TargetedAttacker):
                 non_edge_grad = normalize_GCN(self.non_edge_index,
                                               non_edge_grad,
                                               self.selfloop_degree)
-                edge_grad *= (-2 * self.edge_weights + 1)
+                edge_grad *= (-2 * self.edge_weights + 1) * mask
                 non_edge_grad *= (-2 * self.non_edge_weights + 1)
                 gradients = tf.concat([edge_grad, non_edge_grad], axis=0)
                 index = tf.argmax(gradients)

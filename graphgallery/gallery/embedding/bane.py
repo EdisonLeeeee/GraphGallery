@@ -2,6 +2,7 @@ import numpy as np
 import numba as nb
 import scipy.sparse as sp
 from numpy.linalg import inv
+from tqdm import tqdm
 from .trainer import Trainer
 
 
@@ -10,6 +11,8 @@ class BANE(Trainer):
     from the ICDM '18 paper "Binarized Attributed Network Embedding Class". The
     procedure first calculates the truncated SVD of an adjacency - feature matrix
     product. This matrix is further decomposed by a binary CCD based technique.
+
+    The reference MatLab implementation is available <https://github.com/ICDM2018-BANE/BANE>.
     """
 
     def __init__(self, dimensions: int = 32,
@@ -62,7 +65,7 @@ class BANE(Trainer):
         binary_iterations = self.binary_iterations
         alpha = self.alpha
         B = np.sign(np.random.normal(size=(P.shape[0], self.dimensions)))
-        for _ in range(self.epochs):
+        for _ in tqdm(range(self.epochs)):
             G = self.update_G(B, P, alpha=alpha)
             Q = self.update_Q(G, P)
             B = self.update_B(B, Q, G, binary_iterations=binary_iterations)

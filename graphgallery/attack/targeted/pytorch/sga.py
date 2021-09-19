@@ -110,13 +110,21 @@ class SGA(TargetedAttacker):
         self.true_label = torch.LongTensor([self.target_label]).to(self.device)
         self.subgraph_preprocessing(attacker_nodes)
         offset = self.edge_weights.shape[0]
+
+        # for indirect attack, the edges related to targeted node should not be considered
+        if not direct_attack:
+            row, col = self.edge_index
+            mask = torch.FloatTensor(np.logical_and(row != target, col != target))
+        else:
+            mask = 1.0
+
         for it in tqdm(range(self.num_budgets),
                        desc='Peturbing Graph',
                        disable=disable):
             edge_grad, non_edge_grad = self.compute_gradient()
 
             with torch.no_grad():
-                edge_grad *= (-2 * self.edge_weights + 1)
+                edge_grad *= (-2 * self.edge_weights + 1) * mask
                 non_edge_grad *= (-2 * self.non_edge_weights + 1)
                 gradients = torch.cat([edge_grad, non_edge_grad], dim=0)
 
