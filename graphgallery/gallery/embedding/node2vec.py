@@ -23,17 +23,6 @@ class Node2Vec(Trainer):
         kwargs.pop("self")
         super().__init__(**kwargs)
 
-        self.walk_number = walk_number
-        self.walk_length = walk_length
-        self.dimensions = dimensions
-        self.workers = workers
-        self.window_size = window_size
-        self.epochs = epochs
-        self.learning_rate = learning_rate
-        self.negative = negative
-        self.p = p
-        self.q = q
-
     def fit_step(self, graph: sp.csr_matrix):
         walks = BiasedRandomWalker(walk_length=self.walk_length,
                                    walk_number=self.walk_number,
@@ -89,19 +78,6 @@ class Node2VecE(Trainer):
         kwargs = locals()
         kwargs.pop("self")
         super().__init__(**kwargs)
-
-        self.walk_number = walk_number
-        self.walk_length = walk_length
-        self.dimensions = dimensions
-        self.workers = workers
-        self.window_size = window_size
-        self.epochs = epochs
-        self.learning_rate = learning_rate
-        self.negative = negative
-        self.p = p
-        self.q = q
-        self.extend = extend
-        self.mode = mode
 
     def fit_step(self, graph: sp.csr_matrix):
         sentences = BiasedRandomWalkerAlias(walk_length=self.walk_length,

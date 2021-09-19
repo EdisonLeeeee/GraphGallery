@@ -28,15 +28,6 @@ class DeepWalk(Trainer):
         kwargs.pop("self")
         super().__init__(**kwargs)
 
-        self.walk_number = walk_number
-        self.walk_length = walk_length
-        self.dimensions = dimensions
-        self.workers = workers
-        self.window_size = window_size
-        self.epochs = epochs
-        self.learning_rate = learning_rate
-        self.negative = negative
-
     def fit(self, graph: sp.csr_matrix):
         walks = RandomWalker(walk_length=self.walk_length,
                              walk_number=self.walk_number).walk(graph)

@@ -9,15 +9,17 @@ from .default import default_cfg_setup
 
 class Trainer(Model):
     def __init__(self, *, seed=None, name=None, **kwargs):
+        kwargs.pop("__class__", None)
+        self.set_hyparas(kwargs)
         super().__init__(seed=seed, name=name, **kwargs)
         self._embedding = None
 
     def setup_cfg(self):
         default_cfg_setup(self.cfg)
 
-    def fit(self, graph):
+    def fit(self, graph, x=None, **kwargs):
         graph = getattr(graph, "adj_matrix", graph)
-        self.fit_step(graph)
+        self.fit_step(graph, x, **kwargs)
         return self
 
     def get_embedding(self, normalize=True) -> np.array:
@@ -43,3 +45,15 @@ class Trainer(Model):
         y_pred = clf.predict(x_test)
         accuracy = accuracy_score(y_test, y_pred)
         return accuracy
+
+    def set_hyparas(self, kwargs: dict):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+        self.hyparas = kwargs
+
+    def __repr__(self):
+        para_str = ""
+        for k, v in self.hyparas.items():
+            para_str += f'{k}={v},\n'
+
+        return f"{self.name}({para_str}device={self.device},\nbackend={self.backend})"
