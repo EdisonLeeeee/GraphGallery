@@ -1,7 +1,7 @@
 
 import numpy as np
 
-from .base_sequence import Sequence
+from .sequence import Sequence
 
 
 class SBVATSampleSequence(Sequence):

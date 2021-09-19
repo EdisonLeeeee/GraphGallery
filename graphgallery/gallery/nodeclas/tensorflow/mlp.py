@@ -42,7 +42,7 @@ class MLP(Trainer):
     def train_loader(self, index):
 
         labels = self.graph.node_label[index]
-        sequence = FullBatchSequence(x=[self.cache.X],
+        sequence = FullBatchSequence(inputs=[self.cache.X],
                                      y=labels,
                                      out_index=index,
                                      device=self.data_device)

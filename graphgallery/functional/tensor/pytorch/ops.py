@@ -23,9 +23,9 @@ _DTYPE_TO_CLASS = {
 }
 
 
-def gather(out, out_index):
-    if out_index is not None:
-        return out[out_index]
+def gather(out, index_or_mask=None):
+    if index_or_mask is not None:
+        return out[index_or_mask]
     return out
 
 
@@ -98,9 +98,9 @@ def normalize_adj_tensor(adj, rate=-0.5, fill_weight=1.0):
 
 
 def add_selfloops_edge_tensor(edge_index,
-                       edge_weight,
-                       num_nodes=None,
-                       fill_weight=1.0):
+                              edge_weight,
+                              num_nodes=None,
+                              fill_weight=1.0):
     # TODO
     ...
 

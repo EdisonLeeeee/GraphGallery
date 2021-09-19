@@ -57,7 +57,7 @@ class GraphMLP(Trainer):
     def train_loader(self, index, batch_size=2000):
 
         labels = self.graph.node_label[index]
-        sequence = DenseBatchSequence(x=[self.cache.X, self.cache.A],
+        sequence = DenseBatchSequence(inputs=[self.cache.X, self.cache.A],
                                       y=labels,
                                       out_index=index,
                                       batch_size=batch_size,
@@ -67,7 +67,7 @@ class GraphMLP(Trainer):
     def test_loader(self, index):
 
         labels = self.graph.node_label[index]
-        sequence = FullBatchSequence(x=self.cache.X,
+        sequence = FullBatchSequence(inputs=self.cache.X,
                                      y=labels,
                                      out_index=index,
                                      device=self.data_device)

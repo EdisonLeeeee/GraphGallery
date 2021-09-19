@@ -65,8 +65,8 @@ class SimPGCN(Trainer):
 
         labels = self.graph.node_label[index]
         cache = self.cache
-        sequence = FullBatchSequence(x=[cache.X, cache.A, cache.knn_graph,
-                                        cache.pseudo_labels, cache.node_pairs],
+        sequence = FullBatchSequence(inputs=[cache.X, cache.A, cache.knn_graph,
+                                             cache.pseudo_labels, cache.node_pairs],
                                      y=labels,
                                      out_index=index,
                                      device=self.data_device)
@@ -75,7 +75,7 @@ class SimPGCN(Trainer):
     def test_loader(self, index):
 
         labels = self.graph.node_label[index]
-        sequence = FullBatchSequence(x=[self.cache.X, self.cache.A],
+        sequence = FullBatchSequence(inputs=[self.cache.X, self.cache.A],
                                      y=labels,
                                      out_index=index,
                                      device=self.data_device)

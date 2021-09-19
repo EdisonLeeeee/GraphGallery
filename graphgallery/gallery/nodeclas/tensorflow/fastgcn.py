@@ -20,11 +20,11 @@ class FastGCN(Trainer):
     def custom_setup(self):
         cfg = self.cfg.fit
         cfg.batch_size = 256
-        cfg.rank = 100
+        cfg.num_samples = 100
 
         cfg = self.cfg.evaluate
         cfg.batch_size = None
-        cfg.rank = None
+        cfg.num_samples = None
 
     def data_step(self,
                   adj_transform="normalize_adj",
@@ -68,22 +68,23 @@ class FastGCN(Trainer):
         adj_matrix = self.transform.adj_transform(adj_matrix)
 
         X = tf.gather(self.cache.X, index)
-        sequence = FastGCNBatchSequence([X, adj_matrix],
-                                        labels,
+        sequence = FastGCNBatchSequence(inputs=[X, adj_matrix],
+                                        nodes=index,
+                                        y=labels,
                                         batch_size=cfg.batch_size,
-                                        rank=cfg.rank,
+                                        num_samples=cfg.num_samples,
                                         device=self.data_device)
         return sequence
 
     def test_loader(self, index):
         cfg = self.cfg.evaluate
-
         labels = self.graph.node_label[index]
         A = self.cache.A[index]
 
-        sequence = FastGCNBatchSequence([self.cache.X, A],
-                                        labels,
+        sequence = FastGCNBatchSequence(inputs=[self.cache.X, A],
+                                        nodes=index,
+                                        y=labels,
                                         batch_size=cfg.batch_size,
-                                        rank=cfg.rank,
+                                        num_samples=cfg.num_samples,
                                         device=self.data_device)
         return sequence

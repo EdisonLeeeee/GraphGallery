@@ -35,7 +35,7 @@ install_requires = [
     'numpy',
     'tabulate',
     'pandas',
-    'scikit_learn',
+    'scikit_learn>=0.21.0',
     'networkx>=2.3',
     'gensim>=3.8.0',
     'numba>=0.46.0',

@@ -90,12 +90,10 @@ def infer_type(x: Any) -> str:
         raise TypeError(f"Invalid input of '{type(x).__name__}'.")
 
 
-def gather(x, index_or_mask=None):
+def gather(x, index_or_mask=None, *, backend=None):
     # TODO axis?
-    if tensorflow.is_tensor(x):
-        return tensorflow.gather(x, index_or_mask)
-    else:
-        return pytorch.gather(x, index_or_mask)
+    module = get_module(backend)
+    return module.gather(x, index_or_mask)
 
 
 def to(tensor, device_or_dtype):

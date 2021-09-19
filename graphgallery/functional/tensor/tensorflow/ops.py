@@ -9,6 +9,7 @@ from typing import Any
 
 def gather(out, out_index):
     if out_index is not None:
+        out_index = tf.convert_to_tensor(out_index)
         if out_index.dtype.is_bool:
             return tf.boolean_mask(out, out_index)
         else:
