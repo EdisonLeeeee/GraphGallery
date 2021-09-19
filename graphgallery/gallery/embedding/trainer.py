@@ -1,9 +1,10 @@
 import numpy as np
 import scipy.sparse as sp
+import graphgallery.functional as gf
 from sklearn import preprocessing
 from graphgallery.gallery import Model
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score
+from sklearn import metrics
 from .default import default_cfg_setup
 
 
@@ -30,7 +31,6 @@ class Trainer(Model):
         return embedding
 
     def evaluate_nodeclas(self, y, train_nodes, test_nodes):
-        # TODO more metrics
         embedding = self.get_embedding()
         x_train = embedding[train_nodes]
         x_test = embedding[test_nodes]
@@ -43,8 +43,29 @@ class Trainer(Model):
                                  random_state=self.seed)
         clf.fit(x_train, y_train)
         y_pred = clf.predict(x_test)
-        accuracy = accuracy_score(y_test, y_pred)
-        return accuracy
+        accuracy = metrics.accuracy_score(y_test, y_pred)
+        macro_f1 = metrics.f1_score(y_test, y_pred, average='macro')
+        micro_f1 = metrics.f1_score(y_test, y_pred, average='micro')
+
+        return gf.BunchDict({'micro_f1': micro_f1.item(), 'macro_f1': macro_f1.item(), 'accuracy': accuracy.item()})
+
+    def evaluate_linkpred(self, train_edges, y_train, test_edges, y_test):
+        embedding = self.get_embedding()
+        x_train = np.abs(embedding[train_edges[0]] - embedding[train_edges[1]])
+        x_test = np.abs(embedding[test_edges[0]] - embedding[test_edges[1]])
+
+        clf = LogisticRegression(solver="lbfgs",
+                                 max_iter=1000,
+                                 multi_class='auto',
+                                 random_state=self.seed)
+        clf.fit(x_train, y_train)
+        y_pred = clf.predict(x_test)
+        y_pred_prob = clf.predict_proba(x_test)[:, 1]
+        accuracy = metrics.accuracy_score(y_test, y_pred)
+        micro_f1 = metrics.f1_score(y_test, y_pred)
+        auc = metrics.roc_auc_score(y_test, y_pred_prob)
+
+        return gf.BunchDict({'micro_f1': micro_f1.item(), 'AUC': auc.item(), 'accuracy': accuracy.item()})
 
     def set_hyparas(self, kwargs: dict):
         for k, v in kwargs.items():

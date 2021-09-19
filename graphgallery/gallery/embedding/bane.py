@@ -16,8 +16,8 @@ class BANE(Trainer):
                  gamma: float = 0.7,
                  order: int = 4,
                  alpha: float = 0.001,
-                 iterations: int = 20,
-                 binarization_iterations: int = 20,
+                 epochs: int = 20,
+                 binary_iterations: int = 20,
                  name: str = None,
                  seed: int = None):
 
@@ -26,6 +26,7 @@ class BANE(Trainer):
         super().__init__(**kwargs)
 
     def fit(self, graph: sp.csr_matrix, x: np.ndarray):
+
         P = self.get_P(graph, x)
         P = self.svd(P, self.dimensions)
         self._embedding = self.binary_optimize(P)
@@ -41,6 +42,9 @@ class BANE(Trainer):
         P_power = P
         for _ in range(self.order - 1):
             P_power = P_power @ P
+
+        Z = sp.diags(np.power((x * x).sum(1), -0.5))
+        x = Z.T.dot(x)
         return P_power @ x
 
     @staticmethod
@@ -55,13 +59,13 @@ class BANE(Trainer):
         """
         Starting 2nd optimization phase with power iterations and CCD.
         """
-        iterations = self.iterations
+        binary_iterations = self.binary_iterations
         alpha = self.alpha
         B = np.sign(np.random.normal(size=(P.shape[0], self.dimensions)))
-        for _ in range(self.binarization_iterations):
+        for _ in range(self.epochs):
             G = self.update_G(B, P, alpha=alpha)
             Q = self.update_Q(G, P)
-            B = self.update_B(B, Q, G, iterations=iterations)
+            B = self.update_B(B, Q, G, binary_iterations=binary_iterations)
         return B
 
     @staticmethod
@@ -85,16 +89,17 @@ class BANE(Trainer):
 
     @staticmethod
     @nb.njit(parallel=True, nogil=True)
-    def update_B(B, Q, G, iterations=100):
+    def update_B(B, Q, G, binary_iterations=20):
         """
         Updating the embedding matrix.
         """
         dimensions = B.shape[-1]
         dimensions_arr = np.arange(dimensions)
-        for _ in range(iterations):
+        for _ in range(binary_iterations):
             for d in range(dimensions):
                 sel = dimensions_arr != d
                 B[:, d] = np.sign(Q[:, d] - (B[:, sel] @ G[sel, :] @ G[:, np.array([d])])[:, 0])
+
         return B
 
     def get_embedding(self) -> np.array:

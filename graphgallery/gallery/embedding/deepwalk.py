@@ -13,9 +13,9 @@ class DeepWalk(Trainer):
     is decomposed by an approximate factorization technique.
     """
 
-    def __init__(self, walk_length: int = 80,
+    def __init__(self, dimensions: int = 64,
+                 walk_length: int = 80,
                  walk_number: int = 10,
-                 dimensions: int = 64,
                  workers: int = 3,
                  window_size: int = 5,
                  epochs: int = 1,

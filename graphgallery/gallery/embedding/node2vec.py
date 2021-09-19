@@ -13,8 +13,9 @@ class Node2Vec(Trainer):
 
     """
 
-    def __init__(self, walk_length: int = 80, walk_number: int = 10,
-                 p: float = 0.5, q: float = 0.5, dimensions: int = 64,
+    def __init__(self, dimensions: int = 64,
+                 walk_length: int = 80, walk_number: int = 10,
+                 p: float = 0.5, q: float = 0.5,
                  workers: int = 3, window_size: int = 5, epochs: int = 1,
                  learning_rate: float = 0.025, negative: int = 1,
                  name: str = None,
@@ -68,11 +69,12 @@ class Node2VecE(Trainer):
     These modes appropriately take advantage of compact/dense graph data structures, precomputing transition probabilities, and computing 2nd-order transition probabilities during walk generation to achieve significant improvements in performance. 
     """
 
-    def __init__(self, walk_length: int = 80, walk_number: int = 10,
-                 p: float = 0.5, q: float = 0.5, dimensions: int = 64,
+    def __init__(self, dimensions: int = 64,
+                 walk_length: int = 80, walk_number: int = 10,
+                 p: float = 0.5, q: float = 0.5,
                  workers: int = 3, window_size: int = 5, epochs: int = 1,
                  learning_rate: float = 0.025, negative: int = 1, extend=True,
-                 mode='PreComp',
+                 mode: str = 'PreComp',
                  name: str = None,
                  seed: int = None):
         kwargs = locals()
