@@ -40,7 +40,8 @@ class SBVAT(Trainer):
 
     def data_step(self,
                   adj_transform="normalize_adj",
-                  attr_transform=None):
+                  attr_transform=None,
+                  sizes=50):
 
         graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
@@ -133,19 +134,19 @@ class SBVAT(Trainer):
 
     def train_loader(self, index):
         labels = self.graph.node_label[index]
-        sequence = SBVATSampleSequence([self.cache.X, self.cache.A],
-                                       labels,
-                                       out_index=index,
+        sequence = SBVATSampleSequence(inputs=[self.cache.X, self.cache.A],
                                        neighbors=self.cache.neighbors,
-                                       sizes=self.cfg.fit.sizes,
+                                       y=labels,
+                                       out_index=index,
+                                       sizes=self.cfg.data.sizes,
                                        device=self.data_device)
 
         return sequence
 
     def test_loader(self, index):
         labels = self.graph.node_label[index]
-        sequence = FullBatchSequence([self.cache.X, self.cache.A],
-                                     labels,
+        sequence = FullBatchSequence(inputs=[self.cache.X, self.cache.A],
+                                     y=labels,
                                      out_index=index,
                                      device=self.data_device)
 

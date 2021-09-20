@@ -193,3 +193,66 @@ class PyGSAGESequence(Sequence):
 
         # (node attribute matrix, 1st-order adj, 2nd-order adj, ...), node labels
         return (self.x[n_id], adjs), self.astensor(y)
+
+
+class SBVATSampleSequence(Sequence):
+
+    def __init__(self, inputs, neighbors, y=None, out_index=None, sizes=50, device='cpu', escape=None, **kwargs):
+        dataset = gf.astensors(inputs, y, out_index, device=device, escape=escape)
+        super().__init__([dataset], batch_size=None, collate_fn=self.collate_fn, **kwargs)
+
+        self.neighbors = neighbors
+        self.num_nodes = inputs[0].shape[0]
+        self.sizes = sizes
+
+    def collate_fn(self, dataset):
+        adv_mask = self.astensor(self.sample_nodes())
+        # ((node attribute matrix, adjacency matrix, adv_mask), node labels, out_index)
+        dataset = ((*dataset[0], adv_mask), *dataset[1:])
+        return dataset
+
+    def sample_nodes(self):
+        N = self.num_nodes
+        flag = np.zeros(N, dtype=np.bool)
+        adv_index = np.zeros(self.sizes, dtype='int32')
+        for i in range(self.sizes):
+            n = np.random.randint(0, N)
+            while flag[n]:
+                n = np.random.randint(0, N)
+            adv_index[i] = n
+            flag[self.neighbors[n]] = True
+            if flag.sum() == N:
+                break
+        adv_mask = np.zeros(N, dtype='float32')
+        adv_mask[adv_index] = 1.
+        return adv_mask
+
+
+class MiniBatchSequence(Sequence):
+    """Mini-batch sequence used for Cluster-GCN training.
+
+    Parameters
+    ----------
+    inputs : a list of objects, such as an attributed graph denoted by [ (x1, adj1), (x2, adj2), ...]
+    y: if not None, it should be a list of node labels, such as [y1, y2, ...]
+    out_index: if not None, it should be a list of node index or mask, such as [index1, index2, ...]
+    """
+
+    def __init__(
+        self,
+        inputs,
+        y=None,
+        out_index=None,
+        **kwargs
+    ):
+
+        super().__init__(list(range(len(inputs))), collate_fn=self.collate_fn, batch_size=1, **kwargs)
+        self.inputs, self.y, self.out_index = self.astensors(inputs, y, out_index)
+
+    def collate_fn(self, index):
+        index = index[0]
+        inputs = self.inputs[index]
+        y = self.y[index] if self.y is not None else None
+        out_index = self.out_index[index] if self.out_index is not None else None
+
+        return inputs, y, out_index

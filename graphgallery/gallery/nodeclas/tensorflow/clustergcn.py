@@ -23,11 +23,12 @@ class ClusterGCN(Trainer):
     def data_step(self,
                   adj_transform="normalize_adj",
                   attr_transform=None,
-                  num_clusters=10):
+                  num_clusters=10,
+                  metis_partition=True):
 
         graph = self.graph
         batch_adj, batch_x, cluster_member = gf.graph_partition(
-            graph, num_clusters=num_clusters, metis_partition=True)
+            graph, num_clusters=num_clusters, metis_partition=metis_partition)
 
         batch_adj = gf.get(adj_transform)(*batch_adj)
         batch_x = gf.get(attr_transform)(*batch_x)
@@ -81,8 +82,8 @@ class ClusterGCN(Trainer):
             batch_y.append(y)
 
         batch_inputs = tuple(zip(batch_x, batch_adj))
-        sequence = MiniBatchSequence(batch_inputs,
-                                     batch_y,
+        sequence = MiniBatchSequence(inputs=batch_inputs,
+                                     y=batch_y,
                                      out_index=batch_mask,
                                      device=self.data_device)
         return sequence

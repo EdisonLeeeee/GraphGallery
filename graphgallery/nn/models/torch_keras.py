@@ -15,15 +15,6 @@ class TorchKeras(nn.Module):
 
         super().__init__(*args, **kwargs)
 
-        # # To be compatible with TensorFlow
-        # self._in_multi_worker_mode = dummy_function
-        # self._is_graph_network = dummy_function
-        # self.distribute_strategy = None
-
-        # # To be compatible with TensorBoard callbacks
-        # self._train_counter = 0
-        # self._test_counter = 0
-
         # initialize
         self.optimizer = None
         self.scheduler = None
@@ -239,12 +230,11 @@ def to_device(x, y=None, device='cpu'):
         x = (x,)
 
     def wrapper(inputs):
-        # FIXME: `len(inputs) < 20` used to avoid the inputs is a python tuple (1, 2, ..., N)
-        if isinstance(inputs, tuple) and len(inputs) < 20:
+        # The condiction `not gg.is_scalar(inputs[0])` used to
+        # avoid a python tuple (1, 2, ..., N) as inputs
+        if isinstance(inputs, tuple) and not gg.is_scalar(inputs[0]):
             return tuple(wrapper(input) for input in inputs)
         else:
             return inputs.to(device) if hasattr(inputs, 'to') else inputs
-    if y is not None:
-        return wrapper(x), wrapper(y)
-    else:
-        return wrapper(x)
+
+    return wrapper(x), wrapper(y)

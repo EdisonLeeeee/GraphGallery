@@ -38,11 +38,11 @@ def format_doc(d):
         if v != "UNSPECIDIED":
             msg += f"({i + 1}) `{k}`, Default is `{v}` \n"
         else:
-            msg += f"({i + 1}) `{k}`, UNSPECIDIED argument\n"
+            msg += f"({i + 1}) `{k}`, UNSPECIDIED position argument\n"
     return msg
 
 
-def doc_dict(func):
+def get_doc_dict(func):
     ArgSpec = inspect.getfullargspec(func)
     args = ArgSpec.args if ArgSpec.args else []
     args = args[1:] if args[0] == "self" else args
@@ -56,7 +56,7 @@ def doc_dict(func):
 def make_docs(*func):
     d = {}
     for f in func:
-        d.update(doc_dict(f))
+        d.update(get_doc_dict(f))
     return format_doc(d)
 
 
@@ -439,14 +439,20 @@ class Trainer(Model):
 
         msg = f"""
 **************************************Help Message for {self.name}******************************************
-|First, setup a graph, run `trainer.setup_graph`, the reqiured argument are:                      |
+|First, initialize a trainer object, run `trainer={self.name}(device='cpu', seed=42)                  |
+------------------------------------------------------------------------------------------------------------
+|Second, setup a graph, run `trainer.setup_graph()`, the reqiured argument are:                      |
 {make_docs(self.setup_graph, self.data_step)}
-|Second, build your model, run `trainer.build`, the reqiured argument are:                        |
+------------------------------------------------------------------------------------------------------------
+|Third, build your model, run `trainer.build()`, the reqiured argument are:                          |
 {make_docs(self.build, self.model_step)} 
-|Third, train your model, run `trainer.fit`, the reqiured argument are:                           |
+------------------------------------------------------------------------------------------------------------
+|Fourth, train your model, run `trainer.fit()`, the reqiured argument are:                           |
 {make_docs(self.fit)} 
-|Finall and optionally, evaluate your model, run `trainer.evaluate`, the reqiured argument are:   |
+------------------------------------------------------------------------------------------------------------
+|Finally and optionally, evaluate your model, run `trainer.evaluate()`, the reqiured argument are:   |
 {make_docs(self.evaluate)} 
+------------------------------------------------------------------------------------------------------------
 """
         if return_msg:
             return msg
