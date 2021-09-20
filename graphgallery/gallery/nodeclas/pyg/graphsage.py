@@ -1,12 +1,12 @@
 import numpy as np
-from graphgallery.sequence import SAGESequence
+from graphgallery.sequence import PyGSAGESequence
 from graphgallery import functional as gf
-from graphgallery.gallery.nodeclas import PyTorch
+from graphgallery.gallery.nodeclas import PyG
 from graphgallery.gallery import Trainer
 from graphgallery.nn.models import get_model
 
 
-@PyTorch.register()
+@PyG.register()
 class GraphSAGE(Trainer):
     """
         Implementation of SAmple and aggreGatE Graph Convolutional Networks (GraphSAGE). 
@@ -43,8 +43,7 @@ class GraphSAGE(Trainer):
                    weight_decay=5e-4,
                    lr=0.01,
                    bias=False,
-                   output_normalize=False,
-                   aggregator='mean'):
+                   output_normalize=False):
 
         model = get_model("GraphSAGE", self.backend)
         model = model(self.graph.num_node_attrs,
@@ -55,14 +54,12 @@ class GraphSAGE(Trainer):
                       weight_decay=weight_decay,
                       lr=lr,
                       bias=bias,
-                      aggregator=aggregator,
-                      output_normalize=output_normalize,
-                      sizes=self.cfg.data.sizes)
+                      output_normalize=output_normalize)
         return model
 
     def train_loader(self, index):
         labels = self.graph.node_label[index]
-        sequence = SAGESequence(
+        sequence = PyGSAGESequence(
             inputs=[self.cache.X, self.cache.A],
             nodes=index,
             y=labels,
@@ -74,7 +71,7 @@ class GraphSAGE(Trainer):
 
     def test_loader(self, index):
         labels = self.graph.node_label[index]
-        sequence = SAGESequence(
+        sequence = PyGSAGESequence(
             inputs=[self.cache.X, self.cache.A],
             nodes=index,
             y=labels,

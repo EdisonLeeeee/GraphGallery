@@ -14,8 +14,7 @@ class SAGEAggregator(nn.Module):
         self.concat = concat
 
         self.agg_method = agg_method
-        self.aggregator = {'mean': torch.mean, 'sum': torch.sum,
-                           'max': torch.max, 'min': torch.min}[agg_method]
+        self.aggregator = {'mean': torch.mean, 'sum': torch.sum}[agg_method]
 
         self.lin_l = nn.Linear(in_features, out_features, bias=bias)
         self.lin_r = nn.Linear(in_features, out_features, bias=bias)

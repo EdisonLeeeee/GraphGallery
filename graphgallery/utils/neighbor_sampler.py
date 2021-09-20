@@ -1,5 +1,8 @@
 import torch
 import scipy.sparse as sp
+from torch import Tensor
+from typing import List, Optional, Tuple, NamedTuple, Union
+
 from graphgallery.sampler import neighbor_sampler_cpu
 
 
@@ -64,3 +67,54 @@ class NeighborSampler:
             outputs = tuple(out.numpy() for out in outputs)
 
         return outputs
+
+
+class EdgeIndex(NamedTuple):
+    edge_index: Tensor
+    e_id: Optional[Tensor]
+    size: Tuple[int, int]
+
+    def to(self, *args, **kwargs):
+        edge_index = self.edge_index.to(*args, **kwargs)
+        e_id = self.e_id.to(*args, **kwargs) if self.e_id is not None else None
+        return EdgeIndex(edge_index, e_id, self.size)
+
+
+class PyGNeighborSampler:
+    def __init__(self, edge_index: Union[Tensor],
+                 num_nodes: Optional[int] = None):
+
+        edge_index = edge_index.to('cpu')
+
+        # Obtain a *transposed* `SparseTensor` instance.
+        num_nodes = int(edge_index.max()) + 1
+        from torch_sparse import SparseTensor
+        self.adj_t = SparseTensor(row=edge_index[0], col=edge_index[1],
+                                  value=None,
+                                  sparse_sizes=(num_nodes, num_nodes)).t()
+
+        self.adj_t.storage.rowptr()
+
+    def sample(self, batch, sizes: List[int] = [-1]):
+        batch_size: int = len(batch)
+
+        if not isinstance(batch, Tensor):
+            batch = torch.tensor(batch)
+
+        adjs = []
+        n_id = batch
+        for size in sizes:
+            adj_t, n_id = self.adj_t.sample_adj(n_id, size, replace=False)
+            e_id = adj_t.storage.value()
+            size = adj_t.sparse_sizes()[::-1]
+
+            row, col, _ = adj_t.coo()
+            edge_index = torch.stack([col, row], dim=0)
+            adjs.append(EdgeIndex(edge_index, e_id, size))
+
+        adjs = adjs[0] if len(adjs) == 1 else adjs[::-1]
+        out = (batch_size, n_id, adjs)
+        return out
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}'

@@ -18,37 +18,28 @@ class GraphSAGE(TorchKeras):
                  sizes=[15, 5], concat=True):
 
         super().__init__()
-        Agg = _AGG.get(aggregator, None)
-        if not Agg:
-            raise ValueError(
-                f"Invalid value of 'aggregator', allowed values {tuple(_AGG.keys())}, but got '{aggregator}'.")
-
-        self.output_normalize = output_normalize
         self.sizes = sizes
         assert len(sizes) == len(hids) + 1
 
         aggregators, act_layers = nn.ModuleList(), nn.ModuleList()
         for hid, act in zip(hids, acts):
-            aggregators.append(Agg(in_features, hid, concat=concat, bias=bias))
+            aggregators.append(SAGEAggregator(in_features, hid, concat=concat, bias=bias, agg_method=aggregator))
             act_layers.append(activations.get(act))
             in_features = hid * 2 if concat else hid
 
-        aggregators.append(Agg(in_features, out_features, bias=bias))
+        aggregators.append(SAGEAggregator(in_features, out_features, bias=bias, agg_method=aggregator))
 
         self.aggregators = aggregators
         self.dropout = nn.Dropout(dropout)
         self.acts = act_layers
+        self.output_normalize = output_normalize
 
         self.compile(loss=nn.CrossEntropyLoss(),
                      optimizer=optim.Adam(self.parameters(), lr=lr, weight_decay=weight_decay),
                      metrics=[Accuracy()])
 
     def forward(self, x, nodes, *neighbors):
-        # print(nodes, neighbors)
-        # print(neighbors)
-        # print(x.size())
         sizes = self.sizes
-
         h = [x[node] for node in [nodes, *neighbors]]
         for i, aggregator in enumerate(self.aggregators):
             dim = h[0].size(-1)

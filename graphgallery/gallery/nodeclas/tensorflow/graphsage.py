@@ -1,6 +1,6 @@
 import numpy as np
 
-from graphgallery.sequence import SAGEMiniBatchSequence
+from graphgallery.sequence import SAGESequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import TensorFlow
 from graphgallery.gallery import Trainer
@@ -16,22 +16,21 @@ class GraphSAGE(Trainer):
         Pytorch implementation: <https://github.com/williamleif/graphsage-simple/>
     """
 
-    # def custom_setup(self,
-    #                  sizes_train=[15, 5],
-    #                  sizes_test=[15, 5]):
-    #     self.cfg.fit.sizes = sizes_train
-    #     self.cfg.evaluate.sizes = sizes_test
+    def custom_setup(self,
+                     batch_size_train=512,
+                     batch_size_test=20000):
+
+        self.cfg.fit.batch_size = batch_size_train
+        self.cfg.evaluate.batch_size = batch_size_test
 
     def data_step(self,
-                  adj_transform="neighbor_sampler",
-                  attr_transform=None):
+                  adj_transform=None,
+                  attr_transform=None,
+                  sizes=[15, 5]):
 
         graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
         node_attr = gf.get(attr_transform)(graph.node_attr)
-       # pad with a dummy zero vector
-        node_attr = np.vstack([node_attr, np.zeros(node_attr.shape[1],
-                                                   dtype=self.floatx)])
 
         X, A = gf.astensors(node_attr, device=self.data_device), adj_matrix
 
@@ -46,8 +45,7 @@ class GraphSAGE(Trainer):
                    lr=0.01,
                    bias=True,
                    output_normalize=False,
-                   aggregator='mean',
-                   sizes=[15, 5]):
+                   aggregator='mean'):
 
         model = get_model("GraphSAGE", self.backend)
         model = model(self.graph.num_node_attrs,
@@ -60,16 +58,29 @@ class GraphSAGE(Trainer):
                       bias=bias,
                       aggregator=aggregator,
                       output_normalize=output_normalize,
-                      sizes=sizes)
+                      sizes=self.cfg.data.sizes)
 
         return model
 
     def train_loader(self, index):
-
         labels = self.graph.node_label[index]
-        sequence = SAGEMiniBatchSequence(
-            [self.cache.X, self.cache.A, index],
-            labels,
-            sizes=self.cfg.model.sizes,
+        sequence = SAGESequence(
+            inputs=[self.cache.X, self.cache.A],
+            nodes=index,
+            y=labels,
+            shuffle=True,
+            batch_size=self.cfg.fit.batch_size,
+            sizes=self.cfg.data.sizes,
+            device=self.data_device)
+        return sequence
+
+    def test_loader(self, index):
+        labels = self.graph.node_label[index]
+        sequence = SAGESequence(
+            inputs=[self.cache.X, self.cache.A],
+            nodes=index,
+            y=labels,
+            batch_size=self.cfg.evaluate.batch_size,
+            sizes=self.cfg.data.sizes,
             device=self.data_device)
         return sequence

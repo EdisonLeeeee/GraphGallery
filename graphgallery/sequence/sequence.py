@@ -165,3 +165,31 @@ class SAGESequence(Sequence):
 
         # (node attribute matrix, root nodes, 1st-order neighbor, 2nd-order neighbor, ...), node labels
         return (self.x, *self.astensors(neighbors)), self.astensor(y)
+
+
+class PyGSAGESequence(Sequence):
+
+    def __init__(
+        self,
+        inputs,
+        nodes,
+        y=None,
+        sizes=[5, 5],
+        **kwargs
+    ):
+        super().__init__(list(range(len(nodes))), collate_fn=self.collate_fn, **kwargs)
+        x, adj_matrix = inputs
+        self.x = self.astensor(x)
+        self.nodes, self.y = nodes, y
+        self.sizes = sizes
+        edge_index = torch.LongTensor(adj_matrix.nonzero())
+        self.neighbor_sampler = gg.utils.PyGNeighborSampler(edge_index, adj_matrix.shape[0])
+
+    def collate_fn(self, ids):
+        nodes = self.astensor(self.nodes[ids])
+        (batch_size, n_id, adjs) = self.neighbor_sampler.sample(nodes, sizes=self.sizes)
+
+        y = self.y[ids] if self.y is not None else None
+
+        # (node attribute matrix, 1st-order adj, 2nd-order adj, ...), node labels
+        return (self.x[n_id], adjs), self.astensor(y)

@@ -235,15 +235,16 @@ def reset(nn):
 
 
 def to_device(x, y=None, device='cpu'):
-    if not isinstance(x, (list, tuple)):
-        x = [x]
-    x = [_x.to(device) if hasattr(x, 'to') else _x for _x in x]
+    if not isinstance(x, tuple):
+        x = (x,)
 
-    if y is not None:
-        if isinstance(y, (list, tuple)):
-            y = [_y.to(device) if hasattr(y, 'to') else _y for _y in y]
+    def wrapper(inputs):
+        # FIXME: `len(inputs) < 20` used to avoid the inputs is a python tuple (1, 2, ..., N)
+        if isinstance(inputs, tuple) and len(inputs) < 20:
+            return tuple(wrapper(input) for input in inputs)
         else:
-            y = y.to(device)
-        return x, y
+            return inputs.to(device) if hasattr(inputs, 'to') else inputs
+    if y is not None:
+        return wrapper(x), wrapper(y)
     else:
-        return x
+        return wrapper(x)
