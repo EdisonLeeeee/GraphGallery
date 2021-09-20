@@ -1,14 +1,20 @@
 #!/usr/bin/env python
 # coding: utf-8
+import torch
+import os.path as osp
 from setuptools import setup, find_packages
-from os import path
+
+from torch.utils.cpp_extension import BuildExtension
+from torch.utils.cpp_extension import CppExtension, CUDAExtension, CUDA_HOME
+
+WITH_CUDA = torch.cuda.is_available() and CUDA_HOME is not None
 
 
-# From: https://github.com/facebookresearch/iopath/blob/master/setup.py
-# Author: Facebook Research
 def get_version():
-    init_py_path = path.join(
-        path.abspath(path.dirname(__file__)), "graphgallery", "version.py"
+    # From: https://github.com/facebookresearch/iopath/blob/master/setup.py
+    # Author: Facebook Research
+    init_py_path = osp.join(
+        osp.abspath(osp.dirname(__file__)), "graphgallery", "version.py"
     )
     init_py = open(init_py_path, "r").readlines()
     version_line = [line.strip() for line in init_py if line.startswith("__version__")][
@@ -68,6 +74,14 @@ setup(
     tests_require=tests_require,
     extras_require={'test': tests_require},
     packages=find_packages(exclude=("examples", "imgs", "benchmark", "test")),
+    ext_modules=[
+        CppExtension("graphgallery.sampler", sources=["csrc/cpu/neighbor_sampler_cpu.cpp"], extra_compile_args=['-g']),
+
+    ],
+    cmdclass={
+        'build_ext':
+        BuildExtension
+    },
     classifiers=[
         'Development Status :: 3 - Alpha',
         "Intended Audience :: Science/Research",
