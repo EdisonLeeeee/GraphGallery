@@ -18,7 +18,8 @@ data = Planetoid('cora', root="~/GraphData/datasets/", verbose=False)
 graph = data.graph
 splits = data.split_nodes()
 
+graphgallery.set_backend("tensorflow")
 from graphgallery.gallery.nodeclas import GraphSAGE
 trainer = GraphSAGE(device="gpu", seed=123).setup_graph(graph, attr_transform="normalize_attr").build()
-his = trainer.fit(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
+his = trainer.fit(splits.train_nodes, splits.val_nodes, verbose=1, epochs=50)
 results = trainer.evaluate(splits.test_nodes)

@@ -18,6 +18,7 @@ data = Planetoid('cora', root="~/GraphData/datasets/", verbose=False)
 graph = data.graph
 splits = data.split_nodes()
 
+graphgallery.set_backend("tensorflow")
 from graphgallery.gallery.nodeclas import APPNP
 trainer = APPNP(device="gpu", seed=123).setup_graph(graph, attr_transform="normalize_attr").build()
 his = trainer.fit(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)

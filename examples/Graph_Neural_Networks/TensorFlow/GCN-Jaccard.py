@@ -19,6 +19,7 @@ data = NPZDataset('cora', root="~/GraphData/datasets/", transform=gf.Standardize
 graph = data.graph
 splits = data.split_nodes(random_state=15)
 
+graphgallery.set_backend("tensorflow")
 from graphgallery.gallery.nodeclas import GCN
 trainer = GCN(device="gpu", seed=123).setup_graph(graph, graph_transform="jaccard_detection").build()
 trainer.build()
