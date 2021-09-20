@@ -1,5 +1,5 @@
 import numpy as np
-from graphgallery.sequence import SAGEMiniBatchSequence
+from graphgallery.sequence import SAGESequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
 from graphgallery.gallery import Trainer
@@ -15,22 +15,13 @@ class GraphSAGE(Trainer):
         Pytorch implementation: <https://github.com/williamleif/graphsage-simple/>
     """
 
-    # def custom_setup(self,
-    #                  sizes_train=[15, 5],
-    #                  sizes_test=[15, 5]):
-    #     self.cfg.fit.sizes = sizes_train
-    #     self.cfg.evaluate.sizes = sizes_test
-
     def data_step(self,
-                  adj_transform="neighbor_sampler",
+                  adj_transform=None,
                   attr_transform=None):
 
         graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
         node_attr = gf.get(attr_transform)(graph.node_attr)
-        # pad with a dummy zero vector
-        node_attr = np.vstack([node_attr, np.zeros(node_attr.shape[1],
-                                                   dtype=self.floatx)])
 
         X, A = gf.astensors(node_attr, device=self.data_device), adj_matrix
 
@@ -64,9 +55,11 @@ class GraphSAGE(Trainer):
 
     def train_loader(self, index):
         labels = self.graph.node_label[index]
-        sequence = SAGEMiniBatchSequence(
-            [self.cache.X, self.cache.A, index],
-            labels,
+        sequence = SAGESequence(
+            inputs=[self.cache.X, self.cache.A],
+            nodes=index,
+            y=labels,
+            batch_size=256,
             sizes=self.cfg.model.sizes,
             device=self.data_device)
         return sequence

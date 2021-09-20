@@ -44,6 +44,9 @@ class GraphSAGE(TorchKeras):
                      metrics=[Accuracy()])
 
     def forward(self, x, nodes, *neighbors):
+        # print(nodes, neighbors)
+        # print(neighbors)
+        # print(x.size())
         sizes = self.sizes
 
         h = [x[node] for node in [nodes, *neighbors]]

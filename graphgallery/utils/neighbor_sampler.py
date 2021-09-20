@@ -11,6 +11,13 @@ class NeighborSampler:
     -----------
     adj_matrix：scipy.spars.csr_matrix, the input matrix to be sampled
 
+    Examples
+    --------
+    >>> from graphgallery.utils import NeighborSampler
+    >>> sampler = NeighborSampler(adj)
+    >>> sampler.sample(torch.arange(100), size=3)
+
+
     Note:
     -----
     Please make sure there is not dangling nodes, otherwise there would be an error.

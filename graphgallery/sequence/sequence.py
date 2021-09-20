@@ -3,6 +3,7 @@ from functools import partial
 import torch
 import numpy as np
 import scipy.sparse as sp
+import graphgallery as gg
 from graphgallery import functional as gf
 from torch.utils.data import DataLoader
 
@@ -14,6 +15,7 @@ class Sequence(DataLoader):
         self.astensor = partial(gf.astensor, device=device, escape=escape)
         self.astensors = partial(gf.astensors, device=device, escape=escape)
         self.device = device
+        self.backend = gg.backend()
 
     def on_epoch_begin(self):
         ...
@@ -47,6 +49,16 @@ def tolist(array):
 class NodeSequence(Sequence):
     def __init__(self, nodes, **kwargs):
         super().__init__(tolist(nodes), **kwargs)
+
+
+class NodeLabelSequence(Sequence):
+    def __init__(self, nodes, y, **kwargs):
+        super().__init__(list(range(len(nodes))), collate_fn=self.collate_fn, **kwargs)
+        self.nodes = nodes
+        self.y = y
+
+    def collate_fn(self, ids):
+        return self.astensors(self.nodes[ids], self.y[ids])
 
 
 class FastGCNBatchSequence(Sequence):
@@ -102,7 +114,6 @@ class FastGCNBatchSequence(Sequence):
                                              replace=False,
                                              p=probability
                                              )
-            # 获得采样后的目标节点索引列表
         else:
             sampled_nodes = neighbors
 
@@ -120,3 +131,37 @@ class FastGCNBatchSequence(Sequence):
         sampled_x = gf.gather(self.x, sampled_nodes)
         sampled_y = gf.gather(self.y, nodes)
         return sampled_x, sampled_adjacency, sampled_y
+
+
+class SAGESequence(Sequence):
+
+    def __init__(
+        self,
+        inputs,
+        nodes,
+        y=None,
+        sizes=[5, 5],
+        **kwargs
+    ):
+        super().__init__(list(range(len(nodes))), collate_fn=self.collate_fn, **kwargs)
+        x, adj_matrix = inputs
+        self.x = self.astensor(x)
+        self.nodes, self.y = nodes, y
+        self.sizes = sizes
+        self.neighbor_sampler = gg.utils.NeighborSampler(adj_matrix)
+        self.is_tensorflow_backend = self.backend == "tensorflow"
+
+    def collate_fn(self, ids):
+        is_tensorflow_backend = self.is_tensorflow_backend
+        nodes = self.nodes[ids]
+        neighbors = [nodes]
+
+        for size in self.sizes:
+            _, nbrs = self.neighbor_sampler.sample(nodes, size=size, as_numpy=is_tensorflow_backend)
+            neighbors.append(nbrs)
+            nodes = nbrs
+
+        y = self.y[ids] if self.y is not None else None
+
+        # (node attribute matrix, root nodes, 1st-order neighbor, 2nd-order neighbor, ...), node labels
+        return (self.x, *self.astensors(neighbors)), self.astensor(y)
