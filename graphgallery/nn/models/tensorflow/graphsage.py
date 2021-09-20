@@ -7,7 +7,7 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 from graphgallery.nn.layers.tensorflow import SAGEAggregator, GCNAggregator, MedianAggregator, MedianGCNAggregator
 from graphgallery import floatx, intx
-from graphgallery.nn.models import TFKeras
+from graphgallery.nn.models.tf_keras import TFKeras
 
 
 _AGG = {'mean': SAGEAggregator,

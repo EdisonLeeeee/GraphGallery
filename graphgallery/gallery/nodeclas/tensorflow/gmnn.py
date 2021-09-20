@@ -7,7 +7,7 @@ from tensorflow.keras.losses import CategoricalCrossentropy
 
 from graphgallery.nn.layers.tensorflow import GCNConv
 from graphgallery.sequence import FullBatchSequence
-from graphgallery.nn.models import TFKeras
+from graphgallery.nn.models.tf_keras import TFKeras
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import TensorFlow
 from graphgallery.gallery import Trainer

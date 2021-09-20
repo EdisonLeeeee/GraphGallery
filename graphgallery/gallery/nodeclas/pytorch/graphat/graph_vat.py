@@ -64,9 +64,9 @@ class GraphVAT(Trainer):
     def train_loader(self, index):
 
         labels = self.graph.node_label[index]
-        sequence = NullSequence(inputs=[self.cache.X, self.cache.A, self.cache.adjacency],
-                                y=gf.astensor(labels, device=self.data_device),
-                                out_index=gf.astensor(index, device=self.data_device),
+        sequence = NullSequence([self.cache.X, self.cache.A, self.cache.adjacency],
+                                gf.astensor(labels, device=self.data_device),
+                                gf.astensor(index, device=self.data_device),
                                 device=self.data_device)
         return sequence
 

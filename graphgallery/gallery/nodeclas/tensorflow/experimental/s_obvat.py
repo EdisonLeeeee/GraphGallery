@@ -7,7 +7,7 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 from graphgallery.nn.layers.tensorflow import GCNConv
 from graphgallery.gallery.nodeclas.tensorflow.bvat.utils import kl_divergence_with_logit, entropy_y_x, get_normalized_vector
-from graphgallery.nn.models import TFKeras
+from graphgallery.nn.models.tf_keras import TFKeras
 from graphgallery.gallery.nodeclas import TensorFlow
 
 from ..bvat.obvat import OBVAT

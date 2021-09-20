@@ -1,7 +1,12 @@
+
 try:
     import metis
 except ImportError:
     metis = None
+    WARNING_MSG = "The metis Python interface is not installed, try `pip install metis`. See <http://glaros.dtc.umn.edu/gkhome/metis/metis/overview> for more details."
+except RuntimeError:
+    metis = None
+    WARNING_MSG = "The metis toolkit is not installed, try `sudo apt-get install libmetis-dev` (for Ubuntu only). See <http://glaros.dtc.umn.edu/gkhome/metis/metis/overview> for more details."
 
 import numpy as np
 import networkx as nx
@@ -43,7 +48,8 @@ def graph_partition(graph, num_clusters: int = None, metis_partition: bool = Tru
         num_clusters = graph.num_node_classes
     # partition graph
     if metis_partition:
-        assert metis, "Please install `metis` package!"
+
+        assert metis, WARNING_MSG
         parts = metis_clustering(graph.nxgraph(), num_clusters)
     else:
         parts = random_clustering(adj_matrix.shape[0], num_clusters)

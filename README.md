@@ -440,12 +440,6 @@ mydataset = Graph.from_npz('path/to/mydataset.npz')
 
 
 # ❓ FAQ
-+ RuntimeError: Could not locate METIS dll. Please set the METIS_DLL environment variable to its full path.
-This error occurred because the metis library is not installed. you can simply run (for Ubuntu):
-```bash
-sudo apt-get install libmetis-dev
-```
-or you can uninstall metis python package `pip uninstall metis -y` if you don't plan to use `ClusterGCN` currently.
 
 # 😘 Acknowledgement
 This project is motivated by [Pytorch Geometric](https://github.com/rusty1s/pytorch_geometric), [Tensorflow Geometric](https://github.com/CrawlScript/tf_geometric), [Stellargraph](https://github.com/stellargraph/stellargraph) and [DGL](https://github.com/dmlc/dgl), etc., and the original implementations of the authors, thanks for their excellent works!
@@ -454,7 +448,7 @@ This project is motivated by [Pytorch Geometric](https://github.com/rusty1s/pyto
 Please cite our [paper](https://www.computer.org/csdl/proceedings-article/icse-companion/2021/121900a013/1sET5DXNWJG) (and the respective papers of the methods used) if you use this code in your own work:
 ```bibtex
 @inproceedings{li2021graphgallery,
-author = {J. Li and K. Xu and L. Chen and Z. Zheng and X. Liu},
+author = {Jintang Li and Kun Xu and Liang Chen and Zibin Zheng and Xiao Liu},
 booktitle = {2021 IEEE/ACM 43rd International Conference on Software Engineering: Companion Proceedings (ICSE-Companion)},
 title = {GraphGallery: A Platform for Fast Benchmarking and Easy Development of Graph Neural Networks Based Intelligent Software},
 year = {2021},

@@ -226,7 +226,7 @@ def reset(nn):
 
 
 def to_device(x, y=None, device='cpu'):
-    if not isinstance(x, tuple):
+    if not isinstance(x, (list, tuple)):
         x = (x,)
 
     def wrapper(inputs):

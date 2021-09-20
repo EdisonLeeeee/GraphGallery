@@ -7,7 +7,7 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 from graphgallery.nn.layers.tensorflow import APPNProp, PPNProp
 from graphgallery import floatx
-from graphgallery.nn.models import TFKeras
+from graphgallery.nn.models.tf_keras import TFKeras
 
 
 class APPNP(TFKeras):

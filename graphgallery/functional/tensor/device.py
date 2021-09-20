@@ -1,7 +1,6 @@
 import torch
 import graphgallery as gg
 
-from .tensorflow import device as tf_device
 from .pytorch import device as th_device
 
 __all__ = ['device']
@@ -32,6 +31,7 @@ def device(device=None, backend=None):
     if device is None:
         # by default, return CPU device
         if backend == "tensorflow":
+            from .tensorflow import device as tf_device
             return tf_device.cpu()
         elif backend == "torch":
             return th_device.cpu()
@@ -74,6 +74,7 @@ def device(device=None, backend=None):
             return th_device.gpu(_device_id)
 
     # tensorflow backend returns 'string'
+    from .tensorflow import device as tf_device
     tf = backend.module
     if _device == "cpu":
         return tf_device.cpu(_device_id)

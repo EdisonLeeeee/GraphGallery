@@ -9,7 +9,7 @@ from ..sparse import add_selfloops, eliminate_selfloops
 
 
 @Transform.register()
-class NeighborSampler(SparseTransform):
+class ToNeighborMatrix(SparseTransform):
 
     def __init__(self, max_degree: int = 25,
                  selfloop: bool = True,
@@ -18,18 +18,18 @@ class NeighborSampler(SparseTransform):
         self.collect(locals())
 
     def __call__(self, adj_matrix: sp.csr_matrix):
-        return neighbor_sampler(adj_matrix, max_degree=self.max_degree,
-                                selfloop=self.selfloop, add_dummy=self.add_dummy)
+        return to_neighbor_matrix(adj_matrix, max_degree=self.max_degree,
+                                  selfloop=self.selfloop, add_dummy=self.add_dummy)
 
 
 @njit
 def sample(indices, indptr, max_degree=25, add_dummy=True):
     N = len(indptr) - 1
     if add_dummy:
-        M = numba.int32(N) + np.zeros((N+1, max_degree), dtype=np.int32)
+        M = numba.int32(N) + np.zeros((N + 1, max_degree), dtype=np.int32)
     else:
         M = np.zeros((N, max_degree), dtype=np.int32)
-        
+
     for n in range(N):
         neighbors = indices[indptr[n]:indptr[n + 1]]
         size = neighbors.size
@@ -42,8 +42,8 @@ def sample(indices, indptr, max_degree=25, add_dummy=True):
     return M
 
 
-def neighbor_sampler(adj_matrix: sp.csr_matrix, max_degree: int = 25,
-                     selfloop: bool=True, add_dummy=True):
+def to_neighbor_matrix(adj_matrix: sp.csr_matrix, max_degree: int = 25,
+                       selfloop: bool = True, add_dummy=True):
     if selfloop:
         adj_matrix = add_selfloops(adj_matrix)
     else:

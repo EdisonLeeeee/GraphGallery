@@ -1,4 +1,3 @@
-import torch
 import numpy as np
 from graphgallery.sequence import FullBatchSequence, Sequence
 from graphgallery import functional as gf
@@ -54,13 +53,13 @@ class GraphMLP(Trainer):
 
         return model
 
-    def train_loader(self, index, batch_size=2000):
+    def train_loader(self, index, block_size=2000):
 
         labels = self.graph.node_label[index]
         sequence = DenseBatchSequence(inputs=[self.cache.X, self.cache.A],
                                       y=labels,
                                       out_index=index,
-                                      batch_size=batch_size,
+                                      block_size=block_size,
                                       device=self.data_device)
         return sequence
 
@@ -76,22 +75,16 @@ class GraphMLP(Trainer):
 
 class DenseBatchSequence(Sequence):
 
-    def __init__(self, x, y=None, out_index=None, batch_size=256, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, inputs, y=None, out_index=None, block_size=2000, device='cpu', escape=None, **kwargs):
+        dataset = gf.astensors(inputs, y, out_index, device=device, escape=escape)
+        super().__init__([dataset], batch_size=None, collate_fn=self.collate_fn, device=device, escape=escape, **kwargs)
+        self.block_size = block_size
 
-        self.x = self.astensors(x, device=self.device)
-        self.y = self.astensor(y, device=self.device)
-        self.out_index = self.astensor(out_index, device=self.device)
-        self.batch_size = batch_size
-
-    def __len__(self):
-        return 1
-
-    def __getitem__(self, index):
-        x, adj = self.x
-        rand_indx = self.astensor(np.random.choice(np.arange(adj.shape[0]), self.batch_size), device=self.device)
-        if self.out_index is not None:
-            rand_indx[:len(self.out_index)] = self.out_index
+    def collate_fn(self, dataset):
+        (x, adj), y, out_index = dataset
+        rand_indx = self.astensor(np.random.choice(np.arange(adj.shape[0]), self.block_size))
+        if out_index is not None:
+            rand_indx[:out_index.size(0)] = out_index
         features_batch = x[rand_indx]
         adj_label_batch = adj[rand_indx, :][:, rand_indx]
-        return (features_batch, adj_label_batch), self.y, self.out_index
+        return (features_batch, adj_label_batch), y, out_index

@@ -12,7 +12,7 @@ from graphgallery.gallery.nodeclas.tensorflow.bvat.utils import kl_divergence_wi
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import TensorFlow
 from graphgallery.gallery import Trainer
-from graphgallery.nn.models import TFKeras
+from graphgallery.nn.models.tf_keras import TFKeras
 
 
 @TensorFlow.register()

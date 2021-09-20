@@ -174,7 +174,7 @@ class Trainer(Model):
             whether to use bias in each layer.
         use_tfn: bool,
             this argument is only used for TensorFlow backend, if `True`, it will decorate
-            the model training and testing with `tf.function` (See `graphgallery.nn.modes.TFKeras`).
+            the model training and testing with `tf.function` (See `graphgallery.nn.modes.tf_keras.TFKeras`).
             By default, it was `True`, which can accelerate the training and inference, by it may cause
             several errors.
         other arguments (if have) will be passed into your method 'model_step'.

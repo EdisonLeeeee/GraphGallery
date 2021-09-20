@@ -1,3 +1,4 @@
+import sys
 import torch
 import importlib
 
@@ -18,7 +19,7 @@ class BackendModule:
             try:
                 self.module = importlib.import_module(module)
             except ImportError as e:
-                print(f"Something error when import `{module}`.")
+                print(f"Something went wrong when import `{module}`.", file=sys.stderr)
                 raise e
         else:
             self.module = None

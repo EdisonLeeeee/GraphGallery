@@ -309,9 +309,8 @@ def set_backend(module_name=None):
             importlib.reload(backdoor)
         except Exception as e:
             print(
-                f"Something went wrong. Set to Default Backend {_DEFAULT_BACKEND}.",
+                f"Something went wrong when switching to other backend.",
                 file=sys.stderr)
-            set_to_default_backend()
             raise e
 
     return _BACKEND

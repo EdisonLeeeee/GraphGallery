@@ -2,7 +2,6 @@ import tensorflow as tf
 import numpy as np
 import scipy.sparse as sp
 import graphgallery as gg
-import tensorflow.keras.backend as K
 
 from typing import Any
 from graphgallery import functional as gf
@@ -26,7 +25,7 @@ def data_type_dict():
 
 
 def is_sparse(x: Any) -> bool:
-    return K.is_sparse(x)
+    return tf.keras.backend.is_sparse(x)
 
 
 def is_dense(x: Any) -> bool:
@@ -46,7 +45,7 @@ def astensor(x, *, dtype=None, device=None, escape=None):
             return x
     except TypeError:
         raise TypeError(f"argument 'escape' must be a type or tuple of types.")
-        
+
     # update: accept `dict` instance
     if isinstance(x, dict):
         for k, v in x.items():
@@ -55,7 +54,7 @@ def astensor(x, *, dtype=None, device=None, escape=None):
             except TypeError:
                 pass
         return x
-            
+
     if dtype is None:
         dtype = gf.infer_type(x)
     elif isinstance(dtype, tf.dtypes.DType):

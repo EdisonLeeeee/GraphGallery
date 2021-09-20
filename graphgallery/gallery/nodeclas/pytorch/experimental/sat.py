@@ -35,8 +35,8 @@ class SAT(Trainer):
     def model_step(self,
                    hids=[32],
                    acts=['relu'],
-                   K=10,
-                   alpha=0.1,
+                   K=5,
+                   alpha=0.2,
                    eps_U=0.1,
                    eps_V=0.1,
                    lamb_U=0.5,
@@ -44,7 +44,7 @@ class SAT(Trainer):
                    dropout=0.5,
                    weight_decay=5e-4,
                    lr=0.01,
-                   bias=False,
+                   bias=True,
                    name="sat.SSGC"):
 
         model = get_model(name, self.backend)

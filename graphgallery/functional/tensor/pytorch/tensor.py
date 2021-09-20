@@ -43,7 +43,7 @@ def astensor(x, *, dtype=None, device=None, escape=None):
             return x
     except TypeError:
         raise TypeError(f"argument 'escape' must be a type or tuple of types.")
-        
+
     # update: accept `dict` instance
     if isinstance(x, dict):
         for k, v in x.items():
@@ -55,7 +55,7 @@ def astensor(x, *, dtype=None, device=None, escape=None):
 
     if dtype is None:
         dtype = gf.infer_type(x)
-        
+
     if isinstance(dtype, (np.dtype, str)):
         dtype = data_type_dict().get(str(dtype), dtype)
     elif not isinstance(dtype, torch.dtype):
@@ -65,11 +65,11 @@ def astensor(x, *, dtype=None, device=None, escape=None):
 
     if is_tensor(x):
         tensor = x.to(dtype)
-    elif gf.is_tensor(x, backend='tensorflow'):
-        return astensor(gf.tensoras(x),
-                        dtype=dtype,
-                        device=device,
-                        escape=escape)
+    # elif gf.is_tensor(x, backend='tensorflow'):
+    #     return astensor(gf.tensoras(x),
+    #                     dtype=dtype,
+    #                     device=device,
+    #                     escape=escape)
     elif sp.isspmatrix(x):
         if gg.backend() == "dgl":
             import dgl

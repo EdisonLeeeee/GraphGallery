@@ -6,7 +6,6 @@ from typing import Any, Union, Optional
 import graphgallery as gg
 from graphgallery import functional as gf
 
-from . import tensorflow
 from . import pytorch
 
 
@@ -19,21 +18,22 @@ def get_module(backend=None):
     Parameters
     ----------
     backend: String or BackendModule, optional.
-        'tensorflow', 'torch', TensorFlowBackend, 
-        PyTorchBackend, etc. if not specified, 
-        return the current backend module. 
+        'tensorflow', 'torch', TensorFlowBackend,
+        PyTorchBackend, etc. if not specified,
+        return the current backend module.
 
     Returns
     -------
     module:
-    - 'graphgallery.functional.tensor.tensorflow' 
+    - 'graphgallery.functional.tensor.tensorflow'
         for tensorflow backend,
     - 'graphgallery.functional.tensor.pytorch'
-        for pytorch backend    
+        for pytorch backend
     """
     backend = gg.backend(backend)
 
     if backend == "tensorflow":
+        from . import tensorflow
         return tensorflow
     else:
         return pytorch
@@ -64,15 +64,20 @@ def infer_type(x: Any) -> str:
         else:
             raise TypeError(f"Invalid type of pytorch Tensor: '{type(x)}'")
 
-    elif tensorflow.is_tensor(x):
-        if x.dtype.is_floating:
-            return gg.floatx()
-        elif x.dtype.is_integer or x.dtype.is_unsigned:
-            return gg.intx()
-        elif x.dtype.is_bool:
-            return gg.boolx()
-        else:
-            raise TypeError(f"Invalid type of tensorflow Tensor: '{type(x)}'")
+    # else:
+    #     try:
+    #         from . import tensorflow
+    #         if tensorflow.is_tensor(x):
+    #             if x.dtype.is_floating:
+    #                 return gg.floatx()
+    #             elif x.dtype.is_integer or x.dtype.is_unsigned:
+    #                 return gg.intx()
+    #             elif x.dtype.is_bool:
+    #                 return gg.boolx()
+    #             else:
+    #                 raise TypeError(f"Invalid type of tensorflow Tensor: '{type(x)}'")
+    #     except (ImportError, ModuleNotFoundError):
+    #         pass
 
     _x = x
     if not hasattr(_x, 'dtype'):

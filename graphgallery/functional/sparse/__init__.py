@@ -2,7 +2,7 @@ from .normalize_adj import NormalizeAdj, normalize_adj
 from .add_selfloops import AddSelfloops, EliminateSelfloops, add_selfloops, eliminate_selfloops
 from .wavelet import WaveletBasis, wavelet_basis
 from .chebyshef import ChebyBasis, cheby_basis
-from .neighbor_sampler import NeighborSampler, neighbor_sampler
+from .to_neighbor_matrix import ToNeighborMatrix, to_neighbor_matrix
 from .gdc import GDC, gdc
 from .augment_adj import augment_adj
 from .reshape import SparseReshape, sparse_reshape

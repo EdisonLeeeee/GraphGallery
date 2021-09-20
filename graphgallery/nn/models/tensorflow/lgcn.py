@@ -5,7 +5,7 @@ from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 from graphgallery.nn.layers.tensorflow import Top_k_features, LGConv, DenseConv
-from graphgallery.nn.models import TFKeras
+from graphgallery.nn.models.tf_keras import TFKeras
 from graphgallery import floatx
 
 
