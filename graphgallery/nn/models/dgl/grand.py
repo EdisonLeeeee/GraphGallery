@@ -13,7 +13,7 @@ from graphgallery.nn.metrics.pytorch import Accuracy
 def drop_node(feats, drop_rate, training):
 
     n = feats.shape[0]
-    drop_rates = torch.FloatTensor(np.ones(n) * drop_rate)
+    drop_rates = torch.ones(n) * drop_rate
 
     if training:
 
@@ -66,12 +66,13 @@ class GRAND(TorchKeras):
                  hids=[16],
                  acts=['relu'],
                  dropout=0.5,
-                 S=4,
-                 K=8,
-                 temp=0.5, lam=1.,
+                 S=1,
+                 K=4,
+                 temp=0.5, 
+                 lam=1.,
                  weight_decay=5e-4,
                  lr=0.01,
-                 bias=True,
+                 bias=False,
                  bn=False):
 
         super().__init__()
