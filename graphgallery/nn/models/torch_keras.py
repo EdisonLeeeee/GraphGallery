@@ -115,7 +115,7 @@ class TorchKeras(nn.Module):
     @torch.no_grad()
     def predict_step_on_batch(self, x, out_index=None, device="cpu"):
         self.eval()
-        x = to_device(x, device=device)
+        x, _ = to_device(x, device=device)
         out = self.index_select(self(*x), out_index=out_index)
         return out.cpu().detach()
 

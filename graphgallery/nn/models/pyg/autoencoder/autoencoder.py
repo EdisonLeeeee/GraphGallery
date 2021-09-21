@@ -20,7 +20,7 @@ class AutoEncoder(TorchKeras):
         self.train()
         optimizer = self.optimizer
         optimizer.zero_grad()
-        x = to_device(x, device=device)
+        x, _ = to_device(x, device=device)
         z = self.encode(*x)
         # here `out_index` maybe pos_edge_index
         # or (pos_edge_index, neg_edge_index)
@@ -65,7 +65,7 @@ class AutoEncoder(TorchKeras):
                            device="cpu"):
         self.eval()
         metrics = self.metrics
-        x = to_device(x, device=device)
+        x, _ = to_device(x, device=device)
         z = self.encode(*x)
         pred = self.decode(z, out_index)
 
@@ -78,7 +78,7 @@ class AutoEncoder(TorchKeras):
     @torch.no_grad()
     def predict_step_on_batch(self, x, out_index=None, device="cpu"):
         self.eval()
-        x = to_device(x, device=device)
+        x, _ = to_device(x, device=device)
         z = self.encode(*x)
         pred = self.decode(z, out_index)
         return pred.cpu().detach()

@@ -63,11 +63,12 @@ class VGAE(AutoEncoder):
         out = self.decode(z)
         return out
 
-    def compute_loss(self, out, y):
+    def compute_loss(self, out, y, out_index=None):
+        out = self.index_select(out, out_index=out_index)
         if self.training:
             mu = self.cache.pop('mu')
             logstd = self.cache.pop('logstd')
             kl_loss = -0.5 / mu.size(0) * torch.mean(torch.sum(1 + 2 * logstd - mu.pow(2) - logstd.exp().pow(2), dim=1))
         else:
             kl_loss = 0.
-        return self.loss(out, y) + kl_loss
+        return self.loss(out, y) + kl_loss, out

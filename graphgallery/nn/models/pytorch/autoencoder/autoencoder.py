@@ -27,7 +27,7 @@ class AutoEncoder(TorchKeras):
         x, y = to_device(x, y, device=device)
         z = self.encode(*x)
         out = self.decode(z, out_index)
-        loss = self.compute_loss(out, y)
+        loss, out = self.compute_loss(out, y)
         self.update_metrics(out, y)
 
         if loss is not None:
