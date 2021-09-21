@@ -64,20 +64,17 @@ def infer_type(x: Any) -> str:
         else:
             raise TypeError(f"Invalid type of pytorch Tensor: '{type(x)}'")
 
-    # else:
-    #     try:
-    #         from . import tensorflow
-    #         if tensorflow.is_tensor(x):
-    #             if x.dtype.is_floating:
-    #                 return gg.floatx()
-    #             elif x.dtype.is_integer or x.dtype.is_unsigned:
-    #                 return gg.intx()
-    #             elif x.dtype.is_bool:
-    #                 return gg.boolx()
-    #             else:
-    #                 raise TypeError(f"Invalid type of tensorflow Tensor: '{type(x)}'")
-    #     except (ImportError, ModuleNotFoundError):
-    #         pass
+    elif gg.TF_ENABLED:
+        from . import tensorflow
+        if tensorflow.is_tensor(x):
+            if x.dtype.is_floating:
+                return gg.floatx()
+            elif x.dtype.is_integer or x.dtype.is_unsigned:
+                return gg.intx()
+            elif x.dtype.is_bool:
+                return gg.boolx()
+            else:
+                raise TypeError(f"Invalid type of tensorflow Tensor: '{type(x)}'")
 
     _x = x
     if not hasattr(_x, 'dtype'):

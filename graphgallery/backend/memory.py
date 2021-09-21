@@ -1,4 +1,5 @@
 import torch
+import graphgallery as gg
 
 __all__ = ['set_memory_growth', 'empty_cache', 'max_memory', 'gpu_memory']
 

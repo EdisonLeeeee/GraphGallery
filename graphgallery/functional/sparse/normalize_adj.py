@@ -93,8 +93,8 @@ def normalize_adj(adj_matrix, rate=-0.5, fill_weight=1.0, symmetric=True):
             return adj
 
         degree = np.ravel(adj.sum(1))
-        if r < 0:
-            degree[degree < 0] = 0
+        degree[degree < 0] = 0
+
         degree_power = np.power(degree, r)
 
         if sp.isspmatrix(adj):

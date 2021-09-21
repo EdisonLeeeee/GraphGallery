@@ -31,7 +31,7 @@ def asarray(x: Any, dtype: Optional[str] = None) -> np.ndarray:
     if dtype is None:
         dtype = gg.intx()
 
-    if gf.is_tensor(x, backend="tensorflow"):
+    if gg.TF_ENABLED and gf.is_tensor(x, backend="tensorflow"):
         if x.dtype != dtype:
             import tensorflow as tf
             return tf.cast(x, dtype=dtype)

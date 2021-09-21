@@ -83,6 +83,7 @@ class DenseBatchSequence(Sequence):
     def collate_fn(self, dataset):
         (x, adj), y, out_index = dataset
         rand_indx = self.astensor(np.random.choice(np.arange(adj.shape[0]), self.block_size))
+        # FIXME: there would be some error when out_index_i > len(rand_indx)
         if out_index is not None:
             rand_indx[:out_index.size(0)] = out_index
         features_batch = x[rand_indx]

@@ -48,12 +48,12 @@ class SimplifiedOBVAT(OBVAT):
                 GCNConv(
                     hid,
                     activation=act,
-                    bias=bias,
+                    use_bias=bias,
                     kernel_regularizer=regularizers.l2(weight_decay)))
 
         GCN_layers.append(
             GCNConv(self.graph.num_node_classes,
-                    bias=bias))
+                    use_bias=bias))
 
         self.GCN_layers = GCN_layers
         self.dropout = Dropout(rate=dropout)

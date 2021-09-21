@@ -73,9 +73,9 @@ class FastGCNBatchSequence(Sequence):
         **kwargs
     ):
         if batch_size is not None:
-            super().__init__(tolist(nodes), collate_fn=self.collate_fn, batch_size=batch_size, **kwargs)
+            super().__init__(list(range(len(nodes))), collate_fn=self.collate_fn, batch_size=batch_size, **kwargs)
         else:
-            super().__init__([nodes], collate_fn=self.collate_fn, batch_size=batch_size, **kwargs)
+            super().__init__([list(range(len(nodes)))], collate_fn=self.collate_fn, batch_size=batch_size, **kwargs)
 
         # x: node attribute matrix, which could be numpy array or tensor
         # adj_matrix: node adjacency matrix, which could only be scipy sparse matrix
@@ -186,7 +186,7 @@ class PyGSAGESequence(Sequence):
         self.neighbor_sampler = gg.utils.PyGNeighborSampler(edge_index, adj_matrix.shape[0])
 
     def collate_fn(self, ids):
-        nodes = self.astensor(self.nodes[ids])
+        nodes = torch.LongTensor(self.nodes[ids])
         (batch_size, n_id, adjs) = self.neighbor_sampler.sample(nodes, sizes=self.sizes)
 
         y = self.y[ids] if self.y is not None else None

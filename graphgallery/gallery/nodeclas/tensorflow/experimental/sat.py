@@ -39,6 +39,7 @@ class SAT(Trainer):
         V, U = sp.linalg.eigsh(adj_matrix, k=k)
 
         adj_matrix = (U * V) @ U.T
+        adj_matrix[adj_matrix < 0] = 0.
         adj_matrix = gf.get(adj_transform)(adj_matrix)
 
         X, A, U, V = gf.astensors(node_attr,

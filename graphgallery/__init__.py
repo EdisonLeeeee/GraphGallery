@@ -1,3 +1,9 @@
+try:
+    import tensorflow as tf
+    TF_ENABLED = True
+except ImportError:
+    TF_ENABLED = False
+
 from graphgallery.backend import *
 from graphgallery.data_type import *
 

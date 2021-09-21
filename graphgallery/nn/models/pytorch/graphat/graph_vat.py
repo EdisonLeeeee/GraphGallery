@@ -54,7 +54,7 @@ class GraphVAT(TorchKeras):
         self.num_power_iterations = num_power_iterations
         self.num_neighbors = num_neighbors
         self.epsilon_graph = epsilon_graph
-        self.sampler = gf.NeighborSampler(num_neighbors, selfloop=False, add_dummy=False)
+        self.sampler = gf.ToNeighborMatrix(num_neighbors, selfloop=False, add_dummy=False)
 
     def forward(self, x, adj):
         return self.conv(x, adj)

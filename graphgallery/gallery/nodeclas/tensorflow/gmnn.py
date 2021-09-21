@@ -61,14 +61,14 @@ class GMNN(Trainer):
             for hid, act in zip(hids, acts):
                 h = GCNConv(
                     hid,
-                    bias=bias,
+                    use_bias=bias,
                     activation=act,
                     kernel_regularizer=regularizers.l2(weight_decay))(
                         [h, adj])
                 h = Dropout(rate=dropout)(h)
 
             h = GCNConv(self.graph.num_node_classes,
-                        bias=bias)([h, adj])
+                        use_bias=bias)([h, adj])
 
             model = TFKeras(inputs=[x, adj], outputs=h)
             model.compile(loss=CategoricalCrossentropy(from_logits=True),
@@ -119,12 +119,12 @@ class GMNN(Trainer):
         histories.append(history)
         # then train model_q again
         label_predict = self.model.predict_step_on_batch(x=(label_predict, self.cache.A),
-                                                         transform="softmax",
                                                          device=self.data_device)
 
         if tf.is_tensor(label_predict):
             label_predict = label_predict.numpy()
-
+            
+        label_predict = gf.softmax(label_predict)
         label_predict[train_data] = self.cache.Y[train_data]
 
         self.model = self.model_q

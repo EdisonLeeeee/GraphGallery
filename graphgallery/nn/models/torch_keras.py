@@ -232,7 +232,7 @@ def to_device(x, y=None, device='cpu'):
     def wrapper(inputs):
         # The condiction `not gg.is_scalar(inputs[0])` used to
         # avoid a python tuple (1, 2, ..., N) as inputs
-        if isinstance(inputs, tuple) and not gg.is_scalar(inputs[0]):
+        if isinstance(inputs, (list, tuple)) and not gg.is_scalar(inputs[0]):
             return tuple(wrapper(input) for input in inputs)
         else:
             return inputs.to(device) if hasattr(inputs, 'to') else inputs

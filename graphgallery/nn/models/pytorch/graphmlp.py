@@ -111,7 +111,7 @@ class GraphMLP(TorchKeras):
         optimizer.zero_grad()
         x, y = to_device(x, y, device=device)
         out, x_dis = self(x[0])  # x[0] is the input node feature
-        out = self.index_select(out, out_index=out_index)
+        out = out[:out_index.size(0)]
         loss = loss_fn(out, y) + Ncontrast(x_dis, x[1], tau=self.tau) * self.alpha  # x[1] is the input adj_label
         loss.backward()
         optimizer.step()
