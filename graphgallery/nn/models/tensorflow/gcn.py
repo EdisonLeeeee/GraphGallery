@@ -37,7 +37,7 @@ class GCN(TFKeras):
 
         super().__init__(inputs=[x, adj], outputs=h)
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
-                     optimizer=Adam(lr=lr), metrics=['accuracy'],
+                     optimizer=Adam(lr), metrics=['accuracy'],
                      experimental_run_tf_function=experimental_run_tf_function)
 
 # class GCN(Model):
@@ -62,7 +62,7 @@ class GCN(TFKeras):
 
 #         self.dropout = Dropout(dropout)
 #         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
-#                       optimizer=Adam(lr=lr), metrics=['accuracy'])
+#                       optimizer=Adam(lr), metrics=['accuracy'])
 
 #         self.metrics_fn = SparseCategoricalAccuracy()
 

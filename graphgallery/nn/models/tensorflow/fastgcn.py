@@ -31,4 +31,4 @@ class FastGCN(TFKeras):
 
         super().__init__(inputs=[x, adj], outputs=h)
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
-                     optimizer=Adam(lr=lr), metrics=['accuracy'])
+                     optimizer=Adam(lr), metrics=['accuracy'])

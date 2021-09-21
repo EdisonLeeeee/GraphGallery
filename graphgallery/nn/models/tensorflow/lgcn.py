@@ -50,4 +50,4 @@ class LGCN(TFKeras):
 
         super().__init__(inputs=[x, adj], outputs=h)
         self.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
-                     optimizer=Nadam(lr=lr), metrics=['accuracy'])
+                     optimizer=Nadam(lr), metrics=['accuracy'])
