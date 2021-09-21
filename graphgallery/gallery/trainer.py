@@ -87,10 +87,18 @@ class Trainer(Model):
         RuntimeError
             the default config function `default_cfg_setup` not found in the file `graphgallery.gallery.[task].default`
         """
-        # nodeclas/linkpred/...
-        task_module = self.__module__.split('.')[2]
-        # graphgallery.gallery
-        gallery_module = '.'.join(__name__.split('.')[:-1])
+        try:
+            # nodeclas/linkpred/...
+            task_module = self.__module__.split('.')[2]
+            # graphgallery.gallery
+            gallery_module = '.'.join(__name__.split('.')[:-1])
+        except:
+            # use nodeclas as default setup
+            default_setup = gg.gallery.nodeclas.default
+            default_setup.default_cfg_setup(self.cfg)
+            print('Something error when finding default setup file. Using Node Classificatioon config as default', file=sys.stderr)
+            return
+
         try:
             default_setup = importlib.import_module(f".{task_module}.default", gallery_module)
         except ModuleNotFoundError:

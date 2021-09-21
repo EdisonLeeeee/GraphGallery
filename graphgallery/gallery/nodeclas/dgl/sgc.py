@@ -48,8 +48,8 @@ class SGC(Trainer):
 
     def train_loader(self, index):
         labels = self.graph.node_label[index]
-        sequence = FullBatchSequence([self.cache.X, self.cache.G],
-                                     labels,
+        sequence = FullBatchSequence(inputs=[self.cache.X, self.cache.G],
+                                     y=labels,
                                      out_index=index,
                                      device=self.data_device,
                                      escape=type(self.cache.G))

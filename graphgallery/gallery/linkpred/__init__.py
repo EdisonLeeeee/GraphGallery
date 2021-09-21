@@ -2,6 +2,7 @@ from .registered_models import (TensorFlow, PyTorch, PyG, DGL, MAPPING)
 
 import graphgallery
 from functools import partial
+from . import default
 
 
 def is_enabled(model: str) -> bool:

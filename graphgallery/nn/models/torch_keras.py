@@ -47,8 +47,10 @@ class TorchKeras(nn.Module):
         import gc
         gc.collect()
 
-    def compute_loss(self, out, y):
-        return self.loss(out, y)
+    def compute_loss(self, out, y, out_index=None):
+        # index select or mask outputs
+        out = self.index_select(out, out_index=out_index)
+        return self.loss(out, y), out
 
     def index_select(self, out, out_index=None):
         if out_index is None:
@@ -76,15 +78,13 @@ class TorchKeras(nn.Module):
         x, y = to_device(x, y, device=device)
         # 1. forward
         out = self(*x)
-        # 2. index select or mask outputs
-        out = self.index_select(out, out_index=out_index)
-        # 3. compute loss and update model
-        loss = self.compute_loss(out, y)
+        # 2. compute loss and update model
+        loss, out = self.compute_loss(out, y, out_index=out_index)
         loss.backward()
         optimizer.step()
         if self.scheduler is not None:
             self.scheduler.step()
-        # 4. update evaluation metrics
+        # 3. update evaluation metrics
         self.update_metrics(out, y)
 
         results = [loss.cpu().detach()] + [metric.result() for metric in self.metrics]
@@ -101,11 +101,9 @@ class TorchKeras(nn.Module):
         x, y = to_device(x, y, device=device)
         # 1. forward
         out = self(*x)
-        # 2. index select or mask outputs
-        out = self.index_select(out, out_index=out_index)
-        # 3. compute loss
-        loss = self.compute_loss(out, y)
-        # 4. update evaluation metrics
+        # 2. compute loss
+        loss, out = self.compute_loss(out, y, out_index=out_index)
+        # 3. update evaluation metrics
         self.update_metrics(out, y)
 
         if loss is not None:

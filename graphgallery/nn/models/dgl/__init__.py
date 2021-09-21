@@ -5,5 +5,6 @@ from .appnp import APPNP
 from .dagnn import DAGNN
 from .jknet import JKNet
 from .mixhop import MixHop
+from .grand import GRAND
 
 from . import ala_gnn
