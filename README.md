@@ -26,10 +26,9 @@
 GraphGallery is a gallery for benchmarking Graph Neural Networks (GNNs) and Graph Adversarial Learning with [TensorFlow 2.x](https://github.com/tensorflow/tensorflow) and [PyTorch](https://github.com/pytorch/pytorch) backend. Besides, [Pytorch Geometric (PyG)](https://github.com/rusty1s/pytorch_geometric) backend and [Deep Graph Library (DGL)](https://github.com/dmlc/dgl) backend now are available in GraphGallery.
 
 
-
-
 # 💨 NEWS
-We have integrated the **Adversarial Attacks** in this project, examples please refer to [Graph Adversarial Learning examples](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Adversarial_Learning).
++ We have removed the TensorFlow dependencyand use PyTorch as the default backend for GraphGallery .
++ We have integrated the **Adversarial Attacks** in this project, examples please refer to [Graph Adversarial Learning examples](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Adversarial_Learning).
 
 # 🚀 Installation
 ```bash
@@ -394,16 +393,18 @@ print(f'Test loss {results.loss:.5}, Test accuracy {results.accuracy:.2%}')
 ```
 Other models in the gallery are the same.
 
+If you have any troubles, you can simply run `trainer.help()` for more messages.
+
 ## Other Backends
 ```python
 >>> import graphgallery
-# Default: TensorFlow backend
+# Default: PyTorch backend
 >>> graphgallery.backend()
-TensorFlow 2.1.2 Backend
-# Switch to PyTorch backend
->>> graphgallery.set_backend("torch")
+PyTorch 1.7.0cu101 Backend
 # Switch to TensorFlow backend
 >>> graphgallery.set_backend("tf")
+# Switch to PyTorch backend
+>>> graphgallery.set_backend("th")
 # Switch to PyTorch Geometric backend
 >>> graphgallery.set_backend("pyg")
 # Switch to DGL PyTorch backend
@@ -432,6 +433,7 @@ mydataset = Graph.from_npz('path/to/mydataset.npz')
 # ⭐ Road Map
 - [x] Add PyTorch trainers support
 - [x] Add other frameworks (PyG and DGL) support
+- [x] set tensorflow as optional dependency when using graphgallery
 - [ ] Add more GNN trainers (TF and Torch backend)
 - [ ] Support for more tasks, e.g., `graph Classification` and `link prediction`
 - [x] Support for more types of graphs, e.g., Heterogeneous graph
