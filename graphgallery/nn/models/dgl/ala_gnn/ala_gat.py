@@ -130,10 +130,12 @@ class ALaGAT(TorchKeras):
 
         return out
 
-    def compute_loss(self, out, y):
+    def compute_loss(self, out, y, out_index=None):
+        # index select or mask outputs
+        out = self.index_select(out, out_index=out_index)
         loss = self.loss(out, y)
 
         if self.training:
             z = self.cache.pop('z')
             loss += torch.norm(z * (torch.ones_like(z) - z), p=1) * self.binary_reg
-        return loss
+        return loss, out
