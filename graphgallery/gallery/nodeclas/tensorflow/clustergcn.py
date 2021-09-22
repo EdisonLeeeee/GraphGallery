@@ -24,11 +24,11 @@ class ClusterGCN(Trainer):
                   adj_transform="normalize_adj",
                   attr_transform=None,
                   num_clusters=10,
-                  metis_partition=True):
+                  metis=True):
 
         graph = self.graph
         batch_adj, batch_x, cluster_member = gf.graph_partition(
-            graph, num_clusters=num_clusters, metis_partition=metis_partition)
+            graph, num_clusters=num_clusters, metis=metis)
 
         batch_adj = gf.get(adj_transform)(*batch_adj)
         batch_x = gf.get(attr_transform)(*batch_x)

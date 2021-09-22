@@ -1,12 +1,8 @@
 
 try:
-    import metis
+    import pymetis
 except ImportError:
-    metis = None
-    WARNING_MSG = "The metis Python interface is not installed, try `pip install metis`. See <http://glaros.dtc.umn.edu/gkhome/metis/metis/overview> for more details."
-except RuntimeError:
-    metis = None
-    WARNING_MSG = "The metis toolkit is not installed, try `sudo apt-get install libmetis-dev` (for Ubuntu only). See <http://glaros.dtc.umn.edu/gkhome/metis/metis/overview> for more details."
+    pymetis = None
 
 import numpy as np
 import networkx as nx
@@ -19,8 +15,9 @@ from ..transform import Transform
 
 
 def metis_clustering(graph, num_clusters):
+    import pymetis
     """Partitioning graph using Metis"""
-    _, parts = metis.part_graph(graph, num_clusters)
+    _, parts = pymetis.part_graph(num_clusters, adjacency=graph.tolil().rows)
     return parts
 
 
@@ -32,25 +29,25 @@ def random_clustering(num_nodes, num_clusters):
 
 @Transform.register()
 class GraphPartition(GraphTransform):
-    def __init__(self, num_clusters: int = None, metis_partition: bool = True):
+    def __init__(self, num_clusters: int = None, metis: bool = True):
         super().__init__()
         self.collect(locals())
 
     def __call__(self, graph):
-        return graph_partition(graph, num_clusters=self.num_clusters, metis_partition=self.metis_partition)
+        return graph_partition(graph, num_clusters=self.num_clusters, metis=self.metis_partition)
 
 
 # TODO: accept a Graph and output a MultiGraph
-def graph_partition(graph, num_clusters: int = None, metis_partition: bool = True):
+def graph_partition(graph, num_clusters: int = None, metis: bool = True):
     adj_matrix = graph.adj_matrix
     node_attr = graph.node_attr
     if num_clusters is None:
         num_clusters = graph.num_node_classes
     # partition graph
-    if metis_partition:
-
-        assert metis, WARNING_MSG
-        parts = metis_clustering(graph.nxgraph(), num_clusters)
+    if metis:
+        if pymetis is None:
+            raise RuntimeError('`pymetis is not installed, please install `pymetis` via `pip install pymetis`. More detailes please refer to <https://github.com/inducer/pymetis>.')
+        parts = metis_clustering(adj_matrix, num_clusters)
     else:
         parts = random_clustering(adj_matrix.shape[0], num_clusters)
 
