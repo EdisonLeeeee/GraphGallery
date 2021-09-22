@@ -4,6 +4,7 @@ try:
 except ImportError:
     pymetis = None
 
+import warnings
 import numpy as np
 import networkx as nx
 import scipy.sparse as sp
@@ -15,7 +16,6 @@ from ..transform import Transform
 
 
 def metis_clustering(graph, num_clusters):
-    import pymetis
     """Partitioning graph using Metis"""
     _, parts = pymetis.part_graph(num_clusters, adjacency=graph.tolil().rows)
     return parts
@@ -26,6 +26,11 @@ def random_clustering(num_nodes, num_clusters):
     parts = np.random.choice(num_clusters, size=num_nodes)
     return parts
 
+def louvain_clustering(graph):
+    """Partitioning graph using louvain"""
+    import community
+    parts = community.community_louvain.best_partition(graph.nxgraph())
+    return list(parts.values())
 
 @Transform.register()
 class GraphPartition(GraphTransform):
@@ -38,19 +43,27 @@ class GraphPartition(GraphTransform):
 
 
 # TODO: accept a Graph and output a MultiGraph
-def graph_partition(graph, num_clusters: int = None, metis: bool = True):
+def graph_partition(graph, num_clusters: int = None, partition: str = 'metis'):
+    assert partition in {'metis', 'random', 'louvain'}, " only one of {'metis', 'random', 'louvain'} is accepted as `partition` argument."
+    
     adj_matrix = graph.adj_matrix
     node_attr = graph.node_attr
-    if num_clusters is None:
+    if num_clusters is None and partition!= 'louvain' :
         num_clusters = graph.num_node_classes
     # partition graph
-    if metis:
+    if partition == 'metis':
         if pymetis is None:
             raise RuntimeError('`pymetis is not installed, please install `pymetis` via `pip install pymetis`. More detailes please refer to <https://github.com/inducer/pymetis>.')
         parts = metis_clustering(adj_matrix, num_clusters)
+    elif partition == 'louvain':
+        if num_clusters is not None:
+            warnings.warn('louvain does not require `num_clusters` argument.')
+        parts = louvain_clustering(graph)
+        num_clusters = np.unique(parts).size
     else:
         parts = random_clustering(adj_matrix.shape[0], num_clusters)
 
+    
     cluster_member = [[] for _ in range(num_clusters)]
     for node_index, part in enumerate(parts):
         cluster_member[part].append(node_index)
@@ -58,7 +71,6 @@ def graph_partition(graph, num_clusters: int = None, metis: bool = True):
     mapper = {}
 
     batch_adj, batch_x = [], []
-
     for cluster in range(num_clusters):
 
         nodes = sorted(cluster_member[cluster])

@@ -23,11 +23,11 @@ class ClusterGCN(Trainer):
                   adj_transform="normalize_adj",
                   attr_transform=None,
                   num_clusters=10,
-                  metis=True):
+                  partition='metis'):
 
         graph = self.graph
         batch_adj, batch_x, cluster_member = gf.graph_partition(
-            graph, num_clusters=num_clusters, metis=metis)
+            graph, num_clusters=num_clusters, partition=partition)
 
         batch_adj = gf.get(adj_transform)(*batch_adj)
         batch_x = gf.get(attr_transform)(*batch_x)
@@ -37,7 +37,9 @@ class ClusterGCN(Trainer):
         # ``A`` and ``X`` and ``cluster_member`` are cached for later use
         self.register_cache(batch_x=batch_x, batch_adj=batch_adj,
                             cluster_member=cluster_member)
-
+        # for louvain clustering
+        self.cfg.data.num_clusters = len(cluster_member)
+        
     def model_step(self,
                    hids=[32],
                    acts=['relu'],
