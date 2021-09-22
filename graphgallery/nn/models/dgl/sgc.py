@@ -14,7 +14,7 @@ class SGC(TorchKeras):
                  hids=[],
                  acts=[],
                  K=2,
-                 dropout=0.5,
+                 dropout=0.,
                  weight_decay=5e-5,
                  lr=0.2,
                  bias=True):
@@ -30,6 +30,7 @@ class SGC(TorchKeras):
                       bias=bias,
                       k=K,
                       cached=True)
+        self.dropout = nn.Dropout(dropout)
         self.conv = conv
         self.compile(loss=nn.CrossEntropyLoss(),
                      optimizer=optim.Adam(conv.parameters(),
@@ -41,5 +42,6 @@ class SGC(TorchKeras):
         self.conv.reset_parameters()
 
     def forward(self, x, g):
+        x = self.dropout(x)
         x = self.conv(g, x)
         return x

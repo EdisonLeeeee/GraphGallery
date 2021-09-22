@@ -29,9 +29,10 @@ class SGC(Trainer):
     def model_step(self,
                    hids=[],
                    acts=[],
-                   dropout=0.5,
+                   dropout=0.,
                    weight_decay=5e-5,
                    lr=0.2,
+                   K=2,
                    bias=True):
 
         model = get_model("SGC", self.backend)
@@ -40,6 +41,7 @@ class SGC(Trainer):
                       hids=hids,
                       acts=acts,
                       dropout=dropout,
+                      K=K,
                       weight_decay=weight_decay,
                       lr=lr,
                       bias=bias)
