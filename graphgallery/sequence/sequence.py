@@ -8,6 +8,9 @@ from graphgallery import functional as gf
 from torch.utils.data import DataLoader
 
 
+__all__ = ["Sequence", "FullBatchSequence", "NullSequence", "NodeSequence", "FastGCNBatchSequence", "NodeLabelSequence", "SAGESequence", "PyGSAGESequence", "SBVATSampleSequence", "MiniBatchSequence", "FeatureLabelSequence"]
+
+
 class Sequence(DataLoader):
 
     def __init__(self, dataset, device='cpu', escape=None, **kwargs):
@@ -59,6 +62,16 @@ class NodeLabelSequence(Sequence):
 
     def collate_fn(self, ids):
         return self.astensors(self.nodes[ids], self.y[ids])
+
+
+class FeatureLabelSequence(Sequence):
+    def __init__(self, x, y, **kwargs):
+        super().__init__(list(range(len(x))), collate_fn=self.collate_fn, **kwargs)
+        self.x = self.astensor(x)
+        self.y = self.astensor(y)
+
+    def collate_fn(self, ids):
+        return self.astensors(self.x[ids], self.y[ids])
 
 
 class FastGCNBatchSequence(Sequence):

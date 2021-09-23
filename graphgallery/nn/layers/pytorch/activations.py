@@ -3,13 +3,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 act_dict = dict(relu="ReLU",
+                relu6="ReLU6",
                 sigmoid="Sigmoid",
                 celu="CELU",
                 elu="ELU",
                 gelu="GELU",
                 leakyrelu="LeakyReLU",
                 prelu="PReLU",
-                relu6="ReLU6",
                 selu="SELU",
                 silu="SiLU",
                 softmax="Softmax",

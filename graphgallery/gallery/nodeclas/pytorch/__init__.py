@@ -21,6 +21,7 @@ from .bvat.obvat import OBVAT
 from .graphmlp import GraphMLP
 from .latgcn import LATGCN
 from .dgat import DGAT
+from .node2grids import Node2Grids
 
 
 from .experimental.sat import SAT

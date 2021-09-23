@@ -15,6 +15,7 @@ from .agnn import AGNN
 from .graphmlp import GraphMLP
 from .latgcn import LATGCN
 from .dgat import DGAT
+from .node2grids import Node2GridsCNN
 
 from . import sat
 from . import graphat
