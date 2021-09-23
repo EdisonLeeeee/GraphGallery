@@ -45,7 +45,8 @@ class Node2Vec(Trainer):
 
 class Node2VecE(Trainer):
     r"""An implementation of `"Node2Vec+" <https://arxiv.org/abs/2109.08031>`_
-    from the arxiv'21 paper "Accurately Modeling Biased Random Walks on Weighted Wraphs Using Node2vec+". `E` means the `extend` verison of node2vec. if `extend=False`, it is equivalent to standard `node2vec` but is faster particularly on larger graphs.
+    from the arxiv'21 paper "Accurately Modeling Biased Random Walks on Weighted Wraphs Using Node2vec+". 
+    `E` means the `extend` verison of node2vec. if `extend=False`, it is equivalent to standard `node2vec` but is faster particularly on larger graphs.
 
 
     Parameters:

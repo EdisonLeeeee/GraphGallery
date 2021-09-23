@@ -8,7 +8,7 @@ from .trainer import Trainer
 
 class BANE(Trainer):
     r"""An implementation of `"BANE" <https://shiruipan.github.io/publication/yang-binarized-2018/yang-binarized-2018.pdf>`_
-    from the ICDM '18 paper "Binarized Attributed Network Embedding Class". The
+    from the ICDM '18 paper "Binarized Attributed Network Embedding". The
     procedure first calculates the truncated SVD of an adjacency - feature matrix
     product. This matrix is further decomposed by a binary CCD based technique.
 

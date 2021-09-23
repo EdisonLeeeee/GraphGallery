@@ -27,7 +27,7 @@ GraphGallery is a gallery for benchmarking Graph Neural Networks (GNNs) and Grap
 
 
 # 💨 NEWS
-+ We have removed the TensorFlow dependencyand use PyTorch as the default backend for GraphGallery .
++ We have removed the TensorFlow dependency and use PyTorch as the default backend for GraphGallery.
 + We have integrated the **Adversarial Attacks** in this project, examples please refer to [Graph Adversarial Learning examples](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Adversarial_Learning).
 
 # 🚀 Installation
@@ -46,286 +46,50 @@ where `-e` means "editable" mode so you don't have to reinstall every time you m
 # 🤖 Implementations
 In detail, the following methods are currently implemented:
 
-## Node Classification Task
-
-<!-- 1 -->
-<details>
-<summary>
-<b>ChebyNet</b> from <i>Michaël Defferrard et al</i>,
-<a href="https://arxiv.org/abs/1606.09375"> 📝<i>Convolutional Neural Networks on Graphs with Fast Localized Spectral Filtering (NeurIPS'16)</i> </a>
-</summary>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/ChebyNet.py"> [:octocat:TensorFLow]</a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/ChebyNet.py"> [🔥PyTorch] </a>
-
-</details>
-
-<!-- 2 -->
-
-<details>
-<summary>
-<b>GCN</b> from <i>Thomas N. Kipf et al</i>,
-<a href="https://arxiv.org/abs/1609.02907"> 📝<i>Semi-Supervised Classification with Graph Convolutional Networks (ICLR'17)</i> </a>
-</summary>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/GCN.py"> [:octocat:TensorFLow] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/GCN.py"> [🔥PyTorch] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyG/GCN.py"> [🔥PyG] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/DGL/GCN.py"> [🔥DGL] </a>
-</details>
-
-<!-- 3 -->
-<details>
-<summary>
-<b>GraphSAGE</b> from <i>William L. Hamilton et al</i>,
-<a href="https://arxiv.org/abs/1706.02216"> 📝<i>Inductive Representation Learning on Large Graphs (NeurIPS'17)</i> </a>
-</summary>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/GraphSAGE.py"> [:octocat:TensorFLow] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/GraphSAGE.py"> [🔥PyTorch] </a>
-</details>
-
-<!-- 4 -->
-<details>
-<summary>
-<b>FastGCN</b> from <i>Jie Chen et al</i>,
-<a href="https://arxiv.org/abs/1801.10247"> 📝<i>FastGCN: Fast Learning with Graph Convolutional Networks via Importance Sampling (ICLR'18)</i> </a>
-</summary>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/FastGCN.py"> [:octocat:TensorFLow] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/FastGCN.py"> [🔥PyTorch] </a>
-</details>
-
-<!-- 5 -->
-<details>
-<summary>
-<b>LGCN</b> from <i>Hongyang Gao et al</i>,
-<a href="https://arxiv.org/abs/1808.03965"> 📝<i>Large-Scale Learnable Graph Convolutional Networks (KDD'18)</i> </a>
-</summary>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/LGCN.py"> [:octocat:TensorFLow] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/LGCN.py"> [🔥PyTorch] </a>
-</details>
-
-<!-- 6 -->
-<details>
-<summary>
-<b>GAT</b> from <i>Petar Veličković et al</i>,
-<a href="https://arxiv.org/abs/1710.10903"> 📝<i>Graph Attention Networks (ICLR'18)</i> </a>
-</summary>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/GAT.py"> [:octocat:TensorFLow] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/GAT.py"> [🔥PyTorch] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyG/GAT.py"> [🔥PyG] </a>
-</details>
-
-<!-- 7 -->
-<details>
-<summary>
-<b>SGC</b> from <i>Felix Wu et al</i>,
-<a href="https://arxiv.org/abs/1902.07153"> 📝<i>Simplifying Graph Convolutional Networks (ICLR'19)</i> </a>
-</summary>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/SGC.py"> [:octocat:TensorFLow] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/SGC.py"> [🔥PyTorch] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyG/SGC.py"> [🔥PyG] </a>
-</details>
-
-<!-- 8 -->
-<details>
-<summary>
-<b>GWNN</b> from <i>Bingbing Xu et al</i>,
-<a href="https://arxiv.org/abs/1904.07785"> 📝<i>Graph Wavelet Neural Network (ICLR'19)</i> </a>
-</summary>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/GWNN.py"> [:octocat:TensorFLow] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/GWNN.py"> [🔥PyTorch] </a>
-</details>
-
-<!-- 9 -->
-<details>
-<summary>
-<b>GMNN</b> from <i>Meng Qu et al</i>,
-<a href="https://arxiv.org/abs/1905.06214"> 📝<i>Graph Attention Networks (ICLR'19)</i> </a>
-</summary>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/GMNN.py"> [:octocat:TensorFLow] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/GMNN.py"> [🔥PyTorch] </a>
-</details>
-
-<!-- 10 -->
-<details>
-<summary>
-<b>ClusterGCN</b> from <i>Wei-Lin Chiang et al</i>,
-<a href="https://arxiv.org/abs/1905.07953"> 📝<i>Cluster-GCN: An Efficient Algorithm for Training Deep and Large Graph Convolutional Networks (KDD'19)</i> </a>
-</summary>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/ClusterGCN.py"> [:octocat:TensorFLow] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/ClusterGCN.py"> [🔥PyTorch] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyG/ClusterGCN.py"> [🔥PyG] </a>
-</details>
-
-<!-- 11 -->
-<details>
-<summary>
-<b>DAGNN</b> from <i>Meng Liu et al</i>,
-<a href="https://arxiv.org/abs/2007.09296"> 📝<i>Towards Deeper Graph Neural Networks (KDD'20)</i> </a>
-</summary>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/DAGNN.py"> [:octocat:TensorFLow] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/DAGNN.py"> [🔥PyTorch] </a>
-</details>
-
-<!-- 12 -->
-<details>
-<summary>
-<b>GDC</b> from <i>Johannes Klicpera et al</i>,
-<a href="https://www.in.tum.de/daml/gdc/"> 📝<i>Diffusion Improves Graph Learning (NeurIPS'19)</i> </a>
-</summary>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/GCN-GDC.py"> [:octocat:TensorFLow] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/GCN-GDC.py"> [🔥PyTorch] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyG/GCN-GDC.py"> [🔥PyG] </a>
-</details>
-
-<!-- 13 -->
-
-<details>
-<summary>
-<b>TAGCN</b> from <i>Du et al</i>,
-<a href="https://arxiv.org/abs/1710.10370"> 📝<i>Topology Adaptive Graph Convolutional Networks (arxiv'17)</i> </a>
-</summary>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/TAGCN.py"> [:octocat:TensorFLow] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/TAGCN.py"> [🔥PyTorch] </a>
-</details>
-
-<!-- 14 -->
-
-<details>
-<summary>
-<b>APPNP, PPNP</b> from <i>Johannes Klicpera et al</i>,
-<a href="https://arxiv.org/abs/1810.05997"> 📝<i>Predict then Propagate: Graph Neural Networks meet Personalized PageRank (ICLR'19)</i> </a>
-</summary>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/APPNP.py"> [:octocat:TensorFLow(APPNP)] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/PPNP.py"> [:octocat:TensorFLow(PPNP)] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/APPNP.py"> [🔥PyTorch(APPNP)] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/PPNP.py"> [🔥PyTorch(PPNP)] </a>
-</details>
-
-<!-- 15 -->
-
-<details>
-<summary>
-<b>PDN</b> from <i>Benedek Rozemberczki et al</i>,
-<a href="https://arxiv.org/abs/2010.12878"> 📝<i>Pathfinder Discovery Networks for Neural Message Passing (ICLR'21)</i> </a>
-</summary>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyG/PDN.py"> [🔥PyG] </a>
-</details>
-</details>
-</details>
-
-<!-- 16 -->
-
-<details>
-<summary>
-<b>SSGC</b> from <i>Zhu et al</i>,
-<a href="https://openreview.net/forum?id=CYO5T-YjWZV"> 📝<i>Simple Spectral Graph Convolution (ICLR'21)</i> </a>
-</summary>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/SSGC.py"> [:octocat:TensorFLow] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/SSGC.py"> [🔥PyTorch] </a>
-</details>
-
-<!-- 17 -->
-
-<details>
-<summary>
-<b>AGNN</b> from <i>Zhu et al</i>,
-<a href="https://arxiv.org/abs/1609.02907"> 📝<i>Attention-based Graph Neural Network for semi-supervised learning (ICLR'18 openreview)</i> </a>
-</summary>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/AGNN.py"> [:octocat:TensorFLow] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/AGNN.py"> [🔥PyTorch] </a>
-</details>
-
-<!-- 18 -->
-
-<details>
-<summary>
-<b>ARMA</b> from <i>Bianchi et al.</i>,
-<a href="https://arxiv.org/abs/1901.01343"> 📝<i>Graph Neural Networks with convolutional ARMA filters (Arxiv'19)</i> </a>
-</summary>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/ARMA.py"> [:octocat:TensorFLow] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/ARMA.py"> [🔥PyTorch] </a>
-</details>
-
-
-<!-- 19 -->
-
-<details>
-<summary>
-<b>GraphMLP</b> from <i>Yang Hu et al.</i>,
-<a href="https://arxiv.org/abs/2106.04051"> 📝<i>Graph-MLP: Node Classification without Message Passing in Graph (Arxiv'21)</i> </a>
-</summary>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/GraphMLP.py"> [🔥PyTorch] </a>
-</details>
-
+## Node Classification
+| Method             | Author                       | Paper                                                                                                                                                                                                               | PyTorch            | TensorFlow         | PyG                | DGL                |
+| ------------------ | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | ------------------ | ------------------ | ------------------ |
+| **ChebyNet**       | *Michaël Defferrard et al*   | [Convolutional Neural Networks on Graphs with Fast Localized Spectral Filtering (NeurIPS'16)](https://arxiv.org/abs/1606.09375)                                                                                     |                    | :heavy_check_mark: |                    |                    |
+| **GCN**            | *Thomas N. Kipf et al*       | [Semi-Supervised Classification with Graph Convolutional Networks (ICLR'17)](https://arxiv.org/abs/1609.02907)                                                                                                      | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| **GraphSAGE**      | *William L. Hamilton et al*  | [Inductive Representation Learning on Large Graphs (NeurIPS'17)](https://arxiv.org/abs/1706.02216)                                                                                                                  | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |                    |
+| **FastGCN**        | *Jie Chen et al*             | [FastGCN: Fast Learning with Graph Convolutional Networks via Importance Sampling (ICLR'18)](https://arxiv.org/abs/1801.10247)                                                                                      | :heavy_check_mark: | :heavy_check_mark: |                    |                    |
+| **LGCN**           | *Hongyang Gao et al*         | [Large-Scale Learnable Graph Convolutional Networks (KDD'18)](https://arxiv.org/abs/1808.03965)                                                                                                                     |                    | :heavy_check_mark: |                    |                    |
+| **GAT**            | *Petar Veličković et al*     | [Graph Attention Networks (ICLR'18)](https://arxiv.org/abs/1710.10903)                                                                                                                                              | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| **SGC**            | *Felix Wu et al*             | [Simplifying Graph Convolutional Networks (ICLR'19)](https://arxiv.org/abs/1902.07153)                                                                                                                              | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| **GWNN**           | *Bingbing Xu et al*          | [Graph Wavelet Neural Network (ICLR'19)](https://arxiv.org/abs/1904.07785)                                                                                                                                          |                    | :heavy_check_mark: |                    |                    |
+| **GMNN**           | *Meng Qu et al*              | [Graph Attention Networks (ICLR'19)](https://arxiv.org/abs/1905.06214)                                                                                                                                              |                    | :heavy_check_mark: |                    |                    |
+| **ClusterGCN**     | *Wei-Lin Chiang et al*       | [Cluster-GCN: An Efficient Algorithm for Training Deep and Large Graph Convolutional Networks (KDD'19)](https://arxiv.org/abs/1905.07953)                                                                           | :heavy_check_mark: | :heavy_check_mark: |                    |                    |
+| **DAGNN**          | *Meng Liu et al*             | [Towards Deeper Graph Neural Networks (KDD'20)](https://arxiv.org/abs/2007.09296)                                                                                                                                   | :heavy_check_mark: | :heavy_check_mark: |                    |                    |
+| **GDC**            | *Johannes Klicpera et al*    | [Diffusion Improves Graph Learning (NeurIPS'19)](https://www.in.tum.de/daml/gdc/)                                                                                                                                   | :heavy_check_mark: | :heavy_check_mark: |                    |                    |
+| **TAGCN**          | *Jian Du et al*              | [Topology Adaptive Graph Convolutional Networks (arxiv'17)](https://arxiv.org/abs/1710.10370)                                                                                                                       | :heavy_check_mark: | :heavy_check_mark: |                    |                    |
+| **APPNP, PPNP**    | *Johannes Klicpera et al*    | [Predict then Propagate: Graph Neural Networks meet Personalized PageRank (ICLR'19)](https://arxiv.org/abs/1810.05997)                                                                                              | :heavy_check_mark: | :heavy_check_mark: |                    |                    |
+| **PDN**            | *Benedek Rozemberczki et al* | [Pathfinder Discovery Networks for Neural Message Passing (ICLR'21)](https://arxiv.org/abs/2010.12878)                                                                                                              |                    |                    | :heavy_check_mark: |                    |
+| **SSGC**           | *Zhu et al*                  | [Simple Spectral Graph Convolution (ICLR'21)](https://openreview.net/forum?id=CYO5T-YjWZV)                                                                                                                          | :heavy_check_mark: | :heavy_check_mark: |                    |                    |
+| **AGNN**           | *Zhu et al*                  | [Attention-based Graph Neural Network for semi-supervised learning (ICLR'18 openreview)](https://arxiv.org/abs/1609.02907)                                                                                          | :heavy_check_mark: | :heavy_check_mark: |                    |                    |
+| **ARMA**           | *Bianchi et al*              | [Graph Neural Networks with convolutional ARMA filters (Arxiv'19)](https://arxiv.org/abs/1901.01343)                                                                                                                |                    | :heavy_check_mark: |                    |                    |
+| **GraphML*P***     | *Yang Hu et al*              | [Graph-MLP: Node Classification without Message Passing in Graph (Arxiv'21)](https://arxiv.org/abs/2106.04051)                                                                                                      | :heavy_check_mark: |                    |                    |                    |
+| **LGC, EGC, hLGC** | *Luca Pasa et al*            | [Simple Graph Convolutional Networks (Arxiv'21)](https://arxiv.org/abs/2106.05809)                                                                                                                                  |                    |                    |                    | :heavy_check_mark: |
+| **GRAND**          | *Wenzheng Feng et al*        | [Graph Random Neural Network for Semi-Supervised Learning on Graphs (NeurIPS'20)]([[2005.11079\] Graph Random Neural Network for Semi-Supervised Learning on Graphs (arxiv.org)](https://arxiv.org/abs/2005.11079)) |                    |                    |                    | :heavy_check_mark: |
+| **AlaGCN, AlaGAT** | *Yiqing Xie et al*           | [When Do GNNs Work: Understanding and Improving Neighborhood Aggregation (IJCAI'20)](https://www.ijcai.org/Proceedings/2020/0181.pdf)                                                                               |                    |                    |                    | :heavy_check_mark: |
+| **JKNet**          | *Keyulu Xu et al*            | [Representation Learning on Graphs with Jumping Knowledge Networks (ICML'18)](https://arxiv.org/abs/1806.03536)                                                                                                     |                    |                    |                    | :heavy_check_mark: |
+| **MixHop**         | *Sami Abu-El-Haija et al*    | [MixHop: Higher-Order Graph Convolutional Architecturesvia Sparsified Neighborhood Mixing (ICML'19)](https://arxiv.org/abs/1905.00067)                                                                              |                    |                    |                    | :heavy_check_mark: |
+| **DropEdge**       | *Yu Rong et al*              | [DropEdge: Towards Deep Graph Convolutional Networks on Node Classification (ICML'20)](https://arxiv.org/abs/1907.10903)                                                                                            |                    | :heavy_check_mark: |                    |                    |
+## LinkPrediction
+| Method        | Author                 | Paper                                                                           | PyTorch            | TensorFlow | PyG                | DGL |
+| ------------- | ---------------------- | ------------------------------------------------------------------------------- | ------------------ | ---------- | ------------------ | --- |
+| **GAE, VGAE** | *Thomas N. Kipf et al* | [Variational Graph Auto-Encoders (NeuIPS'16)](https://arxiv.org/abs/1611.07308) | :heavy_check_mark: |            | :heavy_check_mark: |     |
 ### Defense models (for Graph Adversarial Learning)
 
 #### Robust Optimization
-
-<!-- 1 -->
-<details>
-<summary>
-<b>RobustGCN</b> from <i>Petar Veličković et al</i>,
-<a href="https://dl.acm.org/doi/10.1145/3292500.3330851"> 📝<i>Robust Graph Convolutional Networks Against Adversarial Attacks (KDD'19)</i> </a>
-</summary>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/RobustGCN.py"> [:octocat:TensorFLow] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/RobustGCN.py"> [🔥PyTorch] </a>
-</details>
-
-<!-- 2 -->
-<details>
-<summary>
-<b>SBVAT</b> from <i>Zhijie Deng et al</i>,
-<a href="https://arxiv.org/abs/1902.09192"> 📝<i>Batch Virtual Adversarial Training for Graph Convolutional Networks (ICML'19)</i> </a>
-</summary>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/SBVAT.py"> [:octocat:TensorFLow] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/SBVAT.py"> [🔥PyTorch] </a>
-</details>
-
-<!-- 3 -->
-<details>
-<summary>
-<b>OBVAT</b> from <i>Zhijie Deng et al</i>,
-<a href="https://arxiv.org/abs/1902.09192"> 📝<i>Batch Virtual Adversarial Training for Graph Convolutional Networks (ICML'19)</i> </a>
-</summary>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/OBVAT.py"> [:octocat:TensorFLow] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/OBVAT.py"> [🔥PyTorch] </a>
-</details>
-
-<!-- 4 -->
-<details>
-<summary>
-<b>SimPGCN</b> from <i>Wei Jin et al</i>,
-<a href="https://arxiv.org/abs/2011.09643"> 📝<i>Node Similarity Preserving Graph Convolutional Networks (WSDM'21)</i> </a>
-</summary>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/SimPGCN.py"> [🔥PyTorch] </a>
-</details>
-
-<!-- 5 -->
-<details>
-<summary>
-<b>GCN-VAT, GraphVAT</b> from <i>Fuli Feng et al</i>,
-<a href="https://arxiv.org/abs/1902.08226"> 📝<i>Graph Adversarial Training: Dynamically Regularizing Based on Graph Structure (TKDE'19)</i> </a>
-</summary>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/GCN-VAT.py"> [🔥GCN-VAT-PyTorch] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/GraphVAT.py"> [🔥GraphVAT-PyTorch] </a>
-</details>
-
-<!-- 6 -->
-<details>
-<summary>
-<b>LATGCN</b> from <i>Hongwei Jin et al</i>,
-<a href="https://graphreason.github.io/papers/35.pdf"> 📝<i>Latent Adversarial Training of Graph Convolution Networks (ICML@LRGSD'19)</i> </a>
-</summary>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/LATGCN.py"> [🔥PyTorch] </a>
-</details>
-
-<!-- 7 -->
-<details>
-<summary>
-<b>DGAT</b> from <i>Weibo Hu et al</i>,
-<a href="https://link.springer.com/article/10.1007/s10489-021-02272-y"> 📝<i>Robust graph convolutional networks with directional graph adversarial training (Applied Intelligence'19)</i> </a>
-</summary>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/DGAT.py"> [🔥PyTorch] </a>
-</details>
+| Method                     | Author                   | Paper                                                                                                                                                                     | PyTorch | TensorFlow         | PyG | DGL | Any |
+| -------------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | ------------------ | --- | --- | --- |
+| **RobustGCN**              | *Petar Veličković et al* | [Robust Graph Convolutional Networks Against Adversarial Attacks (KDD'19)](https://dl.acm.org/doi/10.1145/3292500.3330851)                                                |         |                    |     |     |     |
+| **SBVAT, OBVAT**           | *Zhijie Deng et al*      | [Batch Virtual Adversarial Training for Graph Convolutional Networks (ICML'19)](https://arxiv.org/abs/1902.09192)                                                         |         |                    |     |     |     |
+| **SimPGCN**                | *Wei Jin et al*          | [Node Similarity Preserving Graph Convolutional Networks (WSDM'21)](https://arxiv.org/abs/2011.09643)                                                                     |         |                    |     |     |     |
+| **GCN-VAT, GraphVAT**      | *Fuli Feng et al*        | [Graph Adversarial Training: Dynamically Regularizing Based on Graph Structure (TKDE'19)](https://arxiv.org/abs/1902.08226)                                               |         |                    |     |     |     |
+| **LATGCN**                 | *Hongwei Jin et al*      | [Latent Adversarial Training of Graph Convolution Networks (ICML@LRGSD'19)](https://graphreason.github.io/papers/35.pdf)                                                  |         |                    |     |     |     |
+| **DGAT**                   | *Weibo Hu et al*         | [Robust graph convolutional networks with directional graph adversarial training (Applied Intelligence'19)](https://link.springer.com/article/10.1007/s10489-021-02272-y) |         |                    |     |     |     |
+| **MedianGCN , TrimmedGCN** | *Liang Chen et al*       | [Understanding Structural Vulnerability in Graph Convolutional Networks](https://arxiv.org/abs/2108.06280)                                                                |         | :heavy_check_mark: |     |     |     |
 
 #### Graph Purification
 
@@ -336,46 +100,21 @@ graph_transform="purification_method"
 ```
 
 so, here we only give the examples of `GCN` with purification methods, other models should work.
+| Method          | Author                 | Paper                                                                                                                                       | PyTorch            | TensorFlow         | PyG                | DGL                |
+| --------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | ------------------ | ------------------ | ------------------ |
+| **GCN-Jaccard** | *Huijun Wu et al*      | [Adversarial Examples on Graph Data: Deep Insights into Attack and Defense (IJCAI'19)]()https://arxiv.org/abs/1903.01610                    | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| **GCN-SVD**     | *Negin Entezari et al* | [All You Need Is Low (Rank): Defending Against Adversarial Attacks on Graphs (WSDM'20)](https://dl.acm.org/doi/abs/10.1145/3336191.3371789) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 
-<!-- 1 -->
-<details>
-<summary>
-<b>GCN-Jaccard</b> from <i>Huijun Wu et al</i>,
-<a href="https://arxiv.org/abs/1903.01610"> 📝<i>Adversarial Examples on Graph Data: Deep Insights into Attack and Defense (IJCAI'19)</i> </a>
-</summary>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/GCN-Jaccard.py"> [:octocat:TensorFLow] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/GCN-Jaccard.py"> [🔥PyTorch] </a>
-</details>
+## Node Embedding
+The following methods are framework-agnostic.
+| Method        | Author                            | Paper                                                                                                           | PyTorch            | TensorFlow         | PyG                | DGL                |
+| ------------- | --------------------------------- | --------------------------------------------------------------------------------------------------------------- | ------------------ | ------------------ | ------------------ | ------------------ |
+| **Deepwalk**  | *Bryan Perozzi et al*             | [DeepWalk: Online Learning of Social Representations (KDD'14)](https://arxiv.org/abs/1403.6652)                 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| **Node2vec**  | *Aditya Grover and Jure Leskovec* | [node2vec: Scalable Feature Learning for Networks (KDD'16)](https://arxiv.org/abs/1607.00653)                   | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| **Node2vec+** | *Renming Liu et al*               | [Accurately Modeling Biased Random Walks on Weighted Graphs Using  Node2vec+](https://arxiv.org/abs/2109.08031) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| **BANE**      | *Hong Yang et al*                 | [Binarized attributed network embedding (ICDM'18)](https://ieeexplore.ieee.org/document/8626170)                | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 
-<!-- 2 -->
-<details>
-<summary>
-<b>GCN-SVD</b> from <i>Negin Entezari et al</i>,
-<a href="https://dl.acm.org/doi/abs/10.1145/3336191.3371789"> 📝<i>All You Need Is Low (Rank): Defending Against Adversarial Attacks on Graphs (WSDM'20)</i> </a>
-</summary>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/TensorFlow/GCN-SVD.py"> [:octocat:TensorFLow] </a>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/PyTorch/GCN-SVD.py"> [🔥PyTorch] </a>
-</details>
 
-## Embedding
-
-<!-- 1 -->
-<details>
-<summary>
-<b>Deepwalk</b> from <i>Bryan Perozzi et al</i>,
-<a href="https://arxiv.org/abs/1403.6652"> 📝<i>DeepWalk: Online Learning of Social Representations (KDD'14)</i> </a>
-</summary>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/Common/Deepwalk.py"> [Example] </a>
-</details>
-
-<!-- 2 -->
-<details>
-<summary>
-<b>Node2vec</b> from <i>Aditya Grover and Jure Leskovec</i>,
-<a href="https://arxiv.org/abs/1607.00653"> 📝<i>node2vec: Scalable Feature Learning for Networks (KDD'16)</i> </a>
-</summary>
-<a href="https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Neural_Networks/Common/Node2vec.py"> [Example] </a>
-</details>
 
 # ⚡ Quick Start on GNNs
 ## Datasets
