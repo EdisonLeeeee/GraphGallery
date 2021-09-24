@@ -372,6 +372,18 @@ class CallbackList:
     def __iter__(self):
         return iter(self.callbacks)
 
+    def __str__(self) -> str:
+
+        format_string = ""
+        for t in self.callbacks:
+            format_string += f'\n  {t},'
+        if format_string:
+            # replace last ``,`` as ``\n``
+            format_string = format_string[:-1] + '\n'
+        return f"{self.__class__.__name__}({format_string})"
+
+    __repr__ = __str__
+
 
 class Callback:
     """Abstract base class used to build new callbacks.
@@ -611,6 +623,11 @@ class Callback:
             logs: Dict. Currently no data is passed to this argument for this method
               but that may change in the future.
         """
+
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}()"
+
+    __repr__ = __str__
 
 
 class History(Callback):
@@ -867,6 +884,138 @@ class ModelCheckpoint(Callback):
                            'Reason: {}'.format(self.filepath, e))
         return file_path
 
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}(monitor={self.monitor}, verbose={self.verbose}, filepath={self.filepath}, save_best_only={self.save_best_only},  save_weights_only={self.save_weights_only})"
+
+
+class EarlyStopping(Callback):
+    """Stop training when a monitored metric has stopped improving.
+
+    Assuming the goal of a training is to minimize the loss. With this, the
+    metric to be monitored would be `'loss'`, and mode would be `'min'`. A
+    `model.fit()` training loop will check at end of every epoch whether
+    the loss is no longer decreasing, considering the `min_delta` and
+    `patience` if applicable. Once it's found no longer decreasing,
+    `model.stop_training` is marked True and the training terminates.
+
+    The quantity to be monitored needs to be available in `logs` dict.
+    To make it so, pass the loss or metrics at `model.compile()`.
+
+    Args:
+      monitor: Quantity to be monitored.
+      min_delta: Minimum change in the monitored quantity
+          to qualify as an improvement, i.e. an absolute
+          change of less than min_delta, will count as no
+          improvement.
+      patience: Number of epochs with no improvement
+          after which training will be stopped.
+      verbose: verbosity mode.
+      mode: One of `{"auto", "min", "max"}`. In `min` mode,
+          training will stop when the quantity
+          monitored has stopped decreasing; in `"max"`
+          mode it will stop when the quantity
+          monitored has stopped increasing; in `"auto"`
+          mode, the direction is automatically inferred
+          from the name of the monitored quantity.
+      baseline: Baseline value for the monitored quantity.
+          Training will stop if the model doesn't show improvement over the
+          baseline.
+
+    Example(From TensorFlow):
+
+    >>> callback = EarlyStopping(monitor='loss', patience=3)
+    >>> # This callback will stop the training when there is no improvement in
+    >>> # the loss for three consecutive epochs.
+    >>> model = tf.keras.models.Sequential([tf.keras.layers.Dense(10)])
+    >>> model.compile(tf.keras.optimizers.SGD(), loss='mse')
+    >>> history = model.fit(np.arange(100).reshape(5, 20), np.zeros(5),
+    ...                     epochs=10, batch_size=1, callbacks=[callback],
+    ...                     verbose=0)
+    >>> len(history.history['loss'])  # Only 4 epochs are run.
+    4
+    """
+
+    def __init__(self,
+                 monitor='val_loss',
+                 min_delta=0,
+                 patience=0,
+                 verbose=0,
+                 mode='auto',
+                 baseline=None):
+        super(EarlyStopping, self).__init__()
+
+        self.monitor = monitor
+        self.patience = patience
+        self.verbose = verbose
+        self.baseline = baseline
+        self.min_delta = abs(min_delta)
+        self.wait = 0
+        self.stopped_epoch = 0
+        self.best_weights = None
+        self.mode = mode
+
+        if mode not in ['auto', 'min', 'max']:
+            logging.warning('EarlyStopping mode %s is unknown, '
+                            'fallback to auto mode.', mode)
+            mode = 'auto'
+
+        if mode == 'min':
+            self.monitor_op = np.less
+        elif mode == 'max':
+            self.monitor_op = np.greater
+        else:
+            if 'loss' in self.monitor:
+                self.monitor_op = np.less
+            else:
+                self.monitor_op = np.greater
+
+        if self.monitor_op == np.greater:
+            self.min_delta *= 1
+        else:
+            self.min_delta *= -1
+
+    def on_train_begin(self, logs=None):
+        # Allow instances to be re-used
+        self.wait = 0
+        self.stopped_epoch = 0
+        self.best = np.Inf if self.monitor_op == np.less else -np.Inf
+        self.best_weights = None
+
+    def on_epoch_end(self, epoch, logs=None):
+        current = self.get_monitor_value(logs)
+        if current is None:
+            return
+
+        self.wait += 1
+        if self._is_improvement(current, self.best):
+            self.best = current
+            # Only restart wait if we beat both the baseline and our previous best.
+            if self.baseline is None or self._is_improvement(current, self.baseline):
+                self.wait = 0
+
+        if self.wait >= self.patience:
+            self.stopped_epoch = epoch
+            self.model.stop_training = True
+
+    def on_train_end(self, logs=None):
+        if self.stopped_epoch > 0 and self.verbose > 0:
+            print('Epoch %05d: early stopping' % (self.stopped_epoch + 1))
+
+    def get_monitor_value(self, logs):
+        logs = logs or {}
+        monitor_value = logs.get(self.monitor)
+        if monitor_value is None:
+            logging.warning('Early stopping conditioned on metric `%s` '
+                            'which is not available. Available metrics are: %s',
+                            self.monitor, ','.join(list(logs.keys())))
+        return monitor_value
+
+    def _is_improvement(self, monitor_value, reference_value):
+        return self.monitor_op(monitor_value - self.min_delta, reference_value)
+
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}(monitor={self.monitor}, patience={self.patience}, verbose={self.verbose}, min_delta={self.min_delta}, mode={self.mode})"
+
 
 class ProgbarLogger(Callback):
     """Callback that prints metrics to stdout.
@@ -957,6 +1106,9 @@ class ProgbarLogger(Callback):
             self.progbar.target = self.target = self.seen
         self.progbar.update(self.target, logs.items(), finalize=True)
         self._reset_progbar()
+
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}(epochs={self.epochs}, verbose={self.verbose})"
 
 
 class LambdaCallback(Callback):

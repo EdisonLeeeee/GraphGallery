@@ -19,10 +19,13 @@ splits = data.split_nodes()
 graphgallery.set_backend("pytorch")
 
 from graphgallery.gallery.nodeclas import Node2Grids
+from graphgallery.gallery.callbacks import EarlyStopping
+
 trainer = Node2Grids(device="gpu", seed=123)
 trainer.custom_setup(batch_size_train=10)
 trainer.setup_graph(graph)
 trainer.build()
-trainer.fit(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
+cb = EarlyStopping(monitor='val_accuracy', verbose=1, patience=200)
+trainer.fit(splits.train_nodes, splits.val_nodes, callbacks=[cb], verbose=1, epochs=1000)
 results = trainer.evaluate(splits.test_nodes)
 print(f'Test loss {results.loss:.5}, Test accuracy {results.accuracy:.2%}')

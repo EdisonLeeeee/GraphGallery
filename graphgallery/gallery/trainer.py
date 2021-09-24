@@ -6,7 +6,7 @@ import inspect
 import os.path as osp
 import numpy as np
 
-from graphgallery.gallery.callbacks import ModelCheckpoint, CallbackList
+from graphgallery.gallery.callbacks import ModelCheckpoint, CallbackList, EarlyStopping, ProgbarLogger, History
 from torch.utils.data import DataLoader, Dataset
 
 import graphgallery as gg
@@ -207,7 +207,7 @@ class Trainer(Model):
         """Implement you model building function here"""
         raise NotImplementedError
 
-    def fit(self, train_data, val_data=None, **kwargs):
+    def fit(self, train_data, val_data=None, callbacks=None, **kwargs):
 
         cache = self.cache
         cfg = self.cfg.fit
@@ -235,7 +235,7 @@ class Trainer(Model):
 
         # Setup callbacks
         verbose = cfg.verbose
-        callbacks = CallbackList(add_history=True, add_progbar=True if verbose else False)
+        callbacks = CallbackList(callbacks=callbacks, add_history=True, add_progbar=True if verbose else False)
         cfg, callbacks = setup_callbacks(cfg, callbacks, validation)
         callbacks.set_model(model)
         callbacks.set_params(dict(verbose=verbose, epochs=cfg.epochs))
@@ -507,7 +507,7 @@ def remove_extra_tf_files(filepath):
 
 def setup_callbacks(cfg, callbacks, validation):
     ckpt_cfg = cfg.ModelCheckpoint
-
+    # TODO: check if `ModelCheckpoint` exists.
     if not validation:
         if ckpt_cfg.enabled and ckpt_cfg.monitor.startswith("val_"):
             ckpt_cfg.enabled = False
