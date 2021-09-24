@@ -14,21 +14,21 @@ class Node2GridsCNN(TorchKeras):
                  out_features,
                  mapsize_a,
                  mapsize_b,
+                 conv_channel=64,
                  hids=[200],
                  acts=['relu6'],
                  attnum=10,
-                 dropout=0.5,
+                 dropout=0.6,
                  weight_decay=0.00015,
                  att_reg=0.07,
                  lr=0.008,
                  bias=True):
 
         super().__init__()
-        convnum = 64
         self.conv = nn.Sequential(
             nn.Conv2d(
                 in_channels=in_features,
-                out_channels=convnum,
+                out_channels=conv_channel,
                 kernel_size=(2, 1),
                 stride=1,
                 padding=0
@@ -36,7 +36,7 @@ class Node2GridsCNN(TorchKeras):
             nn.Softmax(dim=1),
         )
         lin = []
-        in_features = (mapsize_a - 1) * mapsize_b * convnum
+        in_features = (mapsize_a - 1) * mapsize_b * conv_channel
         for hid, act in zip(hids, acts):
             lin.append(nn.Linear(in_features, hid, bias=bias))
             lin.append(activations.get(act))

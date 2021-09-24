@@ -74,7 +74,8 @@ In detail, the following methods are currently implemented:
 | **AlaGCN, AlaGAT** | *Yiqing Xie et al*           | [When Do GNNs Work: Understanding and Improving Neighborhood Aggregation (IJCAI'20)](https://www.ijcai.org/Proceedings/2020/0181.pdf)     |                    |                    |                    | :heavy_check_mark: |
 | **JKNet**          | *Keyulu Xu et al*            | [Representation Learning on Graphs with Jumping Knowledge Networks (ICML'18)](https://arxiv.org/abs/1806.03536)                           |                    |                    |                    | :heavy_check_mark: |
 | **MixHop**         | *Sami Abu-El-Haija et al*    | [MixHop: Higher-Order Graph Convolutional Architecturesvia Sparsified Neighborhood Mixing (ICML'19)](https://arxiv.org/abs/1905.00067)    |                    |                    |                    | :heavy_check_mark: |
-| **DropEdge**       | *Yu Rong et al*              | [DropEdge: Towards Deep Graph Convolutional Networks on Node Classification (ICML'20)](https://arxiv.org/abs/1907.10903)                  |                    | :heavy_check_mark: |                    |                    |
+| **DropEdge**       | *Yu Rong et al*              | [DropEdge: Towards Deep Graph Convolutional Networks on Node Classification (ICML'20)](https://arxiv.org/abs/1907.10903)                  |                    |                    | :heavy_check_mark: |                    |
+| **Node2Grids**     | *Dalong Yang et al*          | [Node2Grids: A Cost-Efficient Uncoupled Training Framework for Large-Scale Graph Learning (CIKM'21)](https://arxiv.org/abs/2003.09638)    | :heavy_check_mark: |                    |                    |                    |
 
 ### Defense models (for Graph Adversarial Learning)
 
