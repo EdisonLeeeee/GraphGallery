@@ -20,6 +20,6 @@ graphgallery.set_backend("pytorch")
 from graphgallery.gallery.linkpred import GAE
 trainer = GAE(device="gpu", seed=123)
 trainer.setup_graph(graph).build()
-his = trainer.fit(splits.train_pos_edge_index, verbose=3, epochs=100)
+trainer.fit(splits.train_pos_edge_index, verbose=3, epochs=100)
 results = trainer.evaluate((splits.test_pos_edge_index, splits.test_neg_edge_index))
 print(f'Test loss {results.loss:.5}, Test accuracy {results.accuracy:.2%}')

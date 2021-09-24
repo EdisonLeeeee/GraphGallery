@@ -26,6 +26,6 @@ splits = data.split_nodes()
 graphgallery.set_backend("tensorflow")
 from graphgallery.gallery.nodeclas import GCN
 trainer = GCN(device="gpu", seed=123).setup_graph(graph, adj_transform="GDC", attr_transform="normalize_attr").build()
-his = trainer.fit(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
+trainer.fit(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
 results = trainer.evaluate(splits.test_nodes)
 print(f'Test loss {results.loss:.5}, Test accuracy {results.accuracy:.2%}')

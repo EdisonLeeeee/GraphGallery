@@ -15,10 +15,10 @@ device = "gpu"
 
 ################### Surrogate model ############################
 trainer = gg.gallery.nodeclas.GCN(device=device, seed=None).setup_graph(graph).build()
-his = trainer.fit(splits.train_nodes,
-                  splits.val_nodes,
-                  verbose=1,
-                  epochs=200)
+trainer.fit(splits.train_nodes,
+            splits.val_nodes,
+            verbose=1,
+            epochs=200)
 
 ################### Attacker model ############################
 unlabeled_nodes = np.hstack([splits.val_nodes, splits.test_nodes])

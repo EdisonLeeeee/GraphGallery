@@ -21,20 +21,20 @@ splits = data.split_nodes()
 
 graphgallery.set_backend("dgl")
 
-# experimental setup in 
-# `When Do GNNs Work: Understanding and Improving Neighborhood Aggregation 
+# experimental setup in
+# `When Do GNNs Work: Understanding and Improving Neighborhood Aggregation
 # <https://www.ijcai.org/Proceedings/2020/0181.pdf>`
 random.seed(2020)
-split=0.01
+split = 0.01
 n_nodes = graph.num_nodes
-sample_size = math.ceil(n_nodes*split)
-train_idx = random.sample(range(n_nodes-1000), sample_size)
-train_nodes = [idx if idx<500 else idx+1000 for idx in train_idx]
-test_nodes =  list(range(500,1500))
-    
+sample_size = math.ceil(n_nodes * split)
+train_idx = random.sample(range(n_nodes - 1000), sample_size)
+train_nodes = [idx if idx < 500 else idx + 1000 for idx in train_idx]
+test_nodes = list(range(500, 1500))
+
 
 from graphgallery.gallery.nodeclas import ALaGCN, ALaGAT
 trainer = ALaGCN(device="gpu", seed=123).setup_graph(graph).build()
-his = trainer.fit(train_nodes, test_nodes, verbose=1, epochs=100)
+trainer.fit(train_nodes, test_nodes, verbose=1, epochs=100)
 results = trainer.evaluate(test_nodes)
 print(f'Test loss {results.loss:.5}, Test accuracy {results.accuracy:.2%}')

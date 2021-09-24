@@ -24,6 +24,6 @@ from graphgallery.gallery.nodeclas import LGC
 trainer = LGC(device="gpu", seed=123).setup_graph(graph, attr_transform="normalize_attr").build()
 # trainer = EGC(device="gpu", seed=123).setup_graph(graph, attr_transform="normalize_attr").build()
 # trainer = hLGC(device="gpu", seed=123).setup_graph(graph, attr_transform="normalize_attr").build()
-his = trainer.fit(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
+trainer.fit(splits.train_nodes, splits.val_nodes, verbose=1, epochs=100)
 results = trainer.evaluate(splits.test_nodes)
 print(f'Test loss {results.loss:.5}, Test accuracy {results.accuracy:.2%}')

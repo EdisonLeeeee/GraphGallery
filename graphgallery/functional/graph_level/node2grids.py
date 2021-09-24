@@ -26,21 +26,30 @@ class Node2GridsMapper:
 
         grids = []
         for node in tqdm(node_index, desc='Converting Node to Grids...'):
-            nbrs, distance = self.K_hop_neighbors(indices, indptr, node, hops=2)
-            nbrs = np.asarray(nbrs)
-            distance = np.asarray(distance)
-            first_level = nbrs[distance == 1]
-            num_1st_nbrs = np.size(first_level)
-            if num_1st_nbrs >= K:
-                sorted_idx = degree[first_level].argsort()[-K:]  # sort by degree
-                sampled = first_level[sorted_idx]
+            r1_node = indices[indptr[node]:indptr[node + 1]]
+            r1_degrees = degree[r1_node]
+            sortidx = r1_degrees.argsort()[::-1]
+            r1_node = r1_node[sortidx]
+            if len(r1_node) < K:
+                # find r2 node
+                r2_node = set()
+                for candidate in r1_node:
+                    r2_node.update(indices[indptr[candidate]:indptr[candidate + 1]])
+                # difference between r2 and r1
+                if r2_node:
+                    r2_node = r2_node - set(list(r1_node))
+                    if node in r2_node:
+                        r2_node.remove(node)
+                if r2_node:
+                    r2_node = np.array(list(r2_node))
+                    r2_degrees = degree[r2_node]
+                    sortidx = r2_degrees.argsort()[::-1][:K - len(r1_node)]
+                    r2_node = r2_node[sortidx]
+                    sampled = np.hstack([r1_node, r2_node])
+                else:
+                    sampled = r1_node
             else:
-                second_level = nbrs[distance == 2]
-                num_2rd_nbrs = np.size(second_level)
-                sorted_idx = degree[second_level].argsort()[-(K - num_1st_nbrs):]
-                # 1st-hop neighbors + 2rd-hop neighbors
-                sampled = np.hstack([first_level, second_level[sorted_idx]])
-
+                sampled = r1_node[:K]
             # node to grids
             grid = (1 - biasfactor) * x[sampled] + biasfactor * x[node]
             delta = K - grid.shape[0]
@@ -49,25 +58,3 @@ class Node2GridsMapper:
             grid = grid.reshape(mapsize_a, mapsize_b, -1)
             grids.append(grid)
         return np.stack(grids, axis=0)
-
-    @staticmethod
-    @nb.njit(nogil=True)
-    def K_hop_neighbors(indices, indptr, root, hops=1):
-        N = len(indptr) - 1
-        seen = np.zeros(N) - 1
-        seen[root] = 0
-        start = 0
-        queue = [root]
-        distance = [0]
-        for level in range(hops):
-            end = len(queue)
-            while start < end:
-                head = queue[start]
-                nbrs = indices[indptr[head]:indptr[head + 1]]
-                for u in nbrs:
-                    if seen[u] < 0:
-                        queue.append(u)
-                        seen[u] = level + 1
-                        distance.append(level + 1)
-                start += 1
-        return queue, distance

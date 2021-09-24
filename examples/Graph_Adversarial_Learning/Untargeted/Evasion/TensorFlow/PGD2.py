@@ -12,10 +12,10 @@ device = "gpu"
 
 ################### Surrogate model ############################
 trainer = gg.gallery.nodeclas.DenseGCN(device=device, seed=123).setup_graph(graph).build(hids=32)
-his = trainer.fit(splits.train_nodes,
-                  splits.val_nodes,
-                  verbose=1,
-                  epochs=200)
+trainer.fit(splits.train_nodes,
+            splits.val_nodes,
+            verbose=1,
+            epochs=200)
 
 ################### Attacker model ############################
 attacker = gg.attack.untargeted.PGD(graph, device=device, seed=None).process(

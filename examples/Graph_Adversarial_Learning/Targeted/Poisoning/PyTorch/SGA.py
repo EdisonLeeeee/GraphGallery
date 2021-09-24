@@ -14,10 +14,10 @@ splits = data.split_nodes(random_state=15)
 
 ################### Surrogate model ############################
 trainer = gg.gallery.nodeclas.SGC(seed=1000).setup_graph(graph, K=2).build()
-his = trainer.fit(splits.train_nodes,
-                  splits.val_nodes,
-                  verbose=2,
-                  epochs=100)
+trainer.fit(splits.train_nodes,
+            splits.val_nodes,
+            verbose=2,
+            epochs=100)
 
 ################### Attacker model ############################
 target = 1
@@ -27,18 +27,18 @@ attacker.attack(target)
 ################### Victim model ############################
 # Before attack
 trainer = gg.gallery.nodeclas.GCN(seed=123).setup_graph(graph).build()
-his = trainer.fit(splits.train_nodes,
-                  splits.val_nodes,
-                  verbose=2,
-                  epochs=100)
+trainer.fit(splits.train_nodes,
+            splits.val_nodes,
+            verbose=2,
+            epochs=100)
 original_predict = trainer.predict(target, transform="softmax")
 
 # After attack
 trainer = gg.gallery.nodeclas.GCN(seed=123).setup_graph(attacker.g).build()
-his = trainer.fit(splits.train_nodes,
-                  splits.val_nodes,
-                  verbose=2,
-                  epochs=100)
+trainer.fit(splits.train_nodes,
+            splits.val_nodes,
+            verbose=2,
+            epochs=100)
 perturbed_predict = trainer.predict(target, transform="softmax")
 
 ################### Results ############################

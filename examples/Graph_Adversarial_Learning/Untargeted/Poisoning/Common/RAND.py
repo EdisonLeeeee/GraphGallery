@@ -17,18 +17,18 @@ attacker.attack(0.05)
 ################### Victim model ############################
 # Before attack
 trainer = gg.gallery.nodeclas.GCN(seed=123).setup_graph(graph).build()
-his = trainer.fit(splits.train_nodes,
-                  splits.val_nodes,
-                  verbose=1,
-                  epochs=100)
+trainer.fit(splits.train_nodes,
+            splits.val_nodes,
+            verbose=1,
+            epochs=100)
 original_result = trainer.evaluate(splits.test_nodes)
 
 # After attack
 trainer = gg.gallery.nodeclas.GCN(seed=123).setup_graph(attacker.g).build()
-his = trainer.fit(splits.train_nodes,
-                  splits.val_nodes,
-                  verbose=1,
-                  epochs=100)
+trainer.fit(splits.train_nodes,
+            splits.val_nodes,
+            verbose=1,
+            epochs=100)
 perturbed_result = trainer.evaluate(splits.test_nodes)
 
 ################### Results ############################

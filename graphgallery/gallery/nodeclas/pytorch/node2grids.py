@@ -1,4 +1,3 @@
-from graphgallery.nn.layers.pytorch import SGConv
 from graphgallery.sequence import FeatureLabelSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
@@ -10,7 +9,7 @@ from graphgallery.functional.graph_level import Node2GridsMapper
 @PyTorch.register()
 class Node2Grids(Trainer):
     """
-        Implementation of Node2Gridss. 
+        Implementation of Node2Gridss.
         `Node2Grids: A Cost-Efficient Uncoupled Training Framework for Large-Scale Graph Learning`
         `An Uncoupled Training Architecture for Large Graph Learning <https://arxiv.org/abs/2003.09638>`
         Pytorch implementation: <https://github.com/Ray-inthebox/Node2Gridss>
@@ -69,13 +68,11 @@ class Node2Grids(Trainer):
     def train_loader(self, index):
         labels = self.graph.node_label[index]
         node_grids = self.cache.mapper.map_node(index).transpose((0, 3, 1, 2))
-        # node_grids = (node_grids - node_grids.mean()) / node_grids.std()
         sequence = FeatureLabelSequence(node_grids, labels, device=self.data_device, batch_size=self.cfg.fit.batch_size, shuffle=False)
         return sequence
 
     def test_loader(self, index):
         labels = self.graph.node_label[index]
         node_grids = self.cache.mapper.map_node(index).transpose((0, 3, 1, 2))
-        # node_grids = (node_grids - node_grids.mean()) / node_grids.std()
         sequence = FeatureLabelSequence(node_grids, labels, device=self.data_device, batch_size=self.cfg.evaluate.batch_size)
         return sequence
