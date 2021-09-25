@@ -375,8 +375,8 @@ class CallbackList:
     def __str__(self) -> str:
 
         format_string = ""
-        for t in self.callbacks:
-            format_string += f'\n  {t},'
+        for cb in self.callbacks:
+            format_string += f'\n  {cb},'
         if format_string:
             # replace last ``,`` as ``\n``
             format_string = format_string[:-1] + '\n'
@@ -652,7 +652,7 @@ class History(Callback):
     """
 
     def __init__(self):
-        super(History, self).__init__()
+        super().__init__()
         self.history = gf.BunchDict()
 
     def on_train_begin(self, logs=None):
@@ -673,7 +673,7 @@ class TerminateOnNaN(Callback):
     """Callback that terminates training when a NaN loss is encountered. """
 
     def __init__(self):
-        super(TerminateOnNaN, self).__init__()
+        super().__init__()
         self._supports_tf_logs = True
 
     def on_batch_end(self, batch, logs=None):
@@ -782,7 +782,7 @@ class ModelCheckpoint(Callback):
                  save_weights_only=False,
                  mode='auto',
                  **kwargs):
-        super(ModelCheckpoint, self).__init__()
+        super().__init__()
         self.monitor = monitor
         self.verbose = verbose
         self.filepath = filepath
@@ -887,6 +887,8 @@ class ModelCheckpoint(Callback):
     def __str__(self) -> str:
         return f"{self.__class__.__name__}(monitor={self.monitor}, verbose={self.verbose}, filepath={self.filepath}, save_best_only={self.save_best_only},  save_weights_only={self.save_weights_only})"
 
+    __repr__ = __str__
+
 
 class EarlyStopping(Callback):
     """Stop training when a monitored metric has stopped improving.
@@ -942,7 +944,7 @@ class EarlyStopping(Callback):
                  verbose=0,
                  mode='auto',
                  baseline=None):
-        super(EarlyStopping, self).__init__()
+        super().__init__()
 
         self.monitor = monitor
         self.patience = patience
@@ -1015,6 +1017,7 @@ class EarlyStopping(Callback):
 
     def __str__(self) -> str:
         return f"{self.__class__.__name__}(monitor={self.monitor}, patience={self.patience}, verbose={self.verbose}, min_delta={self.min_delta}, mode={self.mode})"
+    __repr__ = __str__
 
 
 class ProgbarLogger(Callback):
@@ -1023,7 +1026,7 @@ class ProgbarLogger(Callback):
     """
 
     def __init__(self):
-        super(ProgbarLogger, self).__init__()
+        super().__init__()
         # Defaults to all Model's metrics except for loss.
         self.seen = 0
         self.progbar = None
@@ -1109,6 +1112,7 @@ class ProgbarLogger(Callback):
 
     def __str__(self) -> str:
         return f"{self.__class__.__name__}(epochs={self.epochs}, verbose={self.verbose})"
+    __repr__ = __str__
 
 
 class LambdaCallback(Callback):
@@ -1171,7 +1175,7 @@ class LambdaCallback(Callback):
                  on_train_begin=None,
                  on_train_end=None,
                  **kwargs):
-        super(LambdaCallback, self).__init__()
+        super().__init__()
         self.__dict__.update(kwargs)
         if on_epoch_begin is not None:
             self.on_epoch_begin = on_epoch_begin
