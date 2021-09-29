@@ -1,3 +1,4 @@
+import inspect
 import numpy as np
 import scipy.sparse as sp
 import graphgallery.functional as gf
@@ -18,9 +19,9 @@ class Trainer(Model):
     def setup_cfg(self):
         default_cfg_setup(self.cfg)
 
-    def fit(self, graph, x=None, **kwargs):
+    def fit(self, graph, *args, **kwargs):
         graph = getattr(graph, "adj_matrix", graph)
-        self.fit_step(graph, x, **kwargs)
+        self.fit_step(graph, *args, **kwargs)
         return self
 
     def get_embedding(self, normalize=True) -> np.array:
