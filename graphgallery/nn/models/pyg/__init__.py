@@ -3,5 +3,4 @@ from .sgc import SGC
 from .gat import GAT
 from .pdn import PDN
 from .graphsage import GraphSAGE
-
-from . import autoencoder
+from .gae import GAE, VGAE

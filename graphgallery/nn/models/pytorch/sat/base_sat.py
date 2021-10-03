@@ -18,10 +18,9 @@ class BaseSAT(TorchEngine):
         x, U, V = x
         U.requires_grad = True
         V.requires_grad = True
-        out = self(x, U, V)
-        if out_index is not None:
-            out = out[out_index]
-        loss = loss_fn(out, y)
+        z = self(x, U, V)
+        pred = self.index_select(z, out_index=out_index)
+        loss = loss_fn(pred, y)
 
         U_grad, V_grad = torch.autograd.grad(loss, [U, V], retain_graph=True)
         U.requires_grad = False
@@ -33,17 +32,15 @@ class BaseSAT(TorchEngine):
         out_U = self(x, U + U_grad, V)
         out_V = self(x, U, V + V_grad)
 
-        if out_index is not None:
-            out_U = out_U[out_index]
-            out_V = out_V[out_index]
+        out_U = self.index_select(out_U, out_index=out_index)
+        out_V = self.index_select(out_V, out_index=out_index)
 
         loss += self.lamb_U * loss_fn(out_U, y) + self.lamb_V * loss_fn(out_V, y)
         ########################
 
         loss.backward()
         optimizer.step()
-        out = dict(z_masked=out)
-        metrics = self.compute_metrics(out, y)
+        metrics = self.compute_metrics(dict(pred=pred), y)
 
         results = [loss.cpu().detach()] + metrics
         return dict(zip(self.metrics_names, results))

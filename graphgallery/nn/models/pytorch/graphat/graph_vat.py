@@ -57,19 +57,18 @@ class GraphVAT(TorchEngine):
     def forward(self, x, adj):
         return self.conv(x, adj)
 
-    def get_outputs(self, x):
+    def get_outputs(self, x, out_index=None):
         if self.training:
             # this is used to calculate the adversarial gradients
             x = (nn.Parameter(x[0]), *x[1:])
         z = self(*x[:2])
-        return dict(z=z, x=x)
+        pred = self.index_select(z, out_index=out_index)
+        return dict(z=z, x=x, pred=pred)
 
-    def compute_loss(self, output_dict, y, out_index=None):
-        # index select or mask outputs
-        output_dict = self.index_select(output_dict, out_index=out_index)
+    def compute_loss(self, output_dict, y):
         z = output_dict['z']
-        z_masked = output_dict['z_masked']
-        loss = self.loss(z_masked, y)
+        pred = output_dict['pred']
+        loss = self.loss(pred, y)
 
         if self.training:
             x, adj, adjacency = output_dict['x']

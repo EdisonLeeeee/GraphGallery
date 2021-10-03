@@ -81,15 +81,15 @@ class LATGCN(TorchEngine):
             zeta_opt.step()
         optimizer.zero_grad()
         z, reg_loss = self(*x)
-        output_dict = dict(z=z)
-        output_dict = self.index_select(output_dict, out_index=out_index)
+        pred = self.index_select(z, out_index=out_index)
 
-        loss = loss_fn(output_dict['z_masked'], y) + self.gamma * reg_loss
+        loss = loss_fn(pred, y) + self.gamma * reg_loss
         loss.backward()
         optimizer.step()
         if self.scheduler is not None:
             self.scheduler.step()
-        metrics = self.compute_metrics(output_dict, y)
+
+        metrics = self.compute_metrics(dict(pred=pred), y)
 
         results = [loss.cpu().detach()] + metrics
         return dict(zip(self.metrics_names, results))

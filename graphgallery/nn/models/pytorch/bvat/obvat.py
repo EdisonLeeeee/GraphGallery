@@ -55,8 +55,7 @@ class OBVAT(TorchEngine):
         return self.conv(x, adj)
 
     def pretrain(self, x):
-        for para in self.conv.parameters():
-            para.requires_grad = False
+        self.freeze(self.conv)
 
         optimizer = self.adv_optimizer
         r_adv = self.r_adv
@@ -68,21 +67,20 @@ class OBVAT(TorchEngine):
             loss.backward()
             optimizer.step()
 
-        for para in self.conv.parameters():
-            para.requires_grad = True
+        self.defrozen(self.conv)
 
-    def get_outputs(self, x):
+    def get_outputs(self, x, out_index=None):
         if self.training:
             self.pretrain(x)
         z = self(*x)
-        return dict(z=z, x=x)
+        pred = self.index_select(z, out_index=out_index)
+        return dict(z=z, x=x, pred=pred)
 
-    def compute_loss(self, output_dict, y, out_index=None):
+    def compute_loss(self, output_dict, y):
         # index select or mask outputs
-        output_dict = self.index_select(output_dict, out_index=out_index)
         z = output_dict['z']
-        z_masked = output_dict['z_masked']
-        loss = self.loss(z_masked, y)
+        pred = output_dict['pred']
+        loss = self.loss(pred, y)
 
         if self.training:
             x = output_dict['x']

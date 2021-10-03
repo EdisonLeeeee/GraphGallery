@@ -35,11 +35,7 @@ class GAE(Trainer):
                    lr=0.01,
                    bias=False):
 
-        num_edges = self.graph.adj_matrix.sum()
-        num_nodes = self.graph.adj_matrix.shape[0]
-        pos_weight = (num_nodes**2 - num_edges) / num_edges
-
-        model = get_model("autoencoder.GAE", self.backend)
+        model = get_model("GAE", self.backend)
         model = model(self.graph.num_node_attrs,
                       out_features=out_features,
                       hids=hids,
@@ -47,7 +43,6 @@ class GAE(Trainer):
                       dropout=dropout,
                       weight_decay=weight_decay,
                       lr=lr,
-                      pos_weight=pos_weight,
                       bias=bias)
 
         return model
@@ -62,12 +57,12 @@ class GAE(Trainer):
         edge_weight = full_adj[train_edges[0], train_edges[1]].A1
         adj_matrix = gf.edge_to_sparse_adj(train_edges, edge_weight)
         train_adj = self.transform.adj_transform(adj_matrix)
-        adj_label = gf.add_selfloops(adj_matrix).A  # to dense matrix
-        train_adj, adj_label = gf.astensors(train_adj, adj_label, device=self.data_device)
+
+        train_adj = gf.astensor(train_adj, device=self.data_device)
 
         self.register_cache(A=train_adj)
         sequence = FullBatchSequence([self.cache.X, train_adj],
-                                     y=adj_label,
+                                     out_index=edge_index,
                                      device=self.data_device)
         return sequence
 

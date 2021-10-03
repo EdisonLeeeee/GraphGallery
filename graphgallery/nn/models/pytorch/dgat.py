@@ -45,16 +45,15 @@ class DGAT(TorchEngine):
     def forward(self, x, adj):
         return self.conv(x, adj)
 
-    def get_outputs(self, x):
+    def get_outputs(self, x, out_index=None):
         z = self(*x)
-        return dict(z=z, x=x)
+        pred = self.index_select(z, out_index=out_index)
+        return dict(z=z, x=x, pred=pred)
 
-    def compute_loss(self, output_dict, y, out_index=None):
-        # index select or mask outputs
-        output_dict = self.index_select(output_dict, out_index=out_index)
+    def compute_loss(self, output_dict, y):
         z = output_dict['z']
-        z_masked = output_dict['z_masked']
-        loss = self.loss(z_masked, y)
+        pred = output_dict['pred']
+        loss = self.loss(pred, y)
 
         if self.training:
             x = output_dict['x']

@@ -105,17 +105,15 @@ class SimPGCN(TorchEngine):
         # self.ss = torch.cat((s_i.view(1, -1), s_o.view(1, -1), gamma * Dk_i.view(1, -1), gamma * Dk_o.view(1, -1)), dim=0)
         return dict(z=z, h=h)
 
-    def compute_loss(self, output_dict, y, out_index=None):
-        # index select or mask outputs
-        output_dict = self.index_select(output_dict, out_index=out_index)
-        z_masked = output_dict['z_masked']
+    def compute_loss(self, output_dict, y):
+        pred = output_dict['pred']
 
         if self.training:
             embeddings = output_dict['h']
             y, pseudo_labels, node_pairs = y
-            loss = self.loss(z_masked, y) + self.lambda_ * self.regression_loss(embeddings, pseudo_labels, node_pairs)
+            loss = self.loss(pred, y) + self.lambda_ * self.regression_loss(embeddings, pseudo_labels, node_pairs)
         else:
-            loss = self.loss(z_masked, y)
+            loss = self.loss(pred, y)
         return loss
 
     def regression_loss(self, embeddings, pseudo_labels=None, node_pairs=None):

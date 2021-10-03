@@ -1,4 +1,3 @@
-from numpy.lib.arraysetops import isin
 import torch
 import warnings
 import torch.nn as nn
@@ -48,7 +47,7 @@ class TorchEngine(nn.Module):
         import gc
         gc.collect()
 
-    def get_outputs(self, x):
+    def get_outputs(self, x, out_index=None):
         # the input `x` can be: (1) dict (2) list or tuple like
         if isinstance(x, dict):
             output_dict = self(**x)
@@ -61,41 +60,51 @@ class TorchEngine(nn.Module):
             if isinstance(output_dict, tuple):
                 raise RuntimeError("For model more than 1 outputs, we recommend you to use dict as returns.")
             # Here `z` is the final representation of the model
-            output_dict = {'z': output_dict}
-
+            z = output_dict
+            output_dict = dict(z=z)
+        else:
+            z = output_dict['z']
+        # index select or mask outputs
+        pred = self.index_select(z, out_index=out_index)
+        output_dict['pred'] = pred
         return output_dict
 
-    def compute_loss(self, output_dict, y, out_index=None):
-        # index select or mask outputs
-        output_dict = self.index_select(output_dict, out_index=out_index)
-        z_masked = output_dict['z_masked']
-        loss = self.loss(z_masked, y)
+    def compute_loss(self, output_dict, y):
+        loss = self.loss(output_dict['pred'], y)
         return loss
 
     def loss_backward(self, loss):
         loss.backward()
 
-    def index_select(self, output_dict, out_index=None):
-        z = output_dict['z']
-        output_dict['z_masked'] = z
+    def index_select(self, z, out_index=None):
+        if isinstance(z, (list, tuple)):
+            return list(self.index_select(x, out_index=out_index) for x in z)
+
         if out_index is None:
-            return output_dict
+            return z
+
         if isinstance(out_index, slice) or out_index.ndim <= 1:
-            output_dict['z_masked'] = z[out_index]
+            pred = z[out_index]
         elif out_index.ndim == 2:
-            output_dict['z_masked'] = z[out_index[0], out_index[1]]
+            pred = z[out_index[0], out_index[1]]
         else:
             warnings.warn(f'UNKNOWN out_index `{out_index}`', UserWarning)
-        return output_dict
+        return pred
 
     def compute_metrics(self, output_dict, y):
-        z_masked = output_dict['z_masked']
+        pred = output_dict['pred']
         if isinstance(y, dict):
             y = y['y']
         elif isinstance(y, (tuple, list)):
             y = y[0]
+
+        if y is None:
+            y = output_dict.get('y', None)
+
+        assert y is not None
+
         for metric in self.metrics:
-            metric.update_state(y.cpu(), z_masked.detach().cpu())
+            metric.update_state(y.cpu(), pred.detach().cpu())
         return [metric.result() for metric in self.metrics]
 
     def train_step_on_batch(self,
@@ -108,9 +117,9 @@ class TorchEngine(nn.Module):
         optimizer.zero_grad()
         x, y = to_device(x, y, device=device)
         # Step 1. forward
-        output_dict = self.get_outputs(x)
+        output_dict = self.get_outputs(x, out_index=out_index)
         # Step 2. compute loss
-        loss = self.compute_loss(output_dict, y, out_index=out_index)
+        loss = self.compute_loss(output_dict, y)
         # Step 3. loss backward
         self.loss_backward(loss)
 
@@ -136,9 +145,9 @@ class TorchEngine(nn.Module):
         self.eval()
         x, y = to_device(x, y, device=device)
         # Step 1. forward
-        output_dict = self.get_outputs(x)
+        output_dict = self.get_outputs(x, out_index=out_index)
         # Step 2. compute loss
-        loss = self.compute_loss(output_dict, y, out_index=out_index)
+        loss = self.compute_loss(output_dict, y)
         # Step 3. update evaluation metrics
         metrics = self.compute_metrics(output_dict, y)
 
@@ -154,10 +163,23 @@ class TorchEngine(nn.Module):
     def predict_step_on_batch(self, x, out_index=None, device="cpu"):
         self.eval()
         x, _ = to_device(x, device=device)
-        output_dict = self.get_outputs(x)
-        self.index_select(output_dict, out_index=out_index)
-        z = output_dict['z_masked']
+        output_dict = self.get_outputs(x, out_index=out_index)
+        z = output_dict['pred']
         return z.detach().cpu()
+
+    def freeze(self, module=None):
+        if module is None:
+            module = self
+        # freeze
+        for para in module.parameters():
+            para.requires_grad = False
+
+    def defrozen(self, module=None):
+        if module is None:
+            module = self
+        # freeze
+        for para in module.parameters():
+            para.requires_grad = True
 
     def build(self, inputs):
         # TODO
@@ -271,7 +293,7 @@ def to_device(x, y=None, device='cpu'):
         if isinstance(inputs, (list, tuple)) and not gg.is_scalar(inputs[0]):
             return tuple(wrapper(input) for input in inputs)
         elif isinstance(inputs, dict):
-            for k, v in inputs:
+            for k, v in inputs.items():
                 inputs[k] = wrapper(v)
             return inputs
         else:

@@ -93,14 +93,12 @@ class GraphMLP(TorchEngine):
         z = self.classifier(h)
         return dict(z=z, h=h)
 
-    def compute_loss(self, output_dict, y, out_index=None):
-        # index select or mask outputs
-        output_dict = self.index_select(output_dict, out_index=out_index)
-        z_masked = output_dict['z_masked']
+    def compute_loss(self, output_dict, y):
+        pred = output_dict['pred']
 
         if self.training:
             x_dis = get_feature_dis(output_dict['h'])
-            loss = self.loss(z_masked, y[0]) + Ncontrast(x_dis, y[1], tau=self.tau) * self.alpha
+            loss = self.loss(pred, y[0]) + Ncontrast(x_dis, y[1], tau=self.tau) * self.alpha
         else:
-            loss = self.loss(z_masked, y)
+            loss = self.loss(pred, y)
         return loss

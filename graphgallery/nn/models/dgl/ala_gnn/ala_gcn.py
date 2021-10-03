@@ -106,11 +106,9 @@ class ALaGCN(TorchEngine):
         z_stack = torch.stack(list_z, dim=1)  # (n_nodes, n_layers)
         return dict(z=z, z_stack=z_stack)
 
-    def compute_loss(self, output_dict, y, out_index=None):
-        # index select or mask outputs
-        output_dict = self.index_select(output_dict, out_index=out_index)
-        z_masked = output_dict['z_masked']
-        loss = self.loss(z_masked, y)
+    def compute_loss(self, output_dict, y):
+        pred = output_dict['pred']
+        loss = self.loss(pred, y)
 
         if self.training:
             z = output_dict['z_stack']

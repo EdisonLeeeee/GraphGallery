@@ -35,7 +35,7 @@ class GAE(Trainer):
                    lr=0.01,
                    bias=False):
 
-        model = get_model("autoencoder.GAE", self.backend)
+        model = get_model("GAE", self.backend)
         model = model(self.graph.num_node_attrs,
                       out_features=out_features,
                       hids=hids,
@@ -53,7 +53,7 @@ class GAE(Trainer):
         else:
             train_edges = edge_index
 
-        train_edges = gf.astensors(train_edges, device=self.data_device)
+        train_edges = gf.astensor(train_edges, device=self.data_device)
 
         self.register_cache(E=train_edges)
         sequence = FullBatchSequence([self.cache.X, train_edges],
