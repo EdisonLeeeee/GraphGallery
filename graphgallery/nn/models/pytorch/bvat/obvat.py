@@ -54,41 +54,41 @@ class OBVAT(TorchEngine):
     def forward(self, x, adj):
         return self.conv(x, adj)
 
-    def pretrain(self, x, adj):
+    def pretrain(self, x):
+        for para in self.conv.parameters():
+            para.requires_grad = False
+
         optimizer = self.adv_optimizer
         r_adv = self.r_adv
         for _ in range(self.pt_epochs):
             optimizer.zero_grad()
-            logit = self(x, adj)
+            z = self(*x)
             rnorm = r_adv.square().sum()  # l2 loss
-            loss = rnorm - self.virtual_adversarial_loss([x, adj], logit)
+            loss = rnorm - self.virtual_adversarial_loss(x, z)
             loss.backward()
             optimizer.step()
 
-    def train_step_on_batch(self,
-                            x,
-                            y,
-                            out_index=None,
-                            device="cpu"):
+        for para in self.conv.parameters():
+            para.requires_grad = True
 
-        self.train()
-        self.pretrain(*x)
+    def get_outputs(self, x):
+        if self.training:
+            self.pretrain(x)
+        z = self(*x)
+        return dict(z=z, x=x)
 
-        optimizer = self.optimizer
-        loss_fn = self.loss
-        optimizer.zero_grad()
-        x, y = to_device(x, y, device=device)
-        logit = self(*x)
-        out = self.index_select(logit, out_index=out_index)
-        loss = loss_fn(out, y) + self.p1 * self.virtual_adversarial_loss(x, logit) + \
-            self.p2 * self.entropy_loss(logit)
+    def compute_loss(self, output_dict, y, out_index=None):
+        # index select or mask outputs
+        output_dict = self.index_select(output_dict, out_index=out_index)
+        z = output_dict['z']
+        z_masked = output_dict['z_masked']
+        loss = self.loss(z_masked, y)
 
-        loss.backward()
-        optimizer.step()
-        self.update_metrics(out, y)
-
-        results = [loss.cpu().detach()] + [metric.result() for metric in self.metrics]
-        return dict(zip(self.metrics_names, results))
+        if self.training:
+            x = output_dict['x']
+            loss += self.p1 * self.virtual_adversarial_loss(x, z) + \
+                self.p2 * self.entropy_loss(z)
+        return loss
 
     def virtual_adversarial_loss(self, inputs, logit):
         x, adj = inputs

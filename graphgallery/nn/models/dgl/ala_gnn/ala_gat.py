@@ -123,19 +123,18 @@ class ALaGAT(TorchEngine):
                 h = self.dropout(h)
                 list_z.append(z.flatten())
 
-        out = self.lin(h.reshape(h.size(0), -1))
+        z = self.lin(h.reshape(h.size(0), -1))
+        z_stack = torch.stack(list_z, dim=1)  # (n_nodes, n_layers)
+        return dict(z=z, z_stack=z_stack)
 
-        if self.training:
-            self.cache['z'] = torch.stack(list_z, dim=1)  # (n_nodes, n_layers)
-
-        return out
-
-    def compute_loss(self, out, y, out_index=None):
+    def compute_loss(self, output_dict, y, out_index=None):
         # index select or mask outputs
-        out = self.index_select(out, out_index=out_index)
-        loss = self.loss(out, y)
+        output_dict = self.index_select(output_dict, out_index=out_index)
+        z_masked = output_dict['z_masked']
+        loss = self.loss(z_masked, y)
 
         if self.training:
-            z = self.cache.pop('z')
+            z = output_dict['z_stack']
             loss += torch.norm(z * (torch.ones_like(z) - z), p=1) * self.binary_reg
-        return loss, out
+
+        return loss

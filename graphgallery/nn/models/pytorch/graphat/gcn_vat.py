@@ -2,13 +2,13 @@ import torch
 import torch.nn as nn
 from torch import optim
 
-from graphgallery.nn.models.torch_engine import TorchEngine, to_device
+from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.models.pytorch.graphat.utils import *
 from graphgallery.nn.layers.pytorch import GCNConv, Sequential, activations
 from graphgallery.nn.metrics.pytorch import Accuracy
 
 
-class GCN_VAT(TorchEngine):
+class GCNVAT(TorchEngine):
     def __init__(self,
                  in_features,
                  out_features,
@@ -38,10 +38,8 @@ class GCN_VAT(TorchEngine):
 
         self.conv = conv
         self.compile(loss=nn.CrossEntropyLoss(),
-                     optimizer=optim.Adam([dict(params=conv[1].parameters(),
-                                                weight_decay=weight_decay),
-                                           dict(params=conv[2:].parameters(),
-                                                weight_decay=0.)], lr=lr),
+                     optimizer=optim.Adam(self.parameters(),
+                                          weight_decay=weight_decay, lr=lr),
                      metrics=[Accuracy()])
         self.xi = xi
         self.alpha = alpha
@@ -51,26 +49,21 @@ class GCN_VAT(TorchEngine):
     def forward(self, x, adj):
         return self.conv(x, adj)
 
-    def train_step_on_batch(self,
-                            x,
-                            y,
-                            out_index=None,
-                            device="cpu"):
-        self.train()
-        optimizer = self.optimizer
-        loss_fn = self.loss
-        optimizer.zero_grad()
-        x, y = to_device(x, y, device=device)
-        logit = self(*x)
-        out = self.index_select(logit, out_index=out_index)
-        loss = loss_fn(out, y) + self.alpha * self.virtual_adversarial_loss(x, logit)
+    def get_outputs(self, x):
+        z = self(*x)
+        return dict(z=z, x=x)
 
-        loss.backward()
-        optimizer.step()
-        self.update_metrics(out, y)
+    def compute_loss(self, output_dict, y, out_index=None):
+        # index select or mask outputs
+        output_dict = self.index_select(output_dict, out_index=out_index)
+        z = output_dict['z']
+        z_masked = output_dict['z_masked']
+        loss = self.loss(z_masked, y)
 
-        results = [loss.cpu().detach()] + [metric.result() for metric in self.metrics]
-        return dict(zip(self.metrics_names, results))
+        if self.training:
+            x = output_dict['x']
+            loss += self.alpha * self.virtual_adversarial_loss(x, z)
+        return loss
 
     def generate_virtual_adversarial_perturbation(self, inputs, logit):
         x, adj = inputs

@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 
 class LabelPropagation(nn.Module):
-    """label propagation model from https://github.com/CUAI/CorrectAndSmooth
+    """label propagation model adapted from https://github.com/CUAI/CorrectAndSmooth
     `"Learning from Labeled and
     Unlabeled Datawith Label Propagation"
     <http://mlg.eng.cam.ac.uk/zoubin/papers/CMU-CALD-02-107.pdf>`_ paper

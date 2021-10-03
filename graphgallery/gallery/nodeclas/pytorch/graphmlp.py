@@ -88,4 +88,4 @@ class DenseBatchSequence(Sequence):
             rand_indx[:out_index.size(0)] = out_index
         features_batch = x[rand_indx]
         adj_label_batch = adj[rand_indx, :][:, rand_indx]
-        return (features_batch, adj_label_batch), y, out_index
+        return features_batch, (y, adj_label_batch), slice(0, out_index.size(0))

@@ -119,18 +119,26 @@ class GRAND(TorchEngine):
 
             return self.mlp(X)
 
-    def compute_loss(self, outs, y, out_index=None):
+    # def compute_loss(self, output_dict, y, out_index=None):
+    #     # index select or mask outputs
+    #     output_dict = self.index_select(output_dict, out_index=out_index)
+    #     z_masked = output_dict['z_masked']
+    #     loss = self.loss(z_masked, y)
+    #     return loss
+
+    def compute_loss(self, output_dict, y, out_index=None):
         if self.training:
-            loss_consis = consis_loss(outs, temp=self.temp, lam=self.lam)
-            outs = [self.index_select(out, out_index=out_index) for out in outs]
+            zs = output_dict['z']
+            loss_consis = consis_loss(zs, temp=self.temp, lam=self.lam)
+            zs = [z[out_index] for z in zs]
             loss_sup = 0.
-            for out in outs:
-                loss_sup += self.loss(out, y)
-            loss_sup = loss_sup / len(outs)
-            return loss_sup + loss_consis, outs[0]
+            for z in zs:
+                loss_sup += self.loss(z, y)
+            loss_sup = loss_sup / len(zs)
+            output_dict['z_masked'] = zs[0]
+            return loss_sup + loss_consis
         else:
-            out = self.index_select(outs, out_index=out_index)
-            return self.loss(out, y), out
+            return super().compute_loss(output_dict, y, out_index)
 
 
 def consis_loss(logps, temp=0.5, lam=1.):

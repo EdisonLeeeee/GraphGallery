@@ -145,7 +145,7 @@ If you have any troubles, you can simply run `trainer.help()` for more messages.
 >>> import graphgallery
 # Default: PyTorch backend
 >>> graphgallery.backend()
-PyTorch 1.7.0cu101 Backend
+PyTorch 1.9.0+cu111 Backend
 # Switch to TensorFlow backend
 >>> graphgallery.set_backend("tf")
 # Switch to PyTorch backend

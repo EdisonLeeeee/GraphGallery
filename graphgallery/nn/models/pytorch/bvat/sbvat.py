@@ -54,27 +54,25 @@ class SBVAT(TorchEngine):
     def forward(self, x, adj):
         return self.conv(x, adj)
 
-    def train_step_on_batch(self,
-                            x,
-                            y,
-                            out_index=None,
-                            device="cpu"):
-        self.train()
-        optimizer = self.optimizer
-        loss_fn = self.loss
-        optimizer.zero_grad()
-        x, y = to_device(x, y, device=device)
-        logit = self(*x[:-1])
-        out = self.index_select(logit, out_index=out_index)
-        loss = loss_fn(out, y) + self.p1 * self.virtual_adversarial_loss(x, logit) + \
-            self.p2 * self.entropy_loss(logit)
+    def get_outputs(self, x):
+        if self.training:
+            z = self(*x[:-1])
+        else:
+            z = self(*x)
+        return dict(z=z, x=x)
 
-        loss.backward()
-        optimizer.step()
-        self.update_metrics(out, y)
+    def compute_loss(self, output_dict, y, out_index=None):
+        # index select or mask outputs
+        output_dict = self.index_select(output_dict, out_index=out_index)
+        z = output_dict['z']
+        z_masked = output_dict['z_masked']
+        loss = self.loss(z_masked, y)
 
-        results = [loss.cpu().detach()] + [metric.result() for metric in self.metrics]
-        return dict(zip(self.metrics_names, results))
+        if self.training:
+            x = output_dict['x']
+            loss += + self.p1 * self.virtual_adversarial_loss(x, z) + \
+                self.p2 * self.entropy_loss(z)
+        return loss
 
     def generate_virtual_adversarial_perturbation(self, inputs, logit):
         x, adj, adv_mask = inputs

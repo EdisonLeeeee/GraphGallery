@@ -1,2 +1,2 @@
-from .gcn_vat import GCN_VAT
+from .gcn_vat import GCNVAT
 from .graph_vat import GraphVAT

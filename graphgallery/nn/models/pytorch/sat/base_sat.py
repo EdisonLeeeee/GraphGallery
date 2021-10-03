@@ -42,7 +42,8 @@ class BaseSAT(TorchEngine):
 
         loss.backward()
         optimizer.step()
-        self.update_metrics(out, y)
+        out = dict(z_masked=out)
+        metrics = self.compute_metrics(out, y)
 
-        results = [loss.cpu().detach()] + [metric.result() for metric in self.metrics]
+        results = [loss.cpu().detach()] + metrics
         return dict(zip(self.metrics_names, results))

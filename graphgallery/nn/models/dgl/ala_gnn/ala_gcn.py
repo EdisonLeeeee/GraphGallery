@@ -4,7 +4,6 @@ import torch.nn.functional as F
 from torch import optim
 
 from graphgallery.nn.models import TorchEngine
-from graphgallery.nn.models.torch_engine import to_device
 from graphgallery.nn.metrics.pytorch import Accuracy
 from graphgallery.nn.layers.dgl import GatedLayer
 
@@ -84,7 +83,6 @@ class ALaGCN(TorchEngine):
         self.init_weight_y = torch.mm(
             torch.mm(torch.cholesky_inverse(A), feats.t()), labels_one_hot
         )
-        return
 
     def forward(self, x, g):
 
@@ -104,18 +102,18 @@ class ALaGCN(TorchEngine):
                 h = self.dropout(h)
                 list_z.append(z)
 
-        out = self.lin(h)
-        if self.training:
-            self.cache['z'] = torch.stack(list_z, dim=1)  # (n_nodes, n_layers)
+        z = self.lin(h)
+        z_stack = torch.stack(list_z, dim=1)  # (n_nodes, n_layers)
+        return dict(z=z, z_stack=z_stack)
 
-        return out
-
-    def compute_loss(self, out, y, out_index=None):
+    def compute_loss(self, output_dict, y, out_index=None):
         # index select or mask outputs
-        out = self.index_select(out, out_index=out_index)
-        loss = self.loss(out, y)
+        output_dict = self.index_select(output_dict, out_index=out_index)
+        z_masked = output_dict['z_masked']
+        loss = self.loss(z_masked, y)
 
         if self.training:
-            z = self.cache.pop('z')
+            z = output_dict['z_stack']
             loss += torch.norm(z * (torch.ones_like(z) - z), p=1) * self.binary_reg
-        return loss, out
+
+        return loss

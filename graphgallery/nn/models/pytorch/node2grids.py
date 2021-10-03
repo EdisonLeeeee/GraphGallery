@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch import optim
 
-from graphgallery.nn.models.torch_engine import TorchEngine, to_device
+from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.metrics.pytorch import Accuracy
 from graphgallery.nn.layers.pytorch import activations
 
@@ -57,39 +57,20 @@ class Node2GridsCNN(TorchEngine):
         x = attention * x + x
         x = x.view(x.size(0), -1)
         out = self.lin(x)
-
         return out
 
-    def compute_loss(self, out, y, out_index=None):
+    def compute_loss(self, output_dict, y, out_index=None):
         # index select or mask outputs
-        out = self.index_select(out, out_index=out_index)
-        attention = self.attention.view(-1)
-        attentionloss = self.att_reg * torch.sum(attention ** 2)
-        loss = self.loss(out, y) + attentionloss
-        return loss, out
+        output_dict = self.index_select(output_dict, out_index=out_index)
+        z_masked = output_dict['z_masked']
+        loss = self.loss(z_masked, y)
+        if self.training:
+            attention = self.attention.view(-1)
+            loss += self.att_reg * torch.sum(attention ** 2)
+        return loss
 
-    def train_step_on_batch(self,
-                            x,
-                            y,
-                            out_index=None,
-                            device="cpu"):
-        self.train()
-        optimizer = self.optimizer
-        optimizer.zero_grad()
-        x, y = to_device(x, y, device=device)
-        # 1. forward
-        out = self(*x)
-        # 2. compute loss and update model
-        loss, out = self.compute_loss(out, y, out_index=out_index)
+    def loss_backward(self, loss):
         # here I exactly follow the author's implementation in
         # <https://github.com/Ray-inthebox/Node2Gridss>
         # But what is it????
         loss.backward(loss)
-        optimizer.step()
-        if self.scheduler is not None:
-            self.scheduler.step()
-        # 3. update evaluation metrics
-        self.update_metrics(out, y)
-
-        results = [loss.cpu().detach()] + [metric.result() for metric in self.metrics]
-        return dict(zip(self.metrics_names, results))

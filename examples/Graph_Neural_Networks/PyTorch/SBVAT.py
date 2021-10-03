@@ -19,7 +19,7 @@ splits = data.split_nodes()
 graphgallery.set_backend("pytorch")
 
 from graphgallery.gallery.nodeclas import SBVAT
-trainer = SBVAT(device="gpu", seed=123).setup_graph(graph, attr_transform="normalize_attr").build()
+trainer = SBVAT(device="gpu", seed=123).setup_graph(graph, attr_transform=None).build()
 trainer.fit(splits.train_nodes, splits.val_nodes, verbose=1, epochs=200)
 results = trainer.evaluate(splits.test_nodes)
 print(f'Test loss {results.loss:.5}, Test accuracy {results.accuracy:.2%}')

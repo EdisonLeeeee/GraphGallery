@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch import optim
 
-from graphgallery.nn.models.torch_engine import TorchEngine, to_device
+from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.models.pytorch.graphat.utils import *
 from graphgallery.nn.layers.pytorch import GCNConv, Sequential, activations
 from graphgallery.nn.metrics.pytorch import Accuracy
@@ -42,10 +42,8 @@ class GraphVAT(TorchEngine):
 
         self.conv = conv
         self.compile(loss=nn.CrossEntropyLoss(),
-                     optimizer=optim.Adam([dict(params=conv[1].parameters(),
-                                                weight_decay=weight_decay),
-                                           dict(params=conv[2:].parameters(),
-                                                weight_decay=0.)], lr=lr),
+                     optimizer=optim.Adam(self.parameters(),
+                                          weight_decay=weight_decay, lr=lr),
                      metrics=[Accuracy()])
         self.xi = xi
         self.alpha = alpha
@@ -59,30 +57,26 @@ class GraphVAT(TorchEngine):
     def forward(self, x, adj):
         return self.conv(x, adj)
 
-    def train_step_on_batch(self,
-                            x,
-                            y,
-                            out_index=None,
-                            device="cpu"):
-        self.train()
-        optimizer = self.optimizer
-        loss_fn = self.loss
-        optimizer.zero_grad()
-        inputs, y = to_device(x, y, device=device)
-        x, adj, adjacency = inputs
-        x = nn.Parameter(x)
-        neighbors = torch.LongTensor(self.sampler(adjacency))
-        logit = self(x, adj)
-        out = self.index_select(logit, out_index=out_index)
-        loss = loss_fn(out, y) + self.alpha * self.virtual_adversarial_loss((x, adj), logit) + \
-            self.beta * self.graph_adversarial_loss((x, adj), logit, neighbors)
+    def get_outputs(self, x):
+        if self.training:
+            # this is used to calculate the adversarial gradients
+            x = (nn.Parameter(x[0]), *x[1:])
+        z = self(*x[:2])
+        return dict(z=z, x=x)
 
-        loss.backward()
-        optimizer.step()
-        self.update_metrics(out, y)
+    def compute_loss(self, output_dict, y, out_index=None):
+        # index select or mask outputs
+        output_dict = self.index_select(output_dict, out_index=out_index)
+        z = output_dict['z']
+        z_masked = output_dict['z_masked']
+        loss = self.loss(z_masked, y)
 
-        results = [loss.cpu().detach()] + [metric.result() for metric in self.metrics]
-        return dict(zip(self.metrics_names, results))
+        if self.training:
+            x, adj, adjacency = output_dict['x']
+            neighbors = torch.LongTensor(self.sampler(adjacency))
+            loss += self.alpha * self.virtual_adversarial_loss((x, adj), z) + \
+                self.beta * self.graph_adversarial_loss((x, adj), z, neighbors)
+        return loss
 
     def generate_virtual_adversarial_perturbation(self, inputs, logit):
         x, adj = inputs

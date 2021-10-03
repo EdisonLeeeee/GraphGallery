@@ -47,10 +47,6 @@ class APPNP(TorchEngine):
                                                 weight_decay=0.)], lr=lr),
                      metrics=[Accuracy()])
 
-    def reset_parameters(self):
-        for layer in self.lin:
-            layer.reset_parameters()
-
     def forward(self, x, adj):
         x = self.lin(x)
         x = self.propagation(x, adj)

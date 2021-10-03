@@ -14,7 +14,8 @@ for backend in ['th', 'dgl', 'pyg', 'tf']:
     gg.set_backend(backend)
     for device in ['cpu', 'cuda', 'gpu']:
         for name, m in gg.gallery.nodeclas.models():
-            if name in ['LGCN', 'GraphMLP', 'PDN']: continue
+            if name in ['LGCN', 'GraphMLP', 'PDN', 'ClusterGCN']:
+                continue
             print(backend, device, name)
             trainer = m(device=device)
             trainer.setup_graph(graph, attr_transform=None)

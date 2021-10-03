@@ -89,33 +89,18 @@ class GraphMLP(TorchEngine):
         self.alpha = alpha
 
     def forward(self, x):
-        x = self.mlp(x)
+        h = self.mlp(x)
+        z = self.classifier(h)
+        return dict(z=z, h=h)
 
-        feature_cls = x
-        out = self.classifier(feature_cls)
+    def compute_loss(self, output_dict, y, out_index=None):
+        # index select or mask outputs
+        output_dict = self.index_select(output_dict, out_index=out_index)
+        z_masked = output_dict['z_masked']
 
         if self.training:
-            x_dis = get_feature_dis(x)
-            return out, x_dis
+            x_dis = get_feature_dis(output_dict['h'])
+            loss = self.loss(z_masked, y[0]) + Ncontrast(x_dis, y[1], tau=self.tau) * self.alpha
         else:
-            return out
-
-    def train_step_on_batch(self,
-                            x,
-                            y,
-                            out_index=None,
-                            device="cpu"):
-        self.train()
-        optimizer = self.optimizer
-        loss_fn = self.loss
-        optimizer.zero_grad()
-        x, y = to_device(x, y, device=device)
-        out, x_dis = self(x[0])  # x[0] is the input node feature
-        out = out[:out_index.size(0)]
-        loss = loss_fn(out, y) + Ncontrast(x_dis, x[1], tau=self.tau) * self.alpha  # x[1] is the input adj_label
-        loss.backward()
-        optimizer.step()
-        self.update_metrics(out, y)
-
-        results = [loss.cpu().detach()] + [metric.result() for metric in self.metrics]
-        return dict(zip(self.metrics_names, results))
+            loss = self.loss(z_masked, y)
+        return loss

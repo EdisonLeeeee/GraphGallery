@@ -88,7 +88,7 @@ class SimPGCN(TorchEngine):
 
         adj_knn = self.from_cache(adj_knn=adj_knn)
         gamma = self.gamma
-        embeddings = None
+        h = None
 
         for ix, (layer, act) in enumerate(zip(self.layers, self.act_layers)):
             s = torch.sigmoid(x @ self.scores[ix] + self.bias[ix])
@@ -99,14 +99,24 @@ class SimPGCN(TorchEngine):
                 x = self.dropout(x)
 
             if ix == len(self.layers) - 2:
-                embeddings = x.clone()
+                h = x.clone()
 
+        z = x
         # self.ss = torch.cat((s_i.view(1, -1), s_o.view(1, -1), gamma * Dk_i.view(1, -1), gamma * Dk_o.view(1, -1)), dim=0)
+        return dict(z=z, h=h)
+
+    def compute_loss(self, output_dict, y, out_index=None):
+        # index select or mask outputs
+        output_dict = self.index_select(output_dict, out_index=out_index)
+        z_masked = output_dict['z_masked']
 
         if self.training:
-            return x, embeddings
+            embeddings = output_dict['h']
+            y, pseudo_labels, node_pairs = y
+            loss = self.loss(z_masked, y) + self.lambda_ * self.regression_loss(embeddings, pseudo_labels, node_pairs)
         else:
-            return x
+            loss = self.loss(z_masked, y)
+        return loss
 
     def regression_loss(self, embeddings, pseudo_labels=None, node_pairs=None):
         pseudo_labels, node_pairs = self.from_cache(pseudo_labels=pseudo_labels,
@@ -125,32 +135,3 @@ class SimPGCN(TorchEngine):
             embeddings = self.linear(torch.abs(embeddings0 - embeddings1))
             loss = F.mse_loss(embeddings, pseudo_labels.unsqueeze(-1), reduction='mean')
         return loss
-
-    def train_step_on_batch(self,
-                            x,
-                            y=None,
-                            out_index=None,
-                            device="cpu"):
-        self.train()
-        optimizer = self.optimizer
-        loss_fn = self.loss
-        optimizer.zero_grad()
-
-        assert len(x) == 5
-        *x, pseudo_labels, node_pairs = x
-
-        out, embeddings = self(*x)
-        out = self.index_select(out, out_index=out_index)
-
-        # TODO
-        loss = loss_fn(out, y) + self.lambda_ * self.regression_loss(embeddings, pseudo_labels, node_pairs)
-
-        loss.backward()
-        optimizer.step()
-        if self.scheduler is not None:
-            self.scheduler.step()
-
-        self.update_metrics(out, y)
-        results = [loss.cpu().detach()] + [metric.result() for metric in self.metrics]
-
-        return dict(zip(self.metrics_names, results))

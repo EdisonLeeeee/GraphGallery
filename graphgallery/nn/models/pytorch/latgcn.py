@@ -37,7 +37,7 @@ class LATGCN(TorchEngine):
 
         self.zeta = nn.Parameter(torch.randn(num_nodes, hids[0]))
         self.conv1 = conv[:3]  # includes dropout, ReLU and the first GCN layer
-        self.conv2 = conv[3:]  # remainder
+        self.conv2 = conv[3:]  # the remaining
         self.compile(loss=nn.CrossEntropyLoss(),
                      optimizer=optim.Adam([dict(params=self.conv1.parameters(),
                                                 weight_decay=weight_decay),
@@ -79,18 +79,19 @@ class LATGCN(TorchEngine):
             reg_loss = -reg_loss
             reg_loss.backward()
             zeta_opt.step()
-
         optimizer.zero_grad()
-        out, reg_loss = self(*x)
-        out = self.index_select(out, out_index=out_index)
-        loss = loss_fn(out, y) + self.gamma * reg_loss
+        z, reg_loss = self(*x)
+        output_dict = dict(z=z)
+        output_dict = self.index_select(output_dict, out_index=out_index)
+
+        loss = loss_fn(output_dict['z_masked'], y) + self.gamma * reg_loss
         loss.backward()
         optimizer.step()
         if self.scheduler is not None:
             self.scheduler.step()
-        self.update_metrics(out, y)
+        metrics = self.compute_metrics(output_dict, y)
 
-        results = [loss.cpu().detach()] + [metric.result() for metric in self.metrics]
+        results = [loss.cpu().detach()] + metrics
         return dict(zip(self.metrics_names, results))
 
 

@@ -6,7 +6,7 @@ from graphgallery.nn.models import get_model
 
 
 @PyTorch.register()
-class GCN_VAT(Trainer):
+class GCNVAT(Trainer):
     """
         Implementation of Graph Convolutional Networks (GCN) with Virtual Adversarial Training (VAT).
         `Graph Adversarial Training: Dynamically Regularizing Based on Graph Structure
@@ -39,7 +39,7 @@ class GCN_VAT(Trainer):
                    epsilon=5e-2,
                    num_power_iterations=1):
 
-        model = get_model("graphat.GCN_VAT", self.backend)
+        model = get_model("graphat.GCNVAT", self.backend)
         model = model(self.graph.num_node_attrs,
                       self.graph.num_node_classes,
                       xi=xi,
