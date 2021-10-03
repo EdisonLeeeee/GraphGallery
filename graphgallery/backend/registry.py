@@ -42,10 +42,10 @@ def load_models(package, mapping, backend_name=None, sub_module=None):
 def load_models_only_tf_and_torch(package, mapping, backend_name=None, sub_module=None):
     _backend = backend(backend_name)
     thismod = sys.modules[package]
-    if _backend == "tensorflow":
-        _backend = backend("tensorflow")
-    else:
+    if _backend == "torch":
         _backend = backend("pytorch")
+    else:
+        _backend = backend("tensorflow")
     registry = get_registry(mapping, _backend)
     if sub_module:
         module_path = f".{sub_module}.{_backend.abbr}"

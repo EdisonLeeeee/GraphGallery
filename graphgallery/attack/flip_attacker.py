@@ -25,7 +25,7 @@ class FlipAttacker(Attacker):
 
         adj = self.modified_adj
 
-        if gf.is_anytensor(adj):
+        if gf.is_tensor(adj):
             adj = gf.tensoras(adj)
 
         if isinstance(adj, np.ndarray):

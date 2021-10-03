@@ -10,10 +10,10 @@ def random_seed(seed=None, backend=None):
     backend = gg.backend(backend)
     np.random.seed(seed)
     random.seed(seed)
-    if backend == "tensorflow":
-        import tensorflow as tf
-        tf.random.set_seed(seed)
-    else:
+    if backend == "torch":
         torch.manual_seed(seed)
         torch.cuda.manual_seed(seed)
 #         torch.cuda.manual_seed_all(seed)
+    else:
+        import tensorflow as tf
+        tf.random.set_seed(seed)

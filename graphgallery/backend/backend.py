@@ -301,12 +301,12 @@ def set_backend(module_name=None):
             importlib.reload(graphclas)
             importlib.reload(linkpred)
             # attacker models
-            from graphgallery.attack import targeted
-            from graphgallery.attack import untargeted
-            from graphgallery.attack import backdoor
-            importlib.reload(targeted)
-            importlib.reload(untargeted)
-            importlib.reload(backdoor)
+            # from graphgallery.attack import targeted
+            # from graphgallery.attack import untargeted
+            # from graphgallery.attack import backdoor
+            # importlib.reload(targeted)
+            # importlib.reload(untargeted)
+            # importlib.reload(backdoor)
         except Exception as e:
             print(
                 f"Something went wrong when switching to other backend.",

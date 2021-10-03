@@ -1,12 +1,13 @@
 import torch
 import numpy as np
-import scipy.sparse as sp
 from typing import Any, Union, Optional
 
 import graphgallery as gg
-from graphgallery import functional as gf
 
 from . import pytorch
+
+if gg.TF_ENABLED:
+    from . import tensorflow
 
 
 def get_module(backend=None):
@@ -25,18 +26,18 @@ def get_module(backend=None):
     Returns
     -------
     module:
-    - 'graphgallery.functional.tensor.tensorflow'
-        for tensorflow backend,
     - 'graphgallery.functional.tensor.pytorch'
         for pytorch backend
+    - 'graphgallery.functional.tensor.tensorflow'
+        for tensorflow backend,
     """
     backend = gg.backend(backend)
 
-    if backend == "tensorflow":
-        from . import tensorflow
-        return tensorflow
-    else:
+    if backend == "torch":
         return pytorch
+    else:
+        assert gg.TF_ENABLED, 'Currently tensorflow backend is not enabled'
+        return tensorflow
 
 
 def infer_type(x: Any) -> str:
@@ -65,7 +66,6 @@ def infer_type(x: Any) -> str:
             raise TypeError(f"Invalid type of pytorch Tensor: '{type(x)}'")
 
     elif gg.TF_ENABLED:
-        from . import tensorflow
         if tensorflow.is_tensor(x):
             if x.dtype.is_floating:
                 return gg.floatx()

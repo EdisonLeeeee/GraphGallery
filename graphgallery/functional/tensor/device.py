@@ -3,6 +3,10 @@ import graphgallery as gg
 
 from .pytorch import device as th_device
 
+if gg.TF_ENABLED:
+    from .tensorflow import device as tf_device
+    import tensorflow as tf
+
 __all__ = ['device']
 
 
@@ -30,20 +34,20 @@ def device(device=None, backend=None):
 
     if device is None:
         # by default, return CPU device
-        if backend == "tensorflow":
-            from .tensorflow import device as tf_device
-            return tf_device.cpu()
-        elif backend == "torch":
+        if backend == "torch":
             return th_device.cpu()
+        elif backend == "tensorflow":
+            assert gg.TF_ENABLED, 'Currently tensorflow backend is not enabled'
+            return tf_device.cpu()
         else:
             raise RuntimeError("This may not happen!")
 
-    # existing tensorflow device
-    if hasattr(device, '_device_name'):
-        _device = device._device_name
     # existing pytorch device
-    elif isinstance(device, torch.device):
+    if isinstance(device, torch.device):
         _device = str(device)
+    # existing tensorflow device
+    elif hasattr(device, '_device_name'):
+        _device = device._device_name
 
     _device = str(device).lower().split('/')[-1]
     _device, *_device_id = _device.split(":")
@@ -70,12 +74,12 @@ def device(device=None, backend=None):
                 raise RuntimeError(f"CUDA is unavailable for {backend}.")
             # empty cache to avoid unnecessary memory usage
             # TODO: is this necessary?
-            torch.cuda.empty_cache()
+            # torch.cuda.empty_cache()
             return th_device.gpu(_device_id)
 
+    assert gg.TF_ENABLED, 'Currently tensorflow backend is not enabled'
+
     # tensorflow backend returns 'string'
-    from .tensorflow import device as tf_device
-    tf = backend.module
     if _device == "cpu":
         return tf_device.cpu(_device_id)
     # FIXME: Tensorflow 2.4.0 requires cuDNN 8.0 and CUDA 11.0

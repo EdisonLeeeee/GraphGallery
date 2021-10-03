@@ -16,7 +16,7 @@ from graphgallery import sequence
 from graphgallery import data
 from graphgallery import datasets
 from graphgallery import functional
-from graphgallery import attack
+# from graphgallery import attack
 
 from .version import __version__
 

@@ -1,11 +1,15 @@
 import numpy as np
 import scipy.sparse as sp
-from typing import Any, Optional
+from typing import Any
 
 import graphgallery as gg
 from graphgallery import functional as gf
 
 from .ops import get_module
+from . import pytorch
+
+if gg.TF_ENABLED:
+    from . import tensorflow
 
 
 def data_type_dict(backend=None) -> dict:
@@ -88,29 +92,6 @@ def is_tensor(x: Any, backend=None) -> bool:
     return module.is_tensor(x)
 
 
-def is_anytensor(x: Any) -> bool:
-    """Check whether 'x' is
-        any of
-        tf.Tensor,
-        tf.Variable,
-        tf.RaggedTensor,
-        tf.sparse.SparseTensor,
-        torch.Tensor,
-        torch.sparse.Tensor.
-    Parameters:
-    ----------
-    x: A python object to check.
-    backend: String or BackendModule, optional.
-        'tensorflow', 'torch', TensorFlowBackend, PyTorchBackend, etc.
-        if not specified, return the current default backend module.
-
-    Returns:
-    -------
-    `True` iff x is any of (tf or torch) (sparse-)tensor.
-    """
-    return is_tensor(x, "tensorflow") or is_tensor(x, "torch")
-
-
 def astensor(x, *, dtype=None, device=None,
              backend=None, escape=None):
     """Convert input object to Tensor or SparseTensor.
@@ -188,18 +169,20 @@ def astensors(*xs, dtype=None, device=None,
 @gf.multiple()
 def tensor2tensor(tensor, *, device=None):
     """Convert a TensorFLow tensor to PyTorch Tensor, or vice versa.
-    """
-    from . import tensorflow
-    from . import pytorch
 
-    if tensorflow.is_tensor(tensor):
-        m = tensoras(tensor)
-        device = gf.device(device, backend="torch")
-        return astensor(m, device=device, backend="torch")
-    elif pytorch.is_tensor(tensor):
+    Note:
+    ------
+    This function requires the tensorflow package installed.
+    """
+    assert gg.TF_ENABLED, 'Currently tensorflow backend is not enabled.'
+    if pytorch.is_tensor(tensor):
         m = tensoras(tensor)
         device = gf.device(device, backend="tensorflow")
         return astensor(m, device=device, backend="tensorflow")
+    elif tensorflow.is_tensor(tensor):
+        m = tensoras(tensor)
+        device = gf.device(device, backend="torch")
+        return astensor(m, device=device, backend="torch")
     else:
         raise ValueError(
             f"The input must be a TensorFlow or PyTorch Tensor, buf got {type(tensor).__name__}"
@@ -211,19 +194,17 @@ def tensoras(tensor):
     """Convert a TensorFLow tensor or PyTorch Tensor
         to Numpy array or Scipy sparse matrix.
     """
-    from . import tensorflow
-    from . import pytorch
 
-    if tensorflow.is_dense(tensor):
-        m = tensor.numpy()
-    elif tensorflow.is_sparse(tensor):
-        m = tensorflow.sparse_tensor_to_sparse_adj(tensor)
-    elif pytorch.is_dense(tensor):
+    if pytorch.is_dense(tensor):
         m = tensor.detach().cpu().numpy()
         if m.ndim == 0:
             m = m.item()
     elif pytorch.is_sparse(tensor):
         m = pytorch.sparse_tensor_to_sparse_adj(tensor)
+    elif gg.TF_ENABLED and tensorflow.is_dense(tensor):
+        m = tensor.numpy()
+    elif gg.TF_ENABLED and tensorflow.is_sparse(tensor):
+        m = tensorflow.sparse_tensor_to_sparse_adj(tensor)
     elif isinstance(tensor, np.ndarray) or sp.isspmatrix(tensor):
         m = tensor.copy()
     else:
