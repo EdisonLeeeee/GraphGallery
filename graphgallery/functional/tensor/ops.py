@@ -98,11 +98,6 @@ def gather(x, index_or_mask=None, *, backend=None):
     return module.gather(x, index_or_mask)
 
 
-def to(tensor, device_or_dtype):
-    # TODO
-    raise NotImplemented
-
-
 def sparse_adj_to_sparse_tensor(x, *, backend=None):
     """Converts a Scipy sparse matrix to a TensorFlow/PyTorch SparseTensor.
 

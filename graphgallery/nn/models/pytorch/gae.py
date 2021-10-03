@@ -7,8 +7,7 @@ from graphgallery.nn.metrics.pytorch import AveragePrecision, AUC
 from graphgallery.nn.losses import BCELoss
 from graphgallery.nn.models import TorchEngine
 
-from torch_geometric.utils import (negative_sampling, remove_self_loops,
-                                   add_self_loops)
+from graphgallery.functional.torch_utils import negative_sampling
 
 
 class GAE(TorchEngine):
@@ -138,11 +137,6 @@ def get_outputs(self, x, out_index=None):
         pos_edge_index, neg_edge_index = out_index, None
     pos_pred = self.decoder(z, pos_edge_index)
     pos_y = z.new_ones(pos_edge_index.size(1))
-
-    # Do not include self-loops in negative samples
-    # TODO: is it necessary?
-    pos_edge_index, _ = remove_self_loops(pos_edge_index)
-    pos_edge_index, _ = add_self_loops(pos_edge_index)
 
     if neg_edge_index is None:
         neg_edge_index = negative_sampling(pos_edge_index, z.size(0))
