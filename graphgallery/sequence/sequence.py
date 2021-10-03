@@ -71,6 +71,7 @@ class FeatureLabelSequence(Sequence):
         self.y = self.astensor(y)
 
     def collate_fn(self, ids):
+        # TODO: for tensorflow backend
         return self.astensors(self.x[ids], self.y[ids])
 
 
@@ -112,16 +113,15 @@ class FastGCNBatchSequence(Sequence):
 
     def sampling(self, nodes, num_samples):
 
-        # 采样的源节点的邻接矩阵, 使用初始邻接矩阵相应的行
         adj_matrix = self.adj_matrix[nodes, :]
 
-        # 对源节点所有可用的目标节点计算重要性
+        # calculate importance
         neighbors = adj_matrix.sum(0).A1.nonzero()[0]
         if neighbors.size > num_samples:
             probability = self.probability[neighbors]
             probability = probability / np.sum(probability)
 
-            # 对目标节点按重要性采样
+            # importance sampling
             sampled_nodes = np.random.choice(neighbors,
                                              size=num_samples,
                                              replace=False,
@@ -130,9 +130,8 @@ class FastGCNBatchSequence(Sequence):
         else:
             sampled_nodes = neighbors
 
-        # 获得采样后的由源节点和目标节点组成的邻接矩阵
         sampled_adjacency = adj_matrix[:, sampled_nodes]
-        # 邻接矩阵归一化
+        # normalize
         sampled_probability = self.probability[sampled_nodes]
         sampled_adjacency = sampled_adjacency.dot(sp.diags(
             1.0 / (sampled_probability * num_samples)

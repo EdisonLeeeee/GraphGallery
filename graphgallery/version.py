@@ -1,4 +1,4 @@
-"""Copyright OGB
+"""The following codes are borrowed and adapted from OGB
 https://github.com/snap-stanford/ogb/blob/master/ogb/version.py
 """
 

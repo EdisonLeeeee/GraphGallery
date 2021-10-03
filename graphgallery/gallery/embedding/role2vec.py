@@ -49,7 +49,7 @@ class Role2Vec:
         new_features = [TaggedDocument(words=feature, tags=[str(node)]) for node, feature in new_features.items()]
         return new_features
 
-    def fit(self, graph: sp.csr_matrix):
+    def fit_step(self, graph: sp.csr_matrix):
         """
         Fitting a Role2vec model.
         """

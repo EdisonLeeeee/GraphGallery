@@ -62,11 +62,11 @@ class Trainer(Model):
         clf.fit(x_train, y_train)
         y_pred = clf.predict(x_test)
         y_pred_prob = clf.predict_proba(x_test)[:, 1]
-        accuracy = metrics.accuracy_score(y_test, y_pred)
         micro_f1 = metrics.f1_score(y_test, y_pred)
+        ap = metrics.average_precision_score(y_test, y_pred_prob)
         auc = metrics.roc_auc_score(y_test, y_pred_prob)
 
-        return gf.BunchDict({'micro_f1': micro_f1.item(), 'AUC': auc.item(), 'accuracy': accuracy.item()})
+        return gf.BunchDict({'micro_f1': micro_f1.item(), 'AUC': auc.item(), 'AP': ap.item()})
 
     def set_hyparas(self, kwargs: dict):
         for k, v in kwargs.items():

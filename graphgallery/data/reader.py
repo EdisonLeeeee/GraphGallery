@@ -7,7 +7,6 @@ from .io import read_csv, read_json
 
 
 class Reader:
-
     @staticmethod
     def read_graphs(filepath):
         graphs = read_json(filepath)

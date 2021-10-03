@@ -5,6 +5,7 @@ import errno
 import json
 import zipfile
 import shutil
+import pickle
 import os.path as osp
 import numpy as np
 import pandas as pd
@@ -15,10 +16,24 @@ from six.moves.urllib.request import urlretrieve
 
 from graphgallery.utils import Progbar
 
-__all__ = [
-    'download_file', 'files_exist', 'makedirs', 'makedirs_from_filepath', 'makedirs_rm_exist',
-    'extractall', 'remove', 'load_npz', 'read_csv', 'read_json', 'get_file',
-]
+__all__ = ['load_pickle', 'dump_pickle',
+           'download_file', 'files_exist',
+           'makedirs', 'makedirs_from_filepath', 'makedirs_rm_exist',
+           'extractall', 'remove',
+           'load_npz', 'read_csv', 'read_json', 'get_file',
+           ]
+
+
+def load_pickle(fname):
+    with open(fname, 'rb') as f:
+        obj = pickle.load(f)
+    return obj
+
+
+def dump_pickle(fname, obj):
+    with open(fname, 'wb') as f:
+        pickle.dump(obj, f)
+    return fname
 
 
 def download_file(raw_paths, urls):

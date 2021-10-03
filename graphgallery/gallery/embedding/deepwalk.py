@@ -28,7 +28,7 @@ class DeepWalk(Trainer):
         kwargs.pop("self")
         super().__init__(**kwargs)
 
-    def fit(self, graph: sp.csr_matrix):
+    def fit_step(self, graph: sp.csr_matrix):
         walks = RandomWalker(walk_length=self.walk_length,
                              walk_number=self.walk_number).walk(graph)
         sentences = [list(map(str, walk)) for walk in walks]
