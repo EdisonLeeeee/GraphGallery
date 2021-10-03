@@ -1,4 +1,4 @@
-from graphgallery.sequence import FullBatchSequence
+from graphgallery.data.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery import Trainer
 from graphgallery.nn.models import get_model
@@ -57,7 +57,7 @@ class LGC(Trainer):
                                      escape=type(self.cache.G))
         return sequence
 
-    
+
 @DGL.register()
 class EGC(LGC):
     """
@@ -66,6 +66,7 @@ class EGC(LGC):
         Pytorch implementation: <https://github.com/lpasa/LGC>
 
     """
+
     def model_step(self,
                    hids=[],
                    acts=[],
@@ -86,8 +87,9 @@ class EGC(LGC):
                       lr=lr,
                       bias=bias)
 
-        return model    
-    
+        return model
+
+
 @DGL.register()
 class hLGC(Trainer):
     """
@@ -137,4 +139,4 @@ class hLGC(Trainer):
                                      out_index=index,
                                      device=self.data_device,
                                      escape=type(self.cache.G))
-        return sequence    
+        return sequence

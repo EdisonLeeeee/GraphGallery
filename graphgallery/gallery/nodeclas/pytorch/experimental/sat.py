@@ -1,6 +1,6 @@
 import scipy.sparse as sp
 
-from graphgallery.sequence import FullBatchSequence
+from graphgallery.data.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
 from graphgallery.gallery import Trainer

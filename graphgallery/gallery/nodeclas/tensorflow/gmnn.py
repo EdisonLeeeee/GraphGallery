@@ -6,7 +6,7 @@ from tensorflow.keras import regularizers
 from tensorflow.keras.losses import CategoricalCrossentropy
 
 from graphgallery.nn.layers.tensorflow import GCNConv
-from graphgallery.sequence import FullBatchSequence
+from graphgallery.data.sequence import FullBatchSequence
 from graphgallery.nn.models.tf_keras import TFKeras
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import TensorFlow
@@ -123,7 +123,7 @@ class GMNN(Trainer):
 
         if tf.is_tensor(label_predict):
             label_predict = label_predict.numpy()
-            
+
         label_predict = gf.softmax(label_predict)
         label_predict[train_data] = self.cache.Y[train_data]
 

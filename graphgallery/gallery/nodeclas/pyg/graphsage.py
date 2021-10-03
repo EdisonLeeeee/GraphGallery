@@ -1,5 +1,5 @@
 import numpy as np
-from graphgallery.sequence import PyGSAGESequence
+from graphgallery.data.sequence import PyGSAGESequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyG
 from graphgallery.gallery import Trainer

@@ -1,5 +1,5 @@
 import numpy as np
-from graphgallery.sequence import MiniBatchSequence
+from graphgallery.data.sequence import MiniBatchSequence
 from graphgallery.gallery import Trainer
 from graphgallery.nn.models import get_model
 from graphgallery import functional as gf

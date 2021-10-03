@@ -207,7 +207,7 @@ class TorchKeras(nn.Module):
         return torch.load(filepath)
 
     def extra_repr(self):
-        return f"(optimizer): {self.optimizer}"
+        return f"(optimizer): {self.optimizer}\n(scheduler): {self.scheduler}"
 
 
 def reset(nn):

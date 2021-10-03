@@ -7,7 +7,7 @@ from tensorflow.keras.initializers import TruncatedNormal
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 from graphgallery.nn.layers.tensorflow import GCNConv
-from graphgallery.sequence import FullBatchSequence
+from graphgallery.data.sequence import FullBatchSequence
 from graphgallery.gallery.nodeclas.tensorflow.bvat.utils import kl_divergence_with_logit, entropy_y_x
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import TensorFlow

@@ -1,5 +1,5 @@
 import numpy as np
-from graphgallery.sequence import FullBatchSequence, Sequence
+from graphgallery.data.sequence import FullBatchSequence, Sequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
 from graphgallery.gallery import Trainer

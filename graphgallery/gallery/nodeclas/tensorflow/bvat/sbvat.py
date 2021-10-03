@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-from graphgallery.sequence import SBVATSampleSequence, FullBatchSequence
+from graphgallery.data.sequence import SBVATSampleSequence, FullBatchSequence
 from graphgallery.gallery.nodeclas.tensorflow.bvat.utils import get_normalized_vector, kl_divergence_with_logit, entropy_y_x
 
 from graphgallery.functional.tensor.tensorflow import gather

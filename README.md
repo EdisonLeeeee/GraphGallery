@@ -28,7 +28,7 @@ GraphGallery is a gallery for benchmarking Graph Neural Networks (GNNs) and Grap
 
 # 💨 NEWS
 + We have removed the TensorFlow dependency and use PyTorch as the default backend for GraphGallery.
-+ We have integrated the **Adversarial Attacks** in this project, examples please refer to [Graph Adversarial Learning examples](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Adversarial_Learning).
+<!-- + We have integrated the **Adversarial Attacks** in this project, examples please refer to [Graph Adversarial Learning examples](https://github.com/EdisonLeeeee/GraphGallery/blob/master/examples/Graph_Adversarial_Learning). -->
 
 # 🚀 Installation
 Please make sure you have installed [PyTorch](https://pytorch.org/). Also, [TensorFlow](https://www.tensorflow.org/), [Pytorch Geometric (PyG)](https://github.com/rusty1s/pytorch_geometric) and [Deep Graph Library (DGL)](https://www.dgl.ai/) are alternative choices.
@@ -99,6 +99,7 @@ graph_transform="purification_method"
 ```
 
 so, here we only give the examples of `GCN` with purification methods, other models should work.
+
 | Method          | Author                 | Paper                                                                                                                                       | PyTorch            | TensorFlow         | PyG                | DGL                |
 | --------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | ------------------ | ------------------ | ------------------ |
 | **GCN-Jaccard** | *Huijun Wu et al*      | [Adversarial Examples on Graph Data: Deep Insights into Attack and Defense (IJCAI'19)](https://arxiv.org/abs/1903.01610)                    | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
@@ -111,6 +112,7 @@ so, here we only give the examples of `GCN` with purification methods, other mod
 
 ## Node Embedding
 The following methods are framework-agnostic.
+
 | Method        | Author                            | Paper                                                                                                           | PyTorch            | TensorFlow         | PyG                | DGL                |
 | ------------- | --------------------------------- | --------------------------------------------------------------------------------------------------------------- | ------------------ | ------------------ | ------------------ | ------------------ |
 | **Deepwalk**  | *Bryan Perozzi et al*             | [DeepWalk: Online Learning of Social Representations (KDD'14)](https://arxiv.org/abs/1403.6652)                 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
@@ -185,7 +187,7 @@ mydataset = Graph.from_npz('path/to/mydataset.npz')
 
 # ❓ FAQ
 
-Please fell free to contact me if you have any troubles: lijt55@mail2.sysu.edu.cn
+Please fell free to contact me if you have any troubles.
 
 # 😘 Acknowledgement
 This project is motivated by [Pytorch Geometric](https://github.com/rusty1s/pytorch_geometric), [Tensorflow Geometric](https://github.com/CrawlScript/tf_geometric), [Stellargraph](https://github.com/stellargraph/stellargraph) and [DGL](https://www.dgl.ai/), etc., and the original implementations of the authors, thanks for their excellent works!

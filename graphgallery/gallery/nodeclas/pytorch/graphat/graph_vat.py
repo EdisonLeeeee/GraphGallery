@@ -1,4 +1,4 @@
-from graphgallery.sequence import NullSequence, FullBatchSequence
+from graphgallery.data.sequence import NullSequence, FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
 from graphgallery.gallery import Trainer

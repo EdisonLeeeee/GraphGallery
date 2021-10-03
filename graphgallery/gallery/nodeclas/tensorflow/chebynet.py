@@ -1,4 +1,4 @@
-from graphgallery.sequence import FullBatchSequence
+from graphgallery.data.sequence import FullBatchSequence
 from graphgallery.gallery import Trainer
 from graphgallery.nn.models import get_model
 from graphgallery import functional as gf

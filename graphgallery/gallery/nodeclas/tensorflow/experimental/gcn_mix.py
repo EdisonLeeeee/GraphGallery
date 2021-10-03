@@ -1,4 +1,4 @@
-from graphgallery.sequence import FullBatchSequence
+from graphgallery.data.sequence import FullBatchSequence
 from graphgallery.gallery.nodeclas import TensorFlow
 from ..fastgcn import FastGCN
 

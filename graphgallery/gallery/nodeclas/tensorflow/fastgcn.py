@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-from graphgallery.sequence import FastGCNBatchSequence
+from graphgallery.data.sequence import FastGCNBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import TensorFlow
 from graphgallery.gallery import Trainer

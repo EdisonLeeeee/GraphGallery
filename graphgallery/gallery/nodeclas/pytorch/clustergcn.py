@@ -1,5 +1,5 @@
 import numpy as np
-from graphgallery.sequence import MiniBatchSequence
+from graphgallery.data.sequence import MiniBatchSequence
 from graphgallery.gallery import Trainer
 from graphgallery.nn.models import get_model
 from graphgallery import functional as gf
@@ -39,7 +39,7 @@ class ClusterGCN(Trainer):
                             cluster_member=cluster_member)
         # for louvain clustering
         self.cfg.data.num_clusters = len(cluster_member)
-        
+
     def model_step(self,
                    hids=[32],
                    acts=['relu'],

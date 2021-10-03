@@ -1,4 +1,4 @@
-from graphgallery.sequence import FullBatchSequence, SBVATSampleSequence
+from graphgallery.data.sequence import FullBatchSequence, SBVATSampleSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
 from graphgallery.gallery import Trainer
