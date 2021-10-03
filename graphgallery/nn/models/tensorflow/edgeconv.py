@@ -5,11 +5,11 @@ from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 from graphgallery.nn.layers.tensorflow import GCNEdgeConv
-from graphgallery.nn.models.tf_keras import TFKeras
+from graphgallery.nn.models.tf_engine import TFEngine
 from graphgallery import floatx, intx
 
 
-class EdgeGCN(TFKeras):
+class EdgeGCN(TFEngine):
 
     def __init__(self, in_features, out_features,
                  hids=[16], acts=['relu'], dropout=0.5,

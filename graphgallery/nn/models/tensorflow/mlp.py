@@ -6,10 +6,10 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 
 from graphgallery import floatx
-from graphgallery.nn.models.tf_keras import TFKeras
+from graphgallery.nn.models.tf_engine import TFEngine
 
 
-class MLP(TFKeras):
+class MLP(TFEngine):
 
     def __init__(self, in_features, out_features,
                  hids=[16],

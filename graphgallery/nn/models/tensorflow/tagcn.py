@@ -7,10 +7,10 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 from graphgallery.nn.layers.tensorflow import TAGConv
 from graphgallery import floatx
-from graphgallery.nn.models.tf_keras import TFKeras
+from graphgallery.nn.models.tf_engine import TFEngine
 
 
-class TAGCN(TFKeras):
+class TAGCN(TFEngine):
 
     def __init__(self, in_features,
                  out_features,

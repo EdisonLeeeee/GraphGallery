@@ -2,13 +2,13 @@ import torch
 import torch.nn as nn
 from torch import optim
 
-from graphgallery.nn.models import TorchKeras
+from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.layers.pytorch import GCNConv, Sequential, activations
 from graphgallery.nn.metrics.pytorch import Accuracy
 # from torch_geometric.utils import dropout_adj
 
 
-class GCN(TorchKeras):
+class GCN(TorchEngine):
     def __init__(self,
                  in_features,
                  out_features,
@@ -44,7 +44,7 @@ class GCN(TorchKeras):
         return self.conv(x, adj)
 
 
-# class DropEdge(TorchKeras):
+# class DropEdge(TorchEngine):
 #     def __init__(self,
 #                  in_features,
 #                  out_features,

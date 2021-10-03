@@ -1,13 +1,13 @@
 import torch.nn as nn
 from torch import optim
 
-from graphgallery.nn.models import TorchKeras
+from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.metrics.pytorch import Accuracy
 from graphgallery.nn.layers.pytorch import Sequential, activations
 from graphgallery.nn.layers.dgl import MixHopConv
 
 
-class MixHop(TorchKeras):
+class MixHop(TorchEngine):
     def __init__(self,
                  in_features,
                  out_features, *,

@@ -1,8 +1,8 @@
 import torch
-from graphgallery.nn.models.torch_keras import TorchKeras, to_device
+from graphgallery.nn.models.torch_engine import TorchEngine, to_device
 
 
-class BaseSAT(TorchKeras):
+class BaseSAT(TorchEngine):
     def train_step_on_batch(self,
                             x,
                             y,

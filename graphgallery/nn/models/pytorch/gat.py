@@ -1,12 +1,12 @@
 import torch.nn as nn
 from torch import optim
 
-from graphgallery.nn.models import TorchKeras
+from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.layers.pytorch import GATConv, SparseGATConv, Sequential, activations
 from graphgallery.nn.metrics.pytorch import Accuracy
 
 
-class GAT(TorchKeras):
+class GAT(TorchEngine):
     def __init__(self,
                  in_features,
                  out_features,
@@ -25,19 +25,19 @@ class GAT(TorchKeras):
         conv.append(nn.Dropout(dropout))
         for hid, num_head, act in zip(hids, num_heads, acts):
             conv.append(SparseGATConv(in_features * head,
-                                             hid,
-                                             attn_heads=num_head,
-                                             reduction='concat',
-                                             bias=bias))
+                                      hid,
+                                      attn_heads=num_head,
+                                      reduction='concat',
+                                      bias=bias))
             conv.append(activations.get(act))
             conv.append(nn.Dropout(dropout))
             in_features = hid
             head = num_head
         conv.append(SparseGATConv(in_features * head,
-                                         out_features,
-                                         attn_heads=1,
-                                         reduction='average',
-                                         bias=bias))
+                                  out_features,
+                                  attn_heads=1,
+                                  reduction='average',
+                                  bias=bias))
         conv = Sequential(*conv)
 
         self.conv = conv

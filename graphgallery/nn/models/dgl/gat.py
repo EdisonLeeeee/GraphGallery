@@ -1,14 +1,14 @@
 import torch.nn as nn
 from torch import optim
 
-from graphgallery.nn.models import TorchKeras
+from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.layers.pytorch import Sequential, activations
 from graphgallery.nn.metrics.pytorch import Accuracy
 
 from dgl.nn.pytorch import GATConv
 
 
-class GAT(TorchKeras):
+class GAT(TorchEngine):
     def __init__(self,
                  in_features,
                  out_features,
@@ -52,6 +52,7 @@ class GAT(TorchKeras):
     def reset_parameters(self):
         for conv in self.conv:
             conv.reset_parameters()
+
     def forward(self, x, g):
         x = self.conv(g, x).mean(1)
         return x

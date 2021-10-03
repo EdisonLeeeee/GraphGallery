@@ -1,11 +1,12 @@
 import torch.nn as nn
 from torch import optim
 
-from graphgallery.nn.models import TorchKeras
+from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.metrics.pytorch import Accuracy
 from graphgallery.nn.layers.dgl import LGConv, EGConv, hLGConv
 
-class LGC(TorchKeras):
+
+class LGC(TorchEngine):
     def __init__(self,
                  in_features,
                  out_features,
@@ -42,8 +43,9 @@ class LGC(TorchKeras):
         x = self.dropout(x)
         x = self.conv(g, x)
         return x
-    
-class EGC(TorchKeras):
+
+
+class EGC(TorchEngine):
     def __init__(self,
                  in_features,
                  out_features,
@@ -79,9 +81,10 @@ class EGC(TorchKeras):
     def forward(self, x, g):
         x = self.dropout(x)
         x = self.conv(g, x)
-        return x    
-    
-class hLGC(TorchKeras):
+        return x
+
+
+class hLGC(TorchEngine):
     def __init__(self,
                  in_features,
                  out_features,
@@ -99,10 +102,10 @@ class hLGC(TorchKeras):
                 f"Arguments 'hids' and 'acts' are not supported to use in {self.__class__.__name__} (DGL backend).")
 
         conv = hLGConv(in_features,
-                      out_features,
-                      bias=bias,
-                      k=K,
-                      cached=True)
+                       out_features,
+                       bias=bias,
+                       k=K,
+                       cached=True)
         self.dropout = nn.Dropout(dropout)
         self.conv = conv
         self.compile(loss=nn.CrossEntropyLoss(),
@@ -117,4 +120,4 @@ class hLGC(TorchKeras):
     def forward(self, x, g):
         x = self.dropout(x)
         x = self.conv(g, x)
-        return x    
+        return x

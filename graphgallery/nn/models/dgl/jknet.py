@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch import optim
 
-from graphgallery.nn.models import TorchKeras
+from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.metrics.pytorch import Accuracy
 from graphgallery.nn.layers.pytorch import activations
 
@@ -10,7 +10,7 @@ import dgl.function as fn
 from dgl.nn.pytorch.conv import GraphConv
 
 
-class JKNet(TorchKeras):
+class JKNet(TorchEngine):
     def __init__(self,
                  in_features, out_features, *,
                  hids=[16] * 5, acts=['relu'] * 5,

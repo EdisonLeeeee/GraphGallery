@@ -182,7 +182,7 @@ class Trainer(Model):
             whether to use bias in each layer.
         use_tfn: bool,
             this argument is only used for TensorFlow backend, if `True`, it will decorate
-            the model training and testing with `tf.function` (See `graphgallery.nn.modes.tf_keras.TFKeras`).
+            the model training and testing with `tf.function` (See `graphgallery.nn.modes.tf_engine.TFEngine`).
             By default, it was `True`, which can accelerate the training and inference, by it may cause
             several errors.
         other arguments (if have) will be passed into your method 'model_step'.
@@ -427,12 +427,12 @@ class Trainer(Model):
     #     for var in model.optimizer.variables():
     #         var.assign(tf.zeros_like(var))
 
-    def reset_lr(self, value):
-        # TODO: add pytorch support
-        model = self.model
-        if not hasattr(model, 'optimizer'):
-            raise RuntimeError("The model has not attribute `optimizer`!")
-        model.optimizer.learning_rate.assign(value)
+    # def reset_lr(self, value):
+    #     # TODO: add pytorch support
+    #     model = self.model
+    #     if not hasattr(model, 'optimizer'):
+    #         raise RuntimeError("The model has not attribute `optimizer`!")
+    #     model.optimizer.learning_rate.assign(value)
 
     def remove_weights(self):
         filepath = self.cfg.fit.ModelCheckpoint.path

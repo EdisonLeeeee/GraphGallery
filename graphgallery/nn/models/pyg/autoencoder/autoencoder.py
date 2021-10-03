@@ -1,10 +1,10 @@
 import torch
-from graphgallery.nn.models.torch_keras import TorchKeras, to_device
+from graphgallery.nn.models.torch_engine import TorchEngine, to_device
 from torch_geometric.utils import (negative_sampling, remove_self_loops,
                                    add_self_loops)
 
 
-class AutoEncoder(TorchKeras):
+class AutoEncoder(TorchEngine):
 
     def encode(self, x, edge_index, edge_weight=None):
         return self.encoder(x, edge_index, edge_weight)

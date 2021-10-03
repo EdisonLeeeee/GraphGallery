@@ -7,7 +7,7 @@ from tensorflow.keras.losses import CategoricalCrossentropy
 
 from graphgallery.nn.layers.tensorflow import GCNConv
 from graphgallery.data.sequence import FullBatchSequence
-from graphgallery.nn.models.tf_keras import TFKeras
+from graphgallery.nn.models.tf_engine import TFEngine
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import TensorFlow
 from graphgallery.gallery import Trainer
@@ -70,7 +70,7 @@ class GMNN(Trainer):
             h = GCNConv(self.graph.num_node_classes,
                         use_bias=bias)([h, adj])
 
-            model = TFKeras(inputs=[x, adj], outputs=h)
+            model = TFEngine(inputs=[x, adj], outputs=h)
             model.compile(loss=CategoricalCrossentropy(from_logits=True),
                           optimizer=RMSprop(lr=lr),
                           metrics=['accuracy'])
@@ -83,7 +83,7 @@ class GMNN(Trainer):
 
         model_q.custom_objects = model_p.custom_objects = {
             'GCNConv': GCNConv,
-            "TFKeras": TFKeras,
+            "TFEngine": TFEngine,
         }
         self.model_p, self.model_q = model_p, model_q
         return model_q

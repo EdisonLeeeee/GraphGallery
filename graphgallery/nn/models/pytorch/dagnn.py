@@ -1,12 +1,12 @@
 import torch.nn as nn
 from torch import optim
 
-from graphgallery.nn.models import TorchKeras
+from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.layers.pytorch import DAGNNConv, activations
 from graphgallery.nn.metrics.pytorch import Accuracy
 
 
-class DAGNN(TorchKeras):
+class DAGNN(TorchEngine):
     def __init__(self, in_features, out_features, *,
                  hids=[64], acts=['relu'],
                  dropout=0.5, weight_decay=5e-4,

@@ -1,13 +1,13 @@
 import torch.nn as nn
 from torch import optim
 
-from graphgallery.nn.models import TorchKeras
+from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.metrics.pytorch import Accuracy
 
 from torch_geometric.nn import SGConv
 
 
-class SGC(TorchKeras):
+class SGC(TorchEngine):
     def __init__(self,
                  in_features,
                  out_features,

@@ -3,13 +3,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch import optim
 
-from graphgallery.nn.models.torch_keras import TorchKeras, to_device
+from graphgallery.nn.models.torch_engine import TorchEngine, to_device
 from graphgallery.nn.models.pytorch.bvat.utils import *
 from graphgallery.nn.layers.pytorch import GCNConv, Sequential, activations
 from graphgallery.nn.metrics.pytorch import Accuracy
 
 
-class OBVAT(TorchKeras):
+class OBVAT(TorchEngine):
     def __init__(self,
                  in_features,
                  out_features,

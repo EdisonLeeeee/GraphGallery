@@ -1,7 +1,7 @@
-from .torch_keras import TorchKeras
-# from .tf_keras import TFKeras
+from .torch_engine import TorchEngine
+# from .tf_engine import TFEngine
 
-__all__ = ["TorchKeras", "get_model"]
+__all__ = ["TorchEngine", "get_model"]
 
 import importlib
 import graphgallery as gg

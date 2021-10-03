@@ -2,12 +2,12 @@ import torch.nn as nn
 from torch import optim
 from torch_geometric.nn import GATConv
 
-from graphgallery.nn.models import TorchKeras
+from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.layers.pytorch import Sequential, activations
 from graphgallery.nn.metrics.pytorch import Accuracy
 
 
-class GAT(TorchKeras):
+class GAT(TorchEngine):
     def __init__(self,
                  in_features,
                  out_features,

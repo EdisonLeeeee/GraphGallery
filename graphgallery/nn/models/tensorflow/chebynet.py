@@ -5,11 +5,11 @@ from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 from graphgallery.nn.layers.tensorflow import ChebConv
-from graphgallery.nn.models.tf_keras import TFKeras
+from graphgallery.nn.models.tf_engine import TFEngine
 from graphgallery import floatx
 
 
-class ChebyNet(TFKeras):
+class ChebyNet(TFEngine):
 
     def __init__(self, in_features, out_features,
                  hids=[16],

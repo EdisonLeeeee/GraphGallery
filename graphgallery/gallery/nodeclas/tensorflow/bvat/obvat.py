@@ -12,7 +12,7 @@ from graphgallery.gallery.nodeclas.tensorflow.bvat.utils import kl_divergence_wi
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import TensorFlow
 from graphgallery.gallery import Trainer
-from graphgallery.nn.models.tf_keras import TFKeras
+from graphgallery.nn.models.tf_engine import TFEngine
 
 
 @TensorFlow.register()
@@ -74,7 +74,7 @@ class OBVAT(Trainer):
 
         h = self.forward(x, adj)
 
-        model = TFKeras(inputs=[x, adj], outputs=h)
+        model = TFEngine(inputs=[x, adj], outputs=h)
         model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
                       optimizer=Adam(lr=lr),
                       metrics=['accuracy'])

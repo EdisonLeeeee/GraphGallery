@@ -1,12 +1,12 @@
 from torch import optim
 from torch import nn
 
-from graphgallery.nn.models import TorchKeras
+from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.metrics.pytorch import Accuracy
 from graphgallery.nn.layers.pytorch import GCNConv, Sequential, activations
 
 
-class FastGCN(TorchKeras):
+class FastGCN(TorchEngine):
     def __init__(self, in_features, out_features, *,
                  hids=[16], acts=['relu'], dropout=0.5,
                  weight_decay=5e-4, lr=0.01, bias=False):

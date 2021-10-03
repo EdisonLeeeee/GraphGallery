@@ -2,12 +2,12 @@ import torch
 import torch.nn as nn
 from torch import optim
 
-from graphgallery.nn.models.torch_keras import TorchKeras, to_device
+from graphgallery.nn.models.torch_engine import TorchEngine, to_device
 from graphgallery.nn.metrics.pytorch import Accuracy
 from graphgallery.nn.layers.pytorch import activations
 
 
-class Node2GridsCNN(TorchKeras):
+class Node2GridsCNN(TorchEngine):
     def __init__(self,
                  in_features,
                  out_features,

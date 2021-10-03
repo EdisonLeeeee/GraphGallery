@@ -5,11 +5,11 @@ from tensorflow.keras import regularizers
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 from graphgallery.nn.layers.tensorflow import DenseConv
-from graphgallery.nn.models.tf_keras import TFKeras
+from graphgallery.nn.models.tf_engine import TFEngine
 from graphgallery import floatx
 
 
-class DenseGCN(TFKeras):
+class DenseGCN(TFEngine):
 
     def __init__(self, in_features, out_features,
                  hids=[16],

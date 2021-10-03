@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch import optim
 
-from graphgallery.nn.models.torch_keras import TorchKeras, to_device
+from graphgallery.nn.models.torch_engine import TorchEngine, to_device
 from graphgallery.nn.layers.pytorch import Sequential, activations
 from graphgallery.nn.metrics.pytorch import Accuracy
 
@@ -59,7 +59,7 @@ def Ncontrast(x_dis, adj_label, tau=1):
     return loss
 
 
-class GraphMLP(TorchKeras):
+class GraphMLP(TorchEngine):
     def __init__(self,
                  in_features,
                  out_features,

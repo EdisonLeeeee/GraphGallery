@@ -1,8 +1,8 @@
 import torch
-from graphgallery.nn.models.torch_keras import TorchKeras, to_device
+from graphgallery.nn.models.torch_engine import TorchEngine, to_device
 
 
-class AutoEncoder(TorchKeras):
+class AutoEncoder(TorchEngine):
 
     def encode(self, x, adj):
         return self.encoder(x, adj)

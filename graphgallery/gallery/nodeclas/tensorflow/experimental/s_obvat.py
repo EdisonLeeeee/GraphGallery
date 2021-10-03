@@ -7,7 +7,7 @@ from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
 from graphgallery.nn.layers.tensorflow import GCNConv
 from graphgallery.gallery.nodeclas.tensorflow.bvat.utils import kl_divergence_with_logit, entropy_y_x, get_normalized_vector
-from graphgallery.nn.models.tf_keras import TFKeras
+from graphgallery.nn.models.tf_engine import TFEngine
 from graphgallery.gallery.nodeclas import TensorFlow
 
 from ..bvat.obvat import OBVAT
@@ -60,7 +60,7 @@ class SimplifiedOBVAT(OBVAT):
 
         h = self.forward(x, adj)
 
-        model = TFKeras(inputs=[x, adj], outputs=h)
+        model = TFEngine(inputs=[x, adj], outputs=h)
         model.compile(loss=SparseCategoricalCrossentropy(from_logits=True),
                       optimizer=Adam(lr=lr),
                       metrics=['accuracy'])

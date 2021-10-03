@@ -3,14 +3,14 @@ import torch.nn.functional as F
 
 from torch import optim
 
-from graphgallery.nn.models import TorchKeras
+from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.layers.pytorch import SAGEAggregator, activations
 from graphgallery.nn.metrics.pytorch import Accuracy
 
 _AGG = {'mean': SAGEAggregator, }
 
 
-class GraphSAGE(TorchKeras):
+class GraphSAGE(TorchEngine):
     def __init__(self, in_features, out_features,
                  hids=[32], acts=['relu'], dropout=0.5,
                  weight_decay=5e-4, lr=0.01, bias=False,

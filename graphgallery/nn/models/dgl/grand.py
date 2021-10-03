@@ -5,7 +5,7 @@ import dgl.function as fn
 import torch.nn as nn
 from torch import optim
 
-from graphgallery.nn.models import TorchKeras
+from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.layers.pytorch import activations
 from graphgallery.nn.metrics.pytorch import Accuracy
 
@@ -59,7 +59,7 @@ def GRANDConv(graph, feats, order):
     return y / (order + 1)
 
 
-class GRAND(TorchKeras):
+class GRAND(TorchEngine):
     def __init__(self,
                  in_features,
                  out_features,
@@ -68,7 +68,7 @@ class GRAND(TorchKeras):
                  dropout=0.5,
                  S=1,
                  K=4,
-                 temp=0.5, 
+                 temp=0.5,
                  lam=1.,
                  weight_decay=5e-4,
                  lr=0.01,
