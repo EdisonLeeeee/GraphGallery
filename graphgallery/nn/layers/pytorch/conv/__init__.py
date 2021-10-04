@@ -13,3 +13,4 @@ from .agnn import AGNNConv
 from .sat import EigenConv, SpectralEigenConv, GraphEigenConv
 from .agnn import AGNNConv
 from .robustgcn import GaussionConvD, GaussionConvF
+from .chebynet import ChebConv

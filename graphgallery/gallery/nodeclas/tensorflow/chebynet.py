@@ -15,7 +15,7 @@ class ChebyNet(Trainer):
     """
 
     def data_step(self,
-                  adj_transform="cheby_basis",
+                  adj_transform=("cheby_basis", dict(K=2)),
                   attr_transform=None):
 
         graph = self.graph
@@ -35,12 +35,15 @@ class ChebyNet(Trainer):
                    lr=0.01,
                    bias=False):
 
+        K = len(self.cache.A)
+
         model = get_model("ChebyNet", self.backend)
         model = model(self.graph.num_node_attrs,
                       self.graph.num_node_classes,
                       hids=hids,
                       acts=acts,
                       dropout=dropout,
+                      K=K,
                       weight_decay=weight_decay,
                       lr=lr,
                       bias=bias)

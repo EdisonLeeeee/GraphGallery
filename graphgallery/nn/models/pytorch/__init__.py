@@ -18,6 +18,7 @@ from .dgat import DGAT
 from .node2grids import Node2GridsCNN
 from .gae import GAE, VGAE
 from .robustgcn import RobustGCN
+from .chebynet import ChebyNet
 
 from . import sat
 from . import graphat
