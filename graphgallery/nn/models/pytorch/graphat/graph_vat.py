@@ -57,7 +57,7 @@ class GraphVAT(TorchEngine):
     def forward(self, x, adj):
         return self.conv(x, adj)
 
-    def get_outputs(self, x, out_index=None):
+    def forward_step(self, x, out_index=None):
         if self.training:
             # this is used to calculate the adversarial gradients
             x = (nn.Parameter(x[0]), *x[1:])

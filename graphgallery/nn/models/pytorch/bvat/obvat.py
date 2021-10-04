@@ -69,7 +69,7 @@ class OBVAT(TorchEngine):
 
         self.defrozen(self.conv)
 
-    def get_outputs(self, x, out_index=None):
+    def forward_step(self, x, out_index=None):
         if self.training:
             self.pretrain(x)
         z = self(*x)

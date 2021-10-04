@@ -54,7 +54,7 @@ class SBVAT(TorchEngine):
     def forward(self, x, adj):
         return self.conv(x, adj)
 
-    def get_outputs(self, x, out_index=None):
+    def forward_step(self, x, out_index=None):
         if self.training:
             z = self(*x[:-1])
         else:

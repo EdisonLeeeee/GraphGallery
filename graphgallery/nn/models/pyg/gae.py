@@ -113,6 +113,6 @@ class VGAE(TorchEngine):
         return loss
 
 
-from graphgallery.nn.models.pytorch.gae import get_outputs
-GAE.get_outputs = get_outputs
-VGAE.get_outputs = get_outputs
+from graphgallery.nn.models.pytorch.gae import forward_step
+GAE.forward_step = forward_step
+VGAE.forward_step = forward_step

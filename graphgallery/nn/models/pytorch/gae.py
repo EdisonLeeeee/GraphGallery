@@ -106,7 +106,7 @@ class VGAE(TorchEngine):
         return loss
 
 
-def get_outputs(self, x, out_index=None):
+def forward_step(self, x, out_index=None):
     # the input `x` can be: (1) dict (2) list or tuple like
     if isinstance(x, dict):
         output_dict = self(**x)
@@ -153,5 +153,5 @@ def get_outputs(self, x, out_index=None):
     return output_dict
 
 
-GAE.get_outputs = get_outputs
-VGAE.get_outputs = get_outputs
+GAE.forward_step = forward_step
+VGAE.forward_step = forward_step

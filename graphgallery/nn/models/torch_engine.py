@@ -47,7 +47,7 @@ class TorchEngine(nn.Module):
         import gc
         gc.collect()
 
-    def get_outputs(self, x, out_index=None):
+    def forward_step(self, x, out_index=None):
         # the input `x` can be: (1) dict (2) list or tuple like
         if isinstance(x, dict):
             output_dict = self(**x)
@@ -117,7 +117,7 @@ class TorchEngine(nn.Module):
         optimizer.zero_grad()
         x, y = to_device(x, y, device=device)
         # Step 1. forward
-        output_dict = self.get_outputs(x, out_index=out_index)
+        output_dict = self.forward_step(x, out_index=out_index)
         # Step 2. compute loss
         loss = self.compute_loss(output_dict, y)
         # Step 3. loss backward
@@ -145,7 +145,7 @@ class TorchEngine(nn.Module):
         self.eval()
         x, y = to_device(x, y, device=device)
         # Step 1. forward
-        output_dict = self.get_outputs(x, out_index=out_index)
+        output_dict = self.forward_step(x, out_index=out_index)
         # Step 2. compute loss
         loss = self.compute_loss(output_dict, y)
         # Step 3. update evaluation metrics
@@ -163,7 +163,7 @@ class TorchEngine(nn.Module):
     def predict_step_on_batch(self, x, out_index=None, device="cpu"):
         self.eval()
         x, _ = to_device(x, device=device)
-        output_dict = self.get_outputs(x, out_index=out_index)
+        output_dict = self.forward_step(x, out_index=out_index)
         z = output_dict['pred']
         return z.detach().cpu()
 

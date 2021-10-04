@@ -49,7 +49,7 @@ class GCNVAT(TorchEngine):
     def forward(self, x, adj):
         return self.conv(x, adj)
 
-    def get_outputs(self, x, out_index=None):
+    def forward_step(self, x, out_index=None):
         z = self(*x)
         pred = self.index_select(z, out_index=out_index)
         return dict(z=z, x=x, pred=pred)
