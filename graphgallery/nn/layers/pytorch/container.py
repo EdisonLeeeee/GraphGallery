@@ -31,9 +31,9 @@ class MultiSequential(nn.Sequential):
 
     def forward(self, *input):
         for module in self:
-            input = module(*input)
             if not isinstance(input, tuple):
                 input = (input,)
+            input = module(*input)
 
         if len(input) == 1:
             input, = input
@@ -43,10 +43,11 @@ class MultiSequential(nn.Sequential):
 class Tree(nn.Sequential):
     """Single input and multiple outputs from multiple mudule
 
-    >>> t = Tree(nn.Linear(10, 3), nn.Linear10, 5))
+    >>> lin1 = nn.Linear(10, 3)
+    >>> lin2 = nn.Linear(10, 5)
+    >>> t = Tree(lin1, lin2)
     >>> x = torch.randn(10, 10)
-    >>> t(x) # outputs (out1, out2)
-
+    >>> t(x) # outputs (out1, out2) <==> (lin1(x), lin2(x))
     """
 
     def forward(self, *input):

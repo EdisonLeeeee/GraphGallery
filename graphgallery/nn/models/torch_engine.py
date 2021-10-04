@@ -170,14 +170,12 @@ class TorchEngine(nn.Module):
     def freeze(self, module=None):
         if module is None:
             module = self
-        # freeze
         for para in module.parameters():
             para.requires_grad = False
 
     def defrozen(self, module=None):
         if module is None:
             module = self
-        # freeze
         for para in module.parameters():
             para.requires_grad = True
 
