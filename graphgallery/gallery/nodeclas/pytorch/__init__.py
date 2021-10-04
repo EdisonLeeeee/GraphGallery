@@ -24,6 +24,7 @@ from .dgat import DGAT
 from .node2grids import Node2Grids
 from .robustgcn import RobustGCN
 from .chebynet import ChebyNet
+from .gwnn import GWNN
 
 
 from .experimental.sat import SAT

@@ -95,26 +95,20 @@ class WaveletConv(Layer):
             self.bias = None
 
         num_nodes = input_shapes[1][0]
-        self.filter = self.add_weight(shape=(num_nodes,),
+        self.filter = self.add_weight(shape=(num_nodes, 1),
                                       initializer=self.filter_initializer,
                                       name='filter',
                                       regularizer=self.filter_regularizer,
                                       constraint=self.filter_constraint)
-
-        self.indices = np.stack([np.arange(num_nodes)] * 2, axis=1)
 
         super().build(input_shapes)
 
     def call(self, inputs):
 
         x, wavelet, inverse_wavelet = inputs
-        _filter = tf.sparse.SparseTensor(indices=self.indices,
-                                         values=self.filter,
-                                         dense_shape=self.indices[-1] + 1)
-
         h = x @ self.kernel
         h = tf.sparse.sparse_dense_matmul(inverse_wavelet, h)
-        h = tf.sparse.sparse_dense_matmul(_filter, h)
+        h = self.filter * h
         output = tf.sparse.sparse_dense_matmul(wavelet, h)
 
         if self.use_bias:
@@ -154,4 +148,4 @@ class WaveletConv(Layer):
     def compute_output_shape(self, input_shapes):
         attributes_shape = input_shapes[0]
         output_shape = (attributes_shape[0], self.units)
-        return tf.TensorShape(output_shape)  # (batch_size, output_dim)
+        return tf.TensorShape(output_shape)  # (num_nodes, output_dim)
