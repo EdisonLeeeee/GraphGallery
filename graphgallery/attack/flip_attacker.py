@@ -55,7 +55,7 @@ class FlipAttacker(Attacker):
 
         if sp.isspmatrix(x):
             x = x.A
-        elif gf.is_anytensor(x):
+        elif gf.is_tensor(x):
             x = gf.tensoras(x)
         elif not isinstance(x, np.ndarray):
             raise TypeError(x)
