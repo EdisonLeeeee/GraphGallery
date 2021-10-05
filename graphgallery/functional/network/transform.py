@@ -26,7 +26,7 @@ def from_nxgraph(G):
 
 
 @multiple()
-def to_nxgraph(G, directed=None):
+def to_nxgraph(G, directed=True):
     """Convert Scipy sparse matrix to networkx graph to
 
     Parameters
@@ -61,6 +61,7 @@ def to_undirected(A):
     A = A.maximum(A.T)
     return A
 
+
 @multiple()
 def to_directed(A):
     """Convert to a directed graph."""
@@ -68,6 +69,7 @@ def to_directed(A):
         return A.copy()
     A = sp.triu(A)
     return A
+
 
 @multiple()
 def to_unweighted(A):
