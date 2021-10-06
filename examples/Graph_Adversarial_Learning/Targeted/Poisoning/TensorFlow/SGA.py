@@ -11,7 +11,7 @@ graph = data.graph
 splits = data.split_nodes(random_state=15)
 
 ################### Surrogate model ############################
-trainer = gg.gallery.nodeclas.SGC(seed=123).setup_graph(graph, K=2).build()
+trainer = gg.gallery.nodeclas.SGC(seed=123).setup_graph(graph, K=2).build(lr=0.01)
 trainer.fit(splits.train_nodes,
             splits.val_nodes,
             verbose=1,
