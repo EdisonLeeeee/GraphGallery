@@ -16,7 +16,7 @@ class MedianGCN(Trainer):
     """
 
     def data_step(self,
-                  adj_transform="normalize_adj",
+                  adj_transform="add_selfloops",
                   attr_transform=None):
 
         graph = self.graph

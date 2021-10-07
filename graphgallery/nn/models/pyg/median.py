@@ -24,17 +24,15 @@ class MedianGCN(TorchEngine):
         for hid, act in zip(hids, acts):
             conv.append(MedianConv(in_features,
                                    hid,
-                                   cached=True,
-                                   bias=bias,
-                                   normalize=False))
+                                   add_self_loops=False,
+                                   bias=bias))
             conv.append(activations.get(act))
             conv.append(nn.Dropout(dropout))
             in_features = hid
         conv.append(MedianConv(in_features,
                                out_features,
-                               cached=True,
-                               bias=bias,
-                               normalize=False))
+                               add_self_loops=False,
+                               bias=bias))
         conv = Sequential(*conv)
 
         self.conv = conv

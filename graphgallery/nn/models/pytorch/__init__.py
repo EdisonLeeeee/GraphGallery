@@ -1,7 +1,6 @@
 from .gat import GAT
 from .gcn import GCN
-from .median import MedianGCN
-from .trimmed_gcn import TrimmedGCN
+from .median import MedianGCN, TrimmedGCN
 from .fastgcn import FastGCN
 from .dagnn import DAGNN
 from .parinorm import *

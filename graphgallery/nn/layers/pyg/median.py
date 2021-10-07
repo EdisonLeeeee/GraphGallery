@@ -1,26 +1,25 @@
-from typing import Optional, Tuple
 from torch_geometric.typing import Adj, OptTensor
 
 import torch
 from torch import Tensor
 from torch.nn import Parameter
-from torch_sparse import SparseTensor
 from torch_geometric.nn.inits import zeros
-from torch_geometric.nn.dense.linear import Linear
 from torch_geometric.nn.conv import MessagePassing
 
+# This works for higher version of torch_gometric, e.g., 2.0.
+# from torch_geometric.nn.dense.linear import Linear
+from torch.nn import Linear
 
+
+from torch_sparse import SparseTensor, set_diag
 from torch_geometric.utils import to_dense_batch
-from torch_geometric.nn.conv.gcn_conv import gcn_norm
+from torch_geometric.utils import remove_self_loops, add_self_loops
 
 
 class MedianConv(MessagePassing):
-    _cached_edge_index: Optional[Tuple[Tensor, Tensor]]
-    _cached_adj_t: Optional[SparseTensor]
 
     def __init__(self, in_channels: int, out_channels: int,
-                 improved: bool = False, cached: bool = False,
-                 add_self_loops: bool = True, normalize: bool = True,
+                 add_self_loops: bool = True,
                  bias: bool = True, **kwargs):
 
         kwargs.setdefault('aggr', None)
@@ -28,16 +27,12 @@ class MedianConv(MessagePassing):
 
         self.in_channels = in_channels
         self.out_channels = out_channels
-        self.improved = improved
-        self.cached = cached
         self.add_self_loops = add_self_loops
-        self.normalize = normalize
 
-        self._cached_edge_index = None
-        self._cached_adj_t = None
-
-        self.lin = Linear(in_channels, out_channels, bias=False,
-                          weight_initializer='glorot')
+        # This works for higher version of torch_gometric, e.g., 2.0.
+        # self.lin = Linear(in_channels, out_channels, bias=False,
+        #                   weight_initializer='glorot')
+        self.lin = Linear(in_channels, out_channels, bias=False)
 
         if bias:
             self.bias = Parameter(torch.Tensor(out_channels))
@@ -49,37 +44,19 @@ class MedianConv(MessagePassing):
     def reset_parameters(self):
         self.lin.reset_parameters()
         zeros(self.bias)
-        self._cached_edge_index = None
-        self._cached_adj_t = None
 
     def forward(self, x: Tensor, edge_index: Adj,
                 edge_weight: OptTensor = None) -> Tensor:
 
-        if self.normalize:
+        if self.add_self_loops:
             if isinstance(edge_index, Tensor):
-                cache = self._cached_edge_index
-                if cache is None:
-                    edge_index, edge_weight = gcn_norm(  # yapf: disable
-                        edge_index, edge_weight, x.size(self.node_dim),
-                        self.improved, self.add_self_loops)
-                    if self.cached:
-                        self._cached_edge_index = (edge_index, edge_weight)
-                else:
-                    edge_index, edge_weight = cache[0], cache[1]
-
+                edge_index, _ = remove_self_loops(edge_index)
+                edge_index, _ = add_self_loops(edge_index,
+                                               num_nodes=x.size(self.node_dim))
             elif isinstance(edge_index, SparseTensor):
-                cache = self._cached_adj_t
-                if cache is None:
-                    edge_index = gcn_norm(  # yapf: disable
-                        edge_index, edge_weight, x.size(self.node_dim),
-                        self.improved, self.add_self_loops)
-                    if self.cached:
-                        self._cached_adj_t = edge_index
-                else:
-                    edge_index = cache
+                edge_index = set_diag(edge_index)
 
         x = self.lin(x)
-        edge_index = edge_index[[1, 0]]
         # propagate_type: (x: Tensor, edge_weight: OptTensor)
         out = self.propagate(edge_index, x=x, edge_weight=edge_weight,
                              size=None)
@@ -91,7 +68,8 @@ class MedianConv(MessagePassing):
         return x_j if edge_weight is None else edge_weight.view(-1, 1) * x_j
 
     def aggregate(self, x_j, index):
-        #         assert index[0] == 0, 'Please make sure the index is ordered'
+        # `to_dense_batch` requires the `index` is sorted
+        # TODO: is there any way to avoid `argsort`?
         ix = torch.argsort(index)
         index = index[ix]
         x_j = x_j[ix]
