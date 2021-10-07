@@ -7,6 +7,13 @@ from graphgallery.nn.models import get_model
 
 @PyTorch.register()
 class TrimmedGCN(Trainer):
+    """
+        Implementation of Graph Convolutional Networks with Trimmed mean aggregation (TrimmedGCN). 
+        `Understanding Structural Vulnerability in Graph Convolutional Networks 
+        <https://arxiv.org/abs/2108.06280>`
+        Pytorch implementation: <https://github.com/EdisonLeeeee/MedianGCN>
+
+    """
 
     def data_step(self,
                   adj_transform="normalize_adj",
