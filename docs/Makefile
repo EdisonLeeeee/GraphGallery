@@ -1,7 +1,7 @@
 SPHINXBUILD   = sphinx-build
 SPHINXPROJ    = graphgallery
 SOURCEDIR     = source
-BUILDDIR      = build
+BUILDDIR      = _build
 
 .PHONY: help Makefile
 

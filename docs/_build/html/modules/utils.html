@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>graphgallery.utils &mdash; graphgallery 1.0.1 documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Installation" href="../notes/installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html"><img src="../_static/graphgallery.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                1.0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Installation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../notes/installation.html">Installation</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Package Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">graphgallery.utils</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">graphgallery</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>graphgallery.utils</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/modules/utils.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="graphgallery-utils">
+<h1>graphgallery.utils<a class="headerlink" href="#graphgallery-utils" title="Permalink to this headline">¶</a></h1>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#graphgallery.utils.nullcontext" title="graphgallery.utils.nullcontext"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nullcontext</span></code></a></p></td>
+<td><p>Null context manager.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#graphgallery.utils.raise_if_kwargs" title="graphgallery.utils.raise_if_kwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">raise_if_kwargs</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#graphgallery.utils.tqdm" title="graphgallery.utils.tqdm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tqdm</span></code></a></p></td>
+<td><p>Decorate an iterable object, returning an iterator which acts exactly like the original iterable, but prints a dynamically updating progressbar every time a value is requested.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#graphgallery.utils.Progbar" title="graphgallery.utils.Progbar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Progbar</span></code></a></p></td>
+<td><p>Displays a progress bar.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#graphgallery.utils.setup_logger" title="graphgallery.utils.setup_logger"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_logger</span></code></a></p></td>
+<td><p>Initialize the graphgallery logger and set its verbosity level to “DEBUG”.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#graphgallery.utils.get_logger" title="graphgallery.utils.get_logger"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_logger</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#graphgallery.utils.TimeOut" title="graphgallery.utils.TimeOut"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TimeOut</span></code></a></p></td>
+<td><p>Timeout context manager/decorator.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#graphgallery.utils.NeighborSampler" title="graphgallery.utils.NeighborSampler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NeighborSampler</span></code></a></p></td>
+<td><p>Neighbor sampler as in <cite>GraphSAGE</cite>: <cite>Inductive Representation Learning on Large Graphs &lt;https://arxiv.org/abs/1706.02216&gt;</cite></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#graphgallery.utils.PyGNeighborSampler" title="graphgallery.utils.PyGNeighborSampler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PyGNeighborSampler</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#graphgallery.utils.is_ipynb" title="graphgallery.utils.is_ipynb"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_ipynb</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#graphgallery.utils.dict_to_string" title="graphgallery.utils.dict_to_string"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dict_to_string</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#graphgallery.utils.merge_as_list" title="graphgallery.utils.merge_as_list"><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge_as_list</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#graphgallery.utils.ask_to_proceed_with_overwrite" title="graphgallery.utils.ask_to_proceed_with_overwrite"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ask_to_proceed_with_overwrite</span></code></a></p></td>
+<td><p>Produces a prompt asking about overwriting a file.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#graphgallery.utils.create_table" title="graphgallery.utils.create_table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_table</span></code></a></p></td>
+<td><p>Create a small table using the keys of small_dict as headers.</p></td>
+</tr>
+</tbody>
+</table>
+<span class="target" id="module-graphgallery.utils"></span><dl class="function">
+<dt id="graphgallery.utils.nullcontext">
+<code class="sig-name descname">nullcontext</code><span class="sig-paren">(</span><em class="sig-param">enter_result=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/graphgallery/utils/context_manager.html#nullcontext"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#graphgallery.utils.nullcontext" title="Permalink to this definition">¶</a></dt>
+<dd><p>Null context manager.
+Nothing is done when it’s called</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>enter_result</strong> (<em>Any</em><em>, </em><em>optional</em>) – any objects, by default None</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>return the inputs</p>
+</dd>
+<dt class="field-even">Yields</dt>
+<dd class="field-even"><p><em>Iterator[Any]</em> – yields the inputs</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="graphgallery.utils.raise_if_kwargs">
+<code class="sig-name descname">raise_if_kwargs</code><span class="sig-paren">(</span><em class="sig-param">kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/graphgallery/utils/raise_error.html#raise_if_kwargs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#graphgallery.utils.raise_if_kwargs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="graphgallery.utils.tqdm">
+<code class="sig-name descname">tqdm</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/graphgallery/utils/tqdm.html#tqdm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#graphgallery.utils.tqdm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorate an iterable object, returning an iterator which acts exactly
+like the original iterable, but prints a dynamically updating
+progressbar every time a value is requested.</p>
+<blockquote>
+<div><dl>
+<dt>iterable<span class="classifier">iterable, optional</span></dt><dd><p>Iterable to decorate with a progressbar.
+Leave blank to manually manage the updates.</p>
+</dd>
+<dt>desc<span class="classifier">str, optional</span></dt><dd><p>Prefix for the progressbar.</p>
+</dd>
+<dt>total<span class="classifier">int or float, optional</span></dt><dd><p>The number of expected iterations. If unspecified,
+len(iterable) is used if possible. If float(“inf”) or as a last
+resort, only basic progress statistics are displayed
+(no ETA, no progressbar).
+If <cite>gui</cite> is True and this parameter needs subsequent updating,
+specify an initial arbitrary large positive number,
+e.g. 9e9.</p>
+</dd>
+<dt>leave<span class="classifier">bool, optional</span></dt><dd><p>If [default: True], keeps all traces of the progressbar
+upon termination of iteration.
+If <cite>None</cite>, will leave only if <cite>position</cite> is <cite>0</cite>.</p>
+</dd>
+<dt>file<span class="classifier"><cite>io.TextIOWrapper</cite> or <cite>io.StringIO</cite>, optional</span></dt><dd><p>Specifies where to output the progress messages
+(default: sys.stderr). Uses <cite>file.write(str)</cite> and <cite>file.flush()</cite>
+methods.  For encoding, see <cite>write_bytes</cite>.</p>
+</dd>
+<dt>ncols<span class="classifier">int, optional</span></dt><dd><p>The width of the entire output message. If specified,
+dynamically resizes the progressbar to stay within this bound.
+If unspecified, attempts to use environment width. The
+fallback is a meter width of 10 and no limit for the counter and
+statistics. If 0, will not print any meter (only stats).</p>
+</dd>
+<dt>mininterval<span class="classifier">float, optional</span></dt><dd><p>Minimum progress display update interval [default: 0.1] seconds.</p>
+</dd>
+<dt>maxinterval<span class="classifier">float, optional</span></dt><dd><p>Maximum progress display update interval [default: 10] seconds.
+Automatically adjusts <cite>miniters</cite> to correspond to <cite>mininterval</cite>
+after long display update lag. Only works if <cite>dynamic_miniters</cite>
+or monitor thread is enabled.</p>
+</dd>
+<dt>miniters<span class="classifier">int or float, optional</span></dt><dd><p>Minimum progress display update interval, in iterations.
+If 0 and <cite>dynamic_miniters</cite>, will automatically adjust to equal
+<cite>mininterval</cite> (more CPU efficient, good for tight loops).
+If &gt; 0, will skip display of specified number of iterations.
+Tweak this and <cite>mininterval</cite> to get very efficient loops.
+If your progress is erratic with both fast and slow iterations
+(network, skipping items, etc) you should set miniters=1.</p>
+</dd>
+<dt>ascii<span class="classifier">bool or str, optional</span></dt><dd><p>If unspecified or False, use unicode (smooth blocks) to fill
+the meter. The fallback is to use ASCII characters ” 123456789#”.</p>
+</dd>
+<dt>disable<span class="classifier">bool, optional</span></dt><dd><p>Whether to disable the entire progressbar wrapper
+[default: False]. If set to None, disable on non-TTY.</p>
+</dd>
+<dt>unit<span class="classifier">str, optional</span></dt><dd><p>String that will be used to define the unit of each iteration
+[default: it].</p>
+</dd>
+<dt>unit_scale<span class="classifier">bool or int or float, optional</span></dt><dd><p>If 1 or True, the number of iterations will be reduced/scaled
+automatically and a metric prefix following the
+International System of Units standard will be added
+(kilo, mega, etc.) [default: False]. If any other non-zero
+number, will scale <cite>total</cite> and <cite>n</cite>.</p>
+</dd>
+<dt>dynamic_ncols<span class="classifier">bool, optional</span></dt><dd><p>If set, constantly alters <cite>ncols</cite> and <cite>nrows</cite> to the
+environment (allowing for window resizes) [default: False].</p>
+</dd>
+<dt>smoothing<span class="classifier">float, optional</span></dt><dd><p>Exponential moving average smoothing factor for speed estimates
+(ignored in GUI mode). Ranges from 0 (average speed) to 1
+(current/instantaneous speed) [default: 0.3].</p>
+</dd>
+<dt>bar_format<span class="classifier">str, optional</span></dt><dd><p>Specify a custom bar string formatting. May impact performance.
+[default: ‘{l_bar}{bar}{r_bar}’], where
+l_bar=’{desc}: {percentage:3.0f}%|’ and
+r_bar=’| {n_fmt}/{total_fmt} [{elapsed}&lt;{remaining}, ‘</p>
+<blockquote>
+<div><p>‘{rate_fmt}{postfix}]’</p>
+</div></blockquote>
+<dl class="simple">
+<dt>Possible vars: l_bar, bar, r_bar, n, n_fmt, total, total_fmt,</dt><dd><p>percentage, elapsed, elapsed_s, ncols, nrows, desc, unit,
+rate, rate_fmt, rate_noinv, rate_noinv_fmt,
+rate_inv, rate_inv_fmt, postfix, unit_divisor,
+remaining, remaining_s, eta.</p>
+</dd>
+</dl>
+<p>Note that a trailing “: ” is automatically removed after {desc}
+if the latter is empty.</p>
+</dd>
+<dt>initial<span class="classifier">int or float, optional</span></dt><dd><p>The initial counter value. Useful when restarting a progress
+bar [default: 0]. If using float, consider specifying <cite>{n:.3f}</cite>
+or similar in <cite>bar_format</cite>, or specifying <cite>unit_scale</cite>.</p>
+</dd>
+<dt>position<span class="classifier">int, optional</span></dt><dd><p>Specify the line offset to print this bar (starting from 0)
+Automatic if unspecified.
+Useful to manage multiple bars at once (eg, from threads).</p>
+</dd>
+<dt>postfix<span class="classifier">dict or <a href="#id1"><span class="problematic" id="id2">*</span></a>, optional</span></dt><dd><p>Specify additional stats to display at the end of the bar.
+Calls <cite>set_postfix(**postfix)</cite> if possible (dict).</p>
+</dd>
+<dt>unit_divisor<span class="classifier">float, optional</span></dt><dd><p>[default: 1000], ignored unless <cite>unit_scale</cite> is True.</p>
+</dd>
+<dt>write_bytes<span class="classifier">bool, optional</span></dt><dd><p>If (default: None) and <cite>file</cite> is unspecified,
+bytes will be written in Python 2. If <cite>True</cite> will also write
+bytes. In all other cases will default to unicode.</p>
+</dd>
+<dt>lock_args<span class="classifier">tuple, optional</span></dt><dd><p>Passed to <cite>refresh</cite> for intermediate output
+(initialisation, iterating, and updating).</p>
+</dd>
+<dt>nrows<span class="classifier">int, optional</span></dt><dd><p>The screen height. If specified, hides nested bars outside this
+bound. If unspecified, attempts to use environment height.
+The fallback is 20.</p>
+</dd>
+<dt>colour<span class="classifier">str, optional</span></dt><dd><p>Bar colour (e.g. ‘green’, ‘#00ff00’).</p>
+</dd>
+<dt>delay<span class="classifier">float, optional</span></dt><dd><p>Don’t display until [default: 0] seconds have elapsed.</p>
+</dd>
+<dt>gui<span class="classifier">bool, optional</span></dt><dd><p>WARNING: internal parameter - do not use.
+Use tqdm.gui.tqdm(…) instead. If set, will attempt to use
+matplotlib animations for a graphical output [default: False].</p>
+</dd>
+</dl>
+<p>out  : decorated iterator.</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="class">
+<dt id="graphgallery.utils.Progbar">
+<em class="property">class </em><code class="sig-name descname">Progbar</code><span class="sig-paren">(</span><em class="sig-param">target</em>, <em class="sig-param">width=30</em>, <em class="sig-param">verbose=1</em>, <em class="sig-param">interval=0.05</em>, <em class="sig-param">unit_name='step'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/graphgallery/utils/progbar.html#Progbar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#graphgallery.utils.Progbar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Displays a progress bar.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target</strong> – Total number of steps expected, None if unknown.</p></li>
+<li><p><strong>width</strong> – Progress bar width on screen.</p></li>
+<li><p><strong>verbose</strong> – Verbosity mode, 0 (silent), 1 (verbose), 2 (semi-verbose)</p></li>
+<li><p><strong>interval</strong> – Minimum visual progress update interval (in seconds).</p></li>
+<li><p><strong>unit_name</strong> – Display name for step counts (usually “step” or “sample”).</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="graphgallery.utils.Progbar.update">
+<code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param">current</em>, <em class="sig-param">values=None</em>, <em class="sig-param">finalize=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/graphgallery/utils/progbar.html#Progbar.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#graphgallery.utils.Progbar.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates the progress bar.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>current</strong> – Index of current step.</p></li>
+<li><p><strong>values</strong> – List of tuples: <cite>(name, value_for_last_step)</cite> or string messages.</p></li>
+<li><p><strong>finalize</strong> – Whether this is the last update for the progress bar. If
+<cite>None</cite>, defaults to <cite>current &gt;= self.target</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="graphgallery.utils.Progbar.add">
+<code class="sig-name descname">add</code><span class="sig-paren">(</span><em class="sig-param">n</em>, <em class="sig-param">values=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/graphgallery/utils/progbar.html#Progbar.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#graphgallery.utils.Progbar.add" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt id="graphgallery.utils.setup_logger">
+<code class="sig-name descname">setup_logger</code><a class="reference internal" href="../_modules/graphgallery/utils/logger.html#setup_logger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#graphgallery.utils.setup_logger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the graphgallery logger and set its verbosity level to “DEBUG”.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>output</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – a file name or a directory to save log. If None, will not save log file.
+If ends with “.txt” or “.log”, assumed to be a file name.
+Otherwise, logs will be saved to <cite>output/log.txt</cite>.</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – the root module name of this logger</p></li>
+<li><p><strong>abbrev_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – an abbreviation of the module, to avoid long names in logs.
+Set to “” to not log the root module in logs.
+By default, will abbreviate “detectron2” to “d2” and leave other
+modules unchanged.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a logger</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/logging.html#logging.Logger" title="(in Python v3.10)">logging.Logger</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="graphgallery.utils.get_logger">
+<code class="sig-name descname">get_logger</code><span class="sig-paren">(</span><em class="sig-param">name='graphgallery'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/graphgallery/utils/logger.html#get_logger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#graphgallery.utils.get_logger" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="graphgallery.utils.TimeOut">
+<em class="property">class </em><code class="sig-name descname">TimeOut</code><span class="sig-paren">(</span><em class="sig-param">seconds: float</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/graphgallery/utils/timeout.html#TimeOut"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#graphgallery.utils.TimeOut" title="Permalink to this definition">¶</a></dt>
+<dd><p>Timeout context manager/decorator.</p>
+<p>Adapted from <a class="reference external" href="https://gist.github.com/TySkby/143190ad1b88c6115597c45f996b030c">https://gist.github.com/TySkby/143190ad1b88c6115597c45f996b030c</a> on 12/10/2020.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>seconds</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – seconds to timeout.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">sleep</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">try</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">with</span> <span class="n">TimeOut</span><span class="p">(</span><span class="mi">1</span><span class="p">):</span>
+<span class="gp">... </span>        <span class="n">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">except</span> <span class="ne">TimeoutError</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Function timed out&quot;</span><span class="p">)</span>
+<span class="go">Function timed out</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="graphgallery.utils.NeighborSampler">
+<em class="property">class </em><code class="sig-name descname">NeighborSampler</code><span class="sig-paren">(</span><em class="sig-param">adj_matrix: scipy.sparse.csr.csr_matrix</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/graphgallery/utils/neighbor_sampler.html#NeighborSampler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#graphgallery.utils.NeighborSampler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Neighbor sampler as in <cite>GraphSAGE</cite>:
+<cite>Inductive Representation Learning on Large Graphs &lt;https://arxiv.org/abs/1706.02216&gt;</cite></p>
+<p>adj_matrix：scipy.spars.csr_matrix, the input matrix to be sampled</p>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">graphgallery.utils</span> <span class="kn">import</span> <span class="n">NeighborSampler</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sampler</span> <span class="o">=</span> <span class="n">NeighborSampler</span><span class="p">(</span><span class="n">adj</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sampler</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">100</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Please make sure there is not dangling nodes, otherwise there would be an error.</p>
+<dl class="method">
+<dt id="graphgallery.utils.NeighborSampler.sample">
+<code class="sig-name descname">sample</code><span class="sig-paren">(</span><em class="sig-param">nodes</em>, <em class="sig-param">size</em>, <em class="sig-param">*</em>, <em class="sig-param">return_weight=False</em>, <em class="sig-param">as_numpy=False</em>, <em class="sig-param">replace=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/graphgallery/utils/neighbor_sampler.html#NeighborSampler.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#graphgallery.utils.NeighborSampler.sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sample local neighborhood from input batch nodes</p>
+<p>nodes: torch.LongTensor or numpy.array, the input root nodes
+size: int, the number of neighbors sampled for each node, <cite>-1</cite> means the whole neighbor set
+return_weight: bool, if True, return the sampled edges weights for each pair (node, neighbor)
+as_numpy: bool, if True, return numpy array, otherwise return torch.tensor
+replace: bool, whether the sample is with or without replacement</p>
+<p>(targets, neighbors) if return_weight=False
+(targets, neighbors, edge_weights) if return_weight=True</p>
+<p>The outputs would be <cite>torch.tensor</cite> by default,
+if you want to return numpy array, set <cite>as_numpy=True</cite>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="graphgallery.utils.PyGNeighborSampler">
+<em class="property">class </em><code class="sig-name descname">PyGNeighborSampler</code><span class="sig-paren">(</span><em class="sig-param">edge_index: torch.Tensor</em>, <em class="sig-param">num_nodes: Optional[int] = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/graphgallery/utils/neighbor_sampler.html#PyGNeighborSampler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#graphgallery.utils.PyGNeighborSampler" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="graphgallery.utils.PyGNeighborSampler.sample">
+<code class="sig-name descname">sample</code><span class="sig-paren">(</span><em class="sig-param">batch, sizes: List[int] = [-1]</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/graphgallery/utils/neighbor_sampler.html#PyGNeighborSampler.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#graphgallery.utils.PyGNeighborSampler.sample" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="graphgallery.utils.is_ipynb">
+<code class="sig-name descname">is_ipynb</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/graphgallery/utils/ipynb.html#is_ipynb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#graphgallery.utils.is_ipynb" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="graphgallery.utils.dict_to_string">
+<code class="sig-name descname">dict_to_string</code><span class="sig-paren">(</span><em class="sig-param">d</em>, <em class="sig-param">fmt='%.4f'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/graphgallery/utils/misc.html#dict_to_string"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#graphgallery.utils.dict_to_string" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="graphgallery.utils.merge_as_list">
+<code class="sig-name descname">merge_as_list</code><span class="sig-paren">(</span><em class="sig-param">*args</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/graphgallery/utils/misc.html#merge_as_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#graphgallery.utils.merge_as_list" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="graphgallery.utils.ask_to_proceed_with_overwrite">
+<code class="sig-name descname">ask_to_proceed_with_overwrite</code><span class="sig-paren">(</span><em class="sig-param">filepath</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/graphgallery/utils/misc.html#ask_to_proceed_with_overwrite"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#graphgallery.utils.ask_to_proceed_with_overwrite" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produces a prompt asking about overwriting a file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filepath</strong> – the path to the file to be overwritten.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if we can proceed with overwrite, False otherwise.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="graphgallery.utils.create_table">
+<code class="sig-name descname">create_table</code><span class="sig-paren">(</span><em class="sig-param">small_dict</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/graphgallery/utils/misc.html#create_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#graphgallery.utils.create_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a small table using the keys of small_dict as headers. This is only
+suitable for small dictionaries.
+:param small_dict: a result dictionary of only a few items.
+:type small_dict: dict</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the table as a string.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../notes/installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Jintang Li.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
