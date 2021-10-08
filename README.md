@@ -23,7 +23,7 @@
 </p>
 
 # GraphGallery
-GraphGallery is a gallery for benchmarking Graph Neural Networks (GNNs) and Graph Adversarial Learning with [TensorFlow 2.x](https://github.com/tensorflow/tensorflow) and [PyTorch](https://github.com/pytorch/pytorch) backend. Besides, [Pytorch Geometric (PyG)](https://github.com/rusty1s/pytorch_geometric) backend and [Deep Graph Library (DGL)](https://www.dgl.ai/) backend now are available in GraphGallery.
+GraphGallery is a gallery for benchmarking Graph Neural Networks (GNNs) and Graph Adversarial Learning with [TensorFlow 2.x](https://github.com/tensorflow/tensorflow) and [PyTorch](https://github.com/pytorch/pytorch) backend. Besides, [Pytorch Geometric (PyG)](https://github.com/pyg-team/pytorch_geometric) backend and [Deep Graph Library (DGL)](https://www.dgl.ai/) backend now are available in GraphGallery.
 
 
 # 💨 NEWS

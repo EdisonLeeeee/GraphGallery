@@ -82,9 +82,11 @@ def is_intscalar(x: Any) -> bool:
 
 def is_floatscalar(x: Any) -> bool:
     """Check whether `x` is a float scalar.
+
     Parameters:
     ----------
     x: A python object to check.
+
     Returns:
     ----------
     `True` iff `x` is a float scalar (built-in or Numpy float).
