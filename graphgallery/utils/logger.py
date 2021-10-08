@@ -42,8 +42,8 @@ class _ColorfulFormatter(logging.Formatter):
 def setup_logger(
     output=None, distributed_rank=0, *, color=True, name="graphgallery", abbrev_name=None
 ):
-    """
-    Initialize the graphgallery logger and set its verbosity level to "DEBUG".
+    """Initialize the graphgallery logger and set its verbosity level to "DEBUG".
+    
     Args:
         output (str): a file name or a directory to save log. If None, will not save log file.
             If ends with ".txt" or ".log", assumed to be a file name.
@@ -53,6 +53,7 @@ def setup_logger(
             Set to "" to not log the root module in logs.
             By default, will abbreviate "detectron2" to "d2" and leave other
             modules unchanged.
+            
     Returns:
         logging.Logger: a logger
     """

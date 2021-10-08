@@ -12,15 +12,17 @@ class TimeOut(contextlib.ContextDecorator):
 
     Adapted from https://gist.github.com/TySkby/143190ad1b88c6115597c45f996b030c on 12/10/2020.
 
-    Examples
-    --------
-    >>> from time import sleep
-    >>> try:
-    ...     with TimeOut(1):
-    ...         sleep(10)
-    ... except TimeoutError:
-    ...     print("Function timed out")
-    Function timed out
+    Args:
+        seconds (float): seconds to timeout.
+        
+    Examples:
+        >>> from time import sleep
+        >>> try:
+        ...     with TimeOut(1):
+        ...         sleep(10)
+        ... except TimeoutError:
+        ...     print("Function timed out")
+        Function timed out
     """
 
     def __init__(self, seconds: float):
