@@ -1074,7 +1074,7 @@ class ProgbarLogger(Callback):
         if self.verbose > 2:
             self._finalize_progbar(logs)
         elif self.verbose > 0:
-            self.progbar.update(epoch + 1, logs.items())
+            self.progbar.update(epoch + 1, logs)
 
     def on_test_end(self, logs=None):
         self._finalize_progbar(logs)
@@ -1101,13 +1101,13 @@ class ProgbarLogger(Callback):
 
         if self.verbose > 2:
             # Only block async when verbose = 1.
-            self.progbar.update(self.seen, logs.items(), finalize=False)
+            self.progbar.update(self.seen, logs, finalize=False)
 
     def _finalize_progbar(self, logs):
         logs = logs or {}
         if self.target is None:
             self.progbar.target = self.target = self.seen
-        self.progbar.update(self.target, logs.items(), finalize=True)
+        self.progbar.update(self.target, logs, finalize=True)
         self._reset_progbar()
 
     def __str__(self) -> str:

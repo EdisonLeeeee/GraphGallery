@@ -22,6 +22,7 @@ import time
 import sys
 import os
 import numpy as np
+from numbers import Number
 
 
 class Progbar:
@@ -58,12 +59,12 @@ class Progbar:
         self._start = time.perf_counter()
         self._last_update = 0
 
-    def update(self, current, values=None, finalize=None):
+    def update(self, current, msg=None, finalize=None):
         """Updates the progress bar.
 
         Arguments:
             current: Index of current step.
-            values: List of tuples: `(name, value_for_last_step)` or string messages.
+            msg: List of tuples: `(name, value_for_last_step)` or string messages.
             finalize: Whether this is the last update for the progress bar. If
               `None`, defaults to `current >= self.target`.
         """
@@ -75,20 +76,28 @@ class Progbar:
                 finalize = False
             else:
                 finalize = current >= self.target
-        values = values or []
+        msg = msg or {}
 
-        if isinstance(values, str):
-            message = ' - ' + values
-        else:
+        if isinstance(msg, str):
+            message = ' - ' + msg
+        elif isinstance(msg, (dict, list, tuple)):
             message = ''
-            for k, v in values:
+            if isinstance(msg, dict):
+                msg = msg.items()
+            else:
+                assert len(msg[0]) == 2
+            for k, v in msg:
                 message += ' - %s:' % k
                 if v is None:
                     message += ' None'
-                elif v > 1e-3:
-                    message += ' %.3f' % v
+                elif isinstance(v, str):
+                    message += ' ' + v
                 else:
-                    message += ' %.3e' % v
+                    message += ' ' + self.format_num(v)
+        else:
+            raise ValueError(msg)
+
+        message = message.strip()
 
         self._seen_so_far = current
 
@@ -173,11 +182,30 @@ class Progbar:
                 info = count + info
                 info += message
                 info += '\n'
-
                 sys.stdout.write(info)
                 sys.stdout.flush()
 
         self._last_update = now
 
-    def add(self, n, values=None):
-        self.update(self._seen_so_far + n, values)
+    def add(self, n, msg=None):
+        self.update(self._seen_so_far + n, msg)
+
+    @staticmethod
+    def format_num(n):
+        """
+        Intelligent scientific notation (.3g).
+
+        Parameters
+        ----------
+        n  : int or float or Numeric
+            A Number.
+
+        Returns
+        -------
+        out  : str
+            Formatted number.
+        """
+        assert isinstance(n, Number), f'{n} is not a Number.'
+        f = '{0:.3g}'.format(n).replace('+0', '+').replace('-0', '-')
+        n = str(n)
+        return f if len(f) < len(n) else n

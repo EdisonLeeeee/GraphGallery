@@ -309,7 +309,7 @@ class Trainer(Model):
                           verbose=cfg.verbose)
         logs = gf.BunchDict(**self.test_step(test_data))
         logs.update({k: to_item(v) for k, v in logs.items()})
-        progbar.update(len(test_data), logs.items())
+        progbar.update(len(test_data), logs)
         return logs
 
     def train_step(self, sequence):
