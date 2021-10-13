@@ -57,7 +57,7 @@ class DropEdge(TorchEngine):
     def __init__(self,
                  in_features,
                  out_features,
-                 p=0.05,
+                 p=0.3,
                  hids=[16],
                  acts=['relu'],
                  dropout=0.5,
@@ -104,12 +104,12 @@ class RDrop(TorchEngine):
     def __init__(self,
                  in_features,
                  out_features,
-                 p=0.05,
+                 p=0.3,
                  hids=[16],
                  acts=['relu'],
                  dropout=0.5,
                  weight_decay=5e-4,
-                 kl=0.01,
+                 kl=0.005,
                  lr=0.01,
                  bias=True):
 

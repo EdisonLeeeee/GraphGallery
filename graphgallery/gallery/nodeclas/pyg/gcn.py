@@ -85,7 +85,7 @@ class DropEdge(Trainer):
                    weight_decay=5e-4,
                    lr=0.01,
                    bias=True,
-                   p=0.05):
+                   p=0.3):
 
         model = get_model("DropEdge", self.backend)
         model = model(self.graph.num_node_attrs,
@@ -137,9 +137,9 @@ class RDrop(Trainer):
                    dropout=0.5,
                    weight_decay=5e-4,
                    lr=0.01,
-                   kl=0.01,
+                   kl=0.005,
                    bias=True,
-                   p=0.05):
+                   p=0.3):
 
         model = get_model("RDrop", self.backend)
         model = model(self.graph.num_node_attrs,

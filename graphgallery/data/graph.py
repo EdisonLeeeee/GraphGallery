@@ -110,10 +110,10 @@ class Graph(HomoGraph):
         the unweighted/undirected/no-self-loop graph."""
         return gf.Standardize()(self)
 
-    def nxgraph(self, directed: bool = True):
+    def to_networkx(self, directed: bool = True):
         """Get the network graph from adj_matrix."""
-        return gf.to_nxgraph(self.adj_matrix,
-                             directed=directed)
+        return gf.to_networkx(self.adj_matrix,
+                              directed=directed)
 
     def subgraph(self, *, nodes_to_keep=None, nodes_to_remove=None):
         return gf.subgraph(self, nodes_to_keep=nodes_to_keep,

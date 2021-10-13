@@ -4,7 +4,7 @@ Generators for some classic graphs.
 # TODO: implement with sicpy sparse matrix
 import scipy.sparse as sp
 import networkx as nx
-from .transform import from_nxgraph
+from .transform import from_networkx
 
 __all__ = ['complete_graph',
            'newman_watts_strogatz_graph',
@@ -36,7 +36,7 @@ def complete_graph(n, directed=False):
         create_using = nx.Graph()
 
     G = nx.complete_graph(n, create_using=create_using)
-    return from_nxgraph(G)
+    return from_networkx(G)
 
 
 def newman_watts_strogatz_graph(n, k, p, seed=None):
@@ -82,4 +82,4 @@ def newman_watts_strogatz_graph(n, k, p, seed=None):
        https://doi.org/10.1016/S0375-9601(99)00757-4
     """
     G = nx.newman_watts_strogatz_graph(n, k, p, seed=seed)
-    return from_nxgraph(G)
+    return from_networkx(G)

@@ -4,12 +4,12 @@ import scipy.sparse as sp
 from .property import is_directed, is_weighted
 from ..decorators import multiple
 
-__all__ = ["from_nxgraph", "to_nxgraph", "to_directed",
+__all__ = ["from_networkx", "to_networkx", "to_directed",
            "to_undirected", "to_unweighted"]
 
 
 @multiple()
-def from_nxgraph(G):
+def from_networkx(G):
     """Convert a networkx graph to scipy sparse matrix (CSR)
 
     Parameters
@@ -26,7 +26,7 @@ def from_nxgraph(G):
 
 
 @multiple()
-def to_nxgraph(G, directed=True):
+def to_networkx(G, directed=True):
     """Convert Scipy sparse matrix to networkx graph to
 
     Parameters

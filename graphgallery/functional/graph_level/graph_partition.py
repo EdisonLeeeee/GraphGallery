@@ -26,11 +26,13 @@ def random_clustering(num_nodes, num_clusters):
     parts = np.random.choice(num_clusters, size=num_nodes)
     return parts
 
+
 def louvain_clustering(graph):
     """Partitioning graph using louvain"""
     import community
-    parts = community.community_louvain.best_partition(graph.nxgraph())
+    parts = community.community_louvain.best_partition(graph.to_networkx())
     return list(parts.values())
+
 
 @Transform.register()
 class GraphPartition(GraphTransform):
@@ -45,10 +47,10 @@ class GraphPartition(GraphTransform):
 # TODO: accept a Graph and output a MultiGraph
 def graph_partition(graph, num_clusters: int = None, partition: str = 'metis'):
     assert partition in {'metis', 'random', 'louvain'}, " only one of {'metis', 'random', 'louvain'} is accepted as `partition` argument."
-    
+
     adj_matrix = graph.adj_matrix
     node_attr = graph.node_attr
-    if num_clusters is None and partition!= 'louvain' :
+    if num_clusters is None and partition != 'louvain':
         num_clusters = graph.num_node_classes
     # partition graph
     if partition == 'metis':
@@ -63,7 +65,6 @@ def graph_partition(graph, num_clusters: int = None, partition: str = 'metis'):
     else:
         parts = random_clustering(adj_matrix.shape[0], num_clusters)
 
-    
     cluster_member = [[] for _ in range(num_clusters)]
     for node_index, part in enumerate(parts):
         cluster_member[part].append(node_index)

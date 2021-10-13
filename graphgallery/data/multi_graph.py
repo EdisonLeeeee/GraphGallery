@@ -50,7 +50,7 @@ class MultiGraph(HomoGraph):
         the unweighted/undirected/no-self-loop graph."""
         raise NotImplementedError
 
-    def nxgraph(self, directed: bool = True):
+    def to_networkx(self, directed: bool = True):
         """Get the network graph from adj_matrix."""
         raise NotImplementedError
 
