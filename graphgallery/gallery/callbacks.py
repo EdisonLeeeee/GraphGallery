@@ -23,7 +23,7 @@ import logging
 import numpy as np
 
 from graphgallery import functional as gf
-from graphgallery.utils import Progbar
+from graphgallery.utils import Progbar, tqdm
 
 
 class ModeKeys(object):
@@ -1201,3 +1201,86 @@ class LambdaCallback(Callback):
             self.on_train_end = on_train_end
         else:
             self.on_train_end = lambda logs: None
+
+
+from graphgallery.utils import Progbar
+
+
+class TqdmCallback(Callback):
+    """Callback that prints metrics to stdout.
+    TODO: on_[test/predict]_[begin/end] haven't been tested.
+    """
+
+    def __init__(self, verbose=None, tqdm_class=tqdm):
+        super().__init__()
+        # Defaults to all Model's metrics except for loss.
+        self.seen = 0
+        self.progbar = None
+        self.target = None
+        self.verbose = 1
+        self.epochs = 1
+        self.verbose = verbose
+        self.tqdm_class = tqdm_class
+
+    def set_params(self, params):
+        self.epochs = params['epochs']
+        if self.verbose:
+            self.target = params['epochs']
+        else:
+            # Will be inferred at the end of the first epoch.
+            self.target = None
+
+    def on_train_begin(self, logs=None):
+        self._reset_progbar()
+
+    def on_train_end(self, logs=None):
+        self._reset_progbar()
+
+    def on_test_begin(self, logs=None):
+        self._reset_progbar()
+        self._maybe_init_progbar()
+
+    def on_predict_begin(self, logs=None):
+        self._reset_progbar()
+        self._maybe_init_progbar()
+
+    def on_epoch_begin(self, epoch, logs=None):
+        self._maybe_init_progbar()
+
+    def on_train_batch_end(self, batch, logs=None):
+        self._batch_update_progbar(batch, logs)
+
+    def on_test_batch_end(self, batch, logs=None):
+        self._batch_update_progbar(batch, logs)
+
+    def on_predict_batch_end(self, batch, logs=None):
+        # Don't pass prediction results.
+        self._batch_update_progbar(batch, None)
+
+    def on_epoch_end(self, epoch, logs=None):
+        logs = logs or {}
+        if self.verbose:
+            self.progbar.set_postfix(logs)
+            self.progbar.update(1)
+
+    def on_test_end(self, logs=None):
+        self._reset_progbar()
+
+    def on_predict_end(self, logs=None):
+        self._reset_progbar()
+
+    def _reset_progbar(self):
+        if self.progbar is not None:
+            self.progbar.close()
+
+    def _maybe_init_progbar(self):
+        if self.progbar is None:
+            self.progbar = self.tqdm_class(total=self.target, desc='', disable=not self.verbose)
+
+    def _batch_update_progbar(self, batch, logs=None):
+        """Updates the progbar."""
+        self._maybe_init_progbar()
+
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}(epochs={self.epochs}, verbose={self.verbose})"
+    __repr__ = __str__
