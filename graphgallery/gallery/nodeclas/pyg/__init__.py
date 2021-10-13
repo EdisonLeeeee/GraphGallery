@@ -1,4 +1,4 @@
-from .gcn import GCN, DropEdge
+from .gcn import GCN, DropEdge, RDrop
 from .sgc import SGC
 from .gat import GAT
 from .pdn import PDN
