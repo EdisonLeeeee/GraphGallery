@@ -171,8 +171,11 @@ class RDrop(TorchEngine):
     @staticmethod
     def compute_kl_loss(p, q):
 
-        p_loss = F.kl_div(F.log_softmax(p, dim=-1), F.softmax(q, dim=-1), reduction='none')
-        q_loss = F.kl_div(F.log_softmax(q, dim=-1), F.softmax(p, dim=-1), reduction='none')
+        q = F.softmax(q, dim=-1)
+        p = F.softmax(p, dim=-1)
+
+        p_loss = F.kl_div(p.log(), q, reduction='none')
+        q_loss = F.kl_div(q.log(), p, reduction='none')
 
         # You can choose whether to use function "sum" and "mean" depending on your task
         p_loss = p_loss.sum()
