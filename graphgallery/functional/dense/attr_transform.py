@@ -59,7 +59,7 @@ class NormalizeAttr(DenseTransform):
         norm: The specified type for the normalization.
             'l1': l1-norm for axis 1, from `sklearn.preprocessing`.
             'l1_0': l1-norm for axis 0, from `sklearn.preprocessing`.
-            'scale': standard scale for axis 0, from 
+            'zscore': standard scale for axis 0, from 
                 `sklearn.preprocessing.scale`
             'robust_scale', robust scale for axis 0, from 
                 `sklearn.preprocessing.robust_scale`
