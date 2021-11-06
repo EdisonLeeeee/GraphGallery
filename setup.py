@@ -1,13 +1,10 @@
 #!/usr/bin/env python
 # coding: utf-8
-import torch
 import os.path as osp
 from setuptools import setup, find_packages
 
 from torch.utils.cpp_extension import BuildExtension
-from torch.utils.cpp_extension import CppExtension, CUDAExtension, CUDA_HOME
-
-WITH_CUDA = torch.cuda.is_available() and CUDA_HOME is not None
+from torch.utils.cpp_extension import CppExtension
 
 
 def get_version():
@@ -54,7 +51,7 @@ tests_require = ['pytest', 'pytest-cov']
 setup(
     name='graphgallery',
     version=VERSION,
-    description='A Gallery for Benchmarking Graph Neural Networks and Graph Adversarial Learning.',
+    description='A Gallery for Benchmarking Graph Neural Networks.',
     author='Jintang Li',
     author_email='lijt55@mail2.sysu.edu.cn',
     long_description=open("README.md", encoding="utf-8").read(),

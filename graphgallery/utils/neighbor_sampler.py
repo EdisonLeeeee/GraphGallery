@@ -3,7 +3,12 @@ import scipy.sparse as sp
 from torch import Tensor
 from typing import List, Optional, Tuple, NamedTuple, Union
 
-from graphgallery.sampler import neighbor_sampler_cpu
+try:
+    from graphgallery.sampler import neighbor_sampler_cpu
+except ModuleNotFoundError:
+    neighbor_sampler_cpu = None
+    import sys
+    print("'neighbor_sampler_cpu' is not enabled, maybe you should re-install graphgallery again.", file=sys.stderr)
 
 
 class NeighborSampler:
