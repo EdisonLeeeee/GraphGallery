@@ -8,7 +8,9 @@ __all__ = ["get_num_nodes", "get_num_edges", "get_num_graphs",
            "get_num_node_attrs", "get_num_node_classes",
            ]
 
-identity = lambda x: x
+
+def identity(x): return x
+
 
 def get_num_nodes(adj_matrices, reduce=identity):
     if adj_matrices is None:
@@ -53,7 +55,7 @@ def get_num_node_attrs(node_attrs, reduce=identity):
         return 0
 
     if is_multiobjects(node_attrs):
-        return reduce(get_num_node_attrs(node_attr) for node_attr in node_attrs)
+        return reduce(get_num_node_attrs(attr_matrix) for attr_matrix in node_attrs)
 
     return node_attrs.shape[1]
 
@@ -63,7 +65,7 @@ def get_num_node_classes(node_labels, reduce=identity):
         return 0
 
     if is_multiobjects(node_labels):
-        return reduce(get_num_node_classes(node_label) for node_label in node_labels)
+        return reduce(get_num_node_classes(label) for label in node_labels)
 
     if node_labels.ndim == 1:
         return node_labels.max() + 1

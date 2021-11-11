@@ -26,10 +26,10 @@ class EdgeGCN(Trainer):
 
         graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
-        node_attr = gf.get(attr_transform)(graph.node_attr)
+        attr_matrix = gf.get(attr_transform)(graph.attr_matrix)
         edge_index, edge_weight = gf.sparse_adj_to_edge(adj_matrix)
 
-        X, E = gf.astensors(node_attr, (edge_index.T, edge_weight),
+        X, E = gf.astensors(attr_matrix, (edge_index.T, edge_weight),
                             device=self.data_device)
         # ``E`` and ``X`` are cached for later use
         self.register_cache(E=E, X=X)
@@ -56,7 +56,7 @@ class EdgeGCN(Trainer):
 
     def train_loader(self, index):
 
-        labels = self.graph.node_label[index]
+        labels = self.graph.label[index]
         sequence = FullBatchSequence([self.cache.X, *self.cache.E],
                                      labels,
                                      out_index=index,

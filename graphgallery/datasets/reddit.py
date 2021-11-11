@@ -41,12 +41,12 @@ class Reddit(InMemoryDataset):
         adj_matrix = sp.load_npz(
             osp.join(self.download_dir, 'reddit_graph.npz')).tocsr(copy=False)
 
-        node_attr = data['feature']
-        node_label = data['label']
+        attr_matrix = data['feature']
+        label = data['label']
         node_graph_label = data['node_types']
         graph = Graph(adj_matrix,
-                      node_attr,
-                      node_label,
+                      attr_matrix,
+                      label,
                       node_graph_label=node_graph_label)
 
         train_nodes = np.where(node_graph_label == 1)[0]

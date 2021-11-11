@@ -56,10 +56,10 @@ class Planetoid(InMemoryDataset):
 
     def __process__(self):
 
-        adj_matrix, node_attr, node_label, train_nodes, val_nodes, test_nodes = process_planetoid_datasets(
+        adj_matrix, attr_matrix, label, train_nodes, val_nodes, test_nodes = process_planetoid_datasets(
             self.name, self.raw_paths)
 
-        graph = Graph(adj_matrix, node_attr, node_label, copy=False)
+        graph = Graph(adj_matrix, attr_matrix, label, copy=False)
         return dict(graph=graph,
                     train_nodes=train_nodes,
                     val_nodes=val_nodes,

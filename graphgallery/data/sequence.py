@@ -71,7 +71,6 @@ class FeatureLabelSequence(Sequence):
         self.y = self.astensor(y)
 
     def collate_fn(self, ids):
-        # TODO: for tensorflow backend
         return self.astensors(self.x[ids], self.y[ids])
 
 
@@ -136,12 +135,8 @@ class FastGCNBatchSequence(Sequence):
         sampled_adjacency = sampled_adjacency.dot(sp.diags(
             1.0 / (sampled_probability * num_samples)
         ))
-        # FIXME: Only integers, slices (`:`), ellipsis (`...`), tf.newaxis (`None`) and scalar tf.int32/tf.int64 tensors are valid indices for tensorflow tensor
-        # So the following codes would triggered error for tensorflow backend
-        # sampled_x = self.x[sampled_nodes]
-        # sampled_y = self.y[nodes] if self.y is not None else None
-        sampled_x = gf.gather(self.x, sampled_nodes)
-        sampled_y = gf.gather(self.y, nodes)
+        sampled_x = self.x[sampled_nodes]
+        sampled_y = self.y[nodes] if self.y is not None else None
         return sampled_x, sampled_adjacency, sampled_y
 
 
@@ -161,15 +156,13 @@ class SAGESequence(Sequence):
         self.nodes, self.y = nodes, y
         self.sizes = sizes
         self.neighbor_sampler = gg.utils.NeighborSampler(adj_matrix)
-        self.is_tensorflow_backend = self.backend == "tensorflow"
 
     def collate_fn(self, ids):
-        is_tensorflow_backend = self.is_tensorflow_backend
         nodes = self.nodes[ids]
         neighbors = [nodes]
 
         for size in self.sizes:
-            _, nbrs = self.neighbor_sampler.sample(nodes, size=size, as_numpy=is_tensorflow_backend)
+            _, nbrs = self.neighbor_sampler.sample(nodes, size=size)
             neighbors.append(nbrs)
             nodes = nbrs
 

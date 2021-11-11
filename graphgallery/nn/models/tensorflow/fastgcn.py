@@ -16,7 +16,7 @@ class FastGCN(TFEngine):
                  weight_decay=5e-4, lr=0.01, bias=False):
 
         x = Input(batch_shape=[None, in_features],
-                  dtype=floatx(), name='node_attr')
+                  dtype=floatx(), name='attr_matrix')
         adj = Input(batch_shape=[None, None], dtype=floatx(),
                     sparse=True, name='adj_matrix')
 

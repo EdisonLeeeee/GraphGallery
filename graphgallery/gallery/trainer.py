@@ -392,7 +392,7 @@ class Trainer(Model):
     def _test_predict(self, index):
         logit = self.predict(index)
         predict_class = logit.argmax(1)
-        labels = self.graph.node_label[index]
+        labels = self.graph.label[index]
         return (predict_class == labels).mean()
 
     # def reset_weights(self):

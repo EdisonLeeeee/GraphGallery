@@ -16,7 +16,7 @@ class SAT(Trainer):
 
         graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
-        node_attr = gf.get(attr_transform)(graph.node_attr)
+        attr_matrix = gf.get(attr_transform)(graph.attr_matrix)
 
         V, U = sp.linalg.eigsh(adj_matrix, k=k)
 
@@ -24,7 +24,7 @@ class SAT(Trainer):
         adj_matrix[adj_matrix < 0] = 0.
         adj_matrix = gf.get(adj_transform)(adj_matrix)
 
-        X, A, U, V = gf.astensors(node_attr,
+        X, A, U, V = gf.astensors(attr_matrix,
                                   adj_matrix,
                                   U,
                                   V,
@@ -68,7 +68,7 @@ class SAT(Trainer):
 
     def train_loader(self, index):
 
-        labels = self.graph.node_label[index]
+        labels = self.graph.label[index]
         sequence = FullBatchSequence(inputs=[self.cache.X, self.cache.U, self.cache.V],
                                      y=labels,
                                      out_index=index,
@@ -77,7 +77,7 @@ class SAT(Trainer):
 
     def test_loader(self, index):
 
-        labels = self.graph.node_label[index]
+        labels = self.graph.label[index]
         sequence = FullBatchSequence(inputs=[self.cache.X, self.cache.A],
                                      y=labels,
                                      out_index=index,

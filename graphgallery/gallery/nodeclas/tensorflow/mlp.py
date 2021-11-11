@@ -12,9 +12,9 @@ class MLP(Trainer):
                   attr_transform=None):
 
         graph = self.graph
-        node_attr = gf.get(attr_transform)(graph.node_attr)
+        attr_matrix = gf.get(attr_transform)(graph.attr_matrix)
 
-        X = gf.astensors(node_attr, device=self.data_device)
+        X = gf.astensors(attr_matrix, device=self.data_device)
 
         # ``A`` and ``X`` are cached for later use
         self.register_cache(X=X)
@@ -41,7 +41,7 @@ class MLP(Trainer):
 
     def train_loader(self, index):
 
-        labels = self.graph.node_label[index]
+        labels = self.graph.label[index]
         sequence = FullBatchSequence(inputs=[self.cache.X],
                                      y=labels,
                                      out_index=index,

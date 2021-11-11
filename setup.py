@@ -27,11 +27,10 @@ url = 'https://github.com/EdisonLeeeee/GraphGallery'
 
 
 install_requires = [
-    # Do not add pytorch and tensorflow here. User should install
-    # pytorch and tensorflow themselves, preferrably by OS's package manager, or by
+    # Do not add pytorch here. User should install
+    # pytorch themselves, preferrably by OS's package manager, or by
     # choosing the proper pypi package name at
     # pytorch: https://pytorch.org/
-    # tensorflow: http://tensorflow.org/
     'tqdm',
     'yacs',
     'scipy',
@@ -59,7 +58,6 @@ setup(
     url=url,
     download_url='{}/archive/{}.tar.gz'.format(url, VERSION),
     keywords=[
-        'tensorflow',
         'pytorch',
         'benchmark',
         'geometric-deep-learning',

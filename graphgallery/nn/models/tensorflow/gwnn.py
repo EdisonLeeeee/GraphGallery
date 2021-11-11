@@ -18,7 +18,7 @@ class GWNN(TFEngine):
 
         _floatx = floatx()
         x = Input(batch_shape=[None, in_features],
-                  dtype=_floatx, name='node_attr')
+                  dtype=_floatx, name='attr_matrix')
         wavelet = Input(batch_shape=[num_nodes, num_nodes],
                         dtype=_floatx, sparse=True,
                         name='wavelet_matrix')

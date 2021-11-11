@@ -21,9 +21,9 @@ class SGC(Trainer):
                   K=2):
         graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
-        node_attr = gf.get(attr_transform)(graph.node_attr)
+        attr_matrix = gf.get(attr_transform)(graph.attr_matrix)
 
-        X, A = gf.astensors(node_attr, adj_matrix, device=self.data_device)
+        X, A = gf.astensors(attr_matrix, adj_matrix, device=self.data_device)
 
         X = SGConv(K=K)(X, A)
         # ``A`` and ``X`` are cached for later use
@@ -50,7 +50,7 @@ class SGC(Trainer):
         return model
 
     def train_loader(self, index):
-        labels = self.graph.node_label[index]
+        labels = self.graph.label[index]
         X = self.cache.X[index]
         sequence = FullBatchSequence(X, labels, device=self.data_device)
         return sequence

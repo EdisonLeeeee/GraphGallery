@@ -30,14 +30,14 @@ def cosine_similarity(A, B):
 #     return C
 
 
-def filter_edges_by_similarity(adj_matrix, node_attr,
+def filter_edges_by_similarity(adj_matrix, attr_matrix,
                                similarity_fn, threshold=0.01,
                                allow_singleton=False):
 
     rows, cols = adj_matrix.nonzero()
 
-    A = node_attr[rows]
-    B = node_attr[cols]
+    A = attr_matrix[rows]
+    B = attr_matrix[cols]
     S = similarity_fn(A, B)
     idx = np.where(S <= threshold)[0]
     flips = np.vstack([rows[idx], cols[idx]])
@@ -46,15 +46,15 @@ def filter_edges_by_similarity(adj_matrix, node_attr,
     return flips
 
 
-def jaccard_detection(adj_matrix, node_attr, threshold=0.01, allow_singleton=False):
-    return filter_edges_by_similarity(adj_matrix, node_attr,
+def jaccard_detection(adj_matrix, attr_matrix, threshold=0.01, allow_singleton=False):
+    return filter_edges_by_similarity(adj_matrix, attr_matrix,
                                       similarity_fn=jaccard_similarity,
                                       threshold=threshold,
                                       allow_singleton=allow_singleton)
 
 
-def cosine_detection(adj_matrix, node_attr, threshold=0.01, allow_singleton=False):
-    return filter_edges_by_similarity(adj_matrix, node_attr,
+def cosine_detection(adj_matrix, attr_matrix, threshold=0.01, allow_singleton=False):
+    return filter_edges_by_similarity(adj_matrix, attr_matrix,
                                       similarity_fn=cosine_similarity,
                                       threshold=threshold,
                                       allow_singleton=allow_singleton)
@@ -75,8 +75,8 @@ class JaccardDetection(GraphTransform):
         assert not graph.is_multiple(), "NOT Supported for multiple graph"
         graph = graph.copy()
         adj_matrix = graph.adj_matrix
-        node_attr = graph.node_attr
-        structure_flips = jaccard_detection(adj_matrix, node_attr,
+        attr_matrix = graph.attr_matrix
+        structure_flips = jaccard_detection(adj_matrix, attr_matrix,
                                             threshold=self.threshold,
                                             allow_singleton=self.allow_singleton)
         self.flips = structure_flips
@@ -102,8 +102,8 @@ class CosineDetection(GraphTransform):
         assert not graph.is_multiple(), "NOT Supported for multiple graph"
         graph = graph.copy()
         adj_matrix = graph.adj_matrix
-        node_attr = graph.node_attr
-        structure_flips = cosine_detection(adj_matrix, node_attr,
+        attr_matrix = graph.attr_matrix
+        structure_flips = cosine_detection(adj_matrix, attr_matrix,
                                            threshold=self.threshold,
                                            allow_singleton=self.allow_singleton)
 

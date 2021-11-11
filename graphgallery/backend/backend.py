@@ -8,7 +8,7 @@ __all__ = [
     'set_to_default_backend', 'file_ext', 'set_file_ext'
 ]
 
-# used to store the models or weights for `TensorFlow` and `PyTorch`
+# used to store the models or weights for `PyTorch`
 _EXT = ".pth"
 
 _DEFAULT_BACKEND = PyTorchBackend()
@@ -42,7 +42,7 @@ def backend(module_name=None):
     Parameters:
     --------
     module_name: String or 'BackendModule', optional.
-     `'tensorflow'`, `'torch'`, TensorFlowBackend, PyTorchBackend, etc.
+     `'torch'`, `PyTorchBackend`, `'pyg`, etc.
      if not specified, return the current default backend module. 
 
     Returns:

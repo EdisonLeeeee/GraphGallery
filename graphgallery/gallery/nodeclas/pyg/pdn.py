@@ -22,10 +22,10 @@ class PDN(Trainer):
 
         graph = self.graph
         edge_index, edge_weight = gf.get(edge_transform)(graph.edge_index, graph.edge_weight)
-        node_attr = gf.get(attr_transform)(graph.node_attr)
+        attr_matrix = gf.get(attr_transform)(graph.attr_matrix)
         edge_attr = gf.get(edge_attr_transform)(graph.edge_attr)
 
-        X, edge_index, edge_x = gf.astensors(node_attr,
+        X, edge_index, edge_x = gf.astensors(attr_matrix,
                                              edge_index,
                                              edge_attr,
                                              device=self.data_device)
@@ -56,7 +56,7 @@ class PDN(Trainer):
 
     def train_loader(self, index):
 
-        labels = self.graph.node_label[index]
+        labels = self.graph.label[index]
         sequence = FullBatchSequence([self.cache.X,
                                       self.cache.edge_index,
                                       self.cache.edge_x],

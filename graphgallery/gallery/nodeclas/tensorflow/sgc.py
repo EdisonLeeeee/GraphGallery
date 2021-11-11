@@ -24,9 +24,9 @@ class SGC(Trainer):
 
         graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
-        node_attr = gf.get(attr_transform)(graph.node_attr)
+        attr_matrix = gf.get(attr_transform)(graph.attr_matrix)
 
-        X, A = gf.astensors(node_attr, adj_matrix, device=self.data_device)
+        X, A = gf.astensors(attr_matrix, adj_matrix, device=self.data_device)
 
         # To avoid this tensorflow error in large dataset:
         # InvalidArgumentError: Cannot use GPU when output.shape[1] * nnz(a) > 2^31 [Op:SparseTensorDenseMatMul]
@@ -63,7 +63,7 @@ class SGC(Trainer):
         return model
 
     def train_loader(self, index):
-        labels = self.graph.node_label[index]
+        labels = self.graph.label[index]
         index = gf.astensor(index)
 
         X = tf.gather(self.cache.X, index)

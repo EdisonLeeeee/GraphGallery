@@ -20,8 +20,7 @@ def max_memory():
 
 
 def gpu_memory():
-    """return the maximum allocated GPU memory for PyTorch backend,
-    but it currently not works for TensorFlow backend.
+    """return the maximum allocated GPU memory
 
     Returns
     -------

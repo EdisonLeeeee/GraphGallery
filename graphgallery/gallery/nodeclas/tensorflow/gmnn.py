@@ -28,10 +28,10 @@ class GMNN(Trainer):
                   label_transform="onehot"):
         graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
-        node_attr = gf.get(attr_transform)(graph.node_attr)
-        label = gf.get(label_transform)(graph.node_label)
+        attr_matrix = gf.get(attr_transform)(graph.attr_matrix)
+        label = gf.get(label_transform)(graph.label)
 
-        X, A = gf.astensors(node_attr, adj_matrix, device=self.data_device)
+        X, A = gf.astensors(attr_matrix, adj_matrix, device=self.data_device)
 
         # ``A`` and ``X`` are cached for later use
         self.register_cache(X=X, A=A, Y=label,
@@ -99,7 +99,7 @@ class GMNN(Trainer):
         histories.append(history)
 
         label_predict = self.predict(self.cache.idx_all).argmax(1)
-        label_predict[train_data] = self.graph.node_label[train_data]
+        label_predict[train_data] = self.graph.label[train_data]
         label_predict = tf.one_hot(label_predict, depth=self.graph.num_node_classes)
         # train model_p fitst
         train_loader = FullBatchSequence([label_predict, self.cache.A],

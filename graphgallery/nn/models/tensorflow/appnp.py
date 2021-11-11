@@ -27,7 +27,7 @@ class APPNP(TFEngine):
                  approximated=True):
 
         x = Input(batch_shape=[None, in_features],
-                  dtype=floatx(), name='node_attr')
+                  dtype=floatx(), name='attr_matrix')
         adj = Input(batch_shape=[None, None], dtype=floatx(),
                     sparse=approximated, name='adj_matrix')
 

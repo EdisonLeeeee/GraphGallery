@@ -21,10 +21,10 @@ class LGCN(Trainer):
 
         graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix).toarray()
-        node_attr = gf.get(attr_transform)(graph.node_attr)
+        attr_matrix = gf.get(attr_transform)(graph.attr_matrix)
 
         # ``A`` and ``X`` are cached for later use
-        self.register_cache(X=node_attr, A=adj_matrix)
+        self.register_cache(X=attr_matrix, A=adj_matrix)
 
     def model_step(self,
                    hids=[32],
@@ -60,7 +60,7 @@ class LGCN(Trainer):
         A = cache.A[index][:, index]
         X = cache.X[index]
         mask = mask[index]
-        labels = self.graph.node_label[index[mask]]
+        labels = self.graph.label[index[mask]]
 
         sequence = FullBatchSequence([X, A],
                                      labels,

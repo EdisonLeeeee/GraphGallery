@@ -4,7 +4,6 @@ import warnings
 from typing import IO, Any, Callable, Dict, List, Union
 
 import yaml
-# from fvcore.common.file_io import PathManager
 from yacs.config import CfgNode as _CfgNode
 
 

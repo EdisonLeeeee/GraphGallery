@@ -64,7 +64,7 @@ class BaseGraph:
 
     def is_node_attributed(self):
         """Whether the graph has node attributes"""
-        return getattr(self, "node_attr", None)
+        return getattr(self, "attr_matrix", None)
 
     def is_edge_attributed(self):
         """Whether the graph has edge attributes"""
@@ -76,7 +76,7 @@ class BaseGraph:
 
     def is_node_labeled(self):
         """Whether the graph has node labels"""
-        return getattr(self, "node_label", None)
+        return getattr(self, "label", None)
 
     def is_edge_labeled(self):
         """Whether the graph has edge labels"""
@@ -85,7 +85,7 @@ class BaseGraph:
     def is_graph_labeled(self):
         """Whether the graph has graph labels (for multiple graph)"""
         return getattr(self, "graph_label", None)
-    
+
     def is_multiple(self):
         """Whether the graph is a multiple graph instance"""
         return self.multiple

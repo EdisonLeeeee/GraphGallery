@@ -68,7 +68,7 @@ class Dataset:
         val = 0. if val is None else val
         assert train + val + test <= 1.0
 
-        label = graph.node_label
+        label = graph.label
         train_nodes, val_nodes, test_nodes = train_val_test_split_tabular(
             label.shape[0],
             train=train,
@@ -88,7 +88,7 @@ class Dataset:
         graph = self.graph
         assert not graph.is_multiple(), "NOT Supported for multiple graph"
 
-        label = graph.node_label
+        label = graph.label
         train_nodes, val_nodes, test_nodes = get_train_val_test_split_gcn(
             label,
             num_samples,
@@ -109,7 +109,7 @@ class Dataset:
         assert not graph.is_multiple(), "NOT Supported for multiple graph"
         self._graph = graph.eliminate_classes(train_samples_per_class + val_samples_per_class).standardize()
 
-        label = self._graph.node_label
+        label = self._graph.label
         train_nodes, val_nodes, test_nodes = get_train_val_test_split(
             label,
             train_samples_per_class,

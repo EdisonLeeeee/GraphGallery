@@ -42,14 +42,14 @@ def subgraph(graph, *,
     else:
         raise RuntimeError("This should never happen.")
 
-    adj_matrix, node_attr, node_label = graph('adj_matrix',
-                                              'node_attr',
-                                              'node_label')
+    adj_matrix, attr_matrix, label = graph('adj_matrix',
+                                           'attr_matrix',
+                                           'label')
     graph.adj_matrix = adj_matrix[nodes_to_keep][:, nodes_to_keep]
-    if node_attr is not None:
-        graph.node_attr = node_attr[nodes_to_keep]
-    if node_label is not None:
-        graph.node_label = node_label[nodes_to_keep]
+    if attr_matrix is not None:
+        graph.attr_matrix = attr_matrix[nodes_to_keep]
+    if label is not None:
+        graph.label = label[nodes_to_keep]
 
     # TODO: remove?
     metadata = copy.deepcopy(graph.metadata)

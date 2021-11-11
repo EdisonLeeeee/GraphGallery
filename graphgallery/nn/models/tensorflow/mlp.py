@@ -23,7 +23,7 @@ class MLP(TFEngine):
                                " Or you can set both of them to `[]`.")
 
         x = Input(batch_shape=[None, in_features],
-                  dtype=floatx(), name='node_attr')
+                  dtype=floatx(), name='attr_matrix')
 
         h = x
         for hid, act in zip(hids, acts):

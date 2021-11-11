@@ -86,17 +86,17 @@ class TUDataset(InMemoryDataset):
         node_graph_label = genfromtxt(osp.join(folder, prefix + '_graph_indicator.txt'),
                                       dtype=np.int64) - 1
         edge_graph_label = node_graph_label[edge_index[0]]
-        node_attr = node_label = None
+        attr_matrix = label = None
         if 'node_attributes' in names:
-            node_attr = genfromtxt(osp.join(folder,
-                                            prefix + '_node_attributes.txt'),
-                                   dtype=np.float32)
+            attr_matrix = genfromtxt(osp.join(folder,
+                                              prefix + '_node_attributes.txt'),
+                                     dtype=np.float32)
 
         if 'node_labels' in names:
-            node_label = genfromtxt(osp.join(folder,
-                                             prefix + '_node_labels.txt'),
-                                    dtype=np.int64)
-            node_label = node_label - node_label.min(0)
+            label = genfromtxt(osp.join(folder,
+                                        prefix + '_node_labels.txt'),
+                               dtype=np.int64)
+            label = label - label.min(0)
 
         edge_attr = edge_label = None
         if 'edge_attributes' in names:
@@ -124,8 +124,8 @@ class TUDataset(InMemoryDataset):
                           edge_attr=edge_attr,
                           edge_label=edge_label,
                           edge_graph_label=edge_graph_label,
-                          node_attr=node_attr,
-                          node_label=node_label,
+                          attr_matrix=attr_matrix,
+                          label=label,
                           node_graph_label=node_graph_label,
                           graph_attr=graph_attr,
                           graph_label=graph_label)

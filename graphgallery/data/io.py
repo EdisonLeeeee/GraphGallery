@@ -266,7 +266,12 @@ def load_npz(filepath):
     if osp.isfile(filepath):
         with np.load(filepath, allow_pickle=True) as loader:
             loader = dict(loader)
+
             for k, v in loader.items():
+                if k == 'node_attr':
+                    k = 'attr_matrix'
+                if k == 'node_label':
+                    k = 'label'
                 if v.dtype.kind in {'O', 'U'}:
                     loader[k] = v.tolist()
             return loader

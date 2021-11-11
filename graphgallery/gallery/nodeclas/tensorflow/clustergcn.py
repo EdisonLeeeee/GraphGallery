@@ -69,7 +69,7 @@ class ClusterGCN(Trainer):
 
     def train_loader(self, index):
         node_mask = gf.index_to_mask(index, self.graph.num_nodes)
-        labels = self.graph.node_label
+        labels = self.graph.label
         cache = self.cache
 
         batch_mask, batch_y = [], []

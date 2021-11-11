@@ -22,9 +22,9 @@ class GCN(Trainer):
 
         graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
-        node_attr = gf.get(attr_transform)(graph.node_attr)
+        attr_matrix = gf.get(attr_transform)(graph.attr_matrix)
 
-        X, A = gf.astensors(node_attr, adj_matrix, device=self.data_device)
+        X, A = gf.astensors(attr_matrix, adj_matrix, device=self.data_device)
 
         # ``A`` and ``X`` are cached for later use
         self.register_cache(X=X, A=A)
@@ -51,7 +51,7 @@ class GCN(Trainer):
 
     def train_loader(self, index):
 
-        labels = self.graph.node_label[index]
+        labels = self.graph.label[index]
         sequence = FullBatchSequence(inputs=[self.cache.X, self.cache.A],
                                      y=labels,
                                      out_index=index,
@@ -72,9 +72,9 @@ class GCN(Trainer):
 
 #         graph = self.graph
 #         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
-#         node_attr = gf.get(attr_transform)(graph.node_attr)
+#         attr_matrix = gf.get(attr_transform)(graph.attr_matrix)
 
-#         X, A = gf.astensors(node_attr, adj_matrix, device=self.data_device)
+#         X, A = gf.astensors(attr_matrix, adj_matrix, device=self.data_device)
 
 #         # ``A`` and ``X`` are cached for later use
 #         self.register_cache(X=X, A=A)
@@ -103,7 +103,7 @@ class GCN(Trainer):
 
 #     def train_loader(self, index):
 
-#         labels = self.graph.node_label[index]
+#         labels = self.graph.label[index]
 #         sequence = FullBatchSequence(inputs=[self.cache.X, self.cache.A],
 #                                      y=labels,
 #                                      out_index=index,

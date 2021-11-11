@@ -22,7 +22,7 @@ class RobustGCN(TFEngine):
 
         _floatx = floatx()
         x = Input(batch_shape=[None, in_features],
-                  dtype=_floatx, name='node_attr')
+                  dtype=_floatx, name='attr_matrix')
         adj = [Input(batch_shape=[None, None], dtype=_floatx,
                      sparse=True, name='adj_matrix_1'),
                Input(batch_shape=[None, None], dtype=_floatx, sparse=True,

@@ -21,9 +21,9 @@ class SimPGCN(Trainer):
 
         graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
-        node_attr = gf.get(attr_transform)(graph.node_attr)
+        attr_matrix = gf.get(attr_transform)(graph.attr_matrix)
 
-        X, A = gf.astensors(node_attr, adj_matrix, device=self.data_device)
+        X, A = gf.astensors(attr_matrix, adj_matrix, device=self.data_device)
 
         # ``A`` and ``X`` are cached for later use
         self.register_cache(X=X, A=A)
@@ -31,8 +31,8 @@ class SimPGCN(Trainer):
         if recalculate:
             # Uses this to save time for structure evation attack
             # NOTE: Please make sure the node attribute matrix remains the same if recalculate=False
-            knn_graph = gf.normalize_adj(gf.knn_graph(node_attr), fill_weight=0.)
-            pseudo_labels, node_pairs = gf.attr_sim(node_attr)
+            knn_graph = gf.normalize_adj(gf.knn_graph(attr_matrix), fill_weight=0.)
+            pseudo_labels, node_pairs = gf.attr_sim(attr_matrix)
             knn_graph, pseudo_labels = gf.astensors(knn_graph, pseudo_labels, device=self.data_device)
 
             self.register_cache(knn_graph=knn_graph, pseudo_labels=pseudo_labels, node_pairs=node_pairs)
@@ -63,7 +63,7 @@ class SimPGCN(Trainer):
 
     def train_loader(self, index):
 
-        labels = self.graph.node_label[index]
+        labels = self.graph.label[index]
         cache = self.cache
         sequence = FullBatchSequence(inputs=[cache.X, cache.A, cache.knn_graph],
                                      y=[labels, cache.pseudo_labels, cache.node_pairs],
@@ -73,7 +73,7 @@ class SimPGCN(Trainer):
 
     def test_loader(self, index):
 
-        labels = self.graph.node_label[index]
+        labels = self.graph.label[index]
         sequence = FullBatchSequence(inputs=[self.cache.X, self.cache.A],
                                      y=labels,
                                      out_index=index,

@@ -56,16 +56,16 @@ class Graph(HomoGraph):
         """Remove nodes from graph that correspond to a class of which there are less
         or equal than 'threshold'. Those classes would otherwise break the training procedure.
         """
-        if self.node_label is None:
+        if self.label is None:
             return self
-        node_label = self.node_label
-        counts = np.bincount(node_label)
+        label = self.label
+        counts = np.bincount(label)
         nodes_to_remove = []
         removed = 0
         left = []
         for _class, count in enumerate(counts):
             if count <= threshold:
-                nodes_to_remove.extend(np.where(node_label == _class)[0])
+                nodes_to_remove.extend(np.where(label == _class)[0])
                 removed += 1
             else:
                 left.append(_class)
@@ -74,15 +74,15 @@ class Graph(HomoGraph):
             # TODO: considering about metadata['class_names']
             G = self.subgraph(nodes_to_remove=nodes_to_remove)
             mapping = dict(zip(left, range(self.num_node_classes - removed)))
-            G.node_label = np.asarray(list(
-                map(lambda key: mapping[key], G.node_label)),
+            G.label = np.asarray(list(
+                map(lambda key: mapping[key], G.label)),
                 dtype=np.int32)
             return G
         else:
             return self
 
     def eliminate_singleton(self):
-        G = self.graph.eliminate_selfloops()
+        G = self.eliminate_self_loop()
         A = G.adj_matrix
         mask = np.logical_and(A.sum(0) == 0, A.sum(1) == 1)
         nodes_to_keep = mask.nonzero()[0]
@@ -90,17 +90,17 @@ class Graph(HomoGraph):
 
     def from_flips(self, **flips):
         """Return a new graph from:
-        'edge_flips' or 'nx_flips'
+        'edge_flips' or 'feat_flips'
         """
-        allowed = ("edge_flips", "nx_flips")
+        allowed = ("edge_flips", "feat_flips")
         g = self.copy()
         for k, v in flips.items():
             if v is None:
                 continue
             if k == "edge_flips":
                 g.update(adj_matrix=gf.flip_adj(g.adj_matrix, v))
-            elif k == "nx_flips":
-                g.update(node_attr=gf.flip_attr(g.node_attr, v))
+            elif k == "feat_flips":
+                g.update(attr_matrix=gf.flip_attr(g.attr_matrix, v))
             else:
                 raise ValueError(f"Unrecognized key {k}, allowed: {allowed}.")
         return g
@@ -124,9 +124,9 @@ class Graph(HomoGraph):
         <https://openreview.net/forum?id=rkecl1rtwB>
         ICLR 2020"""
         G = self.copy()
-        G.node_attr = gf.erase_node_attr(G.node_attr,
-                                         nodes=nodes,
-                                         missing_rate=missing_rate)
+        G.attr_matrix = gf.erase_node_attr(G.attr_matrix,
+                                           nodes=nodes,
+                                           missing_rate=missing_rate)
         return G
 
     def erase_node_attr_except(self, nodes, missing_rate=0.1):
@@ -134,7 +134,7 @@ class Graph(HomoGraph):
         <https://openreview.net/forum?id=rkecl1rtwB>
         ICLR 2020"""
         G = self.copy()
-        G.node_attr = gf.erase_node_attr_except(G.node_attr,
-                                                nodes=nodes,
-                                                missing_rate=missing_rate)
+        G.attr_matrix = gf.erase_node_attr_except(G.attr_matrix,
+                                                  nodes=nodes,
+                                                  missing_rate=missing_rate)
         return G

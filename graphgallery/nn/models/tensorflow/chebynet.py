@@ -19,7 +19,7 @@ class ChebyNet(TFEngine):
                  lr=0.01, K=2, bias=False):
 
         x = Input(batch_shape=[None, in_features],
-                  dtype=floatx(), name='node_attr')
+                  dtype=floatx(), name='attr_matrix')
         adj = [Input(batch_shape=[None, None],
                      dtype=floatx(), sparse=True,
                      name=f'adj_matrix_{i}') for i in range(K + 1)]

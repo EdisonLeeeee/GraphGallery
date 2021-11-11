@@ -21,7 +21,7 @@ class GCN(TFEngine):
                  experimental_run_tf_function=True):
 
         x = Input(batch_shape=[None, in_features],
-                  dtype=floatx(), name='node_attr')
+                  dtype=floatx(), name='attr_matrix')
         adj = Input(batch_shape=[None, None], dtype=floatx(),
                     sparse=True, name='adj_matrix')
 

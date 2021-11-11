@@ -20,7 +20,7 @@ class HeteGraph(BaseGraph):
                  edge_attr=None, edge_label=None,
                  *,
                  edge_graph_label=None,
-                 node_attr=None, node_label=None,
+                 attr_matrix=None, label=None,
                  node_graph_label=None,
                  graph_attr=None,
                  graph_label=None,
@@ -49,7 +49,7 @@ class HeteGraph(BaseGraph):
 
     @property
     def num_node_attrs(self) -> int:
-        return utils.get_num_node_attrs(self.node_attr)
+        return utils.get_num_node_attrs(self.attr_matrix)
 
     @property
     def num_edge_attrs(self) -> int:
@@ -57,7 +57,7 @@ class HeteGraph(BaseGraph):
 
     @property
     def num_node_classes(self) -> int:
-        return utils.get_num_node_classes(self.node_label)
+        return utils.get_num_node_classes(self.label)
 
     @property
     def A(self):
@@ -86,8 +86,8 @@ class HeteGraph(BaseGraph):
 
     @property
     def nx(self):
-        """Alias of node_attr."""
-        return self.node_attr
+        """Alias of attr_matrix."""
+        return self.attr_matrix
 
     @property
     def gx(self):
@@ -106,8 +106,8 @@ class HeteGraph(BaseGraph):
 
     @property
     def ny(self):
-        """Alias of node_label."""
-        return self.node_label
+        """Alias of label."""
+        return self.label
 
     @property
     def gy(self):

@@ -64,9 +64,9 @@ class KarateClub(InMemoryDataset):
         filenames = self.raw_paths
         if self.level == "node_level":
             adj_matrix = reader.read_edges(filenames[0])
-            node_attr = reader.read_csv_features(filenames[1])
-            node_label = reader.read_target(filenames[2])
-            graph = Graph(adj_matrix, node_attr, node_label, copy=False)
+            attr_matrix = reader.read_csv_features(filenames[1])
+            label = reader.read_target(filenames[2])
+            graph = Graph(adj_matrix, attr_matrix, label, copy=False)
         else:
             adj_matrix = reader.read_graphs(filenames[0])
             graph_label = reader.read_target(filenames[1])

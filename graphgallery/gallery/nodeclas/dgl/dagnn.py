@@ -15,13 +15,13 @@ class DAGNN(Trainer):
     """
 
     def data_step(self,
-                  adj_transform="add_selfloops",
+                  adj_transform="add_self_loop",
                   attr_transform=None):
 
         graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
-        node_attr = gf.get(attr_transform)(graph.node_attr)
-        X, G = gf.astensors(node_attr, adj_matrix, device=self.data_device)
+        attr_matrix = gf.get(attr_transform)(graph.attr_matrix)
+        X, G = gf.astensors(attr_matrix, adj_matrix, device=self.data_device)
 
         # ``G`` and ``X`` are cached for later use
         self.register_cache(X=X, G=G)
@@ -49,7 +49,7 @@ class DAGNN(Trainer):
         return model
 
     def train_loader(self, index):
-        labels = self.graph.node_label[index]
+        labels = self.graph.label[index]
         sequence = FullBatchSequence(inputs=[self.cache.X, self.cache.G],
                                      y=labels,
                                      out_index=index,

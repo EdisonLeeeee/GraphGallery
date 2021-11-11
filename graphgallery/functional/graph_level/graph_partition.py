@@ -49,7 +49,7 @@ def graph_partition(graph, num_clusters: int = None, partition: str = 'metis'):
     assert partition in {'metis', 'random', 'louvain'}, " only one of {'metis', 'random', 'louvain'} is accepted as `partition` argument."
 
     adj_matrix = graph.adj_matrix
-    node_attr = graph.node_attr
+    attr_matrix = graph.attr_matrix
     if num_clusters is None and partition != 'louvain':
         num_clusters = graph.num_node_classes
     # partition graph
@@ -78,7 +78,7 @@ def graph_partition(graph, num_clusters: int = None, partition: str = 'metis'):
         mapper.update({old_id: new_id for new_id, old_id in enumerate(nodes)})
 
         mini_adj = adj_matrix[nodes][:, nodes]
-        mini_x = node_attr[nodes]
+        mini_x = attr_matrix[nodes]
 
         batch_adj.append(mini_adj)
         batch_x.append(mini_x)

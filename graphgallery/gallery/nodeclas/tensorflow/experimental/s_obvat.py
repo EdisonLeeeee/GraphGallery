@@ -36,7 +36,7 @@ class SimplifiedOBVAT(OBVAT):
 
         x = Input(batch_shape=[None, self.graph.num_node_attrs],
                   dtype=self.floatx,
-                  name='node_attr')
+                  name='attr_matrix')
         adj = Input(batch_shape=[None, None],
                     dtype=self.floatx,
                     sparse=True,

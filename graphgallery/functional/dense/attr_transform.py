@@ -12,20 +12,20 @@ from ..transform import Transform
 __all__ = ['augment_attr', 'normalize_attr', 'NormalizeAttr']
 
 
-def augment_attr(node_attr: np.ndarray,
+def augment_attr(attr_matrix: np.ndarray,
                  N: int,
                  fill_weight: Union[float, list, np.ndarray] = 0.):
     """Augment a specified node attribute matrix.
 
     Examples
     ----------
-    >>> augment_attr(node_attr, 10, fill_weight=1.0)
+    >>> augment_attr(attr_matrix, 10, fill_weight=1.0)
 
-    >>> augment_attr(node_attr, 10, fill_weight=node_attr[-1])
+    >>> augment_attr(attr_matrix, 10, fill_weight=attr_matrix[-1])
 
     Parameters
     ----------
-    node_attr: shape [num_nodes, num_nodes].
+    attr_matrix: shape [num_nodes, num_nodes].
         A Scipy sparse adjacency matrix.
     N: number of added nodes.
         node ids [num_nodes, ..., num_nodes+N-1].   
@@ -36,15 +36,15 @@ def augment_attr(node_attr: np.ndarray,
 
     """
     if gg.is_scalar(fill_weight):
-        M = np.zeros([N, node_attr.shape[1]],
-                     dtype=node_attr.dtype) + fill_weight
+        M = np.zeros([N, attr_matrix.shape[1]],
+                     dtype=attr_matrix.dtype) + fill_weight
     elif isinstance(fill_weight, (list, np.ndarray)):
-        fill_weight = fill_weight.astype(node_attr.dtype, copy=False)
+        fill_weight = fill_weight.astype(attr_matrix.dtype, copy=False)
         M = np.tile(fill_weight, N).reshape([N, -1])
     else:
         raise ValueError(f"Unrecognized input: {fill_weight}.")
 
-    augmented_attr = np.vstack([node_attr, M])
+    augmented_attr = np.vstack([attr_matrix, M])
     return augmented_attr
 
 

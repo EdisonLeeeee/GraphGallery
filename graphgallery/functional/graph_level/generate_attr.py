@@ -21,8 +21,8 @@ class GenerateNodeAttr(GraphTransform):
             N = graph.num_nodes
             self.N = N
         assert N, "There are no nodes in the graph."
-        if graph.node_attr is None:
-            graph.update(node_attr=np.eye(N, dtype=np.float32) * self.fill_weight)
+        if graph.attr_matrix is None:
+            graph.update(attr_matrix=np.eye(N, dtype=np.float32) * self.fill_weight)
         else:
             print("Node attribute matrix exists. Default to it.", file=sys.stderr)
         return graph

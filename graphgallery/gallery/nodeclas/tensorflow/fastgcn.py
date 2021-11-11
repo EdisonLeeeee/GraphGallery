@@ -32,10 +32,10 @@ class FastGCN(Trainer):
 
         graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
-        node_attr = gf.get(attr_transform)(graph.node_attr)
-        node_attr = adj_matrix @ node_attr
+        attr_matrix = gf.get(attr_transform)(graph.attr_matrix)
+        attr_matrix = adj_matrix @ attr_matrix
 
-        X, A = gf.astensor(node_attr, device=self.data_device), adj_matrix
+        X, A = gf.astensor(attr_matrix, device=self.data_device), adj_matrix
 
         # ``A`` and ``X`` are cached for later use
         self.register_cache(X=X, A=A)
@@ -63,7 +63,7 @@ class FastGCN(Trainer):
     def train_loader(self, index):
         cfg = self.cfg.fit
 
-        labels = self.graph.node_label[index]
+        labels = self.graph.label[index]
         adj_matrix = self.graph.adj_matrix[index][:, index]
         adj_matrix = self.transform.adj_transform(adj_matrix)
 
@@ -78,7 +78,7 @@ class FastGCN(Trainer):
 
     def test_loader(self, index):
         cfg = self.cfg.evaluate
-        labels = self.graph.node_label[index]
+        labels = self.graph.label[index]
         A = self.cache.A[index]
 
         sequence = FastGCNBatchSequence(inputs=[self.cache.X, A],

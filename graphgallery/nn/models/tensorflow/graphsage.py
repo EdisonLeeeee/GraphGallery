@@ -32,7 +32,7 @@ class GraphSAGE(TFEngine):
 
         _intx = intx()
         x = Input(batch_shape=[None, in_features],
-                  dtype=floatx(), name='node_attr')
+                  dtype=floatx(), name='attr_matrix')
         nodes = Input(batch_shape=[None], dtype=_intx, name='nodes')
         neighbors = [Input(batch_shape=[None], dtype=_intx, name=f'neighbors_{hop}')
                      for hop, num_sample in enumerate(sizes)]

@@ -14,6 +14,3 @@ def random_seed(seed=None, backend=None):
         torch.manual_seed(seed)
         torch.cuda.manual_seed(seed)
 #         torch.cuda.manual_seed_all(seed)
-    else:
-        import tensorflow as tf
-        tf.random.set_seed(seed)

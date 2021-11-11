@@ -82,7 +82,7 @@ def _check_edge_index(edge_index, copy=False):
 
 
 def _check_edge_weight(edge_weight, copy=False):
-    edge_weight = np.array(edge_index, dtype=np.float32, copy=copy)
+    edge_weight = np.array(edge_weight, dtype=np.float32, copy=copy)
     assert edge_weight.ndim == 1, edge_weight.ndim
     return edge_weight
 
@@ -111,22 +111,22 @@ def _check_dict_graphs(graphs, copy=False):
     return gf.BunchDict({k: g.copy() if copy else g for k, g in graphs.items()})
 
 
-_KEYS = ('adj_matrix', 'node_attr', 'node_label', 'node_graph_label',
+_KEYS = ('adj_matrix', 'attr_matrix', 'label', 'node_graph_label',
          'edge_attr', 'edge_index', 'edge_weight', 'edge_label', 'edge_graph_label',
          'graph_attr', 'graph_label',
          'list_graphs', 'dict_graphs',
          'mapping', 'metadata')
 
 # adj_matrix should be CSR matrix
-# attribute matrices: node_attr, edge_attr, graph_attr should be 2D numpy array
-# label matrices: node_label, node_graph_label, edge_label, graph_label should be 1D or 2D numpy array
+# attribute matrices: attr_matrix, edge_attr, graph_attr should be 2D numpy array
+# label matrices: label, node_graph_label, edge_label, graph_label should be 1D or 2D numpy array
 # edge_index should be (2, N) numpy array
 # edge_weight should be (N,) numpy array
 _check_fn_dict = {'adj_matrix': _check_adj_matrix,
-                  'node_attr': _check_attr_matrix,
+                  'attr_matrix': _check_attr_matrix,
                   'edge_attr': _check_attr_matrix,
                   'graph_attr': _check_attr_matrix,
-                  'node_label': _check_label_matrix,
+                  'label': _check_label_matrix,
                   'node_graph_label': _check_label_matrix,
                   'edge_label': _check_label_matrix,
                   'edge_graph_label': _check_label_matrix,

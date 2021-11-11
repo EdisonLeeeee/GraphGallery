@@ -32,8 +32,8 @@ class Node2Grids(Trainer):
 
         graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
-        node_attr = gf.get(attr_transform)(graph.node_attr)
-        mapper = Node2GridsMapper(adj_matrix, node_attr, biasfactor=biasfactor,
+        attr_matrix = gf.get(attr_transform)(graph.attr_matrix)
+        mapper = Node2GridsMapper(adj_matrix, attr_matrix, biasfactor=biasfactor,
                                   mapsize_a=mapsize_a, mapsize_b=mapsize_b)
 
         self.register_cache(mapper=mapper, mapsize_a=mapsize_a, mapsize_b=mapsize_b)
@@ -66,13 +66,13 @@ class Node2Grids(Trainer):
         return model
 
     def train_loader(self, index):
-        labels = self.graph.node_label[index]
+        labels = self.graph.label[index]
         node_grids = self.cache.mapper.map_node(index).transpose((0, 3, 1, 2))
         sequence = FeatureLabelSequence(node_grids, labels, device=self.data_device, batch_size=self.cfg.fit.batch_size, shuffle=False)
         return sequence
 
     def test_loader(self, index):
-        labels = self.graph.node_label[index]
+        labels = self.graph.label[index]
         node_grids = self.cache.mapper.map_node(index).transpose((0, 3, 1, 2))
         sequence = FeatureLabelSequence(node_grids, labels, device=self.data_device, batch_size=self.cfg.evaluate.batch_size)
         return sequence

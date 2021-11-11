@@ -34,9 +34,10 @@ class AddSelfloops(SparseTransform):
 
         See also
         ----------
-        graphgallery.functional.add_selfloops
+        graphgallery.functional.add_self_loop
         """
-        return add_selfloops(*adj_matrix, fill_weight=self.fill_weight)
+        return add_self_loop(*adj_matrix, fill_weight=self.fill_weight)
+
 
 @Transform.register()
 class EliminateSelfloops(SparseTransform):
@@ -55,18 +56,19 @@ class EliminateSelfloops(SparseTransform):
 
         See also
         ----------
-        graphgallery.functional.eliminate_selfloops
+        graphgallery.functional.eliminate_self_loop
         """
-        return eliminate_selfloops(*adj_matrix)
+        return eliminate_self_loop(*adj_matrix)
+
 
 @multiple()
-def add_selfloops(adj_matrix: sp.csr_matrix, fill_weight=1.0):
+def add_self_loop(adj_matrix: sp.csr_matrix, fill_weight=1.0):
     """add selfloops for adjacency matrix.
 
-    >>>add_selfloops(adj, fill_weight=1.0) # return an adjacency matrix with selfloops
+    >>>add_self_loop(adj, fill_weight=1.0) # return an adjacency matrix with selfloops
 
     # return a list of adjacency matrices with selfloops
-    >>>add_selfloops(adj, adj, fill_weight=[1.0, 2.0]) 
+    >>>add_self_loop(adj, adj, fill_weight=[1.0, 2.0]) 
 
     Parameters
     ----------
@@ -85,7 +87,7 @@ def add_selfloops(adj_matrix: sp.csr_matrix, fill_weight=1.0):
 
     """
     def _add_selfloops(adj, w):
-        adj = eliminate_selfloops(adj)
+        adj = eliminate_self_loop(adj)
 
         if w:
             return adj + w * sp.eye(adj.shape[0], dtype=adj.dtype, format='csr')
@@ -99,13 +101,13 @@ def add_selfloops(adj_matrix: sp.csr_matrix, fill_weight=1.0):
 
 
 @multiple()
-def eliminate_selfloops(adj_matrix):
+def eliminate_self_loop(adj_matrix):
     """eliminate selfloops for adjacency matrix.
 
-    >>>eliminate_selfloops(adj) # return an adjacency matrix without selfloops
+    >>>eliminate_self_loop(adj) # return an adjacency matrix without selfloops
 
     # return a list of adjacency matrices without selfloops
-    >>>eliminate_selfloops(adj, adj) 
+    >>>eliminate_self_loop(adj, adj) 
 
     Parameters
     ----------
@@ -120,7 +122,7 @@ def eliminate_selfloops(adj_matrix):
     ----------
     graphgallery.functional.EliminateSelfloops          
 
-    """    
+    """
     if sp.issparse(adj_matrix):
         adj_matrix = adj_matrix - sp.diags(adj_matrix.diagonal(), format='csr')
         adj_matrix.eliminate_zeros()

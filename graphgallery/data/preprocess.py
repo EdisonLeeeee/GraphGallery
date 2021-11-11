@@ -216,22 +216,22 @@ def process_planetoid_datasets(name: str, paths: List[str]) -> Tuple:
         ty_extended[test_idx_range - allx.shape[0], :] = ty
         ty = ty_extended
 
-    node_attr = sp.vstack((allx, tx)).tolil()
-    node_attr[test_idx_reorder, :] = node_attr[test_idx_range, :]
+    attr_matrix = sp.vstack((allx, tx)).tolil()
+    attr_matrix[test_idx_reorder, :] = attr_matrix[test_idx_range, :]
 
     adj_matrix = nx.adjacency_matrix(nx.from_dict_of_lists(
         graph, create_using=nx.DiGraph()))
 
-    node_label = np.vstack((ally, ty))
-    node_label[test_idx_reorder, :] = node_label[test_idx_range, :]
+    label = np.vstack((ally, ty))
+    label[test_idx_reorder, :] = label[test_idx_range, :]
 
     idx_train = np.arange(len(y))
     idx_val = np.arange(len(y), len(y) + 500)
     idx_test = test_idx_range
 
-    node_label = node_label.argmax(1)
+    label = label.argmax(1)
 
     adj_matrix = adj_matrix.astype('float32')
-    node_attr = node_attr.astype('float32')
+    attr_matrix = attr_matrix.astype('float32')
 
-    return adj_matrix, node_attr, node_label, idx_train, idx_val, idx_test
+    return adj_matrix, attr_matrix, label, idx_train, idx_val, idx_test

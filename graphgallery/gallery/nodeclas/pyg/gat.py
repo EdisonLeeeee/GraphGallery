@@ -17,15 +17,15 @@ class GAT(Trainer):
     """
 
     def data_step(self,
-                  adj_transform="add_selfloops",
+                  adj_transform="add_self_loop",
                   attr_transform=None,
                   graph_transform=None):
 
         graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
-        node_attr = gf.get(attr_transform)(graph.node_attr)
+        attr_matrix = gf.get(attr_transform)(graph.attr_matrix)
 
-        X, E = gf.astensors(node_attr, adj_matrix, device=self.data_device)
+        X, E = gf.astensors(attr_matrix, adj_matrix, device=self.data_device)
 
         # ``E`` and ``X`` are cached for later use
         self.register_cache(X=X, E=E)
@@ -55,7 +55,7 @@ class GAT(Trainer):
 
     def train_loader(self, index):
 
-        labels = self.graph.node_label[index]
+        labels = self.graph.label[index]
         sequence = FullBatchSequence([self.cache.X, *self.cache.E],
                                      labels,
                                      out_index=index,

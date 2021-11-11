@@ -77,31 +77,31 @@ class MUSAE(InMemoryDataset):
         except KeyError:
             adj_matrix = reader.read_edges(filenames[0], src="from", dst="to")
 
-        node_attr = reader.read_json_features(filenames[1])
+        attr_matrix = reader.read_json_features(filenames[1])
         data = reader.read_target(filenames[2], return_target=False)
 
         if self.name == "facebook":
-            node_label, node_class_name = encode(data, "page_type")
+            label, node_class_name = encode(data, "page_type")
             node_name = data['page_name'].to_numpy()
-            graph = Graph(adj_matrix, node_attr, node_label, copy=False,
+            graph = Graph(adj_matrix, attr_matrix, label, copy=False,
                           metadata={"node_class_name": node_class_name,
                                     "node_name": node_name})
 
         elif self.name in ["chameleon", "crocodile", "squirrel"]:
-            node_label = reader.read_target(filenames[2])
-            graph = Graph(adj_matrix, node_attr, node_label, copy=False)
+            label = reader.read_target(filenames[2])
+            graph = Graph(adj_matrix, attr_matrix, label, copy=False)
         elif self.name == "github":
-            node_label = data['ml_target'].to_numpy()
+            label = data['ml_target'].to_numpy()
             node_name = data['name'].to_numpy()
-            graph = Graph(adj_matrix, node_attr, node_label, copy=False,
+            graph = Graph(adj_matrix, attr_matrix, label, copy=False,
                           metadata={"node_name": node_name})
         else:
             if 'id' in data.columns:
                 del data['id']
             data["mature"] = LabelEncoder().fit_transform(data["mature"])
             data["partner"] = LabelEncoder().fit_transform(data["partner"])
-            node_label = data.to_numpy()
-            graph = Graph(adj_matrix, node_attr, node_label, copy=False,
+            label = data.to_numpy()
+            graph = Graph(adj_matrix, attr_matrix, label, copy=False,
                           metadata={"node_class_name": ['days', 'mature', 'views', 'partner', 'new_id']})
 
         cache = dict(graph=graph)
@@ -128,6 +128,6 @@ class MUSAE(InMemoryDataset):
 
 def encode(data, name):
     transformer = LabelEncoder()
-    node_label = transformer.fit_transform(data[name])
+    label = transformer.fit_transform(data[name])
     node_class_name = transformer.classes_
-    return node_label, node_class_name
+    return label, node_class_name

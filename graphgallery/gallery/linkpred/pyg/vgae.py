@@ -19,9 +19,9 @@ class VGAE(Trainer):
 
         graph = self.graph
         # adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
-        node_attr = gf.get(attr_transform)(graph.node_attr)
+        attr_matrix = gf.get(attr_transform)(graph.attr_matrix)
 
-        X = gf.astensor(node_attr, device=self.data_device)
+        X = gf.astensor(attr_matrix, device=self.data_device)
 
         # ``X`` is cached for later use
         self.register_cache(X=X)
