@@ -167,29 +167,6 @@ def astensors(*xs, dtype=None, device=None,
 
 
 @gf.multiple()
-def tensor2tensor(tensor, *, device=None):
-    """Convert a TensorFLow tensor to PyTorch Tensor, or vice versa.
-
-    Note:
-    ------
-    This function requires the tensorflow package installed.
-    """
-    assert gg.TF_ENABLED, 'Currently tensorflow backend is not enabled.'
-    if pytorch.is_tensor(tensor):
-        m = tensoras(tensor)
-        device = gf.device(device, backend="tensorflow")
-        return astensor(m, device=device, backend="tensorflow")
-    elif tensorflow.is_tensor(tensor):
-        m = tensoras(tensor)
-        device = gf.device(device, backend="torch")
-        return astensor(m, device=device, backend="torch")
-    else:
-        raise ValueError(
-            f"The input must be a TensorFlow or PyTorch Tensor, buf got {type(tensor).__name__}"
-        )
-
-
-@gf.multiple()
 def tensoras(tensor):
     """Convert a TensorFLow tensor or PyTorch Tensor
         to Numpy array or Scipy sparse matrix.

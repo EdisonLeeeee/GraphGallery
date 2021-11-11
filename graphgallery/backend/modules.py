@@ -2,8 +2,7 @@ import sys
 import torch
 import importlib
 
-__all__ = ['BackendModule', 'TensorFlowBackend',
-           'PyTorchBackend', 'PyGBackend',
+__all__ = ['BackendModule', 'PyTorchBackend', 'PyGBackend',
            'DGLBackend']
 
 
@@ -69,26 +68,6 @@ class PyTorchBackend(BackendModule):
     @property
     def abbr(self):
         return "pytorch"
-
-
-class TensorFlowBackend(BackendModule):
-    alias = {"tf", "tensorflow"}
-
-    def __init__(self, module='tensorflow'):
-        super().__init__(module=module)
-        self.acceptable_names = self.acceptable_names.union({"tf", "tensorflow"})
-
-    @property
-    def version(self):
-        return self.module.__version__
-
-    @property
-    def name(self):
-        return "TensorFlow"
-
-    @property
-    def abbr(self):
-        return "tensorflow"
 
 
 class PyGBackend(PyTorchBackend):

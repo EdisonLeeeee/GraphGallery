@@ -29,7 +29,7 @@ def is_listlike(x: Any) -> bool:
     ----------
     `True` iff `x` is a list like sequence.
     """
-    return (isinstance(x, (list, tuple)))
+    return isinstance(x, (list, tuple))
 
 
 def is_multiobjects(x: Any) -> bool:

@@ -1,12 +1,8 @@
-"""The following codes are borrowed and adapted from OGB
-https://github.com/snap-stanford/ogb/blob/master/ogb/version.py
-"""
-
 import os
 import logging
 from threading import Thread
 
-__version__ = '1.0.1'
+__version__ = '1.1.0'
 
 try:
     os.environ['OUTDATED_IGNORE'] = '1'

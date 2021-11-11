@@ -2,8 +2,7 @@ import sys
 import importlib
 from .backend import backend
 
-__all__ = ["get_registry", "load_models",
-           "load_models_only_tf_and_torch"]
+__all__ = ["get_registry", "load_models"]
 
 
 def _gen_missing_model(model, backend):
@@ -31,27 +30,9 @@ def load_models(package, mapping, backend_name=None, sub_module=None):
         module_path = f".{sub_module}.{_backend.abbr}"
     else:
         module_path = f".{_backend.abbr}"
-    # e.g., graphgallery.gallery.nodeclas.tensorflow
+    # e.g., graphgallery.gallery.nodeclas.torch
     # where ``module_path=graphgallery.gallery.nodeclas`` and
-    # ``package=tensorflow``
+    # ``package=torch``
     importlib.import_module(module_path, package)
-    for model, model_class in registry.items():
-        setattr(thismod, model, model_class)
-
-
-def load_models_only_tf_and_torch(package, mapping, backend_name=None, sub_module=None):
-    _backend = backend(backend_name)
-    thismod = sys.modules[package]
-    if _backend == "torch":
-        _backend = backend("pytorch")
-    else:
-        _backend = backend("tensorflow")
-    registry = get_registry(mapping, _backend)
-    if sub_module:
-        module_path = f".{sub_module}.{_backend.abbr}"
-    else:
-        module_path = f".{_backend.abbr}"
-    importlib.import_module(module_path, package)
-
     for model, model_class in registry.items():
         setattr(thismod, model, model_class)

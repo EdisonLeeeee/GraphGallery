@@ -6,39 +6,6 @@ import graphgallery as gg
 
 from . import pytorch
 
-if gg.TF_ENABLED:
-    from . import tensorflow
-
-
-def get_module(backend=None):
-    """get the module of eigher
-    'graphgallery.functional.tensor.tensorflow'
-    or 'graphgallery.functional.tensor.pytorch'
-    by 'backend'.
-
-    Parameters
-    ----------
-    backend: String or BackendModule, optional.
-        'tensorflow', 'torch', TensorFlowBackend,
-        PyTorchBackend, etc. if not specified,
-        return the current backend module.
-
-    Returns
-    -------
-    module:
-    - 'graphgallery.functional.tensor.pytorch'
-        for pytorch backend
-    - 'graphgallery.functional.tensor.tensorflow'
-        for tensorflow backend,
-    """
-    backend = gg.backend(backend)
-
-    if backend == "torch":
-        return pytorch
-    else:
-        assert gg.TF_ENABLED, 'Currently tensorflow backend is not enabled'
-        return tensorflow
-
 
 def infer_type(x: Any) -> str:
     """Infer the type of the input 'x'.
@@ -55,7 +22,7 @@ def infer_type(x: Any) -> str:
         3. 'graphgallery.boolx()' if 'x' is boolean.
     """
     # For tensor or variable
-    if pytorch.is_tensor(x):
+    if torch.is_tensor(x):
         if x.dtype.is_floating_point:
             return gg.floatx()
         elif x.dtype == torch.bool:
@@ -64,18 +31,6 @@ def infer_type(x: Any) -> str:
             return gg.intx()
         else:
             raise TypeError(f"Invalid type of pytorch Tensor: '{type(x)}'")
-
-    elif gg.TF_ENABLED:
-        if tensorflow.is_tensor(x):
-            if x.dtype.is_floating:
-                return gg.floatx()
-            elif x.dtype.is_integer or x.dtype.is_unsigned:
-                return gg.intx()
-            elif x.dtype.is_bool:
-                return gg.boolx()
-            else:
-                raise TypeError(f"Invalid type of tensorflow Tensor: '{type(x)}'")
-
     _x = x
     if not hasattr(_x, 'dtype'):
         _x = np.asarray(_x)
