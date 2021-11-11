@@ -118,7 +118,7 @@ class BaseGraph:
         loader = load_npz(filepath)
         loader.pop("__class__", None)
         loader.pop("multiple", None)
-#         print(f"Loading from {filepath}", file=sys.stderr)
+        # print(f"Loading from {filepath}", file=sys.stderr)
         return cls(copy=False, **loader)
 
     def to_npz(self, filepath: str, apply_fn=sparse_apply, compressed=True):

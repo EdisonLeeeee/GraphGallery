@@ -44,7 +44,7 @@ def _check_adj_matrix(adj_matrix, copy=False):
         adj_matrix = adj_matrix.tocsr(
             copy=False).astype(np.float32, copy=copy)
     else:
-        raise ValueError(f"Adjacency matrix must be in sparse format (got {type(adj_matrix)} instead).")
+        raise ValueError(f"adjacency matrix must be in sparse format (got {type(adj_matrix)} instead).")
 
     assert adj_matrix.ndim == 2 and adj_matrix.shape[0] == adj_matrix.shape[1], adj_matrix.shape
     return adj_matrix
@@ -57,7 +57,7 @@ def _check_attr_matrix(attr_matrix, copy=False):
         attr_matrix = attr_matrix.astype(np.float32, copy=copy)
     else:
         raise ValueError(
-            f"Attribute matrix must be a scipy.sparse.spmatrix or a np.ndarray (got {type(attr_matrix)} instead).")
+            f"attribute (feature) matrix must be a scipy.sparse.spmatrix or a np.ndarray (got {type(attr_matrix)} instead).")
 
     assert attr_matrix.ndim == 2, attr_matrix.shape
     return attr_matrix

@@ -16,11 +16,11 @@ from six.moves.urllib.request import urlretrieve
 
 from graphgallery.utils import Progbar
 
-__all__ = ['load_pickle', 'dump_pickle',
-           'download_file', 'files_exist',
-           'makedirs', 'makedirs_from_filepath', 'makedirs_rm_exist',
-           'extractall', 'remove',
-           'load_npz', 'read_csv', 'read_json', 'get_file',
+__all__ = ["load_pickle", "dump_pickle",
+           "download_file", "files_exist",
+           "makedirs", "makedirs_from_filepath", "makedirs_rm_exist",
+           "extractall", "remove",
+           "load_npz", "read_csv", "read_json", "get_file",
            ]
 
 

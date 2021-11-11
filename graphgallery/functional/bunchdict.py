@@ -47,11 +47,13 @@ class BunchDict(OrderedDict):
 
 def prettify(item):
     key, val = item
+    if val is None:
+        return key, 'None'
     if hasattr(val, "shape"):
         if len(val.shape) == 0 and hasattr(val, "item"):
             val = f"{val.__class__.__name__}, {val.item()}"
         else:
-            val = f"{val.__class__.__name__}, shape={val.shape}"
+            val = f"{val.__class__.__name__}, shape={val.shape}\n{val}"
     else:
         if isinstance(val, str):
             val = f"{val}"
