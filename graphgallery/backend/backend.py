@@ -3,10 +3,12 @@ import sys
 
 from .modules import BackendModule, PyTorchBackend, PyGBackend, DGLBackend
 
-__all__ = [
-    'allowed_backends', 'backend_dict', 'backend', 'set_backend',
-    'set_to_default_backend', 'file_ext', 'set_file_ext'
-]
+__all__ = ["backend",
+           "set_backend",
+           "allowed_backends",
+           "backend_dict",
+           "file_ext",
+           "set_file_ext"]
 
 # used to store the models or weights for `PyTorch`
 _EXT = ".pth"
@@ -27,7 +29,7 @@ def backend_dict():
     return _BACKEND_DICT
 
 
-def set_backend_dict():
+def _set_backend_dict():
     global _BACKEND_DICT
     _BACKEND_DICT = {}
     for bkd in _ALL_BACKENDS:
@@ -125,16 +127,17 @@ def file_ext():
     Returns
     -------
     str
-        ".h5" by default
+        ".pth" by default
     """
     return _EXT
 
 
-def set_file_ext(ext):
-    """Set the filename suffix(extension)"""
+def set_file_ext(ext: str):
+    """Set the filename suffix(extension)
+    """
     global _EXT
     _EXT = ext
     return _EXT
 
 
-set_backend_dict()
+_set_backend_dict()
