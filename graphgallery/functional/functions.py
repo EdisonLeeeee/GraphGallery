@@ -2,15 +2,13 @@ import torch
 import itertools
 
 import numpy as np
-import scipy.sparse as sp
 from numbers import Number
 from typing import Any, Optional
 
 import graphgallery as gg
 
 __all__ = ['asarray', 'index_to_mask',
-           'repeat', 'get_length',
-           'nx_graph_to_sparse_adj']
+           'repeat', 'get_length']
 
 
 def asarray(x: Any, dtype: Optional[str] = None) -> np.ndarray:
@@ -46,7 +44,7 @@ def asarray(x: Any, dtype: Optional[str] = None) -> np.ndarray:
 
 
 def index_to_mask(indices: np.ndarray, shape: tuple) -> np.ndarray:
-    mask = np.zeros(shape, dtype=gg.boolx())
+    mask = np.zeros(shape, dtype='bool')
     mask[indices] = True
     return mask
 
@@ -106,12 +104,3 @@ def get_length(obj: Any) -> int:
     else:
         length = 1
     return length
-
-
-def nx_graph_to_sparse_adj(graph):
-    num_nodes = graph.number_of_nodes()
-    data = np.asarray(list(graph.edges().data('weight', default=1.0)))
-    edge_index = data[:, :2].T.astype(np.int64)
-    edge_weight = data[:, -1].T.astype(np.float32)
-    adj_matrix = sp.csr_matrix((edge_weight, edge_index), shape=(num_nodes, num_nodes))
-    return adj_matrix

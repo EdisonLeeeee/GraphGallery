@@ -3,6 +3,7 @@ import json
 import os.path as osp
 import numpy as np
 import networkx as nx
+import scipy.sparse as sp
 import pickle as pkl
 
 from itertools import product
@@ -62,7 +63,7 @@ class PPI(InMemoryDataset):
             with open(nx_graph_path, "r", encoding="utf-8") as f:
                 G = nx.DiGraph(nx.json_graph.node_link_graph(json.load(f)))
 
-            G = gf.nx_graph_to_sparse_adj(G)
+            G = nx_graph_to_sparse_adj(G)
             idx = idx - idx.min()
             for i in range(idx.max() + 1):
                 mask = idx == i
@@ -118,3 +119,12 @@ class PPI(InMemoryDataset):
             osp.join(self.download_dir, raw_filename)
             for raw_filename in self.raw_filenames
         ]
+
+
+def nx_graph_to_sparse_adj(graph):
+    num_nodes = graph.number_of_nodes()
+    data = np.asarray(list(graph.edges().data('weight', default=1.0)))
+    edge_index = data[:, :2].T.astype(np.int64)
+    edge_weight = data[:, -1].T.astype(np.float32)
+    adj_matrix = sp.csr_matrix((edge_weight, edge_index), shape=(num_nodes, num_nodes))
+    return adj_matrix

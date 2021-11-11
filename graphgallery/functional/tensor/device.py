@@ -3,25 +3,20 @@ import torch
 __all__ = ['device']
 
 
-def device(device=None, backend=None):
+def device(device=None):
     """
-    Specify the device for the corresponding backend
+    Specify the device
 
     Parameters
     ----------
-    device: (string, tf.device, torch.device, None)
+    device: (string, torch.device, None)
         device name such as 'cpu', 'gpu', 'cuda'
         or an instance of 'torch.device'
-    backend: String or BackendModule, optional.
-        'tensorflow', 'torch', TensorFlowBackend,
-        PyTorchBackend, etc. if not specified,
-        return the current backend module.
 
     Returns
     -------
     device:
-    - 'string' for tensorflow backend,
-    - 'torch.device' instance for pytorch backend
+    - 'torch.device'
     """
 
     if device is None:
@@ -52,7 +47,7 @@ def device(device=None, backend=None):
         return torch.device(f'cpu:{_device_id}')
     else:
         if not torch.cuda.is_available():
-            raise RuntimeError(f"CUDA is unavailable for {backend}.")
+            raise RuntimeError(f"CUDA is unavailable.")
         # empty cache to avoid unnecessary memory usage
         # TODO: is this necessary?
         # torch.cuda.empty_cache()

@@ -5,7 +5,7 @@ import numba
 from numba import njit
 from ..base_transforms import SparseTransform
 from ..transform import Transform
-from ..sparse import add_self_loop, eliminate_self_loop
+from ..sparse import add_self_loop, remove_self_loop
 
 
 @Transform.register()
@@ -47,7 +47,7 @@ def to_neighbor_matrix(adj_matrix: sp.csr_matrix, max_degree: int = 25,
     if selfloop:
         adj_matrix = add_self_loop(adj_matrix)
     else:
-        adj_matrix = eliminate_self_loop(adj_matrix)
+        adj_matrix = remove_self_loop(adj_matrix)
 
     M = sample(adj_matrix.indices, adj_matrix.indptr, max_degree=max_degree, add_dummy=add_dummy)
     np.random.shuffle(M.T)

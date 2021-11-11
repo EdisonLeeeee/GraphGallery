@@ -99,7 +99,7 @@ class HomoGraph(BaseGraph):
         return get_num_node_classes(self.label)
 
     @property
-    def num_attrs(self) -> int:
+    def num_feats(self) -> int:
         """Alias of num_node_attrs."""
         return self.num_node_attrs
 
@@ -152,12 +152,12 @@ class HomoGraph(BaseGraph):
     def degree(self):
         return gf.degree(self.adj_matrix)
 
-    def eliminate_self_loop(self):
+    def remove_self_loop(self):
         """Remove self-loops from the adjacency matrix."""
         g = self.copy()
         A = g.adj_matrix
         assert A is not None
-        g.adj_matrix = gf.eliminate_self_loop(A)
+        g.adj_matrix = gf.remove_self_loop(A)
         return g
 
     def add_self_loop(self, fill_weight=1.0):

@@ -6,10 +6,6 @@ except ImportError:
 
 import warnings
 import numpy as np
-import networkx as nx
-import scipy.sparse as sp
-from scipy.sparse.csgraph import connected_components
-from graphgallery import intx
 
 from ..base_transforms import GraphTransform
 from ..transform import Transform

@@ -82,7 +82,7 @@ class Graph(HomoGraph):
             return self
 
     def eliminate_singleton(self):
-        G = self.eliminate_self_loop()
+        G = self.remove_self_loop()
         A = G.adj_matrix
         mask = np.logical_and(A.sum(0) == 0, A.sum(1) == 1)
         nodes_to_keep = mask.nonzero()[0]

@@ -1,138 +1,97 @@
+import torch
 import numpy as np
 import scipy.sparse as sp
+import graphgallery as gg
 from typing import Any
 
-import graphgallery as gg
 from graphgallery import functional as gf
+from .ops import sparse_adj_to_sparse_tensor
 
-from .ops import get_module
-from . import pytorch
-
-if gg.TF_ENABLED:
-    from . import tensorflow
-
-
-def data_type_dict(backend=None) -> dict:
-    """get the data type dict of the corresponding backend.
-
-    Parameters
-    ----------
-    backend: String or BackendModule, optional.
-        'tensorflow', 'torch', TensorFlowBackend, PyTorchBackend, etc.
-        if not specified, return the current default backend module.
-
-    Returns
-    -------
-    dict
-        data type dict of the corresponding backend.
-    """
-    module = get_module(backend)
-    return module.data_type_dict()
+_TYPE = {
+    'float16': torch.float16,
+    'float32': torch.float32,
+    'float64': torch.float64,
+    'uint8': torch.uint8,
+    'int8': torch.int8,
+    'int16': torch.int16,
+    'int32': torch.int32,
+    'int64': torch.int64,
+    'bool': torch.bool
+}
 
 
-def is_sparse(x: Any, backend=None) -> bool:
-    """Check whether 'x' is a sparse Tensor.
-
-    Parameters:
-    ----------
-    x: A python object to check.
-
-    backend: String or BackendModule, optional.
-        'tensorflow', 'torch', TensorFlowBackend, PyTorchBackend, etc.
-        if not specified, return the current default backend module.
-
-    Returns:
-    -------
-    'True' iff 'x' is a (tf or torch) sparse-tensor.
-    """
-    module = get_module(backend)
-    return module.is_sparse(x)
+def data_type_dict():
+    return _TYPE
 
 
-def is_dense(x: Any, backend=None) -> bool:
-    """Check whether 'x' is a strided (dense) Tensor.
-
-    Parameters:
-    ----------
-    x: A python object to check.
-    backend: String or BackendModule, optional.
-        'tensorflow', 'torch', TensorFlowBackend, PyTorchBackend, etc.
-        if not specified, return the current default backend module.
-
-    Returns:
-    ----------
-    'True' iff 'x' is a (tf or torch) strided (dense) Tensor.
-    """
-
-    module = get_module(backend)
-    return module.is_dense(x)
+def is_tensor(x: Any) -> bool:
+    return torch.is_tensor(x)
 
 
-def is_tensor(x: Any, backend=None) -> bool:
-    """Check whether 'x' is
-        tf.Tensor,
-        tf.Variable,
-        tf.RaggedTensor,
-        tf.sparse.SparseTensor,
-        torch.Tensor,
-        torch.sparse.Tensor.
-
-    Parameters:
-    ----------
-    x: A python object to check.
-    backend: String or BackendModule, optional.
-        'tensorflow', 'torch', TensorFlowBackend, PyTorchBackend, etc.
-        if not specified, return the current default backend module.
-
-    Returns:
-    -------
-    `True` iff x is a (tf or torch) (sparse-)tensor.
-    """
-    module = get_module(backend)
-    return module.is_tensor(x)
+def is_sparse(x: Any) -> bool:
+    return is_tensor(x) and x.is_sparse
 
 
-def astensor(x, *, dtype=None, device=None,
-             backend=None, escape=None):
-    """Convert input object to Tensor or SparseTensor.
-
-    Parameters:
-    ----------
-    x: any python object
-
-    dtype: The type of Tensor 'x', if not specified,
-        it will automatically use appropriate data type.
-        See 'graphgallery.infer_type'.
-    device: tf.device, optional. the desired device of returned tensor.
-        Default: if 'None', uses the CPU device for the default tensor type.
-    backend: String or BackendModule, optional.
-         'tensorflow', 'torch', TensorFlowBackend, PyTorchBackend, etc.
-         if not specified, return the current default backend module. 
-    escape: a Class or a tuple of Classes,  'astensor' will disabled if
-         'isinstance(x, escape)'.
-
-    Returns:
-    -------    
-    Tensor or SparseTensor with dtype. If dtype is 'None', 
-    dtype will be one of the following:       
-        1. 'graphgallery.floatx()' if 'x' is floating.
-        2. 'graphgallery.intx()' if 'x' is integer.
-        3. 'graphgallery.boolx()' if 'x' is boolean.
-    """
-
-    backend = gg.backend(backend)
-    device = gf.device(device, backend)
-    module = get_module(backend)
-    return module.astensor(x, dtype=dtype,
-                           device=device,
-                           escape=escape)
+def is_dense(x: Any) -> bool:
+    return is_tensor(x) and not x.is_sparse
 
 
-_astensors_fn = gf.multiple(type_check=False)(astensor)
+def astensor(x, *, dtype=None, device=None, escape=None):
+
+    try:
+        if x is None or (escape is not None and isinstance(x, escape)):
+            return x
+    except TypeError:
+        raise TypeError(f"argument 'escape' must be a type or tuple of types.")
+
+    # update: accept `dict` instance
+    if isinstance(x, dict):
+        for k, v in x.items():
+            try:
+                x[k] = astensor(v, dtype=dtype, device=device, escape=escape)
+            except TypeError:
+                pass
+        return x
+
+    if dtype is None:
+        dtype = gf.infer_type(x)
+
+    if isinstance(dtype, (np.dtype, str)):
+        dtype = data_type_dict().get(str(dtype), dtype)
+    elif not isinstance(dtype, torch.dtype):
+        raise TypeError(
+            f"argument 'dtype' must be torch.dtype, np.dtype or str, but got {type(dtype)}."
+        )
+
+    if is_tensor(x):
+        tensor = x.to(dtype)
+    elif sp.isspmatrix(x):
+        if gg.backend() == "dgl":
+            import dgl
+            tensor = dgl.from_scipy(x, idtype=getattr(torch, gg.intx()))
+        elif gg.backend() == "pyg":
+            edge_index, edge_weight = gf.sparse_adj_to_edge(x)
+            return (astensor(edge_index,
+                             dtype=gg.intx(),
+                             device=device,
+                             escape=escape),
+                    astensor(edge_weight,
+                             dtype=gg.floatx(),
+                             device=device,
+                             escape=escape))
+        else:
+            tensor = sparse_adj_to_sparse_tensor(x, dtype=dtype)
+    elif any((isinstance(x, (np.ndarray, np.matrix)), gg.is_listlike(x),
+              gg.is_scalar(x))):
+        tensor = torch.tensor(x, dtype=dtype, device=device)
+    else:
+        raise TypeError(
+            f"Invalid type of inputs. Allowed data type (Tensor, SparseTensor, Numpy array, Scipy sparse tensor, None), but got {type(x)}."
+        )
+    return tensor.to(device)
 
 
-def astensors(*xs, dtype=None, device=None,
-              backend=None, escape=None):
+def astensors(*xs, dtype=None, device=None, escape=None):
     """Convert input matrices to Tensor(s) or SparseTensor(s).
 
     Parameters:
@@ -143,27 +102,21 @@ def astensors(*xs, dtype=None, device=None,
         See 'graphgallery.infer_type'.
     device: tf.device, optional. the desired device of returned tensor.
         Default: if 'None', uses the CPU device for the default tensor type.     
-    backend: String or BackendModule, optional.
-        'tensorflow', 'torch', TensorFlowBackend, PyTorchBackend, etc.
-        if not specified, return the current default backend module.    
     escape: a Class or a tuple of Classes, `astensor` will disabled if
         `isinstance(x, escape)`.
 
     Returns:
     -------     
-    Tensor(s) or SparseTensor(s) with dtype. If dtype is 'None', 
-    dtype will be one of the following:       
-        1. 'graphgallery.floatx()' if 'x' is floating.
-        2. 'graphgallery.intx()' if 'x' is integer.
-        3. 'graphgallery.boolx()' if 'x' is boolean.
+    Tensor(s) or SparseTensor(s) with dtype. 
     """
-    backend = gg.backend(backend)
-    device = gf.device(device, backend)
+    device = gf.device(device)
     return _astensors_fn(*xs,
                          dtype=dtype,
                          device=device,
-                         backend=backend,
                          escape=escape)
+
+
+_astensors_fn = gf.multiple(type_check=False)(astensor)
 
 
 @gf.multiple()
@@ -172,16 +125,12 @@ def tensoras(tensor):
         to Numpy array or Scipy sparse matrix.
     """
 
-    if pytorch.is_dense(tensor):
+    if is_dense(tensor):
         m = tensor.detach().cpu().numpy()
         if m.ndim == 0:
             m = m.item()
-    elif pytorch.is_sparse(tensor):
-        m = pytorch.sparse_tensor_to_sparse_adj(tensor)
-    elif gg.TF_ENABLED and tensorflow.is_dense(tensor):
-        m = tensor.numpy()
-    elif gg.TF_ENABLED and tensorflow.is_sparse(tensor):
-        m = tensorflow.sparse_tensor_to_sparse_adj(tensor)
+    elif is_sparse(tensor):
+        m = sparse_tensor_to_sparse_adj(tensor)
     elif isinstance(tensor, np.ndarray) or sp.isspmatrix(tensor):
         m = tensor.copy()
     else:

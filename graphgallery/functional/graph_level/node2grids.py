@@ -1,11 +1,10 @@
 import numpy as np
-import numba as nb
 from tqdm import tqdm
 
 
 class Node2GridsMapper:
-    def __init__(self, adj_matrix, x, biasfactor=0.4, mapsize_a=12, mapsize_b=1):
-        self.x = x
+    def __init__(self, adj_matrix, feat, biasfactor=0.4, mapsize_a=12, mapsize_b=1):
+        self.feat = feat
         self.biasfactor = biasfactor
         self.degree = adj_matrix.sum(1).A1
         self.indices = adj_matrix.indices
@@ -18,7 +17,7 @@ class Node2GridsMapper:
         indices = self.indices
         indptr = self.indptr
         K = self.K
-        x = self.x
+        feat = self.feat
         degree = self.degree
         mapsize_a = self.mapsize_a
         mapsize_b = self.mapsize_b
@@ -51,7 +50,7 @@ class Node2GridsMapper:
             else:
                 sampled = r1_node[:K]
             # node to grids
-            grid = (1 - biasfactor) * x[sampled] + biasfactor * x[node]
+            grid = (1 - biasfactor) * feat[sampled] + biasfactor * feat[node]
             delta = K - grid.shape[0]
             if delta > 0:
                 grid = np.vstack([grid, np.zeros([delta, grid.shape[-1]])])

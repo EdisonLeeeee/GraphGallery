@@ -28,7 +28,7 @@ class MultiGraph(HomoGraph):
         """Convert to an unweighted graph (set all edge weights to 1)."""
         raise NotImplementedError
 
-    def eliminate_self_loop(self):
+    def remove_self_loop(self):
         """Remove self-loops from the adjacency matrix."""
         raise NotImplementedError
 
