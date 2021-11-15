@@ -40,8 +40,8 @@ class GraphMLP(Trainer):
                    tau=2.0):
 
         model = get_model("GraphMLP", self.backend)
-        model = model(self.graph.num_node_attrs,
-                      self.graph.num_node_classes,
+        model = model(self.graph.num_feats,
+                      self.graph.num_classes,
                       tau=tau,
                       alpha=alpha,
                       hids=hids,

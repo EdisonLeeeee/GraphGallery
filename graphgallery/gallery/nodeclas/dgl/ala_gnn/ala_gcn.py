@@ -39,8 +39,8 @@ class ALaGCN(Trainer):
                    bias=False):
 
         model = get_model("ala_gnn.ALaGCN", self.backend)
-        model = model(self.graph.num_node_attrs,
-                      self.graph.num_node_classes,
+        model = model(self.graph.num_feats,
+                      self.graph.num_classes,
                       self.graph.num_nodes,
                       hids=hids,
                       acts=acts,

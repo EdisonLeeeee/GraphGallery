@@ -1,4 +1,4 @@
-# The following codes are mainly modified from tensorflow and some changes are made.
+# The following codes are mainly borrowed and adapted from tensorflow.
 # You may refer to tensorflow for more details:
 #
 #     https://github.com/tensorflow/tensorflow
@@ -18,12 +18,15 @@
 # limitations under the License.
 # ==============================================================================
 
+import os
 import time
+import torch
 import logging
 import numpy as np
 
-from graphgallery import functional as gf
-from graphgallery.utils import Progbar, tqdm
+from tqdm import tqdm
+
+from graphgallery.utils import BunchDict, Progbar
 
 
 class ModeKeys(object):
@@ -653,7 +656,7 @@ class History(Callback):
 
     def __init__(self):
         super().__init__()
-        self.history = gf.BunchDict()
+        self.history = BunchDict()
 
     def on_train_begin(self, logs=None):
         self.epoch = []
@@ -771,26 +774,35 @@ class ModelCheckpoint(Callback):
         save_weights_only: if True, then only the model's weights will be saved
           (`model.save_weights(filepath)`), else the full model is saved
           (`model.save(filepath)`).
-        **kwargs: Additional arguments for backwards compatibility. 
+        **kwargs: Additional arguments for backwards compatibility.
     """
 
     def __init__(self,
                  filepath,
                  monitor='val_loss',
                  verbose=0,
-                 save_best_only=False,
-                 save_weights_only=False,
+                 save_best_only=True,
+                 save_weights_only=True,
+                 autoload=True,
                  mode='auto',
                  **kwargs):
         super().__init__()
         self.monitor = monitor
         self.verbose = verbose
-        self.filepath = filepath
+        self.filepath = filepath if filepath.endswith('.pth') else filepath + '.pth'
         self.save_best_only = save_best_only
-        self.save_weights_only = save_weights_only
         self.epochs_since_last_save = 0
         self._batches_seen_since_last_saving = 0
         self._last_batch_seen = 0
+        self._filepaths = []
+
+        if autoload and not save_weights_only:
+            logging.warning('`autoload` is only work for `save_weights_only=True`, '
+                            'fallback to `save_weights_only.')
+            save_weights_only = True
+
+        self.save_weights_only = save_weights_only
+        self.autoload = autoload
 
         if mode not in ['auto', 'min', 'max']:
             logging.warning('ModelCheckpoint mode %s is unknown, '
@@ -812,7 +824,19 @@ class ModelCheckpoint(Callback):
                 self.best = -np.Inf
 
     def on_train_begin(self, logs=None):
-        pass
+        folder = os.path.split(self.filepath)[0]
+        if folder:
+            folder = folder
+            if self.verbose > 0:
+                print(f"mkdir {folder}.")
+            os.mkdir(folder)
+
+    def on_train_end(self, logs=None):
+        if self.autoload and self._filepaths:
+            self.model.load_state_dict(torch.load(self._filepaths[-1]))
+            for filepath in self._filepaths:
+                if os.path.exists(filepath):
+                    os.remove(filepath)
 
     def on_train_batch_end(self, batch, logs=None):
         pass
@@ -849,9 +873,10 @@ class ModelCheckpoint(Callback):
                                                            self.best, current, filepath))
                         self.best = current
                         if self.save_weights_only:
-                            self.model.save_weights(filepath, overwrite=True)
+                            torch.save(self.model.state_dict(), filepath)
                         else:
-                            self.model.save(filepath, overwrite=True)
+                            torch.save(self.model, filepath)
+                        self._filepaths.append(filepath)
                     else:
                         if self.verbose > 0:
                             print('\nEpoch %05d: %s did not improve from %0.5f' %
@@ -860,9 +885,11 @@ class ModelCheckpoint(Callback):
                 if self.verbose > 0:
                     print('\nEpoch %05d: saving model to %s' % (epoch + 1, filepath))
                 if self.save_weights_only:
-                    self.model.save_weights(filepath, overwrite=True)
+                    torch.save(self.model.state_dict(), filepath)
                 else:
-                    self.model.save(filepath, overwrite=True)
+                    torch.save(self.model, filepath)
+                self._filepaths.append(filepath)
+
         except IOError as e:
             # `e.errno` appears to be `None` so checking the content of `e.args[0]`.
             if 'is a directory' in str(e.args[0]).lower():
@@ -1201,9 +1228,6 @@ class LambdaCallback(Callback):
             self.on_train_end = on_train_end
         else:
             self.on_train_end = lambda logs: None
-
-
-from graphgallery.utils import Progbar
 
 
 class TqdmCallback(Callback):

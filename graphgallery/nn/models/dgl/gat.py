@@ -16,6 +16,7 @@ class GAT(TorchEngine):
                  num_heads=[8],
                  acts=['elu'],
                  dropout=0.6,
+                 bias=False,
                  weight_decay=5e-4,
                  lr=0.01):
 
@@ -25,6 +26,7 @@ class GAT(TorchEngine):
         for hid, num_head, act in zip(hids, num_heads, acts):
             conv.append(GATConv(in_features * head,
                                 hid,
+                                bias=bias,
                                 num_heads=num_head,
                                 feat_drop=dropout,
                                 attn_drop=dropout))
@@ -37,6 +39,7 @@ class GAT(TorchEngine):
         conv.append(GATConv(in_features * head,
                             out_features,
                             num_heads=1,
+                            bias=bias,
                             feat_drop=dropout,
                             attn_drop=dropout))
         conv = Sequential(*conv, reverse=True)  # `reverse=True` is important

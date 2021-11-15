@@ -39,8 +39,8 @@ class LATGCN(Trainer):
                    eta=0.1):
 
         model = get_model("LATGCN", self.backend)
-        model = model(self.graph.num_node_attrs,
-                      self.graph.num_node_classes,
+        model = model(self.graph.num_feats,
+                      self.graph.num_classes,
                       self.graph.num_nodes,
                       gamma=gamma,
                       eta=eta,

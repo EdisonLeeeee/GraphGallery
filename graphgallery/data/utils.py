@@ -5,7 +5,7 @@ from graphgallery import functional as gf
 from ..data_type import is_multiobjects
 
 __all__ = ["get_num_nodes", "get_num_edges", "get_num_graphs",
-           "get_num_node_attrs", "get_num_node_classes",
+           "get_num_feats", "get_num_classes",
            ]
 
 
@@ -50,22 +50,22 @@ def get_num_edges(adj_matrices, is_directed=False, reduce=identity):
         return int((A.nnz - num_diag) / 2) + int(num_diag)
 
 
-def get_num_node_attrs(node_attrs, reduce=identity):
+def get_num_feats(node_attrs, reduce=identity):
     if node_attrs is None:
         return 0
 
     if is_multiobjects(node_attrs):
-        return reduce(get_num_node_attrs(attr_matrix) for attr_matrix in node_attrs)
+        return reduce(get_num_feats(attr_matrix) for attr_matrix in node_attrs)
 
     return node_attrs.shape[1]
 
 
-def get_num_node_classes(node_labels, reduce=identity):
+def get_num_classes(node_labels, reduce=identity):
     if node_labels is None:
         return 0
 
     if is_multiobjects(node_labels):
-        return reduce(get_num_node_classes(label) for label in node_labels)
+        return reduce(get_num_classes(label) for label in node_labels)
 
     if node_labels.ndim == 1:
         return node_labels.max() + 1

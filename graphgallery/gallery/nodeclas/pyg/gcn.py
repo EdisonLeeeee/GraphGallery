@@ -38,8 +38,8 @@ class GCN(Trainer):
                    bias=True):
 
         model = get_model("GCN", self.backend)
-        model = model(self.graph.num_node_attrs,
-                      self.graph.num_node_classes,
+        model = model(self.graph.num_feats,
+                      self.graph.num_classes,
                       hids=hids,
                       acts=acts,
                       dropout=dropout,
@@ -88,8 +88,8 @@ class DropEdge(Trainer):
                    p=0.3):
 
         model = get_model("DropEdge", self.backend)
-        model = model(self.graph.num_node_attrs,
-                      self.graph.num_node_classes,
+        model = model(self.graph.num_feats,
+                      self.graph.num_classes,
                       p=p,
                       hids=hids,
                       acts=acts,
@@ -142,8 +142,8 @@ class RDrop(Trainer):
                    p=0.3):
 
         model = get_model("RDrop", self.backend)
-        model = model(self.graph.num_node_attrs,
-                      self.graph.num_node_classes,
+        model = model(self.graph.num_feats,
+                      self.graph.num_classes,
                       p=p,
                       kl=kl,
                       hids=hids,

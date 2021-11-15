@@ -36,8 +36,8 @@ class LGC(Trainer):
                    bias=True):
 
         model = get_model("LGC", self.backend)
-        model = model(self.graph.num_node_attrs,
-                      self.graph.num_node_classes,
+        model = model(self.graph.num_feats,
+                      self.graph.num_classes,
                       hids=hids,
                       acts=acts,
                       K=K,
@@ -77,8 +77,8 @@ class EGC(LGC):
                    bias=True):
 
         model = get_model("EGC", self.backend)
-        model = model(self.graph.num_node_attrs,
-                      self.graph.num_node_classes,
+        model = model(self.graph.num_feats,
+                      self.graph.num_classes,
                       hids=hids,
                       acts=acts,
                       K=K,
@@ -120,8 +120,8 @@ class hLGC(Trainer):
                    bias=True):
 
         model = get_model("hLGC", self.backend)
-        model = model(self.graph.num_node_attrs,
-                      self.graph.num_node_classes,
+        model = model(self.graph.num_feats,
+                      self.graph.num_classes,
                       hids=hids,
                       acts=acts,
                       K=K,

@@ -36,8 +36,8 @@ class MixHop(Trainer):
                    gamma=0.01):
 
         model = get_model("MixHop", self.backend)
-        model = model(self.graph.num_node_attrs,
-                      self.graph.num_node_classes,
+        model = model(self.graph.num_feats,
+                      self.graph.num_classes,
                       hids=hids,
                       acts=acts,
                       dropout=dropout,

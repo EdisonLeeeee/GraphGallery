@@ -1,6 +1,7 @@
 from .tqdm import tqdm
 from .progbar import Progbar
 from .logger import setup_logger, get_logger
+from .bunchdict import BunchDict
 
 
 __all__ = [
@@ -8,6 +9,7 @@ __all__ = [
     'Progbar',
     'setup_logger',
     'get_logger',
+    'BunchDict',
 ]
 
 classes = __all__

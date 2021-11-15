@@ -1,35 +1,20 @@
-import os
 import sys
-import warnings
-import importlib
 import inspect
-import os.path as osp
 import numpy as np
 
-from graphgallery.gallery.callbacks import ModelCheckpoint, CallbackList, EarlyStopping, ProgbarLogger, History
+import torch
+import torch.nn as nn
+
+from torch import Tensor
+from typing import Optional, Union, Any, Callable, List
+
+from graphgallery.gallery.callbacks import Callback, CallbackList
 from torch.utils.data import DataLoader, Dataset
 
 import graphgallery as gg
 from graphgallery import functional as gf
-from graphgallery.data.io import makedirs_from_filepath
-from graphgallery.gallery import Model
 from graphgallery.utils import Progbar
-
-
-# TensorFlow 2.1.x
-# Ignora warnings:
-#     UserWarning: Converting sparse IndexedSlices to a dense Tensor of unknown shape. This may consume a large amount of memory.
-#     This is caused by `tf.gather` and it will be solved in future tensorflow version.
-warnings.filterwarnings(
-    'ignore',
-    message='.*Converting sparse IndexedSlices to a dense Tensor of unknown shape.*')
-
-# TensorFlow 2.4.0
-# Ignora warnings:
-#     UserWarning: Converting sparse IndexedSlices(IndexedSlices(indices=...) to a dense Tensor of unknown shape.
-#     This may consume a large amount of memory.
-warnings.filterwarnings(
-    'ignore', message='.*to a dense Tensor of unknown shape.*')
+from graphgallery.nn.metrics import Accuracy
 
 
 def format_doc(d):
@@ -60,51 +45,34 @@ def make_docs(*func):
     return format_doc(d)
 
 
-def unravel_batch(batch):
-    inputs = labels = out_index = None
-    if isinstance(batch, (list, tuple)):
-        inputs = batch[0]
-        labels = batch[1]
-        if len(batch) > 2:
-            out_index = batch[-1]
-    else:
-        inputs = batch
-
-    if isinstance(labels, (list, tuple)) and len(labels) == 1:
-        labels = labels[0]
-    if isinstance(out_index, (list, tuple)) and len(out_index) == 1:
-        out_index = out_index[0]
-
-    return inputs, labels, out_index
-
-
-class Trainer(Model):
-    def setup_cfg(self):
-        """load the default config function `default_cfg_setup` for the corresponding task.
-
-        Raises
-        ------
-        RuntimeError
-            the default config function `default_cfg_setup` not found in the file `graphgallery.gallery.[task].default`
+class Trainer:
+    def __init__(self, *, device="cpu", seed=None, name=None, **cfg):
         """
-        try:
-            # nodeclas/linkpred/...
-            task_module = self.__module__.split('.')[2]
-            # graphgallery.gallery
-            gallery_module = '.'.join(__name__.split('.')[:-1])
-        except:
-            # use nodeclas as default setup
-            default_setup = gg.gallery.nodeclas.default
-            default_setup.default_cfg_setup(self.cfg)
-            print('Something error when finding default setup file. Using Node Classificatioon config as default', file=sys.stderr)
-            return
+        Parameters:
+        ----------
+        device: string. optional
+            The device where the model running on.
+        seed: interger scalar. optional
+            Used to create a reproducible sequence of tensors
+            across multiple calls.
+        name: string. optional
+            Specified name for the model. (default: :str: `class name`)
+        cfg: other custom keyword arguments. 
+        """
 
-        try:
-            default_setup = importlib.import_module(f".{task_module}.default", gallery_module)
-        except ModuleNotFoundError:
-            raise RuntimeError(f"default setup function `{gallery_module}.{task_module}.default.default_cfg_setup` not found!")
+        gg.set_seed(seed)
+        self.cfg = gf.BunchDict(cfg)
+        self.device = torch.device(device)
+        self.data_device = self.device
+        self.backend = gg.backend()
 
-        default_setup.default_cfg_setup(self.cfg)
+        self.seed = seed
+        self.name = name or self.__class__.__name__
+
+        self._model = None
+        self._graph = None
+        self._cache = gf.BunchDict()
+        self.transform = gf.BunchDict()
 
     @np.deprecate(old_name="make_data",
                   message=("the method `trainer.make_data` is currently deprecated from 0.9.0,"
@@ -132,21 +100,15 @@ class Trainer(Model):
             transform for attribute matrix.
         other arguments (if have) will be passed into method 'data_step'.
         """
-        self.empty_cache()
-        model = self.model
-        if model is not None and hasattr(model, 'empty_cache'):
-            model.empty_cache()
+        self.cache_clear()
 
         self.graph = gf.get(graph_transform)(graph)
-        cfg = self.cfg.data
         if device is not None:
             self.data_device = gf.device(device, self.backend)
         else:
             self.data_device = self.device
-        cfg.device = device
         _, kwargs = gf.wrapper(self.data_step)(**kwargs)
         kwargs['graph_transform'] = graph_transform
-        cfg.merge_from_dict(kwargs)
 
         for k, v in kwargs.items():
             if k.endswith("transform"):
@@ -190,29 +152,25 @@ class Trainer(Model):
         if self._graph is None:
             raise RuntimeError("Please call 'trainer.setup_graph(graph)' first.")
 
-        use_tfn = kwargs.get("use_tfn", True)
-        if self.backend == "tensorflow":
-            with self.backend.device(self.device):
-                self.model, kwargs = gf.wrapper(self.model_step)(**kwargs)
-                if use_tfn:
-                    self.model.use_tfn()
-        else:
-            kwargs.pop("use_tfn", None)
-            model, kwargs = gf.wrapper(self.model_step)(**kwargs)
-            self.model = model.to(self.device)
-        self.cfg.model.merge_from_dict(kwargs)
+        model, kwargs = gf.wrapper(self.model_step)(**kwargs)
+        self._model = model.to(self.device)
+
+        self.optimizer = self.config_optimizer()
+        self.loss = self.config_loss()
+        metrics = self.config_metrics()
+
+        if not isinstance(metrics, list):
+            metrics = [metrics]
+
+        self.metrics = metrics
         return self
 
     def model_step(self, *args, **kwargs):
         """Implement you model building function here"""
         raise NotImplementedError
 
-    def fit(self, train_data, val_data=None, callbacks=None, **kwargs):
+    def fit(self, train_data, val_data=None, epochs=100, callbacks=None, verbose=None):
 
-        cache = self.cache
-        cfg = self.cfg.fit
-        cfg.merge_from_dict(kwargs)
-        ckpt_cfg = cfg.ModelCheckpoint
         model = self.model
 
         if model is None:
@@ -221,50 +179,33 @@ class Trainer(Model):
             )
 
         if not isinstance(train_data, (DataLoader, Dataset)):
-            train_data = self.train_loader(train_data)
-
-        if cfg.cache_train_data:
-            cache.train_data = train_data
+            train_data = self.config_train_data(train_data)
 
         validation = val_data is not None
+
         if validation:
             if not isinstance(val_data, (DataLoader, Dataset)):
-                val_data = self.test_loader(val_data)
-            if cfg.cache_val_data:
-                cache.val_data = val_data
+                val_data = self.config_test_data(val_data)
 
         # Setup callbacks
-        verbose = cfg.verbose
-        callbacks = CallbackList(callbacks=callbacks, add_history=True, add_progbar=True if verbose else False)
-        cfg, callbacks = setup_callbacks(cfg, callbacks, validation)
-        callbacks.set_model(model)
-        callbacks.set_params(dict(verbose=verbose, epochs=cfg.epochs))
-
-        self.callbacks = callbacks
+        self.callbacks = callbacks = self.config_callbacks(verbose, epochs, callbacks=callbacks)
 
         logs = gf.BunchDict()
-
-        callbacks.on_train_begin()
-        # for some initialization
-        if hasattr(model, 'on_train_begin'):
-            model.on_train_begin()
+        model.stop_training = False
 
         if verbose:
             print("Training...")
 
+        callbacks.on_train_begin()
         try:
-            for epoch in range(cfg.epochs):
+            for epoch in range(epochs):
                 callbacks.on_epoch_begin(epoch)
                 train_logs = self.train_step(train_data)
-                if hasattr(train_data, 'on_epoch_end'):
-                    train_data.on_epoch_end()
-                logs.update({k: to_item(v) for k, v in train_logs.items()})
+                logs.update({k: self.to_item(v) for k, v in train_logs.items()})
 
                 if validation:
                     valid_logs = self.test_step(val_data)
-                    logs.update({("val_" + k): to_item(v) for k, v in valid_logs.items()})
-                    if hasattr(val_data, 'on_epoch_end'):
-                        val_data.on_epoch_end()
+                    logs.update({("val_" + k): self.to_item(v) for k, v in valid_logs.items()})
 
                 callbacks.on_train_batch_end(len(train_data), logs)
                 callbacks.on_epoch_end(epoch, logs)
@@ -273,174 +214,293 @@ class Trainer(Model):
                     print(f"Early Stopping at Epoch {epoch}", file=sys.stderr)
                     break
 
-            callbacks.on_train_end()
-            if ckpt_cfg.enabled:
-                if ckpt_cfg.save_weights_only:
-                    model.load_weights(ckpt_cfg.path)
-                else:
-                    self.model = model.load(ckpt_cfg.path)
         finally:
-            # to avoid unexpected termination of the model
-            if ckpt_cfg.enabled and ckpt_cfg.remove_weights:
-                self.remove_weights()
+            callbacks.on_train_end()
 
-    def evaluate(self, test_data, **kwargs):
+        return self
+
+    def train_step(self, dataloader: DataLoader) -> dict:
+        """One-step training on the input dataloader.
+
+        Parameters
+        ----------
+        dataloader : DataLoader
+            the trianing dataloader
+
+        Returns
+        -------
+        dict
+            the output logs, including `loss` and `val_accuracy`, etc.
+        """
+        optimizer = self.optimizer
+        loss_fn = self.loss
+        model = self.model
+
+        optimizer.zero_grad()
+        self.reset_metrics()
+        model.train()
+
+        for epoch, batch in enumerate(dataloader):
+            self.callbacks.on_train_batch_begin(epoch)
+            x, y, out_index = self.unravel_batch(batch)
+            x = self.to_device(x)
+            y = self.to_device(y)
+            if not isinstance(x, tuple):
+                x = x,
+            out = model(*x)[out_index]
+            loss = loss_fn(out, y)
+            loss.backward()
+            optimizer.step()
+            for metric in self.metrics:
+                metric.update_state(y.cpu(), out.detach().cpu())
+            self.callbacks.on_train_batch_end(epoch)
+
+        metrics = [metric.result() for metric in self.metrics]
+        results = [loss.cpu().item()] + metrics
+
+        return dict(zip(self.metrics_names, results))
+
+    def evaluate(self, test_data, verbose=1):
 
         if not self.model:
             raise RuntimeError(
                 'You must compile your model before training/testing/predicting. Use `trainer.build()`.'
             )
 
-        cache = self.cache
-        cfg = self.cfg.evaluate
-        cfg.merge_from_dict(kwargs)
-
         if not isinstance(test_data, (DataLoader, Dataset)):
-            test_data = self.test_loader(test_data)
+            test_data = self.config_test_data(test_data)
 
-        if cfg.cache_test_data:
-            cache.test_data = test_data
-
-        if cfg.verbose:
+        if verbose:
             print("Testing...")
 
         progbar = Progbar(target=len(test_data),
-                          width=cfg.Progbar.width,
-                          verbose=cfg.verbose)
+                          verbose=verbose)
         logs = gf.BunchDict(**self.test_step(test_data))
-        logs.update({k: to_item(v) for k, v in logs.items()})
+        logs.update({k: self.to_item(v) for k, v in logs.items()})
         progbar.update(len(test_data), logs)
         return logs
 
-    def train_step(self, sequence):
+    @torch.no_grad()
+    def test_step(self, dataloader: DataLoader) -> dict:
+        loss_fn = self.loss
         model = self.model
-        model.reset_metrics()
+        model.eval()
+        callbacks = self.callbacks
+        self.reset_metrics()
 
-        results = None
-        for epoch, batch in enumerate(sequence):
-            self.callbacks.on_train_batch_begin(epoch)
-            inputs, labels, out_index = unravel_batch(batch)
-            results = model.train_step_on_batch(x=inputs,
-                                                y=labels,
-                                                out_index=out_index,
-                                                device=self.device)
-            self.callbacks.on_train_batch_end(epoch)
-        return results
+        for epoch, batch in enumerate(dataloader):
+            callbacks.on_test_batch_begin(epoch)
+            x, y, out_index = self.unravel_batch(batch)
+            x = self.to_device(x)
+            y = self.to_device(y)
+            if not isinstance(x, tuple):
+                x = x,
+            out = model(*x)[out_index]
+            loss = loss_fn(out, y)
+            for metric in self.metrics:
+                metric.update_state(y.cpu(), out.detach().cpu())
+            callbacks.on_test_batch_end(epoch)
 
-    def test_step(self, sequence):
-        model = self.model
-        model.reset_metrics()
+        metrics = [metric.result() for metric in self.metrics]
+        results = [loss.cpu().item()] + metrics
 
-        results = None
-        for epoch, batch in enumerate(sequence):
-            inputs, labels, out_index = unravel_batch(batch)
-            self.callbacks.on_test_batch_begin(epoch)
-            results = model.test_step_on_batch(x=inputs,
-                                               y=labels,
-                                               out_index=out_index,
-                                               device=self.device)
-            self.callbacks.on_test_batch_end(epoch)
-        return results
+        return dict(zip(self.metrics_names, results))
 
-    def predict(self, predict_data=None, transform=None):
+    def predict(self, predict_data=None,
+                transform: Callable = torch.nn.Softmax(dim=-1)):
 
         if not self.model:
             raise RuntimeError(
                 'You must compile your model before training/testing/predicting. Use `trainer.build()`.'
             )
-
-        cache = self.cache
-        cfg = self.cfg.predict
-        cfg.transform = transform
 
         if not isinstance(predict_data, (DataLoader, Dataset)):
             predict_data = self.predict_loader(predict_data)
 
-        if cfg.cache_predict_data:
-            cache.predict_data = predict_data
+        out = self.predict_step(predict_data).squeeze()
+        if transform is not None:
+            out = transform(out)
+        return out
 
-        logits = self.predict_step(predict_data)
-
-        self.transform.logit_transform = T = gf.get(transform)
-        logits = T(logits)
-        return logits.squeeze()
-
-    def predict_step(self, sequence):
-        logits = []
+    @torch.no_grad()
+    def predict_step(self, dataloader: DataLoader) -> Tensor:
         model = self.model
-        for epoch, batch in enumerate(sequence):
-            inputs, labels, out_index = unravel_batch(batch)
-            self.callbacks.on_predict_batch_begin(epoch)
-            logit = model.predict_step_on_batch(x=inputs,
-                                                out_index=out_index,
-                                                device=self.device)
+        model.eval()
+        outs = []
+        callbacks = self.callbacks
+        for epoch, batch in enumerate(dataloader):
+            callbacks.on_predict_batch_begin(epoch)
+            x, y, out_index = self.unravel_batch(batch)
+            x = self.to_device(x)
+            if not isinstance(x, tuple):
+                x = x,
+            out = model(*x)[out_index]
+            outs.append(out)
+            callbacks.on_predict_batch_end(epoch)
 
-            logits.append(logit)
-            self.callbacks.on_predict_batch_end(epoch)
+        return torch.cat(outs, dim=0)
 
-        return np.vstack(logits)
+    def config_optimizer(self) -> torch.optim.Optimizer:
+        lr = self.cfg.get('lr', 0.01)
+        weight_decay = self.cfg.get('weight_decay', 5e-4)
+        return torch.optim.Adam(self.model.parameters(), lr=lr, weight_decay=weight_decay)
 
-    def train_loader(self, inputs, **kwargs):
+    def config_loss(self) -> Callable:
+        return torch.nn.CrossEntropyLoss()
+
+    def config_metrics(self) -> Callable:
+        return Accuracy()
+
+    def config_callbacks(self, verbose, epochs, callbacks=None) -> Callback:
+        callbacks = CallbackList(callbacks=callbacks, add_history=True, add_progbar=True if verbose else False)
+        callbacks.set_model(self.model)
+        callbacks.set_params(dict(verbose=verbose, epochs=epochs))
+        return callbacks
+
+    def config_train_data(self, inputs, **kwargs):
         raise NotImplementedError
 
-    def test_loader(self, inputs, **kwargs):
-        return self.train_loader(inputs, **kwargs)
+    def config_test_data(self, inputs, **kwargs):
+        return self.config_train_data(inputs, **kwargs)
 
     def predict_loader(self, inputs, **kwargs):
-        return self.test_loader(inputs, **kwargs)
+        return self.config_test_data(inputs, **kwargs)
+
+    @staticmethod
+    def unravel_batch(batch):
+        inputs = labels = out_index = None
+        if isinstance(batch, (list, tuple)):
+            inputs = batch[0]
+            labels = batch[1]
+            if len(batch) > 2:
+                out_index = batch[-1]
+        else:
+            inputs = batch
+
+        if isinstance(labels, (list, tuple)) and len(labels) == 1:
+            labels = labels[0]
+        if isinstance(out_index, (list, tuple)) and len(out_index) == 1:
+            out_index = out_index[0]
+
+        return inputs, labels, out_index
+
+    @staticmethod
+    def to_item(value: Any) -> Any:
+        """Transform value to Python object
+
+        Parameters
+        ----------
+        value : Any
+            Tensor or Numpy array
+
+        Returns
+        -------
+        Any
+            Python object
+
+        Example
+        -------
+        >>> x = torch.tensor(1.)
+        >>> to_item(x)
+        1.
+        """
+        if value is None:
+            return value
+
+        elif hasattr(value, 'numpy'):
+            value = value.numpy()
+
+        if hasattr(value, 'item'):
+            value = value.item()
+
+        return value
+
+    def to_device(self, x: Any) -> Any:
+        """Put `x` into the device `self.device`.
+
+        Parameters
+        ----------
+        x : any object, probably `torch.Tensor`.
+            the input variable used for model.
+
+        Returns
+        -------
+        x : any object, probably `torch.Tensor`.
+            the input variable that in the device `self.device`.
+        """
+        device = self.device
+
+        def wrapper(inputs):
+            if isinstance(inputs, tuple):
+                return tuple(wrapper(input) for input in inputs)
+            elif isinstance(inputs, dict):
+                for k, v in inputs.items():
+                    inputs[k] = wrapper(v)
+                return inputs
+            else:
+                return inputs.to(device) if hasattr(inputs, 'to') else inputs
+
+        return wrapper(x)
+
+    def cache_clear(self):
+        if hasattr(self.model, 'cache_clear'):
+            self.model.cache_clear()
+
+        self._cache = gf.BunchDict()
+        import gc
+        gc.collect()
+        return self
+
+    @property
+    def graph(self):
+        graph = self._graph
+        if graph is None:
+            raise KeyError("You haven't pass any graph instance.")
+        return graph
+
+    @graph.setter
+    def graph(self, graph):
+        assert graph is None or isinstance(graph, gg.data.BaseGraph)
+        if graph is not None:
+            self._graph = graph.copy()
+
+    @property
+    def cache(self):
+        return self._cache
+
+    def register_cache(self, **kwargs):
+        self._cache.update(kwargs)
+
+    @property
+    def metrics_names(self) -> List[str]:
+        assert self.metrics is not None
+        return ['loss'] + [metric.name for metric in self.metrics]
+
+    @property
+    def model(self):
+        return self._model
+
+    @model.setter
+    def model(self, m):
+        assert m is None or isinstance(m, torch.nn.Module)
+        self._model = m
+
+    def reset_metrics(self):
+        if self.metrics is None:
+            return
+        for metric in self.metrics:
+            metric.reset_states()
+
+    def __repr__(self):
+        return f"{self.name}(device={self.device}, backend={self.backend})"
+
+    __str__ = __repr__
 
     def _test_predict(self, index):
         logit = self.predict(index)
         predict_class = logit.argmax(1)
         labels = self.graph.label[index]
         return (predict_class == labels).mean()
-
-    # def reset_weights(self):
-    #     # TODO: add pytorch support
-    #     """reset the model to the first time."""
-    #     model = self.model
-    #     if self.backup is None:
-    #         raise RuntimeError(
-    #             "You must store the `backup` before `reset_weights`."
-    #             "`backup` will be automatically stored when the model is built."
-    #         )
-    #     for w, wb in zip(model.weights, self.backup):
-    #         w.assign(wb)
-
-    @ property
-    def model(self):
-        return self._model
-
-    @ model.setter
-    def model(self, m):
-        # Back up
-        # if isinstance(m, tf.keras.Model) and m.weights:
-        #     self.backup = tf.identity_n(m.weights)
-        # TODO assert m is None or isinstance(m, tf.keras.Model) or torch.nn.Module
-        self._model = m
-
-    # def reset_optimizer(self):
-    #     # TODO: add pytorch support
-    #     model = self.model
-    #     if not hasattr(model, 'optimizer'):
-    #         raise RuntimeError("The model has not attribute `optimizer`!")
-    #     for var in model.optimizer.variables():
-    #         var.assign(tf.zeros_like(var))
-
-    # def reset_lr(self, value):
-    #     # TODO: add pytorch support
-    #     model = self.model
-    #     if not hasattr(model, 'optimizer'):
-    #         raise RuntimeError("The model has not attribute `optimizer`!")
-    #     model.optimizer.learning_rate.assign(value)
-
-    def remove_weights(self):
-        filepath = self.cfg.fit.ModelCheckpoint.path
-        if self.backend == "tensorflow":
-            remove_extra_tf_files(filepath)
-
-        if osp.exists(filepath):
-            os.remove(filepath)
 
     def help(self, return_msg=False):
         """return help message for the `trainer`"""
@@ -466,62 +526,3 @@ class Trainer(Model):
             return msg
         else:
             print(msg)
-
-#     def __getattr__(self, attr):
-#         ##### FIXME: This may cause ERROR ######
-#         try:
-#             return self.__dict__[attr]
-#         except KeyError:
-#             if hasattr(self, "_model") and hasattr(self._model, attr):
-#                 return getattr(self._model, attr)
-#             raise AttributeError(
-#                 f"'{self.name}' and '{self.name}.model' objects have no attribute '{attr}'"
-#             )
-
-
-def to_item(value):
-    if value is None:
-        return value
-    elif hasattr(value, 'numpy'):
-        value = value.numpy()
-
-    if hasattr(value, 'item'):
-        value = value.item()
-
-    return value
-
-
-def remove_extra_tf_files(filepath):
-    # for tensorflow weights that saved without h5 formate
-    for ext in (".data-00000-of-00001", ".index"):
-        path = filepath + ext
-        if osp.exists(path):
-            os.remove(path)
-
-    filedir = osp.split(osp.realpath(filepath))[0]
-
-    path = osp.join(filedir, "checkpoint")
-    if osp.exists(path):
-        os.remove(path)
-
-
-def setup_callbacks(cfg, callbacks, validation):
-    ckpt_cfg = cfg.ModelCheckpoint
-    # TODO: check if `ModelCheckpoint` exists.
-    if not validation:
-        if ckpt_cfg.enabled and ckpt_cfg.monitor.startswith("val_"):
-            ckpt_cfg.enabled = False
-            ckpt_cfg.monitor = ckpt_cfg.monitor[4:]
-
-    if ckpt_cfg.enabled:
-        if not ckpt_cfg.path.endswith(gg.file_ext()):
-            ckpt_cfg.path += gg.file_ext()
-        makedirs_from_filepath(ckpt_cfg.path)
-        mc_callback = ModelCheckpoint(ckpt_cfg.path,
-                                      mode=ckpt_cfg.mode,
-                                      monitor=ckpt_cfg.monitor,
-                                      save_best_only=ckpt_cfg.save_best_only,
-                                      save_weights_only=ckpt_cfg.save_weights_only,
-                                      verbose=ckpt_cfg.verbose)
-        callbacks.append(mc_callback)
-    return cfg, callbacks

@@ -49,8 +49,8 @@ class SAT(Trainer):
                    name="sat.SSGC"):
 
         model = get_model(name, self.backend)
-        model = model(self.graph.num_node_attrs,
-                      self.graph.num_node_classes,
+        model = model(self.graph.num_feats,
+                      self.graph.num_classes,
                       K=K,
                       alpha=alpha,
                       eps_U=eps_U,

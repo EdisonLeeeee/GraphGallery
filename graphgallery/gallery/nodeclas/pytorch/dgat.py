@@ -38,8 +38,8 @@ class DGAT(Trainer):
                    epsilon=0.9):
 
         model = get_model("DGAT", self.backend)
-        model = model(self.graph.num_node_attrs,
-                      self.graph.num_node_classes,
+        model = model(self.graph.num_feats,
+                      self.graph.num_classes,
                       alpha=alpha,
                       epsilon=epsilon,
                       hids=hids,

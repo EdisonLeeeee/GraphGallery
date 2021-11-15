@@ -129,7 +129,8 @@ def get_file(fname,
     """Downloads a file from a URL if it not already in the cache.
 
     By default the file at the url `origin` is downloaded to the
-    cache_dir `~/.graphgallery`, placed in the cache_subdir `datasets`,
+    cache_dir `~/.graphgallery` or '/tmp/.graphgallery', 
+    placed in the cache_subdir `datasets`,
     and given the filename `fname`. The final location of a file
     `example.txt` would therefore be `~/.graphgallery/datasets/example.txt`.
 

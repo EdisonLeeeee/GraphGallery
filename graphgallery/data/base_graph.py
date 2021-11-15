@@ -33,7 +33,7 @@ class BaseGraph:
         raise NotImplementedError
 
     @property
-    def num_node_attrs(self):
+    def num_feats(self):
         """Get the number of attribute dimensions of the nodes."""
         raise NotImplementedError
 
@@ -48,7 +48,7 @@ class BaseGraph:
         raise NotImplementedError
 
     @property
-    def num_node_classes(self):
+    def num_classes(self):
         """Get the number of node classes."""
         raise NotImplementedError
 

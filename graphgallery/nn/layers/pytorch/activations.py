@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
+from typing import Optional, Any
 
 act_dict = dict(relu="ReLU",
                 relu6="ReLU6",
@@ -17,14 +17,42 @@ act_dict = dict(relu="ReLU",
 
 
 class Noop(nn.Module):
-    def __init__(self, inplace=False):
+    def __init__(self, inplace: bool = False):
         super().__init__()
 
-    def forward(self, x):
+    def forward(self, x: Any) -> Any:
         return x
 
 
-def get(act, inplace=False):
+def get(act: Optional[str] = None, inplace: bool = False) -> torch.nn.Module:
+    """get activation functions by `string`
+
+    Example
+    -------
+    >>> from graphwar.nn import activations
+    >>> activations.get('relu')
+    ReLU()
+
+    Parameters
+    ----------
+    act : string or None
+        the string to get activations, if `None`, return `Noop` that
+        returns the input as output.
+    inplace : bool, optional
+        the inplace argument in activation functions
+        currently it is not work since not all the functions 
+        take this argument, by default False
+
+    Returns
+    -------
+    torch.nn.Module
+        the activation function
+
+    Raises
+    ------
+    ValueError
+        unknown or invalid activation string.
+    """
     if act is None:
         return Noop()
 
@@ -35,26 +63,4 @@ def get(act, inplace=False):
     if out:
         return getattr(nn, out)()
     else:
-        raise ValueError(f"Unknown activation {act}")
-
-
-def get_fn(act):
-    if callable(act):
-        return act
-
-    if act is None:
-        return lambda x: x
-
-    if not isinstance(act, str):
-        raise ValueError("'act' is expected a 'string', "
-                         f"but got {type(act)}.")
-
-    if hasattr(torch, act):
-        fn = getattr(torch, act)
-    else:
-        fn = getattr(F, act, None)
-
-    if fn:
-        return fn
-    else:
-        raise ValueError(f"Unknown activation {act}")
+        raise ValueError(f"Unknown activation {act}. The allowed activation functions are {tuple(act_dict.keys())}.")

@@ -37,8 +37,8 @@ class GCN(Trainer):
                    bias=False):
 
         model = get_model("GCN", self.backend)
-        model = model(self.graph.num_node_attrs,
-                      self.graph.num_node_classes,
+        model = model(self.graph.num_feats,
+                      self.graph.num_classes,
                       hids=hids,
                       acts=acts,
                       dropout=dropout,

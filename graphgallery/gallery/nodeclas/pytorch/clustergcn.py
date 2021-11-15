@@ -49,8 +49,8 @@ class ClusterGCN(Trainer):
                    bias=False):
 
         model = get_model("GCN", self.backend)
-        model = model(self.graph.num_node_attrs,
-                      self.graph.num_node_classes,
+        model = model(self.graph.num_feats,
+                      self.graph.num_classes,
                       hids=hids,
                       acts=acts,
                       dropout=dropout,
@@ -105,7 +105,7 @@ class ClusterGCN(Trainer):
 
         batch_data = tuple(zip(batch_x, batch_adj))
 
-        logit = np.zeros((index.size, self.graph.num_node_classes),
+        logit = np.zeros((index.size, self.graph.num_classes),
                          dtype=self.floatx)
         batch_data, batch_mask = gf.astensors(batch_data, batch_mask, device=self.data_device)
 

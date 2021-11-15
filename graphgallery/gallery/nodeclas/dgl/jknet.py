@@ -34,8 +34,8 @@ class JKNet(Trainer):
                    lr=0.005, bias=True):
 
         model = get_model("JKNet", self.backend)
-        model = model(self.graph.num_node_attrs,
-                      self.graph.num_node_classes,
+        model = model(self.graph.num_feats,
+                      self.graph.num_classes,
                       hids=hids,
                       acts=acts,
                       mode=mode,

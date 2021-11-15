@@ -13,5 +13,4 @@ from .base_transforms import *
 from .decorators import *
 from .transform import *
 from .tensor import *
-from .random import random_seed
 from .torch_utils import *

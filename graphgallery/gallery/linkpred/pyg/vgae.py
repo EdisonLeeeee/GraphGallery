@@ -36,7 +36,7 @@ class VGAE(Trainer):
                    bias=False):
 
         model = get_model("VGAE", self.backend)
-        model = model(self.graph.num_node_attrs,
+        model = model(self.graph.num_feats,
                       out_features=out_features,
                       hids=hids,
                       acts=acts,

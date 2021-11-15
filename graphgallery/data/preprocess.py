@@ -34,7 +34,7 @@ def train_val_test_split_tabular(N: int, *,
     return idx_train, idx_val, idx_test
 
 
-def binarize_labels(labels, sparse_output: bool = False, returnum_node_classes: bool = False):
+def binarize_labels(labels, sparse_output: bool = False, returnum_classes: bool = False):
     """Convert labels vector to a binary label matrix.
     In the default single-label case, labels look like
     labels = [y1, y2, y3, ...].
@@ -48,16 +48,16 @@ def binarize_labels(labels, sparse_output: bool = False, returnum_node_classes: 
         Array of node labels in categorical single- or multi-label format.
     sparse_output : bool, default False
         Whether return the label_matrix in CSR format.
-    returnum_node_classes : bool, default False
+    returnum_classes : bool, default False
         Whether return the classes corresponding to the columns of the label matrix.
 
     Returns
     -------
-    label_matrix : np.ndarray or sp.csr_matrix, shape [num_samples, num_node_classes]
+    label_matrix : np.ndarray or sp.csr_matrix, shape [num_samples, num_classes]
         Binary matrix of class labels.
-        num_node_classes = number of unique values in "labels" array.
+        num_classes = number of unique values in "labels" array.
         label_matrix[i, k] = 1 <=> node i belongs to class k.
-    classes : np.array, shape [num_node_classes], optional
+    classes : np.array, shape [num_classes], optional
         Classes that correspond to each column of the label_matrix.
     """
     if hasattr(labels[0], '__iter__'):  # labels[0] is iterable <=> multilabel format
@@ -65,7 +65,7 @@ def binarize_labels(labels, sparse_output: bool = False, returnum_node_classes: 
     else:
         binarizer = LabelBinarizer(sparse_output=sparse_output)
     label_matrix = binarizer.fit_transform(labels).astype(np.float32)
-    return (label_matrix, binarizer.classes_) if returnum_node_classes else label_matrix
+    return (label_matrix, binarizer.classes_) if returnum_classes else label_matrix
 
 
 def get_train_val_test_split_gcn(labels, num_samples=20, random_state=None):
@@ -153,12 +153,12 @@ def sample_per_class(stratify,
                      forbidden_indices=None,
                      random_state: Optional[int] = None):
 
-    num_node_classes = stratify.max() + 1
+    num_classes = stratify.max() + 1
     num_samples = stratify.shape[0]
-    sample_indices_per_class = {index: [] for index in range(num_node_classes)}
+    sample_indices_per_class = {index: [] for index in range(num_classes)}
 
     # get indices sorted by class
-    for class_index in range(num_node_classes):
+    for class_index in range(num_classes):
         for sample_index in range(num_samples):
             if stratify[sample_index] == class_index:
                 if forbidden_indices is None or sample_index not in forbidden_indices:

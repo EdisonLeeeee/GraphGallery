@@ -40,8 +40,8 @@ class GCNVAT(Trainer):
                    num_power_iterations=1):
 
         model = get_model("graphat.GCNVAT", self.backend)
-        model = model(self.graph.num_node_attrs,
-                      self.graph.num_node_classes,
+        model = model(self.graph.num_feats,
+                      self.graph.num_classes,
                       xi=xi,
                       alpha=alpha,
                       epsilon=epsilon,

@@ -40,8 +40,8 @@ class GAT(Trainer):
                    include=["num_heads"]):
 
         model = get_model("GAT", self.backend)
-        model = model(self.graph.num_node_attrs,
-                      self.graph.num_node_classes,
+        model = model(self.graph.num_feats,
+                      self.graph.num_classes,
                       hids=hids,
                       num_heads=num_heads,
                       acts=acts,

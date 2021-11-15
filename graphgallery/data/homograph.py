@@ -36,8 +36,8 @@ class HomoGraph(BaseGraph):
             adjacency matrix in CSR format.
         attr_matrix: single (Graph) or a list of (MultiGraph) 
             sp.csr_matrix or np.ndarray, optional
-            shape [num_nodes, num_node_attrs] or
-            shape [num_graphs, num_nodes, num_node_attrs].            
+            shape [num_nodes, num_feats] or
+            shape [num_graphs, num_nodes, num_feats].            
             Node attribute matrix in CSR or Numpy format.
         label: single (Graph) or a list of (MultiGraph) 
             np.ndarray, optional.
@@ -91,22 +91,12 @@ class HomoGraph(BaseGraph):
         return get_num_graphs(self.adj_matrix)
 
     @property
-    def num_node_attrs(self) -> int:
-        return get_num_node_attrs(self.attr_matrix)
-
-    @property
-    def num_node_classes(self) -> int:
-        return get_num_node_classes(self.label)
-
-    @property
     def num_feats(self) -> int:
-        """Alias of num_node_attrs."""
-        return self.num_node_attrs
+        return get_num_feats(self.attr_matrix)
 
     @property
     def num_classes(self) -> int:
-        """Alias of num_node_classes."""
-        return self.num_node_classes
+        return get_num_classes(self.label)
 
     @property
     def A(self):

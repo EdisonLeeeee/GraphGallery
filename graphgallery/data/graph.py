@@ -73,7 +73,7 @@ class Graph(HomoGraph):
         if removed > 0:
             # TODO: considering about metadata['class_names']
             G = self.subgraph(nodes_to_remove=nodes_to_remove)
-            mapping = dict(zip(left, range(self.num_node_classes - removed)))
+            mapping = dict(zip(left, range(self.num_classes - removed)))
             G.label = np.asarray(list(
                 map(lambda key: mapping[key], G.label)),
                 dtype=np.int32)

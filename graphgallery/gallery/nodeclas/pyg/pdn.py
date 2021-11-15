@@ -41,8 +41,8 @@ class PDN(Trainer):
                    bias=True):
 
         model = get_model("PDN", self.backend)
-        model = model(self.graph.num_node_attrs,
-                      self.graph.num_node_classes,
+        model = model(self.graph.num_feats,
+                      self.graph.num_classes,
                       self.graph.num_edge_attrs,
                       hids=hids,
                       pdn_hids=pdn_hids,

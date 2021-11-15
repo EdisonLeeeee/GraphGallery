@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from graphgallery.nn.init.pytorch import glorot_uniform, zeros
+from graphgallery.nn.init import glorot_uniform, zeros
 
 
 class GATConv(nn.Module):

@@ -48,16 +48,16 @@ class HeteGraph(BaseGraph):
         return 1
 
     @property
-    def num_node_attrs(self) -> int:
-        return utils.get_num_node_attrs(self.attr_matrix)
+    def num_feats(self) -> int:
+        return utils.get_num_feats(self.attr_matrix)
 
     @property
     def num_edge_attrs(self) -> int:
-        return utils.get_num_node_attrs(self.edge_attr)
+        return utils.get_num_feats(self.edge_attr)
 
     @property
-    def num_node_classes(self) -> int:
-        return utils.get_num_node_classes(self.label)
+    def num_classes(self) -> int:
+        return utils.get_num_classes(self.label)
 
     @property
     def A(self):

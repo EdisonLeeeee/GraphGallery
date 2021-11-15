@@ -47,7 +47,7 @@ def graph_partition(graph, num_clusters: int = None, partition: str = 'metis'):
     adj_matrix = graph.adj_matrix
     attr_matrix = graph.attr_matrix
     if num_clusters is None and partition != 'louvain':
-        num_clusters = graph.num_node_classes
+        num_clusters = graph.num_classes
     # partition graph
     if partition == 'metis':
         if pymetis is None:

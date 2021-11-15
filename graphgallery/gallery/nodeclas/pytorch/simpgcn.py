@@ -48,8 +48,8 @@ class SimPGCN(Trainer):
                    bias=False):
 
         model = get_model("SimPGCN", self.backend)
-        model = model(self.graph.num_node_attrs,
-                      self.graph.num_node_classes,
+        model = model(self.graph.num_feats,
+                      self.graph.num_classes,
                       hids=hids,
                       acts=acts,
                       lambda_=lambda_,

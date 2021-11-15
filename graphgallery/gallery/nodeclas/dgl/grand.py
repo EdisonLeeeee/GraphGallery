@@ -38,8 +38,8 @@ class GRAND(Trainer):
                    bn=False):
 
         model = get_model("GRAND", self.backend)
-        model = model(self.graph.num_node_attrs,
-                      self.graph.num_node_classes,
+        model = model(self.graph.num_feats,
+                      self.graph.num_classes,
                       hids=hids,
                       acts=acts,
                       S=S,
