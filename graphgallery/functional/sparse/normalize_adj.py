@@ -2,7 +2,7 @@ import numpy as np
 import scipy.sparse as sp
 import graphgallery as gg
 
-from ..base_transforms import SparseTransform
+from ..transform import SparseTransform
 from ..decorators import multiple
 from ..transform import Transform
 

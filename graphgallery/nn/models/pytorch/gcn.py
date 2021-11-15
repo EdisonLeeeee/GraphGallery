@@ -25,6 +25,8 @@ class GCN(nn.Module):
         conv = Sequential(*conv)
 
         self.conv = conv
+        self.reg_paras = conv[1].parameters()
+        self.non_reg_paras = conv[2:].parameters()
 
     def forward(self, x, adj):
         return self.conv(x, adj)

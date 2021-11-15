@@ -3,7 +3,7 @@ import scipy.sparse as sp
 
 import numba
 from numba import njit
-from ..base_transforms import SparseTransform
+from ..transform import SparseTransform
 from ..transform import Transform
 from ..sparse import add_self_loop, remove_self_loop
 

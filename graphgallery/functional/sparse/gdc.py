@@ -3,7 +3,7 @@ from sklearn.preprocessing import normalize
 from scipy.linalg import expm
 
 from .normalize_adj import normalize_adj
-from ..base_transforms import SparseTransform
+from ..transform import SparseTransform
 from ..decorators import multiple
 from ..transform import Transform
 from .topk import sparse_topk

@@ -1,4 +1,4 @@
-from ..base_transforms import GraphTransform
+from ..transform import GraphTransform
 from ..transform import Transform
 from ..network import largest_connected_components
 from .subgraph import subgraph

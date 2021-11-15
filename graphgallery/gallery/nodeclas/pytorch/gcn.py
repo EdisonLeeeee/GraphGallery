@@ -57,8 +57,8 @@ class GCN(Trainer):
     def config_optimizer(self) -> torch.optim.Optimizer:
         lr = self.cfg.get('lr', 0.01)
         weight_decay = self.cfg.get('weight_decay', 5e-4)
-        conv = self.model.conv
-        return torch.optim.Adam([dict(params=conv[1].parameters(),
+        model = self.model
+        return torch.optim.Adam([dict(params=model.reg_paras,
                                       weight_decay=weight_decay),
-                                 dict(params=conv[2:].parameters(),
-                                      weight_decay=0.)], lr=lr, lr=lr, weight_decay=weight_decay)
+                                 dict(params=model.non_reg_paras,
+                                      weight_decay=0.)], lr=lr)

@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.sparse as sp
 
-from ..base_transforms import SparseTransform
+from ..transform import SparseTransform
 from ..transform import Transform
 from ..decorators import multiple
 

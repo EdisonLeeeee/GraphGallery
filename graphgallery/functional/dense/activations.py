@@ -1,9 +1,10 @@
 import numpy as np
-from ..base_transforms import DenseTransform
+from ..transform import DenseTransform
 from ..decorators import multiple
 from ..transform import Transform
 
 __all__ = ["Softmax", "softmax"]
+
 
 @Transform.register()
 class Softmax(DenseTransform):
@@ -29,6 +30,7 @@ class Softmax(DenseTransform):
             Elements to softmax.
         """
         return softmax(*x, axis=self.axis)
+
 
 @multiple()
 def softmax(x: np.ndarray, axis: int = -1) -> np.ndarray:

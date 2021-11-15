@@ -1,5 +1,5 @@
 from ..bunchdict import BunchDict
-from ..base_transforms import GraphTransform
+from ..transform import GraphTransform
 from ..transform import Transform, get
 
 

@@ -1,6 +1,6 @@
 import numpy as np
 
-from ..base_transforms import DenseTransform
+from ..transform import DenseTransform
 from ..decorators import multiple
 from ..transform import Transform
 

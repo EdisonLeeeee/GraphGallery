@@ -5,7 +5,7 @@ from sklearn import preprocessing
 from typing import Union
 
 import graphgallery as gg
-from ..base_transforms import DenseTransform
+from ..transform import DenseTransform
 from ..decorators import multiple
 from ..transform import Transform
 

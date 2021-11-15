@@ -2,7 +2,7 @@ import numba
 import numpy as np
 import scipy.sparse as sp
 from .normalize_adj import normalize_adj
-from ..base_transforms import SparseTransform
+from ..transform import SparseTransform
 from ..decorators import multiple
 from ..transform import Transform
 

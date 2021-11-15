@@ -1,7 +1,53 @@
 import numpy as np
 import scipy.sparse as sp
 
+from ..transform import SparseTransform
 from ..decorators import multiple
+from ..transform import Transform
+
+
+@Transform.register()
+class AddSelfLoop(SparseTransform):
+    """Add selfloops for adjacency matrix."""
+
+    def __call__(self, *adj_matrix):
+        """
+        Parameters
+        ----------
+        adj_matrix: Scipy matrix or Numpy array or a list of them 
+            Single or a list of Scipy sparse matrices or Numpy arrays.
+
+        Returns
+        -------
+        Single or a list of Scipy sparse matrix or Numpy matrices.
+
+        See also
+        ----------
+        graphgallery.functional.add_selfloops
+        """
+        return add_self_loop(*adj_matrix)
+
+
+@Transform.register()
+class RemoveSelfLoop(SparseTransform):
+    """Remove selfloops for adjacency matrix."""
+
+    def __call__(self, *adj_matrix):
+        """
+        Parameters
+        ----------
+        adj_matrix: Scipy matrix or Numpy array or a list of them 
+            Single or a list of Scipy sparse matrices or Numpy arrays.
+
+        Returns
+        -------
+        Single or a list of Scipy sparse matrix or Numpy matrices.
+
+        See also
+        ----------
+        graphgallery.functional.eliminate_selfloops
+        """
+        return remove_self_loop(*adj_matrix)
 
 
 @multiple()

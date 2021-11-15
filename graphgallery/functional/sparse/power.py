@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.sparse as sp
 
-from ..base_transforms import SparseTransform
+from ..transform import SparseTransform
 from ..decorators import multiple
 from ..transform import Transform
 
@@ -41,14 +41,13 @@ class AdjPower(SparseTransform):
 @multiple()
 def adj_power(adj_matrix: sp.csr_matrix, power=1):
     """Computing the power of adjacency matrix.
-    
+
     Parameters
     ----------
     power: int scalar, optional.
         power of the adjacency matrix.
     """
     res = adj_matrix
-    for _ in range(power-1):
+    for _ in range(power - 1):
         res = res @ adj_matrix
     return res
-    

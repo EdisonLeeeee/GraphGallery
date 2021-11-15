@@ -7,7 +7,7 @@ except ImportError:
 import warnings
 import numpy as np
 
-from ..base_transforms import GraphTransform
+from ..transform import GraphTransform
 from ..transform import Transform
 
 

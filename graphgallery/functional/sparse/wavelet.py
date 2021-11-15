@@ -3,7 +3,7 @@ import numpy as np
 
 from sklearn.preprocessing import normalize
 
-from ..base_transforms import SparseTransform
+from ..transform import SparseTransform
 from ..decorators import multiple
 from ..transform import Transform
 
