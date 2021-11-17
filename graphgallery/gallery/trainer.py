@@ -3,7 +3,6 @@ import inspect
 import numpy as np
 
 import torch
-import torch.nn as nn
 
 from torch import Tensor
 from typing import Optional, Union, Any, Callable, List
@@ -76,12 +75,6 @@ class Trainer:
         self._cache = gf.BunchDict()
         self.transform = gf.BunchDict()
 
-    @np.deprecate(old_name="make_data",
-                  message=("the method `trainer.make_data` is currently deprecated from 0.9.0,"
-                           " please use `trainer.setup_graph` instead."))
-    def make_data(self, *args, **kwargs):
-        return self.setup_graph(*args, **kwargs)
-
     def setup_graph(self, graph, graph_transform=None, device=None, **kwargs):
         """This method is used for process your inputs, which accepts
         only keyword arguments in your defined method 'data_step'.
@@ -89,7 +82,8 @@ class Trainer:
 
         Commonly used keyword arguments:
         --------------------------------
-        graph: graphgallery graph classes.
+        graph: graphgallery graph instance.
+            the input graph
         graph_transform: string, Callable function,
             or a tuple with function and dict arguments.
             transform for the entire graph, it is used first.
@@ -106,7 +100,7 @@ class Trainer:
 
         self.graph = gf.get(graph_transform)(graph)
         if device is not None:
-            self.data_device = gf.device(device, self.backend)
+            self.data_device = torch.device(device)
         else:
             self.data_device = self.device
         _, kwargs = gf.wrapper(self.data_step)(**kwargs)
@@ -128,7 +122,7 @@ class Trainer:
 
         Note:
         -----
-        This method should be called after `process`.
+        This method should be called after `setup_graph`.
 
         Commonly used keyword arguments:
         --------------------------------
@@ -359,7 +353,7 @@ class Trainer:
     def config_metrics(self) -> Callable:
         return Accuracy()
 
-    def config_callbacks(self, verbose, epochs, callbacks=None) -> Callback:
+    def config_callbacks(self, verbose, epochs, callbacks=None) -> CallbackList:
         callbacks = CallbackList(callbacks=callbacks, add_history=True, add_progbar=True if verbose else False)
         callbacks.set_model(self.model)
         callbacks.set_params(dict(verbose=verbose, epochs=epochs))

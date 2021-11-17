@@ -24,7 +24,7 @@ url = 'https://github.com/EdisonLeeeee/GraphGallery'
 
 
 install_requires = [
-    # Do not add pytorch here. User should install
+    # Do not add pytorch here. Users should install
     # pytorch themselves, preferrably by OS's package manager, or by
     # choosing the proper pypi package name at
     # pytorch: https://pytorch.org/
@@ -34,7 +34,6 @@ install_requires = [
     'numpy',
     'tabulate',
     'pandas',
-    'IPython',
     'scikit_learn>=0.21.0',
     'networkx>=2.3',
     'gensim>=3.8.0',
@@ -47,7 +46,7 @@ tests_require = ['pytest', 'pytest-cov']
 setup(
     name='graphgallery',
     version=VERSION,
-    description='A Gallery for Benchmarking Graph Neural Networks.',
+    description='A Graph-based Model Gallery for Benchmarking Graph Neural Networks.',
     author='Jintang Li',
     author_email='lijt55@mail2.sysu.edu.cn',
     long_description=open("README.md", encoding="utf-8").read(),
@@ -57,6 +56,7 @@ setup(
     keywords=[
         'pytorch',
         'benchmark',
+        'model-gallery',
         'geometric-deep-learning',
         'graph-neural-networks',
     ],

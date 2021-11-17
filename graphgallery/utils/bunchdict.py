@@ -40,7 +40,7 @@ class BunchDict(OrderedDict):
         table = tabulate(
             items, headers=table_headers, tablefmt="fancy_grid"
         )
-        return "Objects in BunchDict:\n" + table
+        return table
 
     __str__ = __repr__
 
