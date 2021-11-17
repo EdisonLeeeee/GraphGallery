@@ -1,1 +1,1 @@
-from .dropout import SparseDropout, MixedDropout
+from .dropout import SparseDropout, MixedDropout, DropEdge

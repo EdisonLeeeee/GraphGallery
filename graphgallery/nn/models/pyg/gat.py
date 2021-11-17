@@ -4,7 +4,7 @@ from torch_geometric.nn import GATConv
 
 from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.layers.pytorch import Sequential, activations
-from graphgallery.nn.metrics.pytorch import Accuracy
+from graphgallery.nn.metrics import Accuracy
 
 
 class GAT(TorchEngine):

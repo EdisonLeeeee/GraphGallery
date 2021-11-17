@@ -5,7 +5,7 @@ from torch import optim
 from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.models.pytorch.graphat.utils import *
 from graphgallery.nn.layers.pytorch import GCNConv, Sequential, activations
-from graphgallery.nn.metrics.pytorch import Accuracy
+from graphgallery.nn.metrics import Accuracy
 
 
 class GCNVAT(TorchEngine):

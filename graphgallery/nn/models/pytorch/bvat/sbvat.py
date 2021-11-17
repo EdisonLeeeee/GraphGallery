@@ -6,7 +6,7 @@ from torch import optim
 from graphgallery.nn.models.torch_engine import TorchEngine, to_device
 from graphgallery.nn.models.pytorch.bvat.utils import *
 from graphgallery.nn.layers.pytorch import GCNConv, Sequential, activations
-from graphgallery.nn.metrics.pytorch import Accuracy
+from graphgallery.nn.metrics import Accuracy
 
 
 class SBVAT(TorchEngine):

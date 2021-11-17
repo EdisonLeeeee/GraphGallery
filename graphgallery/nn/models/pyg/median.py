@@ -3,7 +3,7 @@ from torch import optim
 
 from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.layers.pytorch import Sequential, activations
-from graphgallery.nn.metrics.pytorch import Accuracy
+from graphgallery.nn.metrics import Accuracy
 from graphgallery.nn.layers.pyg import MedianConv
 
 

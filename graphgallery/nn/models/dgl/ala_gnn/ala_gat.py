@@ -5,7 +5,7 @@ from torch import optim
 
 from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.models.torch_engine import to_device
-from graphgallery.nn.metrics.pytorch import Accuracy
+from graphgallery.nn.metrics import Accuracy
 
 from graphgallery.nn.layers.dgl import GatedAttnLayer
 from dgl.nn.pytorch import GATConv

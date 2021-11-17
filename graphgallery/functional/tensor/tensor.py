@@ -20,7 +20,7 @@ _TYPE = {
 }
 
 
-def data_type_dict():
+def data_type_dict() -> dict:
     return _TYPE
 
 
@@ -36,14 +36,14 @@ def is_dense(x: Any) -> bool:
     return is_tensor(x) and not x.is_sparse
 
 
-def astensor(x, *, dtype=None, device=None, escape=None):
+def astensor(x, *, dtype=None, device=None, escape=None) -> torch.Tensor:
 
     try:
         if x is None or (escape is not None and isinstance(x, escape)):
             return x
     except TypeError:
         raise TypeError(f"argument 'escape' must be a type or tuple of types.")
-
+    device = torch.device(device) if device is not None else torch.device("cpu")
     # update: accept `dict` instance
     if isinstance(x, dict):
         for k, v in x.items():
@@ -68,15 +68,15 @@ def astensor(x, *, dtype=None, device=None, escape=None):
     elif sp.isspmatrix(x):
         if gg.backend() == "dgl":
             import dgl
-            tensor = dgl.from_scipy(x, idtype=getattr(torch, gg.intx()))
+            tensor = dgl.from_scipy(x, idtype=torch.int64)
         elif gg.backend() == "pyg":
             edge_index, edge_weight = gf.sparse_adj_to_edge(x)
             return (astensor(edge_index,
-                             dtype=gg.intx(),
+                             dtype=torch.int64,
                              device=device,
                              escape=escape),
                     astensor(edge_weight,
-                             dtype=gg.floatx(),
+                             dtype=torch.float32,
                              device=device,
                              escape=escape))
         else:
@@ -100,7 +100,7 @@ def astensors(*xs, dtype=None, device=None, escape=None):
     dtype: The type of Tensor 'x', if not specified,
         it will automatically use appropriate data type.
         See 'graphgallery.infer_type'.
-    device: tf.device, optional. the desired device of returned tensor.
+    device: torch.device, optional. the desired device of returned tensor.
         Default: if 'None', uses the CPU device for the default tensor type.     
     escape: a Class or a tuple of Classes, `astensor` will disabled if
         `isinstance(x, escape)`.
@@ -109,7 +109,7 @@ def astensors(*xs, dtype=None, device=None, escape=None):
     -------     
     Tensor(s) or SparseTensor(s) with dtype. 
     """
-    device = gf.device(device)
+    device = torch.device(device) if device is not None else torch.device("cpu")
     return _astensors_fn(*xs,
                          dtype=dtype,
                          device=device,
@@ -130,7 +130,7 @@ def tensoras(tensor):
         if m.ndim == 0:
             m = m.item()
     elif is_sparse(tensor):
-        m = sparse_tensor_to_sparse_adj(tensor)
+        m = gf.sparse_tensor_to_sparse_adj(tensor)
     elif isinstance(tensor, np.ndarray) or sp.isspmatrix(tensor):
         m = tensor.copy()
     else:

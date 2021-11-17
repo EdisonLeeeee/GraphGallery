@@ -2,17 +2,18 @@ import torch
 import torch.nn as nn
 from torch import optim
 
-from graphgallery.nn.metrics.pytorch import Accuracy
+from graphgallery.nn.metrics import Accuracy
 from graphgallery.nn.layers.pytorch import activations, GraphEigenConv, Sequential
 
 from .base_sat import BaseSAT
+
 
 class GCN(BaseSAT):
     def __init__(self,
                  in_features,
                  out_features,
-                 alpha=None, # unused
-                 K=None, # unused
+                 alpha=None,  # unused
+                 K=None,  # unused
                  eps_U=0.3,
                  eps_V=1.2,
                  lamb_U=0.8,
@@ -25,18 +26,18 @@ class GCN(BaseSAT):
                  bias=False):
 
         super().__init__()
-        
+
         conv = []
         conv.append(nn.Dropout(dropout))
 
         for hid, act in zip(hids, acts):
             conv.append(GraphEigenConv(in_features,
-                                      hid,
-                                      bias=bias))
+                                       hid,
+                                       bias=bias))
             conv.append(activations.get(act))
             conv.append(nn.Dropout(dropout))
             in_features = hid
-            
+
         conv.append(GraphEigenConv(in_features, out_features, bias=bias))
         conv = Sequential(*conv)
 
@@ -61,4 +62,3 @@ class GCN(BaseSAT):
         """
         x = self.conv(x, U, V)
         return x
-

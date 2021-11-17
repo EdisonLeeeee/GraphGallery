@@ -2,7 +2,7 @@ import torch.nn as nn
 from torch import optim
 
 from graphgallery.nn.models import TorchEngine
-from graphgallery.nn.metrics.pytorch import Accuracy
+from graphgallery.nn.metrics import Accuracy
 
 from torch_geometric.nn import SGConv
 

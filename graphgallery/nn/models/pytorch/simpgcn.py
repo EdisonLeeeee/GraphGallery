@@ -6,7 +6,7 @@ from torch import optim
 
 from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.layers.pytorch import GCNConv, activations
-from graphgallery.nn.metrics.pytorch import Accuracy
+from graphgallery.nn.metrics import Accuracy
 from graphgallery.nn.init import glorot_uniform, zeros
 
 

@@ -3,7 +3,7 @@ import torch.nn as nn
 from torch import optim
 
 from graphgallery.nn.layers.pytorch import Sequential, activations, InnerProductDecoder
-from graphgallery.nn.metrics.pytorch import AveragePrecision, AUC
+from graphgallery.nn.metrics import AveragePrecision, AUC
 from graphgallery.nn.losses import BCELoss
 
 from torch_geometric.nn import GCNConv

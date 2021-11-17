@@ -4,7 +4,7 @@ from torch import optim
 
 from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.layers.pytorch import GaussionConvF, GaussionConvD, activations
-from graphgallery.nn.metrics.pytorch import Accuracy
+from graphgallery.nn.metrics import Accuracy
 
 
 class RobustGCN(TorchEngine):
