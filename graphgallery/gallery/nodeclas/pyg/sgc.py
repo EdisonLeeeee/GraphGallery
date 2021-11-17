@@ -22,10 +22,10 @@ class SGC(Trainer):
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
         attr_matrix = gf.get(attr_transform)(graph.attr_matrix)
 
-        X, E = gf.astensors(attr_matrix, adj_matrix, device=self.data_device)
+        feat, edges = gf.astensors(attr_matrix, adj_matrix, device=self.data_device)
 
-        # ``E`` and ``X`` are cached for later use
-        self.register_cache(X=X, E=E)
+        # ``edges`` and ``feat`` are cached for later use
+        self.register_cache(feat=feat, edges=edges)
 
     def model_step(self,
                    hids=[],
@@ -51,7 +51,7 @@ class SGC(Trainer):
     def train_loader(self, index):
 
         labels = self.graph.label[index]
-        sequence = FullBatchSequence([self.cache.X, *self.cache.E],
+        sequence = FullBatchSequence([self.cache.feat, *self.cache.edges],
                                      labels,
                                      out_index=index,
                                      device=self.data_device)

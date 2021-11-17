@@ -2,12 +2,11 @@ import torch
 import torch.nn as nn
 from torch import optim
 
-from graphgallery.nn.models.torch_engine import TorchEngine, to_device
 from graphgallery.nn.layers.pytorch import GCNConv, Sequential, activations
 from graphgallery.nn.metrics import Accuracy
 
 
-class LATGCN(TorchEngine):
+class LATGCN(nn.Module):
     def __init__(self,
                  in_features,
                  out_features,

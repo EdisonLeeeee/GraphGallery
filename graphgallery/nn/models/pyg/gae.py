@@ -7,10 +7,9 @@ from graphgallery.nn.metrics import AveragePrecision, AUC
 from graphgallery.nn.losses import BCELoss
 
 from torch_geometric.nn import GCNConv
-from graphgallery.nn.models import TorchEngine
 
 
-class GAE(TorchEngine):
+class GAE(nn.Module):
     def __init__(self,
                  in_features, *,
                  out_features=16,
@@ -57,7 +56,7 @@ class GAE(TorchEngine):
         return loss
 
 
-class VGAE(TorchEngine):
+class VGAE(nn.Module):
     def __init__(self,
                  in_features, *,
                  out_features=16,

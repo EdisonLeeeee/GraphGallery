@@ -6,26 +6,28 @@ from .metric import Metric
 class Accuracy(Metric):
     """Calculates how often predictions equal labels.
 
-      This metric creates two local variables, `total` and `count` that are used to
-      compute the frequency with which `y_pred` matches `y_true`. This frequency is
-      ultimately returned as `binary accuracy`: an idempotent operation that simply
-      divides `total` by `count`.
+    This metric creates two local variables, `total` and `count` that are used to
+    compute the frequency with which `y_pred` matches `y_true`. This frequency is
+    ultimately returned as `binary accuracy`: an idempotent operation that simply
+    divides `total` by `count`.
 
-      If `sample_weight` is `None`, weights default to 1.
-      Use `sample_weight` of 0 to mask values.
+    If `sample_weight` is `None`, weights default to 1.
+    Use `sample_weight` of 0 to mask values.
 
-      Standalone usage:
+    Example
+    -------
 
-      >>> m = gg.nn.metrics.Accuracy()
-      >>> m.update_state(torch.tensor([1, 2, 3, 4]), torch.tensor([0, 2, 3, 4]))
-      >>> m.result()
-      0.75
+    >>> import graphgallery as gg
+    >>> m = gg.nn.metrics.Accuracy()
+    >>> m.update_state(torch.tensor([1, 2, 3, 4]), torch.tensor([0, 2, 3, 4]))
+    >>> m.result()
+    0.75
 
-      >>> m.reset_state()
-      >>> m.update_state(torch.tensor([1, 2, 3, 4]), torch.tensor([0, 2, 3, 4]),
-      ...                sample_weight=torch.tensor([1, 1, 0, 0]))
-      >>> m.result()
-      0.5
+    >>> m.reset_state()
+    >>> m.update_state(torch.tensor([1, 2, 3, 4]), torch.tensor([0, 2, 3, 4]),
+    ...                sample_weight=torch.tensor([1, 1, 0, 0]))
+    >>> m.result()
+    0.5
     """
 
     def __init__(self, name="accuracy", reduction="mean", **kwargs):
@@ -60,7 +62,8 @@ class Accuracy(Metric):
         self.correct = torch.tensor(0)
 
     def result(self):
-        if self.total == 0: return None
+        if self.total == 0:
+            return None
         if self.reduction == 'mean':
             return self.correct.float() / self.total
         elif self.reduction == 'sum':

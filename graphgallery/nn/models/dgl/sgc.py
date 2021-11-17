@@ -1,13 +1,8 @@
 import torch.nn as nn
-from torch import optim
-
-from graphgallery.nn.models import TorchEngine
-from graphgallery.nn.metrics import Accuracy
-
 from dgl.nn.pytorch.conv import SGConv
 
 
-class SGC(TorchEngine):
+class SGC(nn.Module):
     def __init__(self,
                  in_features,
                  out_features,
@@ -15,8 +10,6 @@ class SGC(TorchEngine):
                  acts=[],
                  K=2,
                  dropout=0.,
-                 weight_decay=5e-5,
-                 lr=0.2,
                  bias=True):
         super().__init__()
 
@@ -32,11 +25,6 @@ class SGC(TorchEngine):
                       cached=True)
         self.dropout = nn.Dropout(dropout)
         self.conv = conv
-        self.compile(loss=nn.CrossEntropyLoss(),
-                     optimizer=optim.Adam(conv.parameters(),
-                                          lr=lr,
-                                          weight_decay=weight_decay),
-                     metrics=[Accuracy()])
 
     def reset_parameters(self):
         self.conv.reset_parameters()
@@ -45,3 +33,7 @@ class SGC(TorchEngine):
         x = self.dropout(x)
         x = self.conv(g, x)
         return x
+
+    def cache_clear(self):
+        self.conv._cached_h = None
+        return self

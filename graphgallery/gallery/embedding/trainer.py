@@ -24,7 +24,7 @@ class Trainer(Model):
         self.fit_step(graph, *args, **kwargs)
         return self
 
-    def get_embedding(self, normalize=True) -> np.array:
+    def get_embedding(self, normalize=True) -> np.ndarray:
         """Getting the node embedding."""
         embedding = self._embedding
         if normalize:

@@ -4,13 +4,12 @@ import torch.nn.functional as F
 import torch.nn as nn
 from torch import optim
 
-from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.layers.pytorch import GCNConv, activations
 from graphgallery.nn.metrics import Accuracy
 from graphgallery.nn.init import glorot_uniform, zeros
 
 
-class SimPGCN(TorchEngine):
+class SimPGCN(nn.Module):
     def __init__(self,
                  in_features,
                  out_features,

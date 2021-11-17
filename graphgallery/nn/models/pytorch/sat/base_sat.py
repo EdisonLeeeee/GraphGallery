@@ -1,8 +1,7 @@
 import torch
-from graphgallery.nn.models.torch_engine import TorchEngine, to_device
 
 
-class BaseSAT(TorchEngine):
+class BaseSAT(torch.nn.Module):
     def train_step_on_batch(self,
                             x,
                             y,

@@ -2,7 +2,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch import optim
 
-from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.layers.pytorch import Sequential, activations
 from graphgallery.nn.metrics import Accuracy
 
@@ -10,7 +9,7 @@ from torch_geometric.nn import GCNConv
 from torch_geometric.utils import dropout_adj
 
 
-class GCN(TorchEngine):
+class GCN(nn.Module):
     def __init__(self,
                  in_features,
                  out_features,
@@ -53,7 +52,7 @@ class GCN(TorchEngine):
         return self.conv(x, edge_index, edge_weight)
 
 
-class DropEdge(TorchEngine):
+class DropEdge(nn.Module):
     def __init__(self,
                  in_features,
                  out_features,
@@ -100,7 +99,7 @@ class DropEdge(TorchEngine):
         return self.conv(x, edge_index, edge_weight)
 
 
-class RDrop(TorchEngine):
+class RDrop(nn.Module):
     def __init__(self,
                  in_features,
                  out_features,

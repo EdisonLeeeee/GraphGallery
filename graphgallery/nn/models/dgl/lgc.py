@@ -1,12 +1,8 @@
 import torch.nn as nn
-from torch import optim
-
-from graphgallery.nn.models import TorchEngine
-from graphgallery.nn.metrics import Accuracy
 from graphgallery.nn.layers.dgl import LGConv, EGConv, hLGConv
 
 
-class LGC(TorchEngine):
+class LGC(nn.Module):
     def __init__(self,
                  in_features,
                  out_features,
@@ -14,8 +10,6 @@ class LGC(TorchEngine):
                  acts=[],
                  K=20,
                  dropout=0.0,
-                 weight_decay=5e-5,
-                 lr=0.2,
                  bias=True):
         super().__init__()
 
@@ -30,11 +24,6 @@ class LGC(TorchEngine):
                       cached=True)
         self.dropout = nn.Dropout(dropout)
         self.conv = conv
-        self.compile(loss=nn.CrossEntropyLoss(),
-                     optimizer=optim.Adam(conv.parameters(),
-                                          lr=lr,
-                                          weight_decay=weight_decay),
-                     metrics=[Accuracy()])
 
     def reset_parameters(self):
         self.conv.reset_parameters()
@@ -45,7 +34,7 @@ class LGC(TorchEngine):
         return x
 
 
-class EGC(TorchEngine):
+class EGC(nn.Module):
     def __init__(self,
                  in_features,
                  out_features,
@@ -53,8 +42,6 @@ class EGC(TorchEngine):
                  acts=[],
                  K=20,
                  dropout=0.0,
-                 weight_decay=5e-5,
-                 lr=0.2,
                  bias=True):
         super().__init__()
 
@@ -69,11 +56,6 @@ class EGC(TorchEngine):
                       cached=True)
         self.dropout = nn.Dropout(dropout)
         self.conv = conv
-        self.compile(loss=nn.CrossEntropyLoss(),
-                     optimizer=optim.Adam(conv.parameters(),
-                                          lr=lr,
-                                          weight_decay=weight_decay),
-                     metrics=[Accuracy()])
 
     def reset_parameters(self):
         self.conv.reset_parameters()
@@ -84,7 +66,7 @@ class EGC(TorchEngine):
         return x
 
 
-class hLGC(TorchEngine):
+class hLGC(nn.Module):
     def __init__(self,
                  in_features,
                  out_features,
@@ -92,8 +74,6 @@ class hLGC(TorchEngine):
                  acts=[],
                  K=20,
                  dropout=0.0,
-                 weight_decay=5e-5,
-                 lr=0.2,
                  bias=True):
         super().__init__()
 
@@ -108,11 +88,6 @@ class hLGC(TorchEngine):
                        cached=True)
         self.dropout = nn.Dropout(dropout)
         self.conv = conv
-        self.compile(loss=nn.CrossEntropyLoss(),
-                     optimizer=optim.Adam(conv.parameters(),
-                                          lr=lr,
-                                          weight_decay=weight_decay),
-                     metrics=[Accuracy()])
 
     def reset_parameters(self):
         self.conv.reset_parameters()

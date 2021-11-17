@@ -1,11 +1,10 @@
 import torch.nn as nn
 from torch import optim
-from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.layers.pytorch import PairNorm
 from graphgallery.nn.metrics import Accuracy
 
 
-class SGC_PN(TorchEngine):
+class SGC_PN(nn.Module):
     """PairNorm: Tackling Oversmoothing in GNNs
     <https://openreview.net/forum?id=rkecl1rtwB>
     ICLR 2020"""

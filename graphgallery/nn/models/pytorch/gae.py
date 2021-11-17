@@ -5,12 +5,11 @@ from torch import optim
 from graphgallery.nn.layers.pytorch import GCNConv, Sequential, activations, InnerProductDecoder
 from graphgallery.nn.metrics import AveragePrecision, AUC
 from graphgallery.nn.losses import BCELoss
-from graphgallery.nn.models import TorchEngine
 
 from graphgallery.functional.torch_utils import negative_sampling
 
 
-class GAE(TorchEngine):
+class GAE(nn.Module):
     def __init__(self,
                  in_features,
                  *,
@@ -52,7 +51,7 @@ class GAE(TorchEngine):
         return loss
 
 
-class VGAE(TorchEngine):
+class VGAE(nn.Module):
     def __init__(self,
                  in_features,
                  *,

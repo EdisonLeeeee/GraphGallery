@@ -1,6 +1,4 @@
-from .torch_engine import TorchEngine
-
-__all__ = ["TorchEngine", "get_model"]
+__all__ = ["get_model"]
 
 import importlib
 import graphgallery as gg

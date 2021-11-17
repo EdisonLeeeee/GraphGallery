@@ -1,13 +1,12 @@
 import torch.nn as nn
 from torch import optim
 
-from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.layers.pytorch import Sequential, activations
 from graphgallery.nn.metrics import Accuracy
 from graphgallery.nn.layers.pyg import MedianConv
 
 
-class MedianGCN(TorchEngine):
+class MedianGCN(nn.Module):
     def __init__(self,
                  in_features,
                  out_features,

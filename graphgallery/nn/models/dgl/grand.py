@@ -1,13 +1,9 @@
 import torch
-import numpy as np
 import dgl.function as fn
 
 import torch.nn as nn
-from torch import optim
 
-from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.layers.pytorch import activations
-from graphgallery.nn.metrics import Accuracy
 
 
 def drop_node(feats, drop_rate, training):
@@ -59,7 +55,7 @@ def GRANDConv(graph, feats, order):
     return y / (order + 1)
 
 
-class GRAND(TorchEngine):
+class GRAND(nn.Module):
     def __init__(self,
                  in_features,
                  out_features,
@@ -70,8 +66,6 @@ class GRAND(TorchEngine):
                  K=4,
                  temp=0.5,
                  lam=1.,
-                 weight_decay=5e-4,
-                 lr=0.01,
                  bias=False,
                  bn=False):
 
@@ -91,11 +85,7 @@ class GRAND(TorchEngine):
             mlp.append(nn.BatchNorm1d(in_features))
         mlp.append(nn.Linear(in_features, out_features, bias=bias))
         self.mlp = mlp = nn.Sequential(*mlp)
-        self.compile(loss=nn.CrossEntropyLoss(),
-                     optimizer=optim.Adam(mlp.parameters(),
-                                          weight_decay=weight_decay, lr=lr),
-                     metrics=[Accuracy()])
-        self.S = S
+
         self.K = K
         self.temp = temp
         self.lam = lam

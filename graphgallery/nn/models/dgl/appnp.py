@@ -1,14 +1,9 @@
 import torch.nn as nn
-from torch import optim
-
-from graphgallery.nn.models import TorchEngine
-from graphgallery.nn.metrics import Accuracy
 from graphgallery.nn.layers.pytorch import activations
-
 from dgl.nn.pytorch import APPNPConv
 
 
-class APPNP(TorchEngine):
+class APPNP(nn.Module):
     def __init__(self,
                  in_features,
                  out_features,
@@ -19,8 +14,6 @@ class APPNP(TorchEngine):
                  hids=[64],
                  acts=['relu'],
                  dropout=0.5,
-                 weight_decay=5e-4,
-                 lr=0.01,
                  bias=True):
 
         super().__init__()
@@ -38,14 +31,11 @@ class APPNP(TorchEngine):
         lin = nn.Sequential(*lin)
         self.lin = lin
         self.propagation = APPNPConv(K, alpha, ppr_dropout)
-        self.compile(loss=nn.CrossEntropyLoss(),
-                     optimizer=optim.Adam(self.parameters(),
-                                          weight_decay=weight_decay, lr=lr),
-                     metrics=[Accuracy()])
 
     def reset_parameters(self):
         for lin in self.lin:
-            lin.reset_parameters()
+            if hasattr(lin, "reset_parameters"):
+                lin.reset_parameters()
 
     def forward(self, x, g):
         x = self.lin(x)

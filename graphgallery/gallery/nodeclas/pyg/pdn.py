@@ -25,11 +25,11 @@ class PDN(Trainer):
         attr_matrix = gf.get(attr_transform)(graph.attr_matrix)
         edge_attr = gf.get(edge_attr_transform)(graph.edge_attr)
 
-        X, edge_index, edge_x = gf.astensors(attr_matrix,
-                                             edge_index,
-                                             edge_attr,
-                                             device=self.data_device)
-        self.register_cache(X=X, edge_index=edge_index, edge_x=edge_x)
+        feat, edge_index, edge_x = gf.astensors(attr_matrix,
+                                                edge_index,
+                                                edge_attr,
+                                                device=self.data_device)
+        self.register_cache(feat=feat, edge_index=edge_index, edge_x=edge_x)
 
     def model_step(self,
                    hids=[32],
@@ -57,7 +57,7 @@ class PDN(Trainer):
     def train_loader(self, index):
 
         labels = self.graph.label[index]
-        sequence = FullBatchSequence([self.cache.X,
+        sequence = FullBatchSequence([self.cache.feat,
                                       self.cache.edge_index,
                                       self.cache.edge_x],
                                      labels,

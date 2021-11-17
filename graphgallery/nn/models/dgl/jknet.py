@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 from torch import optim
 
-from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.metrics import Accuracy
 from graphgallery.nn.layers.pytorch import activations
 
@@ -10,13 +9,16 @@ import dgl.function as fn
 from dgl.nn.pytorch.conv import GraphConv
 
 
-class JKNet(TorchEngine):
+class JKNet(nn.Module):
     def __init__(self,
                  in_features, out_features, *,
-                 hids=[16] * 5, acts=['relu'] * 5,
+                 hids=[16] * 5,
+                 acts=['relu'] * 5,
                  mode='cat',
-                 dropout=0.5, weight_decay=5e-4,
-                 lr=0.005, bias=True):
+                 dropout=0.5,
+                 weight_decay=5e-4,
+                 lr=0.005,
+                 bias=True):
         super().__init__()
         self.mode = mode
         num_JK_layers = len(list(hids)) - 1  # number of JK layers
@@ -51,30 +53,33 @@ class JKNet(TorchEngine):
     def reset_parameters(self):
         for conv in self.conv:
             conv.reset_parameters()
+
         if self.mode == 'lstm':
             self.lstm.reset_parameters()
             self.attn.reset_parameters()
         self.output.reset_parameters()
 
     def forward(self, feats, g):
-        feat_lst = []
-        for conv in self.conv:
-            feats = self.dropout(conv(g, feats))
-            feat_lst.append(feats)
+        with g.local_scope():
 
-        if self.mode == 'cat':
-            out = torch.cat(feat_lst, dim=-1)
-        elif self.mode == 'max':
-            out = torch.stack(feat_lst, dim=-1).max(dim=-1)[0]
-        else:
-            # lstm
-            x = torch.stack(feat_lst, dim=1)
-            alpha, _ = self.lstm(x)
-            alpha = self.attn(alpha).squeeze(-1)
-            alpha = torch.softmax(alpha, dim=-1).unsqueeze(-1)
-            out = (x * alpha).sum(dim=1)
+            feat_lst = []
+            for conv in self.conv:
+                feats = self.dropout(conv(g, feats))
+                feat_lst.append(feats)
 
-        g.ndata['h'] = out
-        g.update_all(fn.copy_u('h', 'm'), fn.sum('m', 'h'))
+            if self.mode == 'cat':
+                out = torch.cat(feat_lst, dim=-1)
+            elif self.mode == 'max':
+                out = torch.stack(feat_lst, dim=-1).max(dim=-1)[0]
+            else:
+                # lstm
+                x = torch.stack(feat_lst, dim=1)
+                alpha, _ = self.lstm(x)
+                alpha = self.attn(alpha).squeeze(-1)
+                alpha = torch.softmax(alpha, dim=-1).unsqueeze(-1)
+                out = (x * alpha).sum(dim=1)
 
-        return self.output(g.ndata['h'])
+            g.ndata['h'] = out
+            g.update_all(fn.copy_u('h', 'm'), fn.sum('m', 'h'))
+
+            return self.output(g.ndata['h'])

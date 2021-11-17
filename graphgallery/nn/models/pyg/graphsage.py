@@ -2,13 +2,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch import optim
 
-from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.layers.pytorch import activations
 from graphgallery.nn.metrics import Accuracy
 from torch_geometric.nn import SAGEConv
 
 
-class GraphSAGE(TorchEngine):
+class GraphSAGE(nn.Module):
     def __init__(self, in_features, out_features,
                  hids=[32], acts=['relu'], dropout=0.5,
                  weight_decay=5e-4, lr=0.01, bias=False,

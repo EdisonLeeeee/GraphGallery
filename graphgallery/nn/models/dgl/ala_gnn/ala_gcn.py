@@ -3,14 +3,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch import optim
 
-from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.metrics import Accuracy
 from graphgallery.nn.layers.dgl import GatedLayer
 
 from dgl.nn.pytorch import GraphConv
 
 
-class ALaGCN(TorchEngine):
+class ALaGCN(nn.Module):
     def __init__(
         self,
         in_features,

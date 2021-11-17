@@ -1,14 +1,13 @@
 import torch.nn as nn
 from torch import optim
 
-from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.layers.pytorch import Sequential, activations
 from graphgallery.nn.metrics import Accuracy
 
 from dgl.nn.pytorch import GATConv
 
 
-class GAT(TorchEngine):
+class GAT(nn.Module):
     def __init__(self,
                  in_features,
                  out_features,
@@ -16,9 +15,7 @@ class GAT(TorchEngine):
                  num_heads=[8],
                  acts=['elu'],
                  dropout=0.6,
-                 bias=False,
-                 weight_decay=5e-4,
-                 lr=0.01):
+                 bias=False):
 
         super().__init__()
         head = 1

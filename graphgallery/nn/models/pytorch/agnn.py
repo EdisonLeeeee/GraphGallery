@@ -1,12 +1,11 @@
 import torch.nn as nn
 from torch import optim
 
-from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.layers.pytorch import Sequential, activations, AGNNConv
 from graphgallery.nn.metrics import Accuracy
 
 
-class AGNN(TorchEngine):
+class AGNN(nn.Module):
 
     def __init__(self,
                  in_features,

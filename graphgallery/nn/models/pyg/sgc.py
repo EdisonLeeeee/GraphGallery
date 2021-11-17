@@ -1,22 +1,17 @@
 import torch.nn as nn
 from torch import optim
 
-from graphgallery.nn.models import TorchEngine
-from graphgallery.nn.metrics import Accuracy
-
 from torch_geometric.nn import SGConv
 
 
-class SGC(TorchEngine):
+class SGC(nn.Module):
     def __init__(self,
                  in_features,
                  out_features,
                  hids=[],
                  acts=[],
                  K=2,
-                 dropout=None,
-                 weight_decay=5e-5,
-                 lr=0.2,
+                 dropout=0.,
                  bias=False):
         super().__init__()
 
@@ -33,12 +28,13 @@ class SGC(TorchEngine):
                       cached=True,
                       add_self_loops=True)
         self.conv = conv
-        self.compile(loss=nn.CrossEntropyLoss(),
-                     optimizer=optim.Adam(conv.parameters(),
-                                          lr=lr,
-                                          weight_decay=weight_decay),
-                     metrics=[Accuracy()])
+        self.dropout = nn.Dropout(dropout)
 
     def forward(self, x, edge_index, edge_weight=None):
+        x = self.dropout(x)
         x = self.conv(x, edge_index, edge_weight)
         return x
+
+    def cache_clear(self):
+        self.conv._cached_x = None
+        return self
