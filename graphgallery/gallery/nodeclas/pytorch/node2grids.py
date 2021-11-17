@@ -1,8 +1,9 @@
+import torch
+import graphgallery.nn.models.pytorch as models
 from graphgallery.data.sequence import FeatureLabelSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
 from graphgallery.gallery import Trainer
-from graphgallery.nn.models import get_model
 from graphgallery.functional.graph_level import Node2GridsMapper
 
 
@@ -16,13 +17,6 @@ class Node2Grids(Trainer):
 
     """
 
-    def custom_setup(self,
-                     batch_size_train=8,
-                     batch_size_test=1000):
-
-        self.cfg.fit.batch_size = batch_size_train
-        self.cfg.evaluate.batch_size = batch_size_test
-
     def data_step(self,
                   adj_transform=None,
                   attr_transform=None,
@@ -35,7 +29,6 @@ class Node2Grids(Trainer):
         attr_matrix = gf.get(attr_transform)(graph.attr_matrix)
         mapper = Node2GridsMapper(adj_matrix, attr_matrix, biasfactor=biasfactor,
                                   mapsize_a=mapsize_a, mapsize_b=mapsize_b)
-
         self.register_cache(mapper=mapper, mapsize_a=mapsize_a, mapsize_b=mapsize_b)
 
     def model_step(self,
@@ -44,35 +37,85 @@ class Node2Grids(Trainer):
                    dropout=0.6,
                    attnum=10,
                    conv_channel=64,
-                   weight_decay=0.00015,
-                   att_reg=0.07,
-                   lr=0.008,
                    bias=True):
 
         cache = self.cache
-        model = get_model("Node2GridsCNN", self.backend)
-        model = model(self.graph.num_feats,
-                      self.graph.num_classes,
-                      cache.mapsize_a, cache.mapsize_b,
-                      hids=hids,
-                      acts=acts,
-                      conv_channel=conv_channel,
-                      dropout=dropout,
-                      att_reg=att_reg,
-                      attnum=attnum,
-                      bias=bias,
-                      weight_decay=weight_decay,
-                      lr=lr)
+        model = models.Node2GridsCNN(self.graph.num_feats,
+                                     self.graph.num_classes,
+                                     cache.mapsize_a, cache.mapsize_b,
+                                     hids=hids,
+                                     acts=acts,
+                                     conv_channel=conv_channel,
+                                     dropout=dropout,
+                                     attnum=attnum,
+                                     bias=bias)
         return model
 
-    def train_loader(self, index):
+    def train_step(self, dataloader) -> dict:
+        """One-step training on the input dataloader.
+
+        Parameters
+        ----------
+        dataloader : DataLoader
+            the trianing dataloader
+
+        Returns
+        -------
+        dict
+            the output logs, including `loss` and `val_accuracy`, etc.
+        """
+        optimizer = self.optimizer
+        loss_fn = self.loss
+        model = self.model
+
+        optimizer.zero_grad()
+        self.reset_metrics()
+        model.train()
+
+        att_reg = self.cfg.get("att_reg", 0.07)
+
+        for epoch, batch in enumerate(dataloader):
+            self.callbacks.on_train_batch_begin(epoch)
+            x, y, out_index = self.unravel_batch(batch)
+            x = self.to_device(x)
+            y = self.to_device(y)
+            if not isinstance(x, tuple):
+                x = x,
+            out = model(*x)
+            if out_index is not None:
+                out = out[out_index]
+            loss = loss_fn(out, y) + att_reg * torch.sum(model.attention.view(-1).square())
+            # here I exactly follow the author's implementation in
+            # <https://github.com/Ray-inthebox/Node2Gridss>
+            # But what is it????
+            loss.backward(loss)
+            optimizer.step()
+            for metric in self.metrics:
+                metric.update_state(y.cpu(), out.detach().cpu())
+            self.callbacks.on_train_batch_end(epoch)
+
+        metrics = [metric.result() for metric in self.metrics]
+        results = [loss.cpu().item()] + metrics
+
+        return dict(zip(self.metrics_names, results))
+
+    def config_train_data(self, index):
+        batch_size_train = self.cfg.get("batch_size_train", 8)
         labels = self.graph.label[index]
         node_grids = self.cache.mapper.map_node(index).transpose((0, 3, 1, 2))
-        sequence = FeatureLabelSequence(node_grids, labels, device=self.data_device, batch_size=self.cfg.fit.batch_size, shuffle=False)
+        sequence = FeatureLabelSequence(node_grids, labels, device=self.data_device, batch_size=batch_size_train, shuffle=False)
         return sequence
 
-    def test_loader(self, index):
+    def config_test_data(self, index):
+        batch_size_test = self.cfg.get("batch_size_test", 1000)
         labels = self.graph.label[index]
         node_grids = self.cache.mapper.map_node(index).transpose((0, 3, 1, 2))
-        sequence = FeatureLabelSequence(node_grids, labels, device=self.data_device, batch_size=self.cfg.evaluate.batch_size)
+        sequence = FeatureLabelSequence(node_grids, labels, device=self.data_device, batch_size=batch_size_test)
         return sequence
+
+    def config_optimizer(self) -> torch.optim.Optimizer:
+        lr = self.cfg.get('lr', 0.008)
+        weight_decay = self.cfg.get('weight_decay', 0.00015)
+        model = self.model
+        return torch.optim.RMSprop(model.parameters(),
+                                   weight_decay=weight_decay, lr=lr)

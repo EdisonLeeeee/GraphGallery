@@ -1,13 +1,9 @@
 import torch
 import torch.nn as nn
-from torch import optim
-
-from graphgallery.nn.models import TorchEngine
-from graphgallery.nn.metrics.pytorch import Accuracy
 from graphgallery.nn.layers.pytorch import activations
 
 
-class Node2GridsCNN(TorchEngine):
+class Node2GridsCNN(nn.Module):
     def __init__(self,
                  in_features,
                  out_features,
@@ -18,9 +14,6 @@ class Node2GridsCNN(TorchEngine):
                  acts=['relu6'],
                  attnum=10,
                  dropout=0.6,
-                 weight_decay=0.00015,
-                 att_reg=0.07,
-                 lr=0.008,
                  bias=True):
 
         super().__init__()
@@ -45,11 +38,6 @@ class Node2GridsCNN(TorchEngine):
 
         self.lin = nn.Sequential(*lin)
         self.attention = nn.Parameter(torch.ones(attnum, mapsize_a - 1, mapsize_b))
-        self.att_reg = att_reg
-        self.compile(loss=nn.CrossEntropyLoss(),
-                     optimizer=optim.RMSprop(self.parameters(),
-                                             weight_decay=weight_decay, lr=lr),
-                     metrics=[Accuracy()])
 
     def forward(self, x):
         attention = torch.sum(self.attention, dim=0) / self.attention.size(0)
@@ -58,17 +46,3 @@ class Node2GridsCNN(TorchEngine):
         x = x.view(x.size(0), -1)
         out = self.lin(x)
         return out
-
-    def compute_loss(self, output_dict, y):
-        pred = output_dict['pred']
-        loss = self.loss(pred, y)
-        if self.training:
-            attention = self.attention.view(-1)
-            loss += self.att_reg * torch.sum(attention ** 2)
-        return loss
-
-    def loss_backward(self, loss):
-        # here I exactly follow the author's implementation in
-        # <https://github.com/Ray-inthebox/Node2Gridss>
-        # But what is it????
-        loss.backward(loss)

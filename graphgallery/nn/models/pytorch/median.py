@@ -1,20 +1,14 @@
 import torch.nn as nn
-from torch import optim
-
-from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.layers.pytorch import TrimmedConv, MedianConv, Sequential, activations
-from graphgallery.nn.metrics.pytorch import Accuracy
 
 
-class MedianGCN(TorchEngine):
+class MedianGCN(nn.Module):
     def __init__(self,
                  in_features,
                  out_features,
                  hids=[16],
                  acts=['relu'],
                  dropout=0.5,
-                 weight_decay=5e-4,
-                 lr=0.01,
                  bias=False):
 
         super().__init__()
@@ -31,18 +25,14 @@ class MedianGCN(TorchEngine):
         conv = Sequential(*conv)
 
         self.conv = conv
-        self.compile(loss=nn.CrossEntropyLoss(),
-                     optimizer=optim.Adam([dict(params=conv[1].parameters(),
-                                                weight_decay=weight_decay),
-                                           dict(params=conv[2:].parameters(),
-                                                weight_decay=0.)], lr=lr),
-                     metrics=[Accuracy()])
+        self.reg_paras = conv[1].parameters()
+        self.non_reg_paras = conv[2:].parameters()
 
     def forward(self, x, adj):
         return self.conv(x, adj)
 
 
-class TrimmedGCN(TorchEngine):
+class TrimmedGCN(nn.Module):
     def __init__(self,
                  in_features,
                  out_features,
@@ -50,8 +40,6 @@ class TrimmedGCN(TorchEngine):
                  acts=['relu'],
                  tperc=0.45,
                  dropout=0.5,
-                 weight_decay=5e-4,
-                 lr=0.01,
                  bias=False):
 
         super().__init__()
@@ -71,12 +59,8 @@ class TrimmedGCN(TorchEngine):
         conv = Sequential(*conv)
 
         self.conv = conv
-        self.compile(loss=nn.CrossEntropyLoss(),
-                     optimizer=optim.Adam([dict(params=conv[1].parameters(),
-                                                weight_decay=weight_decay),
-                                           dict(params=conv[2:].parameters(),
-                                                weight_decay=0.)], lr=lr),
-                     metrics=[Accuracy()])
+        self.reg_paras = conv[1].parameters()
+        self.non_reg_paras = conv[2:].parameters()
 
     def forward(self, x, adj):
         return self.conv(x, adj)

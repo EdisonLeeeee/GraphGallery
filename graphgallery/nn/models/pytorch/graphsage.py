@@ -1,19 +1,12 @@
 import torch.nn as nn
 import torch.nn.functional as F
 
-from torch import optim
-
-from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.layers.pytorch import SAGEAggregator, activations
-from graphgallery.nn.metrics.pytorch import Accuracy
-
-_AGG = {'mean': SAGEAggregator, }
 
 
-class GraphSAGE(TorchEngine):
+class GraphSAGE(nn.Module):
     def __init__(self, in_features, out_features,
-                 hids=[32], acts=['relu'], dropout=0.5,
-                 weight_decay=5e-4, lr=0.01, bias=False,
+                 hids=[32], acts=['relu'], dropout=0.5, bias=False,
                  aggregator='mean', output_normalize=False,
                  sizes=[15, 5], concat=True):
 
@@ -33,10 +26,6 @@ class GraphSAGE(TorchEngine):
         self.dropout = nn.Dropout(dropout)
         self.acts = act_layers
         self.output_normalize = output_normalize
-
-        self.compile(loss=nn.CrossEntropyLoss(),
-                     optimizer=optim.Adam(self.parameters(), lr=lr, weight_decay=weight_decay),
-                     metrics=[Accuracy()])
 
     def forward(self, x, nodes, *neighbors):
         sizes = self.sizes

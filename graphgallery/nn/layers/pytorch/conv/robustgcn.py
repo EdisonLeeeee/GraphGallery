@@ -41,7 +41,8 @@ class GaussionConvD(nn.Module):
     def __init__(self,
                  in_features,
                  out_features,
-                 bias=False, gamma=1.0):
+                 bias=False,
+                 gamma=1.0):
         super().__init__()
         self.in_features = in_features
         self.out_features = out_features
@@ -50,7 +51,8 @@ class GaussionConvD(nn.Module):
         self.gamma = gamma
 
     def reset_parameters(self):
-        self.w.reset_parameters()
+        self.w_mean.reset_parameters()
+        self.w_var.reset_parameters()
 
     def forward(self, mean, var, adj_mean, adj_var):
         mean = F.elu(self.w_mean(mean))

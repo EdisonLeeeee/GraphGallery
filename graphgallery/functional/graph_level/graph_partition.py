@@ -26,7 +26,7 @@ def random_clustering(num_nodes, num_clusters):
 def louvain_clustering(graph):
     """Partitioning graph using louvain"""
     import community
-    parts = community.community_louvain.best_partition(graph.to_networkx())
+    parts = community.community_louvain.best_partition(graph.to_networkx(directed=False))
     return list(parts.values())
 
 

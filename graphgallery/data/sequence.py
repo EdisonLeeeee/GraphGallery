@@ -1,11 +1,10 @@
-from functools import partial
-
 import torch
 import numpy as np
 import scipy.sparse as sp
 import graphgallery as gg
 from graphgallery import functional as gf
 from torch.utils.data import DataLoader
+from functools import partial
 
 
 __all__ = ["Sequence", "FullBatchSequence", "NullSequence", "NodeSequence", "FastGCNBatchSequence", "NodeLabelSequence", "SAGESequence", "PyGSAGESequence", "SBVATSampleSequence", "MiniBatchSequence", "FeatureLabelSequence"]
@@ -155,7 +154,7 @@ class SAGESequence(Sequence):
         self.x = self.astensor(x)
         self.nodes, self.y = nodes, y
         self.sizes = sizes
-        self.neighbor_sampler = gg.utils.NeighborSampler(adj_matrix)
+        self.neighbor_sampler = gg.data.NeighborSampler(adj_matrix)
 
     def collate_fn(self, ids):
         nodes = self.nodes[ids]

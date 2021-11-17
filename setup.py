@@ -3,9 +3,6 @@
 import os.path as osp
 from setuptools import setup, find_packages
 
-from torch.utils.cpp_extension import BuildExtension
-from torch.utils.cpp_extension import CppExtension
-
 
 def get_version():
     # From: https://github.com/facebookresearch/iopath/blob/master/setup.py
@@ -70,14 +67,6 @@ setup(
     tests_require=tests_require,
     extras_require={'test': tests_require},
     packages=find_packages(exclude=("examples", "imgs", "benchmark", "test")),
-    # ext_modules=[
-    #     CppExtension("graphgallery.sampler", sources=["csrc/cpu/neighbor_sampler_cpu.cpp"], extra_compile_args=['-g']),
-
-    # ],
-    # cmdclass={
-    #     'build_ext':
-    #     BuildExtension
-    # },
     classifiers=[
         'Development Status :: 3 - Alpha',
         "Intended Audience :: Science/Research",

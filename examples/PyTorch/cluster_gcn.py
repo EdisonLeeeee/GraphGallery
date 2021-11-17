@@ -4,7 +4,7 @@
 import torch
 import graphgallery
 from graphgallery.datasets import Planetoid
-from graphgallery.gallery.nodeclas import SSGC
+from graphgallery.gallery.nodeclas import ClusterGCN
 from graphgallery.gallery import callbacks
 
 print("GraphGallery version: ", graphgallery.__version__)
@@ -23,8 +23,9 @@ device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cp
 
 graphgallery.set_backend("pytorch")
 
-trainer = SSGC(device=device, seed=123).setup_graph(graph, attr_transform="normalize_attr").build()
+trainer = ClusterGCN(device=device, seed=123).setup_graph(graph, num_clusters=10, attr_transform="normalize_attr").build()
+
 cb = callbacks.ModelCheckpoint('model.pth', monitor='val_accuracy')
-trainer.fit(splits.train_nodes, splits.val_nodes, verbose=1, callbacks=[cb])
+trainer.fit(splits.train_nodes, splits.val_nodes, verbose=1, epochs=50, callbacks=[cb])
 results = trainer.evaluate(splits.test_nodes)
 print(f'Test loss {results.loss:.5}, Test accuracy {results.accuracy:.2%}')

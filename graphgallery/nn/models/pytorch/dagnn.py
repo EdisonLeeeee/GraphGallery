@@ -1,16 +1,12 @@
 import torch.nn as nn
-from torch import optim
 
-from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.layers.pytorch import DAGNNConv, activations
-from graphgallery.nn.metrics.pytorch import Accuracy
 
 
-class DAGNN(TorchEngine):
+class DAGNN(nn.Module):
     def __init__(self, in_features, out_features, *,
                  hids=[64], acts=['relu'],
-                 dropout=0.5, weight_decay=5e-4,
-                 lr=0.01, bias=False, K=10):
+                 dropout=0.5, bias=False, K=10):
         super().__init__()
 
         lin = []
@@ -27,11 +23,6 @@ class DAGNN(TorchEngine):
         lin = nn.Sequential(*lin)
         self.lin = lin
         self.conv = DAGNNConv(out_features, K=K, bias=bias)
-        self.compile(loss=nn.CrossEntropyLoss(),
-                     optimizer=optim.Adam(self.parameters(),
-                                          weight_decay=weight_decay,
-                                          lr=lr),
-                     metrics=[Accuracy()])
 
     def forward(self, x, adj):
         x = self.lin(x)

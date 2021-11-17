@@ -4,7 +4,7 @@ from torch import Tensor
 from typing import List, Optional, Tuple, NamedTuple, Union
 
 try:
-    from graphgallery.sampler import neighbor_sampler_cpu
+    from glcore import neighbor_sampler_cpu
 except ModuleNotFoundError:
     neighbor_sampler_cpu = None
     import sys

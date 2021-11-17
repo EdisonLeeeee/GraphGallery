@@ -1,12 +1,9 @@
 import torch.nn as nn
-from torch import optim
 
-from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.layers.pytorch import TAGConv, Sequential, activations
-from graphgallery.nn.metrics.pytorch import Accuracy
 
 
-class TAGCN(TorchEngine):
+class TAGCN(nn.Module):
     def __init__(self,
                  in_features,
                  out_features,
@@ -14,8 +11,6 @@ class TAGCN(TorchEngine):
                  acts=['relu'],
                  K=3,
                  dropout=0.5,
-                 weight_decay=5e-4,
-                 lr=0.01,
                  bias=False):
         super().__init__()
         conv = []
@@ -33,12 +28,6 @@ class TAGCN(TorchEngine):
         conv = Sequential(*conv)
 
         self.conv = conv
-        self.compile(loss=nn.CrossEntropyLoss(),
-                     optimizer=optim.Adam([dict(params=conv[1].parameters(),
-                                                weight_decay=weight_decay),
-                                           dict(params=conv[2:].parameters(),
-                                                weight_decay=0.)], lr=lr),
-                     metrics=[Accuracy()])
 
     def forward(self, x, adj):
         return self.conv(x, adj)

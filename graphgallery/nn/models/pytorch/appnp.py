@@ -1,12 +1,10 @@
 import torch.nn as nn
 from torch import optim
 
-from graphgallery.nn.models import TorchEngine
 from graphgallery.nn.layers.pytorch import APPNProp, PPNProp, activations
-from graphgallery.nn.metrics.pytorch import Accuracy
 
 
-class APPNP(TorchEngine):
+class APPNP(nn.Module):
     def __init__(self,
                  in_features,
                  out_features,
@@ -17,8 +15,6 @@ class APPNP(TorchEngine):
                  hids=[64],
                  acts=['relu'],
                  dropout=0.5,
-                 weight_decay=5e-4,
-                 lr=0.01,
                  bias=True,
                  approximated=True):
 
@@ -40,12 +36,9 @@ class APPNP(TorchEngine):
                                         dropout=ppr_dropout)
         else:
             self.propagation = PPNProp(dropout=ppr_dropout)
-        self.compile(loss=nn.CrossEntropyLoss(),
-                     optimizer=optim.Adam([dict(params=lin[1].parameters(),
-                                                weight_decay=weight_decay),
-                                           dict(params=lin[2:].parameters(),
-                                                weight_decay=0.)], lr=lr),
-                     metrics=[Accuracy()])
+
+        self.reg_paras = lin[1].parameters()
+        self.non_reg_paras = lin[2:].parameters()
 
     def forward(self, x, adj):
         x = self.lin(x)

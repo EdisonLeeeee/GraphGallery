@@ -1,9 +1,9 @@
+import graphgallery.nn.models.pytorch as models
 from graphgallery.nn.layers.pytorch import SGConv
 from graphgallery.data.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
 from graphgallery.gallery import Trainer
-from graphgallery.nn.models import get_model
 
 
 @PyTorch.register()
@@ -23,34 +23,29 @@ class SGC(Trainer):
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
         attr_matrix = gf.get(attr_transform)(graph.attr_matrix)
 
-        X, A = gf.astensors(attr_matrix, adj_matrix, device=self.data_device)
+        feat, adj = gf.astensors(attr_matrix, adj_matrix, device=self.data_device)
 
-        X = SGConv(K=K)(X, A)
-        # ``A`` and ``X`` are cached for later use
-        self.register_cache(X=X, A=A)
+        feat = SGConv(K=K)(feat, adj)
+        # ``adj`` and ``feat`` are cached for later use
+        self.register_cache(feat=feat, adj=adj)
 
     def model_step(self,
                    hids=[],
                    acts=[],
                    dropout=0.5,
-                   weight_decay=5e-5,
-                   lr=0.2,
                    bias=True):
 
-        model = get_model("MLP", self.backend)
-        model = model(self.graph.num_feats,
-                      self.graph.num_classes,
-                      hids=hids,
-                      acts=acts,
-                      dropout=dropout,
-                      weight_decay=weight_decay,
-                      lr=lr,
-                      bias=bias)
+        model = models.MLP(self.graph.num_feats,
+                           self.graph.num_classes,
+                           hids=hids,
+                           acts=acts,
+                           dropout=dropout,
+                           bias=bias)
 
         return model
 
-    def train_loader(self, index):
+    def config_train_data(self, index):
         labels = self.graph.label[index]
-        X = self.cache.X[index]
-        sequence = FullBatchSequence(X, labels, device=self.data_device)
+        feat = self.cache.feat[index]
+        sequence = FullBatchSequence(feat, labels, device=self.data_device)
         return sequence

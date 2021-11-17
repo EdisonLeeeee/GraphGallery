@@ -62,6 +62,8 @@ class Trainer:
 
         gg.set_seed(seed)
         self.cfg = gf.BunchDict(cfg)
+        if self.cfg:
+            print(f"Receiving configs:\n{self.cfg}")
         self.device = torch.device(device)
         self.data_device = self.device
         self.backend = gg.backend()
@@ -247,7 +249,9 @@ class Trainer:
             y = self.to_device(y)
             if not isinstance(x, tuple):
                 x = x,
-            out = model(*x)[out_index]
+            out = model(*x)
+            if out_index is not None:
+                out = out[out_index]
             loss = loss_fn(out, y)
             loss.backward()
             optimizer.step()
@@ -295,7 +299,9 @@ class Trainer:
             y = self.to_device(y)
             if not isinstance(x, tuple):
                 x = x,
-            out = model(*x)[out_index]
+            out = model(*x)
+            if out_index is not None:
+                out = out[out_index]
             loss = loss_fn(out, y)
             for metric in self.metrics:
                 metric.update_state(y.cpu(), out.detach().cpu())
@@ -334,7 +340,9 @@ class Trainer:
             x = self.to_device(x)
             if not isinstance(x, tuple):
                 x = x,
-            out = model(*x)[out_index]
+            out = model(*x)
+            if out_index is not None:
+                out = out[out_index]
             outs.append(out)
             callbacks.on_predict_batch_end(epoch)
 

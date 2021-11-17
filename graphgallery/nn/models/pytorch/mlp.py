@@ -1,12 +1,8 @@
 import torch.nn as nn
-from torch import optim
-
-from graphgallery.nn.models import TorchEngine
-from graphgallery.nn.metrics.pytorch import Accuracy
 from graphgallery.nn.layers.pytorch import activations
 
 
-class MLP(TorchEngine):
+class MLP(nn.Module):
     def __init__(self,
                  in_features,
                  out_features,
@@ -14,8 +10,6 @@ class MLP(TorchEngine):
                  acts=['relu'],
                  bn=False,
                  dropout=0.5,
-                 weight_decay=5e-4,
-                 lr=0.01,
                  bias=False):
 
         super().__init__()
@@ -38,10 +32,6 @@ class MLP(TorchEngine):
         lin = nn.Sequential(*lin)
 
         self.lin = lin
-        self.compile(loss=nn.CrossEntropyLoss(),
-                     optimizer=optim.Adam(self.parameters(),
-                                          weight_decay=weight_decay, lr=lr),
-                     metrics=[Accuracy()])
 
     def forward(self, x):
         return self.lin(x)

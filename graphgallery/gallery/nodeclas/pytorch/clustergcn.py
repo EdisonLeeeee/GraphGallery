@@ -1,7 +1,8 @@
+import torch
 import numpy as np
+import graphgallery.nn.models.pytorch as models
 from graphgallery.data.sequence import MiniBatchSequence
 from graphgallery.gallery import Trainer
-from graphgallery.nn.models import get_model
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
 
@@ -23,62 +24,57 @@ class ClusterGCN(Trainer):
                   adj_transform="normalize_adj",
                   attr_transform=None,
                   num_clusters=10,
-                  partition='metis'):
+                  partition='louvain'):
 
         graph = self.graph
-        batch_adj, batch_x, cluster_member = gf.graph_partition(
+        batch_adj, batch_feat, cluster_member = gf.graph_partition(
             graph, num_clusters=num_clusters, partition=partition)
 
         batch_adj = gf.get(adj_transform)(*batch_adj)
-        batch_x = gf.get(attr_transform)(*batch_x)
+        batch_feat = gf.get(attr_transform)(*batch_feat)
 
-        batch_adj, batch_x = gf.astensors(batch_adj, batch_x, device=self.data_device)
+        batch_adj, batch_feat = gf.astensors(batch_adj, batch_feat, device=self.data_device)
 
         # ``A`` and ``X`` and ``cluster_member`` are cached for later use
-        self.register_cache(batch_x=batch_x, batch_adj=batch_adj,
+        self.register_cache(batch_feat=batch_feat, batch_adj=batch_adj,
                             cluster_member=cluster_member)
         # for louvain clustering
-        self.cfg.data.num_clusters = len(cluster_member)
+        self.num_clusters = len(cluster_member)
 
     def model_step(self,
                    hids=[32],
                    acts=['relu'],
                    dropout=0.5,
-                   weight_decay=0.,
-                   lr=0.01,
                    bias=False):
 
-        model = get_model("GCN", self.backend)
-        model = model(self.graph.num_feats,
-                      self.graph.num_classes,
-                      hids=hids,
-                      acts=acts,
-                      dropout=dropout,
-                      weight_decay=weight_decay,
-                      lr=lr,
-                      bias=bias)
+        model = models.GCN(self.graph.num_feats,
+                           self.graph.num_classes,
+                           hids=hids,
+                           acts=acts,
+                           dropout=dropout,
+                           bias=bias)
 
         return model
 
-    def train_loader(self, index):
+    def config_train_data(self, index):
         node_mask = gf.index_to_mask(index, self.graph.num_nodes)
         labels = self.graph.label
         cache = self.cache
 
         batch_mask, batch_y = [], []
-        batch_x, batch_adj = [], []
-        for cluster in range(self.cfg.data.num_clusters):
+        batch_feat, batch_adj = [], []
+        for cluster in range(self.num_clusters):
             nodes = cache.cluster_member[cluster]
             mask = node_mask[nodes]
             y = labels[nodes][mask]
             if y.size == 0:
                 continue
-            batch_x.append(cache.batch_x[cluster])
+            batch_feat.append(cache.batch_feat[cluster])
             batch_adj.append(cache.batch_adj[cluster])
             batch_mask.append(mask)
             batch_y.append(y)
 
-        batch_inputs = tuple(zip(batch_x, batch_adj))
+        batch_inputs = tuple(zip(batch_feat, batch_adj))
         sequence = MiniBatchSequence(inputs=batch_inputs,
                                      y=batch_y,
                                      out_index=batch_mask,
@@ -91,19 +87,19 @@ class ClusterGCN(Trainer):
         node_mask = gf.index_to_mask(index, self.graph.num_nodes)
         orders_dict = {idx: order for order, idx in enumerate(index)}
         batch_mask, orders = [], []
-        batch_x, batch_adj = [], []
-        for cluster in range(self.cfg.data.num_clusters):
+        batch_feat, batch_adj = [], []
+        for cluster in range(self.num_clusters):
             nodes = cache.cluster_member[cluster]
             mask = node_mask[nodes]
             batch_nodes = np.asarray(nodes)[mask]
             if batch_nodes.size == 0:
                 continue
-            batch_x.append(cache.batch_x[cluster])
+            batch_feat.append(cache.batch_feat[cluster])
             batch_adj.append(cache.batch_adj[cluster])
             batch_mask.append(mask)
             orders.append([orders_dict[n] for n in batch_nodes])
 
-        batch_data = tuple(zip(batch_x, batch_adj))
+        batch_data = tuple(zip(batch_feat, batch_adj))
 
         logit = np.zeros((index.size, self.graph.num_classes),
                          dtype=self.floatx)
@@ -115,3 +111,10 @@ class ClusterGCN(Trainer):
             logit[order] = output
 
         return logit
+
+    def config_optimizer(self) -> torch.optim.Optimizer:
+        lr = self.cfg.get('lr', 0.01)
+        weight_decay = self.cfg.get('weight_decay', 0.)
+        model = self.model
+        return torch.optim.Adam(model.parameters(),
+                                weight_decay=weight_decay, lr=lr)
