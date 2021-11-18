@@ -1,4 +1,4 @@
-rm -rf build dist graphadv.egg-info
+rm -rf build dist graphagallery.egg-info
 python setup.py check
 python setup.py sdist bdist_wheel
 twine check dist/*

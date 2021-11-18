@@ -13,8 +13,7 @@ from .graphsage import GraphSAGE
 from .ssgc import SSGC
 from .agnn import AGNN
 from .median import MedianGCN, TrimmedGCN
-from .graphat.gcn_vat import GCNVAT
-from .graphat.graph_vat import GraphVAT
+from .graphvat import GraphVAT
 from .bvat.sbvat import SBVAT
 from .bvat.obvat import OBVAT
 from .graphmlp import GraphMLP

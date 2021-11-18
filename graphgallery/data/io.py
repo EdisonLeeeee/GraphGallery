@@ -269,12 +269,12 @@ def load_npz(filepath):
             loader = dict(loader)
 
             for k, v in loader.items():
-                if k == 'node_attr':
-                    k = 'attr_matrix'
-                if k == 'node_label':
-                    k = 'label'
                 if v.dtype.kind in {'O', 'U'}:
                     loader[k] = v.tolist()
+            if 'node_attr' in loader:
+                loader['attr_matrix'] = loader.pop('node_attr')
+            if 'node_label' in loader:
+                loader['label'] = loader.pop('node_label')
             return loader
     else:
         raise ValueError(f"{filepath} doesn't exist.")

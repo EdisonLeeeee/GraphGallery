@@ -232,15 +232,17 @@ class Trainer:
         loss_fn = self.loss
         model = self.model
 
-        optimizer.zero_grad()
         self.reset_metrics()
         model.train()
 
         for epoch, batch in enumerate(dataloader):
+
             self.callbacks.on_train_batch_begin(epoch)
             x, y, out_index = self.unravel_batch(batch)
             x = self.to_device(x)
             y = self.to_device(y)
+            optimizer.zero_grad()
+
             if not isinstance(x, tuple):
                 x = x,
             out = model(*x)
@@ -367,6 +369,18 @@ class Trainer:
 
     def predict_loader(self, inputs, **kwargs):
         return self.config_test_data(inputs, **kwargs)
+
+    def freeze(self, module=None):
+        if module is None:
+            module = self.model
+        for para in module.parameters():
+            para.requires_grad = False
+
+    def defrozen(self, module=None):
+        if module is None:
+            module = self.model
+        for para in module.parameters():
+            para.requires_grad = True
 
     @staticmethod
     def unravel_batch(batch):

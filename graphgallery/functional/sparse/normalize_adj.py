@@ -11,7 +11,7 @@ from ..transform import Transform
 class NormalizeAdj(SparseTransform):
     """Normalize adjacency matrix."""
 
-    def __init__(self, rate=-0.5, fill_weight=1.0, symmetric=True):
+    def __init__(self, rate=-0.5, add_self_loop=True, symmetric=True):
         """
         # return a normalized adjacency matrix
         >>> normalize_adj(adj, rate=-0.5) 
@@ -23,8 +23,8 @@ class NormalizeAdj(SparseTransform):
         ----------
         rate: Single or a list of float scale, optional.
             the normalize rate for `adj_matrix`.
-        fill_weight: float scalar, optional.
-            weight of self loops for the adjacency matrix.
+        add_self_loop: bool, optional.
+            whether to add self loops for the adjacency matrix.
         symmetric: bool, optional
             whether to use symmetrical  normalization
     """
@@ -48,12 +48,12 @@ class NormalizeAdj(SparseTransform):
         """
         return normalize_adj(*adj_matrix,
                              rate=self.rate,
-                             fill_weight=self.fill_weight,
+                             add_self_loop=self.add_self_loop,
                              symmetric=self.symmetric)
 
 
 @multiple()
-def normalize_adj(adj_matrix, rate=-0.5, fill_weight=1.0, symmetric=True):
+def normalize_adj(adj_matrix, rate=-0.5, add_self_loop=True, symmetric=True):
     """Normalize adjacency matrix.
 
     >>> normalize_adj(adj, rate=-0.5) # return a normalized adjacency matrix
@@ -67,8 +67,8 @@ def normalize_adj(adj_matrix, rate=-0.5, fill_weight=1.0, symmetric=True):
         Single or a list of Scipy sparse matrices or Numpy arrays.
     rate: Single or a list of float scale, optional.
         the normalize rate for `adj_matrix`.
-    fill_weight: float scalar, optional.
-        weight of self loops for the adjacency matrix.
+    add_self_loop: bool, optional.
+        whether to add self loops for the adjacency matrix.
     symmetric: bool, optional
         whether to use symmetrical  normalization
 
@@ -84,8 +84,8 @@ def normalize_adj(adj_matrix, rate=-0.5, fill_weight=1.0, symmetric=True):
     def _normalize_adj(adj, r):
 
         # here a new copy of adj is created
-        if fill_weight:
-            adj = adj + fill_weight * sp.eye(adj.shape[0], dtype=adj.dtype, format='csr')
+        if add_self_loop:
+            adj = adj + sp.eye(adj.shape[0], dtype=adj.dtype, format='csr')
         else:
             adj = adj.copy()
 

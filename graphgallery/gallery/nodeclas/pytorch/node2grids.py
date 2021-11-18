@@ -68,7 +68,6 @@ class Node2Grids(Trainer):
         loss_fn = self.loss
         model = self.model
 
-        optimizer.zero_grad()
         self.reset_metrics()
         model.train()
 
@@ -79,6 +78,8 @@ class Node2Grids(Trainer):
             x, y, out_index = self.unravel_batch(batch)
             x = self.to_device(x)
             y = self.to_device(y)
+            optimizer.zero_grad()
+
             if not isinstance(x, tuple):
                 x = x,
             out = model(*x)

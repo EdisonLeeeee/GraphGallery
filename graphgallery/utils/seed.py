@@ -1,4 +1,3 @@
-import dgl
 import torch
 import random
 import numpy as np
@@ -17,5 +16,6 @@ def set_seed(seed: Optional[int] = None):
         torch.manual_seed(seed)
         torch.cuda.manual_seed(seed)
         if backend() == 'dgl':
+            import dgl
             dgl.random.seed(seed)
         # torch.cuda.manual_seed_all(seed)

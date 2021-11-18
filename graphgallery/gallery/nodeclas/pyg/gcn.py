@@ -1,8 +1,9 @@
+import torch
+import graphgallery.nn.models.pytorch as models
 from graphgallery.data.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyG
 from graphgallery.gallery import Trainer
-from graphgallery.nn.models import get_model
 
 
 @PyG.register()
@@ -33,23 +34,18 @@ class GCN(Trainer):
                    hids=[16],
                    acts=['relu'],
                    dropout=0.5,
-                   weight_decay=5e-4,
-                   lr=0.01,
                    bias=True):
 
-        model = get_model("GCN", self.backend)
-        model = model(self.graph.num_feats,
-                      self.graph.num_classes,
-                      hids=hids,
-                      acts=acts,
-                      dropout=dropout,
-                      weight_decay=weight_decay,
-                      lr=lr,
-                      bias=bias)
+        model = models.GCN(self.graph.num_feats,
+                           self.graph.num_classes,
+                           hids=hids,
+                           acts=acts,
+                           dropout=dropout,
+                           bias=bias)
 
         return model
 
-    def train_loader(self, index):
+    def config_train_data(self, index):
 
         labels = self.graph.label[index]
         sequence = FullBatchSequence([self.cache.feat, *self.cache.edges],
@@ -57,6 +53,15 @@ class GCN(Trainer):
                                      out_index=index,
                                      device=self.data_device)
         return sequence
+
+    def config_optimizer(self) -> torch.optim.Optimizer:
+        lr = self.cfg.get('lr', 0.01)
+        weight_decay = self.cfg.get('weight_decay', 5e-4)
+        model = self.model
+        return torch.optim.Adam([dict(params=model.reg_paras,
+                                      weight_decay=weight_decay),
+                                 dict(params=model.non_reg_paras,
+                                      weight_decay=0.)], lr=lr)
 
 
 @PyG.register()
@@ -82,25 +87,19 @@ class DropEdge(Trainer):
                    hids=[16],
                    acts=['relu'],
                    dropout=0.5,
-                   weight_decay=5e-4,
-                   lr=0.01,
                    bias=True,
                    p=0.3):
 
-        model = get_model("DropEdge", self.backend)
-        model = model(self.graph.num_feats,
-                      self.graph.num_classes,
-                      p=p,
-                      hids=hids,
-                      acts=acts,
-                      dropout=dropout,
-                      weight_decay=weight_decay,
-                      lr=lr,
-                      bias=bias)
+        model = models.GCN(self.graph.num_feats,
+                           self.graph.num_classes,
+                           hids=hids,
+                           acts=acts,
+                           dropout=dropout,
+                           bias=bias)
 
         return model
 
-    def train_loader(self, index):
+    def config_train_data(self, index):
 
         labels = self.graph.label[index]
         sequence = FullBatchSequence([self.cache.feat, *self.cache.edges],
@@ -108,6 +107,15 @@ class DropEdge(Trainer):
                                      out_index=index,
                                      device=self.data_device)
         return sequence
+
+    def config_optimizer(self) -> torch.optim.Optimizer:
+        lr = self.cfg.get('lr', 0.01)
+        weight_decay = self.cfg.get('weight_decay', 5e-4)
+        model = self.model
+        return torch.optim.Adam([dict(params=model.reg_paras,
+                                      weight_decay=weight_decay),
+                                 dict(params=model.non_reg_paras,
+                                      weight_decay=0.)], lr=lr)
 
 
 @PyG.register()
@@ -135,27 +143,22 @@ class RDrop(Trainer):
                    hids=[16],
                    acts=['relu'],
                    dropout=0.5,
-                   weight_decay=5e-4,
-                   lr=0.01,
                    kl=0.005,
                    bias=True,
                    p=0.3):
 
-        model = get_model("RDrop", self.backend)
-        model = model(self.graph.num_feats,
-                      self.graph.num_classes,
-                      p=p,
-                      kl=kl,
-                      hids=hids,
-                      acts=acts,
-                      dropout=dropout,
-                      weight_decay=weight_decay,
-                      lr=lr,
-                      bias=bias)
+        model = models.GCN(self.graph.num_feats,
+                           self.graph.num_classes,
+                           p=p,
+                           kl=kl,
+                           hids=hids,
+                           acts=acts,
+                           dropout=dropout,
+                           bias=bias)
 
         return model
 
-    def train_loader(self, index):
+    def config_train_data(self, index):
 
         labels = self.graph.label[index]
         sequence = FullBatchSequence([self.cache.feat, *self.cache.edges],
@@ -163,3 +166,12 @@ class RDrop(Trainer):
                                      out_index=index,
                                      device=self.data_device)
         return sequence
+
+    def config_optimizer(self) -> torch.optim.Optimizer:
+        lr = self.cfg.get('lr', 0.01)
+        weight_decay = self.cfg.get('weight_decay', 5e-4)
+        model = self.model
+        return torch.optim.Adam([dict(params=model.reg_paras,
+                                      weight_decay=weight_decay),
+                                 dict(params=model.non_reg_paras,
+                                      weight_decay=0.)], lr=lr)

@@ -25,6 +25,6 @@ graphgallery.set_backend("pytorch")
 
 trainer = GCN(device=device, seed=123).setup_graph(graph, attr_transform="normalize_attr").build()
 cb = callbacks.ModelCheckpoint('model.pth', monitor='val_accuracy')
-trainer.fit(splits.train_nodes, splits.val_nodes, verbose=1, callbacks=[cb])
+trainer.fit(splits.train_nodes, splits.val_nodes, verbose=1, callbacks=[cb], epochs=200)
 results = trainer.evaluate(splits.test_nodes)
 print(f'Test loss {results.loss:.5}, Test accuracy {results.accuracy:.2%}')
