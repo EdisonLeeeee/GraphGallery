@@ -7,15 +7,15 @@ __all__ = ['find_4o_nbrs']
 
 
 @njit
-def neighbors_mask(indices, indptr,
-                   mask, nbrs, radius: int):
+def _neighbors_mask(indices, indptr,
+                    mask, nbrs, radius: int):
     mask[nbrs] = True
     if radius <= 1:
         return mask
     else:
         for n in nbrs:
             next_nbrs = indices[indptr[n]:indptr[n + 1]]
-            mask = neighbors_mask(indices, indptr, mask, next_nbrs, radius - 1)
+            mask = _neighbors_mask(indices, indptr, mask, next_nbrs, radius - 1)
         return mask
 
 
@@ -27,7 +27,7 @@ def _find_4o_nbrs(indices, indptr,
     for n in firstlevel:
         mask = np.asarray([False] * N)
         nbrs = indices[indptr[n]:indptr[n + 1]]
-        mask = neighbors_mask(indices, indptr, mask, nbrs, radius)
+        mask = _neighbors_mask(indices, indptr, mask, nbrs, radius)
         yield nodes[mask]
 
 

@@ -14,20 +14,20 @@ __all__ = ['remove_self_loops_edge',
            'asedge', 'edge_to_sparse_adj']
 
 
-def normalize_edge(edge_index, edge_weight=None, rate=-0.5, fill_weight=1.0):
+def normalize_edge(edge_index, edge_weight=None, rate=-0.5, add_self_loop=True):
     edge_index = asedge(edge_index, shape="col_wise")
 
     num_nodes = edge_index.max() + 1
 
     if edge_weight is None:
-        edge_weight = np.ones(edge_index.shape[1], dtype=gg.floatx())
+        edge_weight = np.ones(edge_index.shape[1], dtype="float32")
 
-    if fill_weight:
+    if add_self_loop:
         edge_index, edge_weight = add_selfloops_edge(
-            edge_index, edge_weight, num_nodes=num_nodes, fill_weight=fill_weight)
+            edge_index, edge_weight, num_nodes=num_nodes)
 
     degree = np.bincount(edge_index[0], weights=edge_weight)
-    degree_power = np.power(degree, rate, dtype=gg.floatx())
+    degree_power = np.power(degree, rate, dtype="float32")
     row, col = edge_index
     edge_weight_norm = degree_power[row] * edge_weight * degree_power[col]
 
@@ -61,8 +61,8 @@ def augment_edge(edge_index: np.ndarray, nodes: np.ndarray,
         specified common neighbors for each added node.
     fill_weight: edge weight for the augmented edges.
 
-    NOTE:
-    -----
+    NOTE
+    ----
     Both ``nbrs_to_link`` and ``common_nbrs`` should NOT be specified together.
 
     See Also
@@ -77,7 +77,7 @@ def augment_edge(edge_index: np.ndarray, nodes: np.ndarray,
     edge_index = asedge(edge_index, shape="col_wise")
 
     if edge_weight is None:
-        edge_weight = np.ones(edge_index.shape[1], dtype=gg.floatx())
+        edge_weight = np.ones(edge_index.shape[1], dtype="float32")
 
     num_nodes = edge_index.max() + 1
 
@@ -128,7 +128,7 @@ def remove_self_loops_edge(edge_index: np.ndarray, edge_weight: Optional[np.ndar
     mask = edge_index[0] != edge_index[1]
     edge_index = edge_index[:, mask]
     if edge_weight is None:
-        return edge_index, np.ones(edge_index.shape[1], dtype=gg.floatx())
+        return edge_index, np.ones(edge_index.shape[1], dtype="float32")
     else:
         return edge_index, edge_weight[mask]
 
@@ -160,13 +160,13 @@ def add_selfloops_edge(edge_index: np.ndarray, edge_weight: Optional[np.ndarray]
     num_nodes = maybe_num_nodes(edge_index, num_nodes)
 
     if edge_weight is None:
-        edge_weight = np.ones(edge_index.shape[1], dtype=gg.floatx())
+        edge_weight = np.ones(edge_index.shape[1], dtype="float32")
 
     diagnal_edge_index = np.asarray(np.diag_indices(num_nodes)).astype(edge_index.dtype, copy=False)
 
     updated_edge_index = np.hstack([edge_index, diagnal_edge_index])
 
-    diagnal_edge_weight = np.zeros(num_nodes, dtype=gg.floatx()) + fill_weight
+    diagnal_edge_weight = np.zeros(num_nodes, dtype="float32") + fill_weight
     updated_edge_weight = np.hstack([edge_weight, diagnal_edge_weight])
 
     return updated_edge_index, updated_edge_weight
@@ -235,10 +235,10 @@ def asedge(edge: np.ndarray, shape="col_wise", symmetric=False, dtype=None):
     edge = np.asarray(edge, dtype=dtype or "int64")
     assert edge.ndim == 2 and 2 in edge.shape, edge.shape
     N, M = edge.shape
-    if N == M == 2 and shape == "col_wise":
+    if N == M == 2 and shape == "row_wise":
         # TODO: N=M=2 is confusing, we assume that edge was 'row_wise'
         warnings.warn(f"The shape of the edge is {N}x{M}."
-                      f"we assume that {edge} was 'row_wise'")
+                      f"we assume that {edge} was 'col_wise'")
         edge = edge.T
     elif (shape == "col_wise" and N != 2) or (shape == "row_wise" and M != 2):
         edge = edge.T
@@ -275,7 +275,7 @@ def edge_to_sparse_adj(edge: np.ndarray,
     edge = asedge(edge, shape="col_wise")
 
     if edge_weight is None:
-        edge_weight = np.ones(edge.shape[1], dtype=gg.floatx())
+        edge_weight = np.ones(edge.shape[1], dtype='float32')
 
     if shape is None:
         shape = maybe_shape(edge)

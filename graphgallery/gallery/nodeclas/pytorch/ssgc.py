@@ -55,6 +55,5 @@ class SSGC(Trainer):
     def config_optimizer(self) -> torch.optim.Optimizer:
         lr = self.cfg.get('lr', 0.2)
         weight_decay = self.cfg.get('weight_decay', 5e-5)
-        model = self.model
-        return torch.optim.Adam(model.parameters(),
+        return torch.optim.Adam(self.model.parameters(),
                                 weight_decay=weight_decay, lr=lr)

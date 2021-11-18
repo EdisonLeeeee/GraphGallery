@@ -27,7 +27,7 @@ class GraphVAT(Trainer):
         attr_matrix = gf.get(feat_transform)(graph.attr_matrix)
 
         feat, adj = gf.astensors(attr_matrix, adj_matrix, device=self.data_device)
-        self.sampler = gf.ToNeighborMatrix(num_neighbors, selfloop=False, add_dummy=False)
+        self.sampler = gf.ToNeighborMatrix(num_neighbors, self_loop=False, add_dummy=False)
 
         # ``adj`` and ``feat`` are cached for later use
         self.register_cache(feat=feat, adj=adj, adjacency=adj_matrix)

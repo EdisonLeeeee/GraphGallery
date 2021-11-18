@@ -56,7 +56,7 @@ def infer_type(x: Any) -> str:
         raise TypeError(f"Invalid input of '{type(x).__name__}'.")
 
 
-def sparse_adj_to_sparse_tensor(x, *, dtype=None):
+def sparse_adj_to_sparse_tensor(x, dtype=None):
     """Converts a Scipy sparse matrix to a PyTorch SparseTensor.
 
     Parameters
@@ -126,7 +126,7 @@ def sparse_edge_to_sparse_tensor(edge_index: np.ndarray,
 
     if edge_weight is None:
         edge_weight = torch.ones(edge_index.shape[1],
-                                 dtype=getattr(torch, gg.floatx()))
+                                 dtype=getattr(torch, "float32"))
     else:
         edge_weight = torch.tensor(edge_weight)
 

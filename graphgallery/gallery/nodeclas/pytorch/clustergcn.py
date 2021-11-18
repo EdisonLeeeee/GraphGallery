@@ -35,7 +35,6 @@ class ClusterGCN(Trainer):
 
         batch_adj, batch_feat = gf.astensors(batch_adj, batch_feat, device=self.data_device)
 
-        # ``A`` and ``X`` and ``cluster_member`` are cached for later use
         self.register_cache(batch_feat=batch_feat, batch_adj=batch_adj,
                             cluster_member=cluster_member)
         # for louvain clustering
@@ -82,6 +81,7 @@ class ClusterGCN(Trainer):
         return sequence
 
     def predict(self, index):
+        # FIXME:
         cache = self.cache
 
         node_mask = gf.index_to_mask(index, self.graph.num_nodes)
@@ -102,7 +102,7 @@ class ClusterGCN(Trainer):
         batch_data = tuple(zip(batch_feat, batch_adj))
 
         logit = np.zeros((index.size, self.graph.num_classes),
-                         dtype=self.floatx)
+                         dtype="float32")
         batch_data, batch_mask = gf.astensors(batch_data, batch_mask, device=self.data_device)
 
         model = self.model
