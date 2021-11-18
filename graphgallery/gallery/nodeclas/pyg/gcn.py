@@ -1,5 +1,5 @@
 import torch
-import graphgallery.nn.models.pytorch as models
+import graphgallery.nn.models.pyg as models
 from graphgallery.data.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyG
@@ -19,11 +19,11 @@ class GCN(Trainer):
 
     def data_step(self,
                   adj_transform="normalize_adj",
-                  attr_transform=None):
+                  feat_transform=None):
 
         graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
-        attr_matrix = gf.get(attr_transform)(graph.attr_matrix)
+        attr_matrix = gf.get(feat_transform)(graph.attr_matrix)
 
         feat, edges = gf.astensors(attr_matrix, adj_matrix, device=self.data_device)
 
@@ -72,11 +72,11 @@ class DropEdge(Trainer):
 
     def data_step(self,
                   adj_transform="normalize_adj",
-                  attr_transform=None):
+                  feat_transform=None):
 
         graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
-        attr_matrix = gf.get(attr_transform)(graph.attr_matrix)
+        attr_matrix = gf.get(feat_transform)(graph.attr_matrix)
 
         feat, edges = gf.astensors(attr_matrix, adj_matrix, device=self.data_device)
 
@@ -128,11 +128,11 @@ class RDrop(Trainer):
 
     def data_step(self,
                   adj_transform="normalize_adj",
-                  attr_transform=None):
+                  feat_transform=None):
 
         graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
-        attr_matrix = gf.get(attr_transform)(graph.attr_matrix)
+        attr_matrix = gf.get(feat_transform)(graph.attr_matrix)
 
         feat, edges = gf.astensors(attr_matrix, adj_matrix, device=self.data_device)
 

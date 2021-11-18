@@ -1,8 +1,9 @@
+import torch
+import graphgallery.nn.models.pyg as models
 from graphgallery.data.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyG
 from graphgallery.gallery import Trainer
-from graphgallery.nn.models import get_model
 
 
 @PyG.register()
@@ -18,14 +19,15 @@ class GAT(Trainer):
 
     def data_step(self,
                   adj_transform="add_self_loop",
-                  attr_transform=None,
-                  graph_transform=None):
+                  feat_transform=None):
 
         graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
-        attr_matrix = gf.get(attr_transform)(graph.attr_matrix)
+        attr_matrix = gf.get(feat_transform)(graph.attr_matrix)
 
-        feat, edges = gf.astensors(attr_matrix, adj_matrix, device=self.data_device)
+        feat = gf.astensor(attr_matrix, device=self.data_device)
+        # without considering `edge_weight`
+        edges = gf.astensor(adj_matrix, device=self.data_device)[0]
 
         # ``edges`` and ``feat`` are cached for later use
         self.register_cache(feat=feat, edges=edges)
@@ -35,29 +37,33 @@ class GAT(Trainer):
                    num_heads=[8],
                    acts=['elu'],
                    dropout=0.6,
-                   weight_decay=5e-4,
-                   lr=0.01,
                    bias=True,
                    include=["num_heads"]):
 
-        model = get_model("GAT", self.backend)
-        model = model(self.graph.num_feats,
-                      self.graph.num_classes,
-                      hids=hids,
-                      num_heads=num_heads,
-                      acts=acts,
-                      dropout=dropout,
-                      weight_decay=weight_decay,
-                      lr=lr,
-                      bias=bias)
+        model = models.GAT(self.graph.num_feats,
+                           self.graph.num_classes,
+                           hids=hids,
+                           num_heads=num_heads,
+                           acts=acts,
+                           dropout=dropout,
+                           bias=bias)
 
         return model
 
-    def train_loader(self, index):
+    def config_train_data(self, index):
 
         labels = self.graph.label[index]
-        sequence = FullBatchSequence([self.cache.feat, *self.cache.edges],
+        sequence = FullBatchSequence([self.cache.feat, self.cache.edges],
                                      labels,
                                      out_index=index,
                                      device=self.data_device)
         return sequence
+
+    def config_optimizer(self) -> torch.optim.Optimizer:
+        lr = self.cfg.get('lr', 0.01)
+        weight_decay = self.cfg.get('weight_decay', 5e-4)
+        model = self.model
+        return torch.optim.Adam([dict(params=model.reg_paras,
+                                      weight_decay=weight_decay),
+                                 dict(params=model.non_reg_paras,
+                                      weight_decay=0.)], lr=lr)

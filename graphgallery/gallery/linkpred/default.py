@@ -12,7 +12,7 @@ def default_cfg_setup(cfg):
     cfg.data.graph_transform = None
     cfg.data.edge_transform = None
     cfg.data.adj_transform = None
-    cfg.data.attr_transform = None
+    cfg.data.feat_transform = None
     cfg.data.label_transform = None
     cfg.data.device = None
 

@@ -22,7 +22,7 @@ class ClusterGCN(Trainer):
 
     def data_step(self,
                   adj_transform="normalize_adj",
-                  attr_transform=None,
+                  feat_transform=None,
                   num_clusters=10,
                   partition='louvain'):
 
@@ -31,7 +31,7 @@ class ClusterGCN(Trainer):
             graph, num_clusters=num_clusters, partition=partition)
 
         batch_adj = gf.get(adj_transform)(*batch_adj)
-        batch_feat = gf.get(attr_transform)(*batch_feat)
+        batch_feat = gf.get(feat_transform)(*batch_feat)
 
         batch_adj, batch_feat = gf.astensors(batch_adj, batch_feat, device=self.data_device)
 

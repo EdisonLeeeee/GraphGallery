@@ -1,16 +1,15 @@
 import torch.nn as nn
 import torch.nn.functional as F
-from torch import optim
-
 from graphgallery.nn.layers.pytorch import activations
-from graphgallery.nn.metrics import Accuracy
 from torch_geometric.nn import SAGEConv
 
 
 class GraphSAGE(nn.Module):
     def __init__(self, in_features, out_features,
-                 hids=[32], acts=['relu'], dropout=0.5,
-                 weight_decay=5e-4, lr=0.01, bias=False,
+                 hids=[32],
+                 acts=['relu'],
+                 dropout=0.5,
+                 bias=False,
                  output_normalize=False):
 
         super().__init__()
@@ -28,10 +27,6 @@ class GraphSAGE(nn.Module):
         self.conv = conv
         self.acts = act_layers
         self.output_normalize = output_normalize
-        self.compile(loss=nn.CrossEntropyLoss(),
-                     optimizer=optim.Adam(conv.parameters(),
-                                          weight_decay=weight_decay, lr=lr),
-                     metrics=[Accuracy()])
 
     def forward(self, x, adjs):
         # `train_loader` computes the k-hop neighborhood of a batch of nodes,

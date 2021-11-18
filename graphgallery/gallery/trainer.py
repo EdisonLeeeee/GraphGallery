@@ -91,9 +91,9 @@ class Trainer:
         adj_transform: string, Callable function,
             or a tuple with function and dict arguments.
             transform for adjacency matrix.
-        attr_transform: string, Callable function,
+        feat_transform: string, Callable function,
             or a tuple with function and dict arguments.
-            transform for attribute matrix.
+            transform for attribute (feature) matrix.
         other arguments (if have) will be passed into method 'data_step'.
         """
         self.cache_clear()
@@ -138,11 +138,6 @@ class Trainer:
             weight decay used for the model weights.
         bias: bool,
             whether to use bias in each layer.
-        use_tfn: bool,
-            this argument is only used for TensorFlow backend, if `True`, it will decorate
-            the model training and testing with `tf.function` (See `graphgallery.nn.modes.tf_engine.TFEngine`).
-            By default, it was `True`, which can accelerate the training and inference, by it may cause
-            several errors.
         other arguments (if have) will be passed into your method 'model_step'.
         """
         if self._graph is None:

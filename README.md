@@ -155,10 +155,10 @@ from graphgallery.data import Graph
 
 # Load the adjacency matrix A, attribute matrix X and labels vector y
 # A - scipy.sparse.csr_matrix of shape [num_nodes, num_nodes]
-# X - scipy.sparse.csr_matrix or np.ndarray of shape [num_nodes, num_attrs]
+# X - scipy.sparse.csr_matrix or np.ndarray of shape [num_nodes, num_feats]
 # y - np.ndarray of shape [num_nodes]
 
-mydataset = Graph(adj_matrix=A, node_attr=X, node_label=y)
+mydataset = Graph(adj_matrix=A, attr_matrix=X, label=y)
 # save dataset
 mydataset.to_npz('path/to/mydataset.npz')
 # load dataset

@@ -9,10 +9,10 @@ from graphgallery.nn.models import get_model
 class MLP(Trainer):
 
     def data_step(self,
-                  attr_transform=None):
+                  feat_transform=None):
 
         graph = self.graph
-        attr_matrix = gf.get(attr_transform)(graph.attr_matrix)
+        attr_matrix = gf.get(feat_transform)(graph.attr_matrix)
 
         X = gf.astensors(attr_matrix, device=self.data_device)
 

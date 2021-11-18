@@ -19,14 +19,14 @@ class Node2Grids(Trainer):
 
     def data_step(self,
                   adj_transform=None,
-                  attr_transform=None,
+                  feat_transform=None,
                   biasfactor=0.4,
                   mapsize_a=12,
                   mapsize_b=1):
 
         graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
-        attr_matrix = gf.get(attr_transform)(graph.attr_matrix)
+        attr_matrix = gf.get(feat_transform)(graph.attr_matrix)
         mapper = Node2GridsMapper(adj_matrix, attr_matrix, biasfactor=biasfactor,
                                   mapsize_a=mapsize_a, mapsize_b=mapsize_b)
         self.register_cache(mapper=mapper, mapsize_a=mapsize_a, mapsize_b=mapsize_b)

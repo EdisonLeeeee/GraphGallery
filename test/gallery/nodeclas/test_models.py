@@ -18,6 +18,6 @@ for backend in ['th', 'dgl', 'pyg', 'tf']:
                 continue
             print(backend, device, name)
             trainer = m(device=device)
-            trainer.setup_graph(graph, attr_transform=None)
+            trainer.setup_graph(graph, feat_transform=None)
             trainer.build()
             trainer.fit(splits.train_nodes, splits.val_nodes, verbose=0, epochs=2)

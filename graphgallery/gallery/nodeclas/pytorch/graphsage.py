@@ -16,11 +16,11 @@ class GraphSAGE(Trainer):
 
     def data_step(self,
                   adj_transform=None,
-                  attr_transform=None):
+                  feat_transform=None):
 
         graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
-        attr_matrix = gf.get(attr_transform)(graph.attr_matrix)
+        attr_matrix = gf.get(feat_transform)(graph.attr_matrix)
 
         feat, adj = gf.astensors(attr_matrix, device=self.data_device), adj_matrix
 

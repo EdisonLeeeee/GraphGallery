@@ -10,6 +10,15 @@ from functools import partial
 __all__ = ["Sequence", "FullBatchSequence", "NullSequence", "NodeSequence", "FastGCNBatchSequence", "NodeLabelSequence", "SAGESequence", "PyGSAGESequence", "SBVATSampleSequence", "MiniBatchSequence", "FeatureLabelSequence"]
 
 
+def tolist(array):
+    if isinstance(array, np.ndarray):
+        return array.tolist()
+    elif torch.is_tensor(array):
+        return array.cpu().tolist()
+    else:
+        raise ValueError(f"Unable to convert type {type(array)} to list.")
+
+
 class Sequence(DataLoader):
 
     def __init__(self, dataset, device='cpu', escape=None, **kwargs):
@@ -30,22 +39,13 @@ class FullBatchSequence(Sequence):
 
     def __init__(self, inputs, y=None, out_index=None, device='cpu', escape=None, **kwargs):
         dataset = gf.astensors(inputs, y, out_index, device=device, escape=escape)
-        super().__init__([dataset], batch_size=None, collate_fn=lambda x: x, device=device, escape=escape, **kwargs)
+        super().__init__([dataset], batch_size=None, collate_fn=lambda feat: feat, device=device, escape=escape, **kwargs)
 
 
 class NullSequence(Sequence):
 
     def __init__(self, *dataset, **kwargs):
-        super().__init__([dataset], batch_size=None, collate_fn=lambda x: x, **kwargs)
-
-
-def tolist(array):
-    if isinstance(array, np.ndarray):
-        return array.tolist()
-    elif torch.is_tensor(array):
-        return array.cpu().tolist()
-    else:
-        raise ValueError(f"Unable to convert type {type(array)} to list.")
+        super().__init__([dataset], batch_size=None, collate_fn=lambda feat: feat, **kwargs)
 
 
 class NodeSequence(Sequence):
@@ -64,13 +64,13 @@ class NodeLabelSequence(Sequence):
 
 
 class FeatureLabelSequence(Sequence):
-    def __init__(self, x, y, **kwargs):
-        super().__init__(list(range(len(x))), collate_fn=self.collate_fn, **kwargs)
-        self.x = self.astensor(x)
+    def __init__(self, feat, y, **kwargs):
+        super().__init__(list(range(len(feat))), collate_fn=self.collate_fn, **kwargs)
+        self.feat = self.astensor(feat)
         self.y = self.astensor(y)
 
     def collate_fn(self, ids):
-        return self.astensors(self.x[ids], self.y[ids])
+        return self.astensors(self.feat[ids], self.y[ids])
 
 
 class FastGCNBatchSequence(Sequence):
@@ -89,9 +89,9 @@ class FastGCNBatchSequence(Sequence):
         else:
             super().__init__([list(range(len(nodes)))], collate_fn=self.collate_fn, batch_size=batch_size, **kwargs)
 
-        # x: node attribute matrix, which could be numpy array or tensor
+        # feat: node feature matrix, which could be numpy array or tensor
         # adj_matrix: node adjacency matrix, which could only be scipy sparse matrix
-        self.x, self.adj_matrix = inputs
+        self.feat, self.adj_matrix = inputs
         assert sp.isspmatrix(self.adj_matrix), "node adjacency matrix could only be scipy sparse matrix"
         self.y = y
         self.num_samples = num_samples
@@ -104,10 +104,10 @@ class FastGCNBatchSequence(Sequence):
 
     def collate_fn(self, nodes):
         if self.num_samples is not None:
-            sampled_x, sampled_adjacency, sampled_y = self.sampling(nodes, self.num_samples)
-            return self.astensors((sampled_x, sampled_adjacency), sampled_y)
+            sampled_feat, sampled_adjacency, sampled_y = self.sampling(nodes, self.num_samples)
+            return self.astensors((sampled_feat, sampled_adjacency), sampled_y)
         else:
-            return self.astensors((self.x, self.adj_matrix), self.y)
+            return self.astensors((self.feat, self.adj_matrix), self.y)
 
     def sampling(self, nodes, num_samples):
 
@@ -134,9 +134,9 @@ class FastGCNBatchSequence(Sequence):
         sampled_adjacency = sampled_adjacency.dot(sp.diags(
             1.0 / (sampled_probability * num_samples)
         ))
-        sampled_x = self.x[sampled_nodes]
+        sampled_feat = self.feat[sampled_nodes]
         sampled_y = self.y[nodes] if self.y is not None else None
-        return sampled_x, sampled_adjacency, sampled_y
+        return sampled_feat, sampled_adjacency, sampled_y
 
 
 class SAGESequence(Sequence):
@@ -150,8 +150,8 @@ class SAGESequence(Sequence):
         **kwargs
     ):
         super().__init__(list(range(len(nodes))), collate_fn=self.collate_fn, **kwargs)
-        x, adj_matrix = inputs
-        self.x = self.astensor(x)
+        feat, adj_matrix = inputs
+        self.feat = self.astensor(feat)
         self.nodes, self.y = nodes, y
         self.sizes = sizes
         self.neighbor_sampler = gg.data.NeighborSampler(adj_matrix)
@@ -167,8 +167,8 @@ class SAGESequence(Sequence):
 
         y = self.y[ids] if self.y is not None else None
 
-        # (node attribute matrix, root nodes, 1st-order neighbor, 2nd-order neighbor, ...), node labels
-        return (self.x, *self.astensors(neighbors)), self.astensor(y)
+        # (node feature matrix, root nodes, 1st-order neighbor, 2nd-order neighbor, ...), node labels
+        return (self.feat, *self.astensors(neighbors)), self.astensor(y)
 
 
 class PyGSAGESequence(Sequence):
@@ -182,12 +182,12 @@ class PyGSAGESequence(Sequence):
         **kwargs
     ):
         super().__init__(list(range(len(nodes))), collate_fn=self.collate_fn, **kwargs)
-        x, adj_matrix = inputs
-        self.x = self.astensor(x)
+        feat, adj_matrix = inputs
+        self.feat = self.astensor(feat)
         self.nodes, self.y = nodes, y
         self.sizes = sizes
         edge_index = torch.LongTensor(adj_matrix.nonzero())
-        self.neighbor_sampler = gg.utils.PyGNeighborSampler(edge_index, adj_matrix.shape[0])
+        self.neighbor_sampler = gg.data.PyGNeighborSampler(edge_index, adj_matrix.shape[0])
 
     def collate_fn(self, ids):
         nodes = torch.LongTensor(self.nodes[ids])
@@ -195,8 +195,8 @@ class PyGSAGESequence(Sequence):
 
         y = self.y[ids] if self.y is not None else None
 
-        # (node attribute matrix, 1st-order adj, 2nd-order adj, ...), node labels
-        return (self.x[n_id], adjs), self.astensor(y)
+        # (node feature matrix, 1st-order adj, 2nd-order adj, ...), node labels
+        return (self.feat[n_id], adjs), self.astensor(y)
 
 
 class SBVATSampleSequence(Sequence):
@@ -211,7 +211,7 @@ class SBVATSampleSequence(Sequence):
 
     def collate_fn(self, dataset):
         adv_mask = self.astensor(self.sample_nodes())
-        # ((node attribute matrix, adjacency matrix, adv_mask), node labels, out_index)
+        # ((node feature matrix, adjacency matrix, adv_mask), node labels, out_index)
         dataset = ((*dataset[0], adv_mask), *dataset[1:])
         return dataset
 

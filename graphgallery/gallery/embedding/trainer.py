@@ -1,33 +1,41 @@
-import inspect
 import numpy as np
-import scipy.sparse as sp
+import graphgallery as gg
 import graphgallery.functional as gf
 from sklearn import preprocessing
-from graphgallery.gallery import Model
 from sklearn.linear_model import LogisticRegression
 from sklearn import metrics
-from .default import default_cfg_setup
 
 
-class Trainer(Model):
+class Trainer:
     def __init__(self, *, seed=None, name=None, **kwargs):
         kwargs.pop("__class__", None)
         self.set_hyparas(kwargs)
-        super().__init__(seed=seed, name=name, **kwargs)
+
+        gg.set_seed(seed)
+
+        self.seed = seed
+        self.name = name or self.__class__.__name__
+
+        self._model = None
+        self._graph = None
+        self._cache = gf.BunchDict()
         self._embedding = None
 
-    def setup_cfg(self):
-        default_cfg_setup(self.cfg)
+    def register_cache(self, **kwargs):
+        self._cache.update(kwargs)
 
     def fit(self, graph, *args, **kwargs):
         graph = getattr(graph, "adj_matrix", graph)
         self.fit_step(graph, *args, **kwargs)
         return self
 
+    def fit_step(self, graph):
+        raise NotImplementedError
+
     def get_embedding(self, normalize=True) -> np.ndarray:
         """Getting the node embedding."""
         embedding = self._embedding
-        if normalize:
+        if normalize and embedding is not None:
             embedding = preprocessing.normalize(embedding)
         return embedding
 
@@ -73,9 +81,33 @@ class Trainer(Model):
             setattr(self, k, v)
         self.hyparas = kwargs
 
+    @property
+    def graph(self):
+        graph = self._graph
+        if graph is None:
+            raise KeyError("You haven't pass any graph instance.")
+        return graph
+
+    @graph.setter
+    def graph(self, graph):
+        assert graph is None or isinstance(graph, gg.data.BaseGraph)
+        if graph is not None:
+            self._graph = graph.copy()
+
+    def empty_cache(self):
+        self._cache = gf.BunchDict()
+        import gc
+        gc.collect()
+
+    @property
+    def cache(self):
+        return self._cache
+
     def __repr__(self):
         para_str = ""
         for k, v in self.hyparas.items():
             para_str += f'{k}={v},\n'
 
-        return f"{self.name}({para_str}device={self.device},\nbackend={self.backend})"
+        return f"{self.name}({para_str})"
+
+    __str__ = __repr__

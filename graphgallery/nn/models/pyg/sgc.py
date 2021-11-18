@@ -1,6 +1,4 @@
 import torch.nn as nn
-from torch import optim
-
 from torch_geometric.nn import SGConv
 
 

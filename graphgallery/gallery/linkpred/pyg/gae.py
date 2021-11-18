@@ -15,11 +15,11 @@ class GAE(Trainer):
     """
 
     def data_step(self,
-                  attr_transform=None):
+                  feat_transform=None):
 
         graph = self.graph
         # adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
-        attr_matrix = gf.get(attr_transform)(graph.attr_matrix)
+        attr_matrix = gf.get(feat_transform)(graph.attr_matrix)
 
         X = gf.astensor(attr_matrix, device=self.data_device)
 

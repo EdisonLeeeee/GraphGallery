@@ -16,10 +16,10 @@ class VGAE(Trainer):
 
     def data_step(self,
                   adj_transform="normalize_adj",  # it is required
-                  attr_transform=None):
+                  feat_transform=None):
 
         graph = self.graph
-        attr_matrix = gf.get(attr_transform)(graph.attr_matrix)
+        attr_matrix = gf.get(feat_transform)(graph.attr_matrix)
 
         X = gf.astensor(attr_matrix, device=self.data_device)
 

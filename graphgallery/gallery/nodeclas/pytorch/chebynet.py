@@ -17,11 +17,11 @@ class ChebyNet(Trainer):
 
     def data_step(self,
                   adj_transform=("cheby_basis", dict(K=2)),
-                  attr_transform=None):
+                  feat_transform=None):
 
         graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
-        attr_matrix = gf.get(attr_transform)(graph.attr_matrix)
+        attr_matrix = gf.get(feat_transform)(graph.attr_matrix)
 
         feat, adj = gf.astensors(attr_matrix, adj_matrix, device=self.data_device)
 

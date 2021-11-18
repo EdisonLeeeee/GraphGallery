@@ -8,7 +8,7 @@ try:
 except ModuleNotFoundError:
     neighbor_sampler_cpu = None
     import sys
-    print("'neighbor_sampler_cpu' is not enabled, maybe you should re-install graphgallery again.", file=sys.stderr)
+    print("'neighbor_sampler_cpu' is not enabled, maybe you should re-install glcore again.", file=sys.stderr)
 
 
 class NeighborSampler:

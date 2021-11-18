@@ -1,9 +1,6 @@
 import torch.nn as nn
-from torch import optim
 from torch_geometric.nn import GATConv
-
 from graphgallery.nn.layers.pytorch import Sequential, activations
-from graphgallery.nn.metrics import Accuracy
 
 
 class GAT(nn.Module):
@@ -14,8 +11,6 @@ class GAT(nn.Module):
                  num_heads=[8],
                  acts=['elu'],
                  dropout=0.6,
-                 weight_decay=5e-4,
-                 lr=0.01,
                  bias=True):
 
         super().__init__()
@@ -42,12 +37,8 @@ class GAT(nn.Module):
         conv = Sequential(*conv)
 
         self.conv = conv
-        self.compile(loss=nn.CrossEntropyLoss(),
-                     optimizer=optim.Adam([dict(params=conv[1].parameters(),
-                                                weight_decay=weight_decay),
-                                           dict(params=conv[2:].parameters(),
-                                                weight_decay=0.)], lr=lr),
-                     metrics=[Accuracy()])
+        self.reg_paras = conv[1].parameters()
+        self.non_reg_paras = conv[2:].parameters()
 
-    def forward(self, x, edge_index, edge_weight=None):
+    def forward(self, x, edge_index):
         return self.conv(x, edge_index)

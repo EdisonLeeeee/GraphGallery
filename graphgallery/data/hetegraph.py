@@ -52,7 +52,7 @@ class HeteGraph(BaseGraph):
         return utils.get_num_feats(self.attr_matrix)
 
     @property
-    def num_edge_attrs(self) -> int:
+    def num_edge_feats(self) -> int:
         return utils.get_num_feats(self.edge_attr)
 
     @property
