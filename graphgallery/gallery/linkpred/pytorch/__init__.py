@@ -1,2 +1,1 @@
-from .gae import GAE
-from .vgae import VGAE
+from .gae import GAE, VGAE

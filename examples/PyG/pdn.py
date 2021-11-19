@@ -8,7 +8,7 @@ from graphgallery.datasets import NPZDataset
 from graphgallery.gallery import callbacks
 
 print("GraphGallery version: ", graphgallery.__version__)
-print("Torch version: ", torch.__version__)
+print("PyTorch version: ", torch.__version__)
 print("Torch_Geometric version: ", torch_geometric.__version__)
 
 '''

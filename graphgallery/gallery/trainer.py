@@ -229,8 +229,6 @@ class Trainer:
         self.reset_metrics()
         model.train()
 
-        opt = self.optimizer
-
         for epoch, batch in enumerate(dataloader):
             self.callbacks.on_train_batch_begin(epoch)
             x, y, out_index = self.unravel_batch(batch)
@@ -240,6 +238,7 @@ class Trainer:
             if not isinstance(x, tuple):
                 x = x,
             out = model(*x)
+
             if out_index is not None:
                 out = out[out_index]
             loss = loss_fn(out, y)
@@ -315,7 +314,7 @@ class Trainer:
         out = self.predict_step(predict_data).squeeze()
         if transform is not None:
             out = transform(out)
-        return out
+        return out.cpu()
 
     @torch.no_grad()
     def predict_step(self, dataloader: DataLoader) -> Tensor:
@@ -513,7 +512,7 @@ class Trainer:
     __str__ = __repr__
 
     def _test_predict(self, index):
-        logit = self.predict(index)
+        logit = self.predict(index).cpu().numpy()
         predict_class = logit.argmax(1)
         labels = self.graph.label[index]
         return (predict_class == labels).mean()

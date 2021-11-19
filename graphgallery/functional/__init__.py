@@ -12,4 +12,3 @@ from .registry import Registry
 from .decorators import *
 from .transform import *
 from .tensor import *
-from .torch_utils import *

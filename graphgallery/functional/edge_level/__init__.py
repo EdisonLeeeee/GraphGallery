@@ -1,2 +1,1 @@
-from .edge_transform import *
-from .shape import *
+from .transform import *

@@ -1,8 +1,8 @@
 from .registered_models import (PyTorch, PyG, DGL, MAPPING)
+from .linkpred_trainer import LinkpredTrainer
 
 import graphgallery
 from functools import partial
-from . import default
 
 
 def is_enabled(model: str) -> bool:

@@ -8,7 +8,7 @@ from graphgallery.gallery import callbacks
 from graphgallery.datasets import Planetoid
 
 print("GraphGallery version: ", graphgallery.__version__)
-print("Torch version: ", torch.__version__)
+print("PyTorch version: ", torch.__version__)
 print("DGL version: ", dgl.__version__)
 
 '''

@@ -3,25 +3,27 @@
 
 import torch
 import graphgallery
+from graphgallery.gallery import callbacks
+from graphgallery.datasets import Planetoid
 
 print("GraphGallery version: ", graphgallery.__version__)
-print("Torch version: ", torch.__version__)
-
+print("PyTorch version: ", torch.__version__)
 '''
 Load Datasets
 - cora/citeseer/pubmed
 '''
-from graphgallery.datasets import Planetoid
 data = Planetoid('cora', root="~/GraphData/datasets/", verbose=False)
 graph = data.graph
 splits = data.split_edges(random_state=15)
-graphgallery.set_backend("pytorch")
+device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
-from graphgallery.gallery.linkpred import GAE
-# from graphgallery.gallery.linkpred import VGAE
-trainer = GAE(device="gpu", seed=123)
-# trainer = VGAE(device="gpu", seed=123)
-trainer.setup_graph(graph).build()
-trainer.fit(splits.train_pos_edge_index, verbose=1, epochs=100)
+graphgallery.set_backend("torch")
+
+from graphgallery.gallery.linkpred import GAE, VGAE
+trainer = GAE(device=device, seed=123).setup_graph(graph).build()
+# trainer = VGAE(device=device, seed=123).setup_graph(graph).build()
+cb = callbacks.ModelCheckpoint('model.pth', monitor='val_ap')
+trainer.fit(splits.train_pos_edge_index,
+            val_data=(splits.val_pos_edge_index, splits.val_neg_edge_index), verbose=1, callbacks=[cb])
 results = trainer.evaluate((splits.test_pos_edge_index, splits.test_neg_edge_index))
 print(results)

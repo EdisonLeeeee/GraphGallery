@@ -25,4 +25,4 @@ from .chebynet import ChebyNet
 from .gwnn import GWNN
 
 
-from .experimental.sat import SAT
+from .experimental.sat import SATGCN, SATSGC, SATSSGC

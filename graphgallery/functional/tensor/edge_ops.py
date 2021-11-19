@@ -9,7 +9,7 @@ import random
 import numpy as np
 from typing import Optional
 
-__all__ = ['negative_sampling']
+__all__ = ["negative_sampling", "add_self_loops", "remove_self_loops"]
 
 
 def sample(high: int, size: int, device=None):
@@ -136,7 +136,7 @@ def negative_sampling(edge_index, num_nodes=None, num_neg_samples=None,
         mask = torch.from_numpy(np.isin(perm, idx.to('cpu'))).to(torch.bool)
         perm = perm[~mask][:num_neg_samples].to(edge_index.device)
 
-    row = perm // num_nodes
+    row = torch.div(perm, num_nodes, rounding_mode='floor')
     col = perm % num_nodes
     neg_edge_index = torch.stack([row, col], dim=0).long()
 

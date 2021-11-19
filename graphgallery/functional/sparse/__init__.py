@@ -4,7 +4,6 @@ from .wavelet import WaveletBasis, wavelet_basis
 from .chebyshef import ChebyBasis, cheby_basis
 from .to_neighbor_matrix import ToNeighborMatrix, to_neighbor_matrix
 from .gdc import GDC, gdc
-from .augment_adj import augment_adj
 from .reshape import SparseReshape, sparse_reshape
 from .sample import find_4o_nbrs
 from .flip import *
