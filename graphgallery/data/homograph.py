@@ -106,10 +106,10 @@ class HomoGraph(BaseGraph):
     @property
     def x(self):
         """Alias of attr_matrix."""
-        return self.nx
+        return self.attr_matrix
 
     @property
-    def nx(self):
+    def feat(self):
         """Alias of attr_matrix."""
         return self.attr_matrix
 
@@ -122,11 +122,6 @@ class HomoGraph(BaseGraph):
     def y(self):
         """Alias of label."""
         return self.ny
-
-    @property
-    def ny(self):
-        """Alias of label."""
-        return self.label
 
     @property
     def gy(self):

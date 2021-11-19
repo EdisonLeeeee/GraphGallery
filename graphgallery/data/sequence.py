@@ -247,16 +247,20 @@ class MiniBatchSequence(Sequence):
         inputs,
         y=None,
         out_index=None,
+        node_ids=None,
         **kwargs
     ):
 
         super().__init__(list(range(len(inputs))), collate_fn=self.collate_fn, batch_size=1, **kwargs)
-        self.inputs, self.y, self.out_index = self.astensors(inputs, y, out_index)
+        self.inputs, self.y, self.out_index, self.node_ids = self.astensors(inputs, y, out_index, node_ids)
 
     def collate_fn(self, index):
         index = index[0]
         inputs = self.inputs[index]
         y = self.y[index] if self.y is not None else None
         out_index = self.out_index[index] if self.out_index is not None else None
-
-        return inputs, y, out_index
+        node_ids = self.node_ids[index] if self.node_ids is not None else None
+        if node_ids is None:
+            return inputs, y, out_index
+        else:
+            return inputs, y, out_index, node_ids

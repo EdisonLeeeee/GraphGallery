@@ -383,21 +383,30 @@ class Trainer:
 
     @staticmethod
     def unravel_batch(batch):
-        inputs = labels = out_index = None
+        inputs = labels = out_index = others = None
         if isinstance(batch, (list, tuple)):
             inputs = batch[0]
             labels = batch[1]
-            if len(batch) > 2:
-                out_index = batch[-1]
+            lens = len(batch)
+            if lens > 2:
+                out_index = batch[2]
+                if lens > 3:
+                    others = batch[3:]
+
         else:
             inputs = batch
 
         if isinstance(labels, (list, tuple)) and len(labels) == 1:
             labels = labels[0]
+
         if isinstance(out_index, (list, tuple)) and len(out_index) == 1:
             out_index = out_index[0]
 
-        return inputs, labels, out_index
+        if others is None:
+            return inputs, labels, out_index
+        else:
+            others = others[0] if len(others) == 1 else others
+            return inputs, labels, out_index, others
 
     @staticmethod
     def to_item(value: Any) -> Any:
@@ -513,7 +522,7 @@ class Trainer:
 
     def _test_predict(self, index):
         logit = self.predict(index).cpu().numpy()
-        predict_class = logit.argmax(1)
+        predict_class = logit.argmax(-1)
         labels = self.graph.label[index]
         return (predict_class == labels).mean()
 
