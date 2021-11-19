@@ -36,6 +36,7 @@ class APPNP(nn.Module):
         for lin in self.lin:
             if hasattr(lin, "reset_parameters"):
                 lin.reset_parameters()
+        self.propagation.reset_parameters()
 
     def forward(self, x, g):
         x = self.lin(x)

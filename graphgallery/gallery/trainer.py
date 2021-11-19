@@ -7,7 +7,7 @@ import torch
 from torch import Tensor
 from typing import Optional, Union, Any, Callable, List
 
-from graphgallery.gallery.callbacks import Callback, CallbackList
+from graphgallery.gallery.callbacks import CallbackList, Scheduler, Optimizer
 from torch.utils.data import DataLoader, Dataset
 
 import graphgallery as gg
@@ -147,6 +147,7 @@ class Trainer:
         self._model = model.to(self.device)
 
         self.optimizer = self.config_optimizer()
+        self.scheduler = self.config_scheduler(self.optimizer)
         self.loss = self.config_loss()
         metrics = self.config_metrics()
 
@@ -198,7 +199,6 @@ class Trainer:
                     valid_logs = self.test_step(val_data)
                     logs.update({("val_" + k): self.to_item(v) for k, v in valid_logs.items()})
 
-                callbacks.on_train_batch_end(len(train_data), logs)
                 callbacks.on_epoch_end(epoch, logs)
 
                 if model.stop_training:
@@ -223,20 +223,19 @@ class Trainer:
         dict
             the output logs, including `loss` and `val_accuracy`, etc.
         """
-        optimizer = self.optimizer
         loss_fn = self.loss
         model = self.model
 
         self.reset_metrics()
         model.train()
 
-        for epoch, batch in enumerate(dataloader):
+        opt = self.optimizer
 
+        for epoch, batch in enumerate(dataloader):
             self.callbacks.on_train_batch_begin(epoch)
             x, y, out_index = self.unravel_batch(batch)
             x = self.to_device(x)
             y = self.to_device(y)
-            optimizer.zero_grad()
 
             if not isinstance(x, tuple):
                 x = x,
@@ -245,7 +244,6 @@ class Trainer:
                 out = out[out_index]
             loss = loss_fn(out, y)
             loss.backward()
-            optimizer.step()
             for metric in self.metrics:
                 metric.update_state(y.cpu(), out.detach().cpu())
             self.callbacks.on_train_batch_end(epoch)
@@ -312,7 +310,7 @@ class Trainer:
             )
 
         if not isinstance(predict_data, (DataLoader, Dataset)):
-            predict_data = self.predict_loader(predict_data)
+            predict_data = self.config_predict_data(predict_data)
 
         out = self.predict_step(predict_data).squeeze()
         if transform is not None:
@@ -344,6 +342,9 @@ class Trainer:
         weight_decay = self.cfg.get('weight_decay', 5e-4)
         return torch.optim.Adam(self.model.parameters(), lr=lr, weight_decay=weight_decay)
 
+    def config_scheduler(self, optimizer: torch.optim.Optimizer):
+        return None
+
     def config_loss(self) -> Callable:
         return torch.nn.CrossEntropyLoss()
 
@@ -352,6 +353,10 @@ class Trainer:
 
     def config_callbacks(self, verbose, epochs, callbacks=None) -> CallbackList:
         callbacks = CallbackList(callbacks=callbacks, add_history=True, add_progbar=True if verbose else False)
+        if self.optimizer is not None:
+            callbacks.append(Optimizer(self.optimizer))
+        if self.scheduler is not None:
+            callbacks.append(Scheduler(self.scheduler))
         callbacks.set_model(self.model)
         callbacks.set_params(dict(verbose=verbose, epochs=epochs))
         return callbacks
@@ -362,7 +367,7 @@ class Trainer:
     def config_test_data(self, inputs, **kwargs):
         return self.config_train_data(inputs, **kwargs)
 
-    def predict_loader(self, inputs, **kwargs):
+    def config_predict_data(self, inputs, **kwargs):
         return self.config_test_data(inputs, **kwargs)
 
     def freeze(self, module=None):

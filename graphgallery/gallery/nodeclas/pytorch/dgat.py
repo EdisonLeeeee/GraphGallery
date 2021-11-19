@@ -58,7 +58,6 @@ class DGAT(Trainer):
         dict
             the output logs, including `loss` and `val_accuracy`, etc.
         """
-        optimizer = self.optimizer
         loss_fn = self.loss
         model = self.model
 
@@ -72,7 +71,6 @@ class DGAT(Trainer):
             x, y, out_index = self.unravel_batch(batch)
             x = self.to_device(x)
             y = self.to_device(y)
-            optimizer.zero_grad()
 
             out = z = model(*x)
             if out_index is not None:
@@ -82,7 +80,6 @@ class DGAT(Trainer):
             loss += alpha * self.dgat_loss(x, z)
 
             loss.backward()
-            optimizer.step()
             for metric in self.metrics:
                 metric.update_state(y.cpu(), out.detach().cpu())
             self.callbacks.on_train_batch_end(epoch)

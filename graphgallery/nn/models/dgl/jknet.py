@@ -1,8 +1,5 @@
 import torch
 import torch.nn as nn
-from torch import optim
-
-from graphgallery.nn.metrics import Accuracy
 from graphgallery.nn.layers.pytorch import activations
 
 import dgl.function as fn
@@ -16,8 +13,6 @@ class JKNet(nn.Module):
                  acts=['relu'] * 5,
                  mode='cat',
                  dropout=0.5,
-                 weight_decay=5e-4,
-                 lr=0.005,
                  bias=True):
         super().__init__()
         self.mode = mode
@@ -45,10 +40,6 @@ class JKNet(nn.Module):
             self.attn = nn.Linear(2 * ((num_JK_layers * hid) // 2), 1)
 
         self.output = nn.Linear(hid, out_features)
-        self.compile(loss=nn.CrossEntropyLoss(),
-                     optimizer=optim.Adam(self.parameters(),
-                                          weight_decay=weight_decay, lr=lr),
-                     metrics=[Accuracy()])
 
     def reset_parameters(self):
         for conv in self.conv:

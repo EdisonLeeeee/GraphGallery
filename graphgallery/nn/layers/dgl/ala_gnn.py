@@ -3,6 +3,7 @@ import torch.nn as nn
 import dgl.function as fn
 from dgl.nn.pytorch import edge_softmax
 
+
 class GatedLayer(nn.Module):
     def __init__(
         self,
@@ -199,7 +200,8 @@ class GatedAttnLayer(nn.Module):
                 normagg = self.activation(normagg)
             new_h = feat + gate.unsqueeze(2) * normagg
             return new_h, z
-        
+
+
 def adaptive_reduce_func(nodes):
     """
     compute metrics and determine if we need to do neighborhood aggregation.
@@ -234,6 +236,7 @@ def adaptive_reduce_func(nodes):
         "f1": f1.to(device),
         "f2": f2.to(device),
     }
+
 
 def adaptive_attn_message_func(edges):
     return {

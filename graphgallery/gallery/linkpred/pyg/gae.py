@@ -1,9 +1,9 @@
 import numpy as np
+import graphgallery.nn.models.dgl as models
 from graphgallery.data.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.linkpred import PyG
 from graphgallery.gallery import Trainer
-from graphgallery.nn.models import get_model
 
 
 @PyG.register()
@@ -31,23 +31,18 @@ class GAE(Trainer):
                    hids=[32],
                    acts=['relu'],
                    dropout=0.,
-                   weight_decay=0.,
-                   lr=0.01,
                    bias=False):
 
-        model = get_model("GAE", self.backend)
-        model = model(self.graph.num_feats,
-                      out_features=out_features,
-                      hids=hids,
-                      acts=acts,
-                      dropout=dropout,
-                      weight_decay=weight_decay,
-                      lr=lr,
-                      bias=bias)
+        model = models.GAE(self.graph.num_feats,
+                           out_features=out_features,
+                           hids=hids,
+                           acts=acts,
+                           dropout=dropout,
+                           bias=bias)
 
         return model
 
-    def train_loader(self, edge_index):
+    def config_train_data(self, edge_index):
         if isinstance(edge_index, (list, tuple)):
             train_edges = edge_index[0]  # postive edge index
         else:
@@ -61,7 +56,7 @@ class GAE(Trainer):
                                      device=self.data_device)
         return sequence
 
-    def test_loader(self, edge_index):
+    def config_test_data(self, edge_index):
 
         if isinstance(edge_index, (list, tuple)):
             edge_index = np.hstack(edge_index)

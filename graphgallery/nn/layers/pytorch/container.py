@@ -3,27 +3,32 @@ import torch.nn as nn
 
 
 class Sequential(nn.Sequential):
-    def __init__(self, *args, reverse=False):
+
+    def __init__(self, *args, loc=0):
         super().__init__(*args)
-        self.reverse = reverse
-
-    def forward(self, *input):
-        input, others = split_input(input, reverse=self.reverse)
+        self.loc = loc
+        para_required = []
         for module in self:
-            assert hasattr(module, 'forward')
-            para_required = len(inspect.signature(module.forward).parameters)
+            assert hasattr(module, "forward"), module
+            para_required.append(len(inspect.signature(module.forward).parameters))
+        self._para_required = para_required
+
+    def forward(self, *inputs):
+        loc = self.loc
+        assert loc <= len(inputs)
+        output = inputs[loc]
+
+        for module, para_required in zip(self, self._para_required):
             if para_required == 1 and not isinstance(module, (MultiSequential, Tree)):
-                input = module(input)
-            else:
-                if self.reverse:
-                    input = module(*others, input)
+                input = inputs[loc]
+                if isinstance(input, tuple):
+                    output = tuple(module(_input) for _input in input)
                 else:
-                    input = module(input, *others)
-
-            if isinstance(input, tuple) and not isinstance(module, (MultiSequential, Tree)):
-                input, others = split_input(input, reverse=self.reverse)
-
-        return input
+                    output = module(input)
+            else:
+                output = module(*inputs)
+            inputs = inputs[:loc] + (output,) + inputs[loc + 1:]
+        return output
 
 
 class MultiSequential(nn.Sequential):
@@ -65,11 +70,3 @@ class Tree(nn.Sequential):
             middle += "\n"
         out += middle + ")"
         return out
-
-
-def split_input(input, reverse=True):
-    if reverse:
-        *others, input = input
-    else:
-        input, *others = input
-    return input, others

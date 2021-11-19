@@ -1,9 +1,5 @@
 import torch.nn as nn
-from torch import optim
-
 from graphgallery.nn.layers.pytorch import Sequential, activations
-from graphgallery.nn.metrics import Accuracy
-
 from dgl.nn.pytorch import GATConv
 
 
@@ -15,7 +11,7 @@ class GAT(nn.Module):
                  num_heads=[8],
                  acts=['elu'],
                  dropout=0.6,
-                 bias=False):
+                 bias=True):
 
         super().__init__()
         head = 1
@@ -39,20 +35,13 @@ class GAT(nn.Module):
                             bias=bias,
                             feat_drop=dropout,
                             attn_drop=dropout))
-        conv = Sequential(*conv, reverse=True)  # `reverse=True` is important
+        conv = Sequential(*conv, loc=1)  # loc=1 specifies the location of features
 
         self.conv = conv
-        self.compile(loss=nn.CrossEntropyLoss(),
-                     optimizer=optim.Adam([dict(params=conv[0].parameters(),
-                                                weight_decay=weight_decay),
-                                           dict(params=conv[1:].parameters(),
-                                                weight_decay=0.)], lr=lr),
-                     metrics=[Accuracy()])
 
     def reset_parameters(self):
         for conv in self.conv:
             conv.reset_parameters()
 
     def forward(self, x, g):
-        x = self.conv(g, x).mean(1)
-        return x
+        return self.conv(g, x).mean(1)

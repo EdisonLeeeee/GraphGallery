@@ -1,7 +1,8 @@
+import torch
+import graphgallery.nn.models.dgl as models
 from graphgallery.data.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery import Trainer
-from graphgallery.nn.models import get_model
 
 from graphgallery.gallery.nodeclas import DGL
 
@@ -21,41 +22,41 @@ class LGC(Trainer):
         graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
         attr_matrix = gf.get(feat_transform)(graph.attr_matrix)
-        X, G = gf.astensors(attr_matrix, adj_matrix, device=self.data_device)
+        feat, g = gf.astensors(attr_matrix, adj_matrix, device=self.data_device)
 
-        # ``G`` and ``X`` are cached for later use
-        self.register_cache(X=X, G=G)
+        # ``g`` and ``feat`` are cached for later use
+        self.register_cache(feat=feat, g=g)
 
     def model_step(self,
                    hids=[],
                    acts=[],
                    dropout=0.,
                    K=20,
-                   weight_decay=5e-5,
-                   lr=0.2,
                    bias=True):
 
-        model = get_model("LGC", self.backend)
-        model = model(self.graph.num_feats,
-                      self.graph.num_classes,
-                      hids=hids,
-                      acts=acts,
-                      K=K,
-                      dropout=dropout,
-                      weight_decay=weight_decay,
-                      lr=lr,
-                      bias=bias)
+        model = models.LGC(self.graph.num_feats,
+                           self.graph.num_classes,
+                           hids=hids,
+                           acts=acts,
+                           K=K,
+                           dropout=dropout,
+                           bias=bias)
 
         return model
 
-    def train_loader(self, index):
+    def config_train_data(self, index):
         labels = self.graph.label[index]
-        sequence = FullBatchSequence(inputs=[self.cache.X, self.cache.G],
+        sequence = FullBatchSequence(inputs=[self.cache.feat, self.cache.g],
                                      y=labels,
                                      out_index=index,
                                      device=self.data_device,
-                                     escape=type(self.cache.G))
+                                     escape=type(self.cache.g))
         return sequence
+
+    def config_optimizer(self) -> torch.optim.Optimizer:
+        lr = self.cfg.get('lr', 0.2)
+        weight_decay = self.cfg.get('weight_decay', 5e-5)
+        return torch.optim.Adam(self.model.parameters(), lr=lr, weight_decay=weight_decay)
 
 
 @DGL.register()
@@ -72,22 +73,22 @@ class EGC(LGC):
                    acts=[],
                    dropout=0.,
                    K=5,
-                   weight_decay=5e-4,
-                   lr=0.2,
                    bias=True):
 
-        model = get_model("EGC", self.backend)
-        model = model(self.graph.num_feats,
-                      self.graph.num_classes,
-                      hids=hids,
-                      acts=acts,
-                      K=K,
-                      dropout=dropout,
-                      weight_decay=weight_decay,
-                      lr=lr,
-                      bias=bias)
+        model = models.EGC(self.graph.num_feats,
+                           self.graph.num_classes,
+                           hids=hids,
+                           acts=acts,
+                           K=K,
+                           dropout=dropout,
+                           bias=bias)
 
         return model
+
+    def config_optimizer(self) -> torch.optim.Optimizer:
+        lr = self.cfg.get('lr', 0.2)
+        weight_decay = self.cfg.get('weight_decay', 5e-4)
+        return torch.optim.Adam(self.model.parameters(), lr=lr, weight_decay=weight_decay)
 
 
 @DGL.register()
@@ -105,38 +106,33 @@ class hLGC(Trainer):
         graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
         attr_matrix = gf.get(feat_transform)(graph.attr_matrix)
-        X, G = gf.astensors(attr_matrix, adj_matrix, device=self.data_device)
+        feat, g = gf.astensors(attr_matrix, adj_matrix, device=self.data_device)
 
-        # ``G`` and ``X`` are cached for later use
-        self.register_cache(X=X, G=G)
+        # ``g`` and ``feat`` are cached for later use
+        self.register_cache(feat=feat, g=g)
 
     def model_step(self,
                    hids=[],
                    acts=[],
                    dropout=0.,
                    K=10,
-                   weight_decay=5e-4,
-                   lr=0.01,
                    bias=True):
 
-        model = get_model("hLGC", self.backend)
-        model = model(self.graph.num_feats,
-                      self.graph.num_classes,
-                      hids=hids,
-                      acts=acts,
-                      K=K,
-                      dropout=dropout,
-                      weight_decay=weight_decay,
-                      lr=lr,
-                      bias=bias)
+        model = models.hLGC(self.graph.num_feats,
+                            self.graph.num_classes,
+                            hids=hids,
+                            acts=acts,
+                            K=K,
+                            dropout=dropout,
+                            bias=bias)
 
         return model
 
-    def train_loader(self, index):
+    def config_train_data(self, index):
         labels = self.graph.label[index]
-        sequence = FullBatchSequence(inputs=[self.cache.X, self.cache.G],
+        sequence = FullBatchSequence(inputs=[self.cache.feat, self.cache.g],
                                      y=labels,
                                      out_index=index,
                                      device=self.data_device,
-                                     escape=type(self.cache.G))
+                                     escape=type(self.cache.g))
         return sequence

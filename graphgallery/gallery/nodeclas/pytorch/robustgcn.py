@@ -1,8 +1,9 @@
+import torch
+import graphgallery.nn.models.pytorch as models
 from graphgallery.data.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
 from graphgallery.gallery import Trainer
-from graphgallery.nn.models import get_model
 
 
 @PyTorch.register()
@@ -32,27 +33,20 @@ class RobustGCN(Trainer):
                    hids=[64],
                    acts=['relu'],
                    dropout=0.5,
-                   weight_decay=5e-4,
-                   lr=0.01,
-                   kl=5e-4,
                    gamma=1.,
                    bias=False):
 
-        model = get_model("RobustGCN", self.backend)
-        model = model(self.graph.num_feats,
-                      self.graph.num_classes,
-                      hids=hids,
-                      acts=acts,
-                      dropout=dropout,
-                      weight_decay=weight_decay,
-                      kl=kl,
-                      gamma=gamma,
-                      lr=lr,
-                      bias=bias)
+        model = models.RobustGCN(self.graph.num_feats,
+                                 self.graph.num_classes,
+                                 hids=hids,
+                                 acts=acts,
+                                 dropout=dropout,
+                                 gamma=gamma,
+                                 bias=bias)
 
         return model
 
-    def train_loader(self, index):
+    def config_train_data(self, index):
 
         labels = self.graph.label[index]
         sequence = FullBatchSequence([self.cache.X, *self.cache.A],
@@ -60,3 +54,37 @@ class RobustGCN(Trainer):
                                      out_index=index,
                                      device=self.data_device)
         return sequence
+
+    def train_step(self, dataloader):
+        loss_fn = self.loss
+        model = self.model
+
+        self.reset_metrics()
+        model.train()
+
+        kl = self.cfg.get('kl', 5e-4)
+
+        for epoch, batch in enumerate(dataloader):
+            self.callbacks.on_train_batch_begin(epoch)
+            x, y, out_index = self.unravel_batch(batch)
+            x = self.to_device(x)
+            y = self.to_device(y)
+
+            if not isinstance(x, tuple):
+                x = x,
+            out = model(*x)[out_index]
+            # ================= add KL loss here =============================
+            mean, var = model.mean, model.var
+            kl_loss = -0.5 * torch.sum(torch.mean(1 + torch.log(var + 1e-8) -
+                                                  mean.pow(2) + var, dim=1))
+            loss = loss_fn(out, y) + kl * kl_loss
+            # ===============================================================
+            loss.backward()
+            for metric in self.metrics:
+                metric.update_state(y.cpu(), out.detach().cpu())
+            self.callbacks.on_train_batch_end(epoch)
+
+        metrics = [metric.result() for metric in self.metrics]
+        results = [loss.cpu().item()] + metrics
+
+        return dict(zip(self.metrics_names, results))

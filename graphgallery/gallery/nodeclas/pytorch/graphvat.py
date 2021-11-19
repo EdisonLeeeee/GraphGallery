@@ -60,7 +60,6 @@ class GraphVAT(Trainer):
         dict
             the output logs, including `loss` and `val_accuracy`, etc.
         """
-        optimizer = self.optimizer
         loss_fn = self.loss
         model = self.model
 
@@ -75,7 +74,6 @@ class GraphVAT(Trainer):
             x, y, out_index = self.unravel_batch(batch)
             x = self.to_device(x)
             y = self.to_device(y)
-            optimizer.zero_grad()
 
             feat, adj, adjacency = x
             # this is used to calculate the adversarial gradients
@@ -92,7 +90,6 @@ class GraphVAT(Trainer):
                 beta * self.graph_adversarial_loss((feat, adj), z, neighbors)
 
             loss.backward()
-            optimizer.step()
             for metric in self.metrics:
                 metric.update_state(y.cpu(), out.detach().cpu())
             self.callbacks.on_train_batch_end(epoch)

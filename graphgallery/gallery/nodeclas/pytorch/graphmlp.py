@@ -59,7 +59,6 @@ class GraphMLP(Trainer):
         return sequence
 
     def train_step(self, dataloader) -> dict:
-        optimizer = self.optimizer
         loss_fn = self.loss
         model = self.model
 
@@ -74,7 +73,6 @@ class GraphMLP(Trainer):
             x, y, out_index = self.unravel_batch(batch)
             x = self.to_device(x)
             y = self.to_device(y)
-            optimizer.zero_grad()
 
             if not isinstance(x, tuple):
                 x = x,
@@ -89,7 +87,6 @@ class GraphMLP(Trainer):
             # ===============================================
 
             loss.backward()
-            optimizer.step()
             for metric in self.metrics:
                 metric.update_state(y[0].cpu(), out.detach().cpu())
             self.callbacks.on_train_batch_end(epoch)

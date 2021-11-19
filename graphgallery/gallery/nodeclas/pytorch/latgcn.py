@@ -81,7 +81,6 @@ class LATGCN(Trainer):
         dict
             the output logs, including `loss` and `val_accuracy`, etc.
         """
-        optimizer = self.optimizer
         loss_fn = self.loss
         model = self.model
 
@@ -89,6 +88,7 @@ class LATGCN(Trainer):
         model.train()
 
         zeta_opt = self.zeta_opt
+        zeta = model.zeta
         gamma = self.cfg.get("gamma", 0.01)
         inner_epochs = self.cfg.get("inner_epochs", 20)
 
@@ -104,16 +104,14 @@ class LATGCN(Trainer):
                 zeta_opt.zero_grad()
                 _, reg_loss = model(*x)
                 reg_loss = -reg_loss
-                reg_loss.backward()
+                zeta.grad = torch.autograd.grad(reg_loss, zeta)[0]
                 zeta_opt.step()
 
-            optimizer.zero_grad()
             out, reg_loss = model(*x)
             if out_index is not None:
                 out = out[out_index]
             loss = loss_fn(out, y) + gamma * reg_loss
             loss.backward()
-            optimizer.step()
             for metric in self.metrics:
                 metric.update_state(y.cpu(), out.detach().cpu())
             self.callbacks.on_train_batch_end(epoch)

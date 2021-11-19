@@ -1,7 +1,4 @@
 import torch.nn as nn
-from torch import optim
-
-from graphgallery.nn.metrics import Accuracy
 from graphgallery.nn.layers.pytorch import Sequential, activations
 from graphgallery.nn.layers.dgl import MixHopConv
 
@@ -14,11 +11,7 @@ class MixHop(nn.Module):
                  acts=['tanh'] * 3,
                  p=[0, 1, 2],
                  dropout=0.5,
-                 weight_decay=5e-4,
-                 bias=False,
-                 lr=0.1,
-                 step_size=40,
-                 gamma=0.01):
+                 bias=False):
 
         super().__init__()
         conv = []
@@ -33,16 +26,9 @@ class MixHop(nn.Module):
             conv.append(activations.get(act))
             conv.append(nn.Dropout(dropout))
             in_features = hid * len(p)
-        conv.append(nn.Linear(in_features, out_features, bias=False))
-        conv = Sequential(*conv, reverse=True)  # `reverse=True` is important
+        conv.append(nn.Linear(in_features, out_features, bias=bias))
+        conv = Sequential(*conv, loc=1)  # loc=1 specifies the location of features
         self.conv = conv
-
-        optimizer = optim.SGD(self.parameters(),
-                              weight_decay=weight_decay, lr=lr)
-        self.compile(loss=nn.CrossEntropyLoss(),
-                     optimizer=optimizer,
-                     metrics=[Accuracy()],
-                     scheduler=optim.lr_scheduler.StepLR(optimizer, step_size, gamma=gamma))
 
     def reset_parameters(self):
         for conv in self.conv:

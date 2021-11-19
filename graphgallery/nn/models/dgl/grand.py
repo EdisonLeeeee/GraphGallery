@@ -90,6 +90,7 @@ class GRAND(nn.Module):
         self.temp = temp
         self.lam = lam
         self.dropout = dropout
+        self.S = S
 
     def forward(self, feats, graph):
         X = feats
@@ -108,31 +109,3 @@ class GRAND(nn.Module):
             X = GRANDConv(graph, drop_feat, self.K)
 
             return self.mlp(X)
-
-    def compute_loss(self, output_dict, y):
-        if self.training:
-            zs = output_dict['z']
-            preds = output_dict['pred']
-            loss_consis = consis_loss(zs, temp=self.temp, lam=self.lam)
-            loss_sup = 0.
-            for pred in preds:
-                loss_sup += self.loss(pred, y)
-            loss_sup = loss_sup / len(zs)
-            output_dict['pred'] = preds[0]
-            return loss_sup + loss_consis
-        else:
-            return super().compute_loss(output_dict, y)
-
-
-def consis_loss(logps, temp=0.5, lam=1.):
-    ps = [torch.exp(p) for p in logps]
-    ps = torch.stack(ps, dim=2)
-
-    avg_p = torch.mean(ps, dim=2)
-    sharp_p = (torch.pow(avg_p, 1. / temp) / torch.sum(torch.pow(avg_p, 1. / temp), dim=1, keepdim=True)).detach()
-
-    sharp_p = sharp_p.unsqueeze(2)
-    loss = torch.mean(torch.sum(torch.pow(ps - sharp_p, 2), dim=1, keepdim=True))
-
-    loss = lam * loss
-    return loss

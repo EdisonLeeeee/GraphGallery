@@ -78,7 +78,7 @@ class OBVAT(Trainer):
             z = model(*x)
             rnorm = r_adv.square().sum()  # l2 loss
             loss = rnorm - self.virtual_adversarial_loss(x, z)
-            loss.backward()
+            r_adv.grad = torch.autograd.grad(loss, r_adv)[0]
             optimizer.step()
 
         self.defrozen(model.conv)
@@ -96,7 +96,6 @@ class OBVAT(Trainer):
         dict
             the output logs, including `loss` and `val_accuracy`, etc.
         """
-        optimizer = self.optimizer
         loss_fn = self.loss
         model = self.model
 
@@ -115,8 +114,6 @@ class OBVAT(Trainer):
 
             self.pretrain(x)
 
-            optimizer.zero_grad()
-
             if not isinstance(x, tuple):
                 x = x,
 
@@ -128,7 +125,6 @@ class OBVAT(Trainer):
                 p2 * self.entropy_loss(z)
 
             loss.backward()
-            optimizer.step()
             for metric in self.metrics:
                 metric.update_state(y.cpu(), out.detach().cpu())
             self.callbacks.on_train_batch_end(epoch)

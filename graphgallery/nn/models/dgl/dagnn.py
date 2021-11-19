@@ -1,15 +1,16 @@
 import torch.nn as nn
-from torch import optim
-
 from graphgallery.nn.layers.dgl import DAGNNConv
 from graphgallery.nn.layers.pytorch import activations
-from graphgallery.nn.metrics import Accuracy
 
 
 class DAGNN(nn.Module):
-    def __init__(self, in_features, out_features, *,
-                 hids=[64], acts=['relu'],
-                 dropout=0.5, bias=False, K=10):
+    def __init__(self, in_features, out_features,
+                 *,
+                 hids=[64],
+                 acts=['relu'],
+                 dropout=0.5,
+                 bias=False,
+                 K=10):
         super().__init__()
 
         lin = []

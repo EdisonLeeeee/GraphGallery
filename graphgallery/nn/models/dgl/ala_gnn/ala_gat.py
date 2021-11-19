@@ -1,11 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch import optim
-
-from graphgallery.nn.models.torch_engine import to_device
-from graphgallery.nn.metrics import Accuracy
-
 from graphgallery.nn.layers.dgl import GatedAttnLayer
 from dgl.nn.pytorch import GATConv
 
@@ -18,26 +13,15 @@ class ALaGAT(nn.Module):
         num_nodes,
         num_heads,
         *,
-        binary_reg=0.0,
-        hids=[16] * 2,
+        hids=[8] * 2,
         acts=[None] * 2,
         dropout=0.5,
-        weight_decay=5e-6,
-        lr=0.01,
         bias=False,
         share_tau=True,
     ):
 
         super().__init__()
-        self.out_features = out_features
-        self.binary_reg = binary_reg
-
-        self.dropout = nn.Dropout(dropout)
-        self.global_tau1 = nn.Parameter(torch.tensor(0.5))
-        self.global_tau2 = nn.Parameter(torch.tensor(0.5))
-
-        self.attn_l = nn.Parameter(torch.FloatTensor(size=(1, num_heads, hids[0])))
-        self.attn_r = nn.Parameter(torch.FloatTensor(size=(1, num_heads, hids[0])))
+        assert len(hids) > 1
 
         conv = []
         for ix, (hid, act) in enumerate(zip(hids, acts)):
@@ -45,8 +29,7 @@ class ALaGAT(nn.Module):
                 layer = GATConv(in_features, hid,
                                 num_heads=num_heads,
                                 feat_drop=dropout,
-                                attn_drop=dropout,
-                                )
+                                attn_drop=dropout)
             else:
                 layer = GatedAttnLayer(in_features, hid,
                                        num_nodes,
@@ -54,20 +37,21 @@ class ALaGAT(nn.Module):
                                        bias=bias,
                                        activation=act,
                                        share_tau=share_tau,
-                                       lidx=ix,
-                                       )
+                                       lidx=ix)
 
             conv.append(layer)
             in_features = hid
 
         self.conv = nn.ModuleList(conv)
         self.lin = nn.Linear(in_features * num_heads, out_features, bias=bias)
+        self.init_weight_y = None
+        self.dropout = nn.Dropout(dropout)
+        self.global_tau1 = nn.Parameter(torch.tensor(0.5))
+        self.global_tau2 = nn.Parameter(torch.tensor(0.5))
 
-        self.compile(
-            loss=nn.CrossEntropyLoss(),
-            optimizer=optim.AdamW(self.parameters(), weight_decay=weight_decay, lr=lr),
-            metrics=[Accuracy()],
-        )
+        self.attn_l = nn.Parameter(torch.FloatTensor(size=(1, num_heads, hids[0])))
+        self.attn_r = nn.Parameter(torch.FloatTensor(size=(1, num_heads, hids[0])))
+
         self.reset_parameters()
 
     def reset_parameters(self):
@@ -81,23 +65,6 @@ class ALaGAT(nn.Module):
         gain = nn.init.calculate_gain("relu")
         nn.init.xavier_normal_(self.attn_l, gain=gain)
         nn.init.xavier_normal_(self.attn_r, gain=gain)
-
-    def on_train_begin(self):
-        feats = self.cache["x"]
-        label = self.cache["y"]
-        # initial weight_y is obtained by linear regression
-        A = torch.mm(feats.t(), feats) + 1e-05 * torch.eye(
-            feats.size(1), device=feats.device
-        )
-        # (feats, feats)
-        labels_one_hot = torch.zeros(
-            (feats.size(0), self.out_features), device=feats.device
-        )
-        labels_one_hot[torch.arange(label.size(0)), label] = 1
-        self.init_weight_y = torch.mm(
-            torch.mm(torch.cholesky_inverse(A), feats.t()), labels_one_hot
-        )
-        return
 
     def forward(self, x, g):
 
@@ -122,16 +89,10 @@ class ALaGAT(nn.Module):
                 h = self.dropout(h)
                 list_z.append(z.flatten())
 
-        z = self.lin(h.reshape(h.size(0), -1))
-        z_stack = torch.stack(list_z, dim=1)  # (n_nodes, n_layers)
-        return dict(z=z, z_stack=z_stack)
-
-    def compute_loss(self, output_dict, y):
-        pred = output_dict['pred']
-        loss = self.loss(pred, y)
+        z = self.lin(h.view(h.size(0), -1))
 
         if self.training:
-            z = output_dict['z_stack']
-            loss += torch.norm(z * (torch.ones_like(z) - z), p=1) * self.binary_reg
-
-        return loss
+            z_stack = torch.stack(list_z, dim=1)  # (n_nodes, n_layers)
+            return z, z_stack
+        else:
+            return z

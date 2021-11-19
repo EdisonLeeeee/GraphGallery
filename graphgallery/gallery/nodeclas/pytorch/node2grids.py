@@ -64,7 +64,6 @@ class Node2Grids(Trainer):
         dict
             the output logs, including `loss` and `val_accuracy`, etc.
         """
-        optimizer = self.optimizer
         loss_fn = self.loss
         model = self.model
 
@@ -78,7 +77,6 @@ class Node2Grids(Trainer):
             x, y, out_index = self.unravel_batch(batch)
             x = self.to_device(x)
             y = self.to_device(y)
-            optimizer.zero_grad()
 
             if not isinstance(x, tuple):
                 x = x,
@@ -90,7 +88,6 @@ class Node2Grids(Trainer):
             # <https://github.com/Ray-inthebox/Node2Gridss>
             # But what is it????
             loss.backward(loss)
-            optimizer.step()
             for metric in self.metrics:
                 metric.update_state(y.cpu(), out.detach().cpu())
             self.callbacks.on_train_batch_end(epoch)
