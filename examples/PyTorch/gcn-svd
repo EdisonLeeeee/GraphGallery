@@ -21,9 +21,10 @@ splits = data.split_nodes()
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
 graphgallery.set_backend("torch")
-from graphgallery.gallery.nodeclas import AGNN
+from graphgallery.gallery.nodeclas import GCN
 
-trainer = AGNN(device=device, seed=123).setup_graph(graph, feat_transform="normalize_feat").build()
+trainer = GCN(device=device, seed=123).setup_graph(graph, feat_transform="normalize_feat",
+                                                   graph_transform="SVD").build()
 cb = callbacks.ModelCheckpoint('model.pth', monitor='val_accuracy')
 trainer.fit(splits.train_nodes, splits.val_nodes, verbose=1, callbacks=[cb])
 results = trainer.evaluate(splits.test_nodes)

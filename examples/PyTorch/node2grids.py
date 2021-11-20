@@ -20,7 +20,7 @@ graph = data.graph
 splits = data.split_nodes()
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
-graphgallery.set_backend("pytorch")
+graphgallery.set_backend("torch")
 from graphgallery.gallery.nodeclas import Node2Grids
 
 trainer = Node2Grids(device=device, seed=123, batch_size_train=10).setup_graph(graph).build()

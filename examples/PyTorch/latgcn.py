@@ -20,7 +20,7 @@ graph = data.graph
 splits = data.split_nodes(random_state=15)
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
-graphgallery.set_backend("pytorch")
+graphgallery.set_backend("torch")
 from graphgallery.gallery.nodeclas import LATGCN
 
 trainer = LATGCN(device=device, seed=123).setup_graph(graph).build()

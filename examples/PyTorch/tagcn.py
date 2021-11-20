@@ -20,7 +20,7 @@ graph = data.graph
 splits = data.split_nodes()
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
-graphgallery.set_backend("pytorch")
+graphgallery.set_backend("torch")
 from graphgallery.gallery.nodeclas import TAGCN
 
 trainer = TAGCN(device=device, seed=123).setup_graph(graph, feat_transform="normalize_feat").build()
