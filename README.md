@@ -23,7 +23,7 @@
 </p>
 
 # GraphGallery
-GraphGallery is a gallery for benchmarking Graph Neural Networks (GNNs) [PyTorch](https://github.com/pytorch/pytorch) backend. Besides, [Pytorch Geometric (PyG)](https://github.com/pyg-team/pytorch_geometric) and [Deep Graph Library (DGL)](https://www.dgl.ai/) backend now are also alternative choices in GraphGallery.
+GraphGallery is a gallery for benchmarking Graph Neural Networks (GNNs) based on pure [PyTorch](https://github.com/pytorch/pytorch) backend. Alteratively, [Pytorch Geometric (PyG)](https://github.com/pyg-team/pytorch_geometric) and [Deep Graph Library (DGL)](https://www.dgl.ai/) backend are also available in GraphGallery.
 
 
 # 💨 NEWS
@@ -42,7 +42,7 @@ pip install -e . --verbose
 ```
 where `-e` means "editable" mode so you don't have to reinstall every time you make changes. 
 
-**NOTE**: GraphGallery is a frequently updated package, and currently we are not prepare for the `pypi` package, so DO NOT install GraphGallery with `pip`.
+**NOTE**: GraphGallery is a frequently updated package and DO NOT install GraphGallery with `pip`, we're currently working on releasing a binary distribution on `PyPI`, stay tuned!
 
 # 🤖 Implementations
 In detail, the following methods are currently implemented:
@@ -77,10 +77,10 @@ In detail, the following methods are currently implemented:
 | **RobustGCN**              | *Petar Veličković et al.*     | [Robust Graph Convolutional Networks Against Adversarial Attacks (KDD'19)](https://dl.acm.org/doi/10.1145/3292500.3330851)                                                | :heavy_check_mark: |                    |                    |
 | **SBVAT, OBVAT**           | *Zhijie Deng et al.*          | [Batch Virtual Adversarial Training for Graph Convolutional Networks (ICML'19)](https://arxiv.org/abs/1902.09192)                                                         | :heavy_check_mark: |                    |                    |
 | **SimPGCN**                | *Wei Jin et al.*              | [Node Similarity Preserving Graph Convolutional Networks (WSDM'21)](https://arxiv.org/abs/2011.09643)                                                                     | :heavy_check_mark: |                    |                    |
-| **GCN-VAT, GraphVAT**      | *Fuli Feng et al.*            | [Graph Adversarial Training: Dynamically Regularizing Based on Graph Structure (TKDE'19)](https://arxiv.org/abs/1902.08226)                                               | :heavy_check_mark: |                    |                    |
+| **GraphVAT**               | *Fuli Feng et al.*            | [Graph Adversarial Training: Dynamically Regularizing Based on Graph Structure (TKDE'19)](https://arxiv.org/abs/1902.08226)                                               | :heavy_check_mark: |                    |                    |
 | **LATGCN**                 | *Hongwei Jin et al.*          | [Latent Adversarial Training of Graph Convolution Networks (ICML@LRGSD'19)](https://graphreason.github.io/papers/35.pdf)                                                  | :heavy_check_mark: |                    |                    |
 | **DGAT**                   | *Weibo Hu et al.*             | [Robust graph convolutional networks with directional graph adversarial training (Applied Intelligence'19)](https://link.springer.com/article/10.1007/s10489-021-02272-y) | :heavy_check_mark: |                    |                    |
-| **MedianGCN , TrimmedGCN** | *Liang Chen et al.*           | [Understanding Structural Vulnerability in Graph Convolutional Networks](https://arxiv.org/abs/2108.06280)                                                                | :heavy_check_mark: | :heavy_check_mark: |                    |
+| **MedianGCN, TrimmedGCN** | *Liang Chen et al.*           | [Understanding Structural Vulnerability in Graph Convolutional Networks](https://arxiv.org/abs/2108.06280)                                                                | :heavy_check_mark: | :heavy_check_mark: |                    |
 
 #### Graph Purification
 
@@ -141,8 +141,6 @@ print(f'Test loss {results.loss:.5}, Test accuracy {results.accuracy:.2%}')
 ```
 ## Example of GAE (Link Prediction Task)
 
-It takes just a few lines of code.
-
 ```python
 import torch
 import graphgallery
@@ -160,7 +158,8 @@ from graphgallery.gallery.linkpred import GAE
 trainer = GAE(device=device, seed=123).setup_graph(graph).build()
 cb = callbacks.ModelCheckpoint('model.pth', monitor='val_ap')
 trainer.fit(splits.train_pos_edge_index,
-            val_data=(splits.val_pos_edge_index, splits.val_neg_edge_index), verbose=1, callbacks=[cb])
+            val_data=(splits.val_pos_edge_index, splits.val_neg_edge_index), 
+            verbose=1, callbacks=[cb])
 results = trainer.evaluate((splits.test_pos_edge_index, splits.test_neg_edge_index))
 print(results)
 ```
@@ -187,10 +186,10 @@ This is motivated by [gnn-benchmark](https://github.com/shchur/gnn-benchmark/)
 ```python
 from graphgallery.data import Graph
 
-# Load the adjacency matrix A, attribute matrix X and labels vector y
+# Load the adjacency matrix A, attribute (feature) matrix X and labels vector y
 # A - scipy.sparse.csr_matrix of shape [num_nodes, num_nodes]
-# X - scipy.sparse.csr_matrix or np.ndarray of shape [num_nodes, num_feats]
-# y - np.ndarray of shape [num_nodes]
+# X - scipy.sparse.csr_matrix or numpy.ndarray of shape [num_nodes, num_feats]
+# y - numpy.ndarray of shape [num_nodes]
 
 mydataset = Graph(adj_matrix=A, attr_matrix=X, label=y)
 # save dataset
@@ -211,7 +210,6 @@ mydataset = Graph.from_npz('path/to/mydataset.npz')
 - [ ] Comprehensive tutorials
 
 # ❓ FAQ
-
 Please fell free to contact me if you have any troubles.
 
 # 😘 Acknowledgement
