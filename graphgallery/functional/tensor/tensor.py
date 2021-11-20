@@ -1,4 +1,5 @@
 import torch
+import warnings
 import numpy as np
 import scipy.sparse as sp
 import graphgallery as gg
@@ -65,10 +66,18 @@ def astensor(x, *, dtype=None, device=None, escape=None) -> torch.Tensor:
 
     if is_tensor(x):
         tensor = x.to(dtype)
+
     elif sp.isspmatrix(x):
         if gg.backend() == "dgl":
             import dgl
-            tensor = dgl.from_scipy(x, idtype=torch.int64)
+
+            if x.sum() != x.nnz:
+                warnings.warn("Got a weighted sparse matrix with elements not equal to 1. "
+                              "The element weights can be accessed by `g.edata['_edge_weight'].`")
+                tensor = dgl.from_scipy(x, idtype=torch.int64, eweight_name="_edge_weight")
+            else:
+                tensor = dgl.from_scipy(x, idtype=torch.int64)
+
         elif gg.backend() == "pyg":
             edge_index, edge_weight = gf.sparse_adj_to_edge(x)
             return (astensor(edge_index,
