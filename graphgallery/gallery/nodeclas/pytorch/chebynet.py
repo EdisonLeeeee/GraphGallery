@@ -3,11 +3,11 @@ import graphgallery.nn.models.pytorch as models
 from graphgallery.data.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
-from graphgallery.gallery import Trainer
+from graphgallery.gallery.nodeclas import NodeClasTrainer
 
 
 @PyTorch.register()
-class ChebyNet(Trainer):
+class ChebyNet(NodeClasTrainer):
     """
         Implementation of Chebyshev Graph Convolutional Networks (ChebyNet).
         `Convolutional Neural Networks on Graphs with Fast Localized Spectral Filtering <https://arxiv.org/abs/1606.09375>`

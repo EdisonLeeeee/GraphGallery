@@ -3,11 +3,11 @@ import graphgallery.nn.models.pytorch as models
 from graphgallery.data.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
-from graphgallery.gallery import Trainer
+from graphgallery.gallery.nodeclas import NodeClasTrainer
 
 
 @PyTorch.register()
-class DAGNN(Trainer):
+class DAGNN(NodeClasTrainer):
     """
         Implementation of Deep Adaptive Graph Neural Network (DAGNN).
         `Towards Deeper Graph Neural Networks <https://arxiv.org/abs/2007.09296>`

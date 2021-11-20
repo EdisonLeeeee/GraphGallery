@@ -4,11 +4,11 @@ import graphgallery.nn.models.pytorch as models
 from graphgallery.data.sequence import FullBatchSequence, Sequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
-from graphgallery.gallery import Trainer
+from graphgallery.gallery.nodeclas import NodeClasTrainer
 
 
 @PyTorch.register()
-class GraphMLP(Trainer):
+class GraphMLP(NodeClasTrainer):
     """
         Implementation of Graph-MLP.
         `Graph-MLP: Node Classification without Message Passing in Graph

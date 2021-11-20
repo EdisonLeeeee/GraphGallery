@@ -3,11 +3,11 @@ import graphgallery.nn.models.pyg as models
 from graphgallery.data.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyG
-from graphgallery.gallery import Trainer
+from graphgallery.gallery.nodeclas import NodeClasTrainer
 
 
 @PyG.register()
-class PDN(Trainer):
+class PDN(NodeClasTrainer):
     """
         Implementation of Pathfinder Discovery Networks (PDN). 
         `Pathfinder Discovery Networks for Neural Message Passing 

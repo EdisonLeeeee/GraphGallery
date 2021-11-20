@@ -2,14 +2,14 @@ import torch
 import numpy as np
 import graphgallery.nn.models.pytorch as models
 from graphgallery.data.sequence import MiniBatchSequence
-from graphgallery.gallery import Trainer
+from graphgallery.gallery.nodeclas import NodeClasTrainer
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
 from torch.utils.data import DataLoader, Dataset
 
 
 @PyTorch.register()
-class ClusterGCN(Trainer):
+class ClusterGCN(NodeClasTrainer):
     """
         Implementation of Cluster Graph Convolutional Networks (ClusterGCN).
 

@@ -3,11 +3,11 @@ import graphgallery.nn.models.pyg as models
 from graphgallery.data.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyG
-from graphgallery.gallery import Trainer
+from graphgallery.gallery.nodeclas import NodeClasTrainer
 
 
 @PyG.register()
-class GCN(Trainer):
+class GCN(NodeClasTrainer):
     """
         Implementation of Graph Convolutional Networks (GCN). 
         `Semi-Supervised Classification with Graph Convolutional Networks 
@@ -65,7 +65,7 @@ class GCN(Trainer):
 
 
 @PyG.register()
-class DropEdge(Trainer):
+class DropEdge(NodeClasTrainer):
     """
         Implementation of Graph Convolutional Networks (GCN) with DropEdge. 
     """
@@ -119,7 +119,7 @@ class DropEdge(Trainer):
 
 
 @PyG.register()
-class RDrop(Trainer):
+class RDrop(NodeClasTrainer):
     """
         Implementation of Graph Convolutional Networks (GCN) with R-Drop regularization
         in `R-Drop: Regularized Dropout for Neural Networks<https://arxiv.org/abs/2106.14448>`__

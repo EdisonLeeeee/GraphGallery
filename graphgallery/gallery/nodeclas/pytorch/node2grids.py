@@ -3,12 +3,12 @@ import graphgallery.nn.models.pytorch as models
 from graphgallery.data.sequence import FeatureLabelSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
-from graphgallery.gallery import Trainer
+from graphgallery.gallery.nodeclas import NodeClasTrainer
 from graphgallery.functional.graph_level import Node2GridsMapper
 
 
 @PyTorch.register()
-class Node2Grids(Trainer):
+class Node2Grids(NodeClasTrainer):
     """
         Implementation of Node2Gridss.
         `Node2Grids: A Cost-Efficient Uncoupled Training Framework for Large-Scale Graph Learning`

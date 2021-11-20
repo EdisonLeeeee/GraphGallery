@@ -4,12 +4,12 @@ import graphgallery.nn.models.pytorch as models
 from graphgallery.data.sequence import NullSequence, FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
-from graphgallery.gallery import Trainer
+from graphgallery.gallery.nodeclas import NodeClasTrainer
 from .utils import *
 
 
 @PyTorch.register()
-class GraphVAT(Trainer):
+class GraphVAT(NodeClasTrainer):
     """
         Implementation of Graph Convolutional Networks (GCN) with Virtual Adversarial Training (VAT).
         `Graph Adversarial Training: Dynamically Regularizing Based on Graph Structure

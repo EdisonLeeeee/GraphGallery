@@ -2,12 +2,12 @@ import torch
 import graphgallery.nn.models.dgl as models
 from graphgallery.data.sequence import FullBatchSequence
 from graphgallery import functional as gf
-from graphgallery.gallery import Trainer
+from graphgallery.gallery.nodeclas import NodeClasTrainer
 from graphgallery.gallery.nodeclas import DGL
 
 
 @DGL.register()
-class SGC(Trainer):
+class SGC(NodeClasTrainer):
     """
         Implementation of Simplifying Graph Convolutional Networks (SGC). 
         `Simplifying Graph Convolutional Networks <https://arxiv.org/abs/1902.07153>`

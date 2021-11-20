@@ -2,11 +2,11 @@ import graphgallery.nn.models.pytorch as models
 from graphgallery.data.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
-from graphgallery.gallery import Trainer
+from graphgallery.gallery.nodeclas import NodeClasTrainer
 
 
 @PyTorch.register()
-class AGNN(Trainer):
+class AGNN(NodeClasTrainer):
     """
         Implementation of Attention-based Graph Neural Network (AGNN).
         ` Attention-based Graph Neural Network for semi-supervised learning

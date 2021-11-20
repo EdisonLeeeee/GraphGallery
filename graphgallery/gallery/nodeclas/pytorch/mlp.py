@@ -1,11 +1,11 @@
 from graphgallery.data.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
-from graphgallery.gallery import Trainer
+from graphgallery.gallery.nodeclas import NodeClasTrainer
 
 
 @PyTorch.register()
-class MLP(Trainer):
+class MLP(NodeClasTrainer):
 
     def data_step(self,
                   feat_transform=None):

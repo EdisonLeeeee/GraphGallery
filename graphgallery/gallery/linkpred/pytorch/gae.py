@@ -3,11 +3,11 @@ import graphgallery.nn.models.pytorch as models
 from graphgallery.data.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.linkpred import PyTorch
-from graphgallery.gallery.linkpred import LinkpredTrainer
+from graphgallery.gallery.linkpred import LinkPredTrainer
 
 
 @PyTorch.register()
-class GAE(LinkpredTrainer):
+class GAE(LinkPredTrainer):
     """Implementation of Graph adjutoEncoder (GAE) in
     `Variational Graph adjuto-Encoders
     <https://arxiv.org/abs/1611.07308>`

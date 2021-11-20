@@ -3,11 +3,11 @@ import graphgallery.nn.models.pyg as models
 from graphgallery.data.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.linkpred import PyG
-from graphgallery.gallery.linkpred import LinkpredTrainer
+from graphgallery.gallery.linkpred import LinkPredTrainer
 
 
 @PyG.register()
-class GAE(LinkpredTrainer):
+class GAE(LinkPredTrainer):
     """Implementation of Graph AutoEncoder (GAE) in
     `Variational Graph Auto-Encoders
     <https://arxiv.org/abs/1611.07308>`

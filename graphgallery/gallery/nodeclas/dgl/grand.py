@@ -2,13 +2,13 @@ import torch
 import graphgallery.nn.models.dgl as models
 from graphgallery.data.sequence import FullBatchSequence
 from graphgallery import functional as gf
-from graphgallery.gallery import Trainer
+from graphgallery.gallery.nodeclas import NodeClasTrainer
 
 from graphgallery.gallery.nodeclas import DGL
 
 
 @DGL.register()
-class GRAND(Trainer):
+class GRAND(NodeClasTrainer):
     """
         Implementation of GRAND. 
         `Graph Random Neural Network for Semi-Supervised Learning on Graphs  

@@ -1,3 +1,4 @@
+from .nodeclas_trainer import NodeClasTrainer
 from .registered_models import (PyTorch, PyG, DGL, MAPPING)
 
 import graphgallery

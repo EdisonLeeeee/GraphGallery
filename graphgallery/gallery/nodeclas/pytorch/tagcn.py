@@ -2,11 +2,11 @@ import graphgallery.nn.models.pytorch as models
 from graphgallery.data.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
-from graphgallery.gallery import Trainer
+from graphgallery.gallery.nodeclas import NodeClasTrainer
 
 
 @PyTorch.register()
-class TAGCN(Trainer):
+class TAGCN(NodeClasTrainer):
     """
         Implementation of Topology Adaptive Graph Convolutional Networks <https://arxiv.org/abs/1710.10370> 
         Tensorflow 1.x implementation: <https://github.com/krohak/TAGCN>

@@ -3,11 +3,11 @@ import graphgallery.nn.models.pyg as models
 from graphgallery.data.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyG
-from graphgallery.gallery import Trainer
+from graphgallery.gallery.nodeclas import NodeClasTrainer
 
 
 @PyG.register()
-class MedianGCN(Trainer):
+class MedianGCN(NodeClasTrainer):
     """
         Implementation of Graph Convolutional Networks with Median aggregation (MedianGCN). 
         `Understanding Structural Vulnerability in Graph Convolutional Networks 

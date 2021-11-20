@@ -10,7 +10,7 @@ from graphgallery.nn.losses import BCELoss
 from graphgallery.functional import negative_sampling
 
 
-class LinkpredTrainer(Trainer):
+class LinkPredTrainer(Trainer):
     def train_step(self, dataloader: DataLoader) -> dict:
         """One-step training on the input dataloader.
 

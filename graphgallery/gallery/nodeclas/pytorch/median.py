@@ -3,11 +3,11 @@ import graphgallery.nn.models.pytorch as models
 from graphgallery.data.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
-from graphgallery.gallery import Trainer
+from graphgallery.gallery.nodeclas import NodeClasTrainer
 
 
 @PyTorch.register()
-class MedianGCN(Trainer):
+class MedianGCN(NodeClasTrainer):
     """
         Implementation of Graph Convolutional Networks with Median aggregation (MedianGCN). 
         `Understanding Structural Vulnerability in Graph Convolutional Networks 
@@ -63,7 +63,7 @@ class MedianGCN(Trainer):
 
 
 @PyTorch.register()
-class TrimmedGCN(Trainer):
+class TrimmedGCN(NodeClasTrainer):
     """
         Implementation of Graph Convolutional Networks with Trimmed mean aggregation (TrimmedGCN). 
         `Understanding Structural Vulnerability in Graph Convolutional Networks 

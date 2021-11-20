@@ -3,11 +3,11 @@ from graphgallery.nn.layers.pytorch import SGConv
 from graphgallery.data.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
-from graphgallery.gallery import Trainer
+from graphgallery.gallery.nodeclas import NodeClasTrainer
 
 
 @PyTorch.register()
-class SGC(Trainer):
+class SGC(NodeClasTrainer):
     """
         Implementation of Simplifying Graph Convolutional Networks (SGC). 
         `Simplifying Graph Convolutional Networks <https://arxiv.org/abs/1902.07153>`

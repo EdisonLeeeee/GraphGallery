@@ -2,11 +2,11 @@ import graphgallery.nn.models.pytorch as models
 from graphgallery.data.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
-from graphgallery.gallery import Trainer
+from graphgallery.gallery.nodeclas import NodeClasTrainer
 
 
 @PyTorch.register()
-class GWNN(Trainer):
+class GWNN(NodeClasTrainer):
     """
         Implementation of Graph Wavelet Neural Networks (GWNN). 
         `Graph Wavelet Neural Network <https://arxiv.org/abs/1904.07785>`

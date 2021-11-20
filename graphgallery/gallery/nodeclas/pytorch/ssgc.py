@@ -4,11 +4,11 @@ from graphgallery.nn.layers.pytorch import SSGConv
 from graphgallery.data.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
-from graphgallery.gallery import Trainer
+from graphgallery.gallery.nodeclas import NodeClasTrainer
 
 
 @PyTorch.register()
-class SSGC(Trainer):
+class SSGC(NodeClasTrainer):
     """
         Implementation of Simple Spectral Graph Convolution (SSGC). 
         `Simple Spectral Graph Convolution <https://openreview.net/forum?id=CYO5T-YjWZV>`

@@ -3,11 +3,11 @@ import graphgallery.nn.models.pytorch as models
 from graphgallery.data.sequence import FastGCNBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
-from graphgallery.gallery import Trainer
+from graphgallery.gallery.nodeclas import NodeClasTrainer
 
 
 @PyTorch.register()
-class FastGCN(Trainer):
+class FastGCN(NodeClasTrainer):
     """
         Implementation of Fast Graph Convolutional Networks (FastGCN).
         `FastGCN: Fast Learning with Graph Convolutional Networks via Importance Sampling 

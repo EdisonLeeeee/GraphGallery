@@ -1,7 +1,6 @@
 import sys
 import inspect
-import numpy as np
-
+import warnings
 import torch
 
 from torch import Tensor
@@ -13,7 +12,6 @@ from torch.utils.data import DataLoader, Dataset
 import graphgallery as gg
 from graphgallery import functional as gf
 from graphgallery.utils import Progbar
-from graphgallery.nn.metrics import Accuracy
 
 
 def format_doc(d):
@@ -98,6 +96,13 @@ class Trainer:
         """
         self.cache_clear()
 
+        attr_transform = kwargs.pop("attr_transform", None)
+
+        if attr_transform:
+            warnings.warn("Argument 'attr_transform' is deprecated and will removed in future version, "
+                          "please use 'feat_transform' instead.")
+            kwargs['feat_transform'] = attr_transform
+
         self.graph = gf.get(graph_transform)(graph)
         if device is not None:
             self.data_device = torch.device(device)
@@ -176,6 +181,12 @@ class Trainer:
         validation = val_data is not None
 
         if validation:
+            if callbacks is None:
+                warnings.warn("You are currently using validation data with any validation callbacks. "
+                              "In the newer version of graphgallery (>=1.1.0), "
+                              "we will no longer add ModelCheckpoint callback automatically. "
+                              "Please ensure the behavior is intended.")
+
             if not isinstance(val_data, (DataLoader, Dataset)):
                 val_data = self.config_test_data(val_data)
 
@@ -337,18 +348,16 @@ class Trainer:
         return torch.cat(outs, dim=0)
 
     def config_optimizer(self) -> torch.optim.Optimizer:
-        lr = self.cfg.get('lr', 0.01)
-        weight_decay = self.cfg.get('weight_decay', 5e-4)
-        return torch.optim.Adam(self.model.parameters(), lr=lr, weight_decay=weight_decay)
+        raise NotImplementedError
 
     def config_scheduler(self, optimizer: torch.optim.Optimizer):
         return None
 
     def config_loss(self) -> Callable:
-        return torch.nn.CrossEntropyLoss()
+        raise NotImplementedError
 
     def config_metrics(self) -> Callable:
-        return Accuracy()
+        raise NotImplementedError
 
     def config_callbacks(self, verbose, epochs, callbacks=None) -> CallbackList:
         callbacks = CallbackList(callbacks=callbacks, add_history=True, add_progbar=True if verbose else False)
@@ -520,31 +529,25 @@ class Trainer:
 
     __str__ = __repr__
 
-    def _test_predict(self, index):
-        logit = self.predict(index).cpu().numpy()
-        predict_class = logit.argmax(-1)
-        labels = self.graph.label[index]
-        return (predict_class == labels).mean()
-
     def help(self, return_msg=False):
         """return help message for the `trainer`"""
 
         msg = f"""
-**************************************Help Message for {self.name}******************************************
-|First, initialize a trainer object, run `trainer={self.name}(device='cpu', seed=42)                  |
-------------------------------------------------------------------------------------------------------------
-|Second, setup a graph, run `trainer.setup_graph()`, the reqiured argument are:                      |
+====================================Help Message for {self.name}===================================
+|First, initialize a trainer object, run `trainer={self.name}(device='cpu', seed=42)                |
+===================================================================================================
+|Second, setup a graph, run `trainer.setup_graph()`, the reqiured argument are:                    |
 {make_docs(self.setup_graph, self.data_step)}
-------------------------------------------------------------------------------------------------------------
-|Third, build your model, run `trainer.build()`, the reqiured argument are:                          |
+===================================================================================================
+|Third, build your model, run `trainer.build()`, the reqiured argument are:                        |
 {make_docs(self.build, self.model_step)} 
-------------------------------------------------------------------------------------------------------------
-|Fourth, train your model, run `trainer.fit()`, the reqiured argument are:                           |
+===================================================================================================
+|Fourth, train your model, run `trainer.fit()`, the reqiured argument are:                         |
 {make_docs(self.fit)} 
-------------------------------------------------------------------------------------------------------------
-|Finally and optionally, evaluate your model, run `trainer.evaluate()`, the reqiured argument are:   |
+===================================================================================================
+|Finally and optionally, evaluate your model, run `trainer.evaluate()`, the reqiured argument are: |
 {make_docs(self.evaluate)} 
-------------------------------------------------------------------------------------------------------------
+===================================================================================================
 """
         if return_msg:
             return msg

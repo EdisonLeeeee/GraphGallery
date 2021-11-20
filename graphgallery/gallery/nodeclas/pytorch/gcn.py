@@ -3,11 +3,11 @@ import graphgallery.nn.models.pytorch as models
 from graphgallery.data.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
-from graphgallery.gallery import Trainer
+from graphgallery.gallery.nodeclas import NodeClasTrainer
 
 
 @PyTorch.register()
-class GCN(Trainer):
+class GCN(NodeClasTrainer):
     """
         Implementation of Graph Convolutional Networks (GCN).
         `Semi-Supervised Classification with Graph Convolutional Networks

@@ -6,11 +6,11 @@ import graphgallery.nn.models.pytorch as models
 from graphgallery.data.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
-from graphgallery.gallery import Trainer
+from graphgallery.gallery.nodeclas import NodeClasTrainer
 
 
 @PyTorch.register()
-class SimPGCN(Trainer):
+class SimPGCN(NodeClasTrainer):
     """
         Implementation of Similarity Preserving Graph Convolutional Networks (SimPGCN).
         `Node Similarity Preserving Graph Convolutional Networks

@@ -2,12 +2,12 @@ import torch
 import graphgallery.nn.models.dgl as models
 from graphgallery.data.sequence import FullBatchSequence
 from graphgallery import functional as gf
-from graphgallery.gallery import Trainer
+from graphgallery.gallery.nodeclas import NodeClasTrainer
 from graphgallery.gallery.nodeclas import DGL
 
 
 @DGL.register()
-class MixHop(Trainer):
+class MixHop(NodeClasTrainer):
     """
         Implementation of MixHop Graph Convolutional layer from paper `MixHop: Higher-Order Graph Convolutional Architecturesvia Sparsified Neighborhood Mixing
         <https://arxiv.org/abs/1905.00067>`

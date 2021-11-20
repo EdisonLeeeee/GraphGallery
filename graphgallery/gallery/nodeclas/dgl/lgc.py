@@ -2,13 +2,13 @@ import torch
 import graphgallery.nn.models.dgl as models
 from graphgallery.data.sequence import FullBatchSequence
 from graphgallery import functional as gf
-from graphgallery.gallery import Trainer
+from graphgallery.gallery.nodeclas import NodeClasTrainer
 
 from graphgallery.gallery.nodeclas import DGL
 
 
 @DGL.register()
-class LGC(Trainer):
+class LGC(NodeClasTrainer):
     """
         Implementation of Linear Graph Convolution (LGC). 
         `Simple Graph Convolutional Networks <https://arxiv.org/abs/2106.05809>`
@@ -92,7 +92,7 @@ class EGC(LGC):
 
 
 @DGL.register()
-class hLGC(Trainer):
+class hLGC(NodeClasTrainer):
     """
         Implementation of Hyper Linear Graph Convolution (hLGC). 
         `Simple Graph Convolutional Networks <https://arxiv.org/abs/2106.05809>`

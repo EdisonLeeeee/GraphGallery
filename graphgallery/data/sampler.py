@@ -7,8 +7,6 @@ try:
     from glcore import neighbor_sampler_cpu
 except ModuleNotFoundError:
     neighbor_sampler_cpu = None
-    import sys
-    print("'neighbor_sampler_cpu' is not enabled, maybe you should re-install glcore again.", file=sys.stderr)
 
 
 class NeighborSampler:
@@ -60,6 +58,10 @@ class NeighborSampler:
         """
         if not torch.is_tensor(nodes):
             nodes = torch.LongTensor(nodes)
+
+        if neighbor_sampler_cpu is None:
+            raise RuntimeWarning("'neighbor_sampler_cpu' is not installed, please refer to "
+                                 "'https://github.com/EdisonLeeeee/glcore' for more information.")
 
         targets, neighbors, e_id = neighbor_sampler_cpu(self.rowptr, self.col, nodes, size, replace)
 

@@ -3,11 +3,11 @@ import graphgallery.nn.models.pytorch as models
 from graphgallery.data.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
-from graphgallery.gallery import Trainer
+from graphgallery.gallery.nodeclas import NodeClasTrainer
 
 
 @PyTorch.register()
-class APPNP(Trainer):
+class APPNP(NodeClasTrainer):
     """Implementation of approximated personalized propagation of neural 
         predictions (APPNP).
         `Predict then Propagate: Graph Neural Networks meet Personalized
@@ -71,7 +71,7 @@ class APPNP(Trainer):
 
 
 @PyTorch.register()
-class PPNP(Trainer):
+class PPNP(NodeClasTrainer):
     """Implementation of exact personalized propagation of neural 
         predictions (PPNP).
         `Predict then Propagate: Graph Neural Networks meet Personalized

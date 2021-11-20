@@ -1,13 +1,13 @@
 import graphgallery.nn.models.dgl as models
 from graphgallery.data.sequence import FullBatchSequence
 from graphgallery import functional as gf
-from graphgallery.gallery import Trainer
+from graphgallery.gallery.nodeclas import NodeClasTrainer
 
 from graphgallery.gallery.nodeclas import DGL
 
 
 @DGL.register()
-class APPNP(Trainer):
+class APPNP(NodeClasTrainer):
     """Implementation of approximated personalized propagation of neural 
         predictions (APPNP).
         `Predict then Propagate: Graph Neural Networks meet Personalized

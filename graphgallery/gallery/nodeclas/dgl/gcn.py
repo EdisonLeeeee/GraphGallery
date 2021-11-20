@@ -1,12 +1,12 @@
 import graphgallery.nn.models.dgl as models
 from graphgallery.data.sequence import FullBatchSequence
 from graphgallery import functional as gf
-from graphgallery.gallery import Trainer
+from graphgallery.gallery.nodeclas import NodeClasTrainer
 from graphgallery.gallery.nodeclas import DGL
 
 
 @DGL.register()
-class GCN(Trainer):
+class GCN(NodeClasTrainer):
     """
         Implementation of Graph Convolutional Networks (GCN). 
         `Semi-Supervised Classification with Graph Convolutional Networks 

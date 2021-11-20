@@ -2,11 +2,11 @@ import graphgallery.nn.models.pytorch as models
 from graphgallery.data.sequence import SAGESequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
-from graphgallery.gallery import Trainer
+from graphgallery.gallery.nodeclas import NodeClasTrainer
 
 
 @PyTorch.register()
-class GraphSAGE(Trainer):
+class GraphSAGE(NodeClasTrainer):
     """
         Implementation of SAmple and aggreGatE Graph Convolutional Networks (GraphSAGE). 
         `Inductive Representation Learning on Large Graphs <https://arxiv.org/abs/1706.02216>`

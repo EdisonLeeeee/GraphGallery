@@ -4,12 +4,12 @@ import graphgallery.nn.models.pytorch as models
 from graphgallery.data.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyTorch
-from graphgallery.gallery import Trainer
+from graphgallery.gallery.nodeclas import NodeClasTrainer
 from .utils import *
 
 
 @PyTorch.register()
-class DGAT(Trainer):
+class DGAT(NodeClasTrainer):
     """
         Implementation of Graph Convolutional Networks with directional graph adversarial training (DGAT).
         `Robust graph convolutional networks with directional graph adversarial training

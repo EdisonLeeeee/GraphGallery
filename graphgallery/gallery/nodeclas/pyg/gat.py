@@ -3,11 +3,11 @@ import graphgallery.nn.models.pyg as models
 from graphgallery.data.sequence import FullBatchSequence
 from graphgallery import functional as gf
 from graphgallery.gallery.nodeclas import PyG
-from graphgallery.gallery import Trainer
+from graphgallery.gallery.nodeclas import NodeClasTrainer
 
 
 @PyG.register()
-class GAT(Trainer):
+class GAT(NodeClasTrainer):
     """
         Implementation of Graph Attention Networks (GAT).
         `Graph Attention Networks <https://arxiv.org/abs/1710.10903>`
