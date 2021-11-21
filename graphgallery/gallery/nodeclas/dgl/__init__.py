@@ -8,3 +8,5 @@ from .mixhop import MixHop
 from .ala_gnn import ALaGCN, ALaGAT
 from .grand import GRAND
 from .lgc import LGC, EGC, hLGC
+from .mediangcn import MedianGCN
+from .robustgcn import RobustGCN

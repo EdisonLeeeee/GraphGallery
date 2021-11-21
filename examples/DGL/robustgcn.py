@@ -2,30 +2,29 @@
 # coding: utf-8
 
 import torch
+import dgl
 import graphgallery
-from graphgallery.datasets import NPZDataset
+from graphgallery.datasets import Planetoid
 from graphgallery.gallery import callbacks
 
 print("GraphGallery version: ", graphgallery.__version__)
 print("PyTorch version: ", torch.__version__)
+print("DGL version: ", dgl.__version__)
 
 '''
 Load Datasets
 - cora/citeseer/pubmed
 '''
-
-
-data = NPZDataset('cora', root="~/GraphData/datasets/", verbose=False, transform='standardize')
+data = Planetoid('cora', root="~/GraphData/datasets/", verbose=False)
 graph = data.graph
-splits = data.split_nodes(random_state=15)
+splits = data.split_nodes()
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
-graphgallery.set_backend("torch")
-from graphgallery.gallery.nodeclas import MedianGCN, TrimmedGCN
+graphgallery.set_backend("dgl")
 
-trainer = MedianGCN(device=device, seed=123).setup_graph(graph, feat_transform=None).build()
-# trainer = TrimmedGCN(device=device, seed=123).setup_graph(graph, feat_transform=None).build()
+from graphgallery.gallery.nodeclas import RobustGCN
+trainer = RobustGCN(device=device, seed=42).setup_graph(graph, feat_transform="normalize_feat").build()
 cb = callbacks.ModelCheckpoint('model.pth', monitor='val_accuracy')
-trainer.fit(splits.train_nodes, splits.val_nodes, verbose=1, callbacks=[cb])
+trainer.fit(splits.train_nodes, splits.val_nodes, verbose=1, callbacks=[cb], epochs=200)
 results = trainer.evaluate(splits.test_nodes)
 print(f'Test loss {results.loss:.5}, Test accuracy {results.accuracy:.2%}')
