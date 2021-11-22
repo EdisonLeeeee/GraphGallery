@@ -16,7 +16,7 @@ class TAGCN(NodeClasTrainer):
 
     def data_step(self,
                   adj_transform=("normalize_adj",
-                                 dict(fill_weight=0.0)),
+                                 dict(add_self_loop=False)),
                   feat_transform=None):
 
         graph = self.graph

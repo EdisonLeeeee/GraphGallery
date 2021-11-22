@@ -21,7 +21,7 @@ def cheby_basis(adj_matrix, K=2, rate=-0.5):
     """Calculate Chebyshev polynomials up to K k. Return a list of sparse matrices (tuple representation)."""
 
     assert K >= 2, K
-    adj_normalized = normalize_adj(adj_matrix, rate=rate, fill_weight=1.0)
+    adj_normalized = normalize_adj(adj_matrix, rate=rate, add_self_loop=True)
     I = sp.eye(adj_matrix.shape[0], dtype=adj_matrix.dtype, format='csr')
     laplacian = I - adj_normalized
     largest_eigval = sp.linalg.eigsh(laplacian,
