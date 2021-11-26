@@ -38,7 +38,7 @@ class TrimmedGCN(nn.Module):
                  out_features,
                  hids=[16],
                  acts=['relu'],
-                 tperc=0.45,
+                 alpha=0.45,
                  dropout=0.5,
                  bias=False):
 
@@ -49,13 +49,13 @@ class TrimmedGCN(nn.Module):
             conv.append(TrimmedConv(in_features,
                                     hid,
                                     bias=bias,
-                                    tperc=tperc))
+                                    alpha=alpha))
             conv.append(activations.get(act))
             conv.append(nn.Dropout(dropout))
             in_features = hid
         conv.append(TrimmedConv(in_features, out_features,
                                 bias=bias,
-                                tperc=tperc))
+                                alpha=alpha))
         conv = Sequential(*conv)
 
         self.conv = conv

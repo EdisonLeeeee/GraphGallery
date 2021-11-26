@@ -121,7 +121,7 @@ class HomoGraph(BaseGraph):
     @property
     def y(self):
         """Alias of label."""
-        return self.ny
+        return self.label
 
     @property
     def gy(self):
