@@ -53,6 +53,6 @@ class SGC(NodeClasTrainer):
         return sequence
 
     def config_optimizer(self) -> torch.optim.Optimizer:
-        lr = self.cfg.get('lr', 0.2)
+        lr = self.cfg.get('lr', 0.1)
         weight_decay = self.cfg.get('weight_decay', 5e-5)
         return torch.optim.Adam(self.model.parameters(), lr=lr, weight_decay=weight_decay)
