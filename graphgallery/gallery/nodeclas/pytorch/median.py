@@ -89,14 +89,14 @@ class TrimmedGCN(NodeClasTrainer):
                    hids=[16],
                    acts=['relu'],
                    dropout=0.5,
-                   tperc=0.45,
+                   alpha=0.45,
                    bias=False):
 
         model = models.TrimmedGCN(self.graph.num_feats,
                                   self.graph.num_classes,
                                   hids=hids,
                                   acts=acts,
-                                  tperc=tperc,
+                                  alpha=alpha,
                                   dropout=dropout,
                                   bias=bias)
         return model

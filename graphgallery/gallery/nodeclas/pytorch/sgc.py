@@ -1,3 +1,4 @@
+import torch
 import graphgallery.nn.models.pytorch as models
 from graphgallery.nn.layers.pytorch import SGConv
 from graphgallery.data.sequence import FullBatchSequence
@@ -49,3 +50,9 @@ class SGC(NodeClasTrainer):
         feat = self.cache.feat[index]
         sequence = FullBatchSequence(feat, labels, device=self.data_device)
         return sequence
+
+    def config_optimizer(self) -> torch.optim.Optimizer:
+        lr = self.cfg.get('lr', 0.1)
+        weight_decay = self.cfg.get('weight_decay', 5e-5)
+        return torch.optim.Adam(self.model.parameters(),
+                                weight_decay=weight_decay, lr=lr)

@@ -121,7 +121,7 @@ class HomoGraph(BaseGraph):
     @property
     def y(self):
         """Alias of label."""
-        return self.ny
+        return self.label
 
     @property
     def gy(self):
@@ -145,11 +145,11 @@ class HomoGraph(BaseGraph):
         g.adj_matrix = gf.remove_self_loop(A)
         return g
 
-    def add_self_loop(self, fill_weight=1.0):
+    def add_self_loop(self, add_self_loop=True):
         g = self.copy()
         A = g.adj_matrix
         assert A is not None
-        g.adj_matrix = gf.add_self_loop(A, fill_weight=fill_weight)
+        g.adj_matrix = gf.add_self_loop(A, add_self_loop=add_self_loop)
         return g
 
     def is_directed(self) -> bool:

@@ -2,8 +2,7 @@ from .gcn import GCNConv
 from .gat import GATConv, SparseGATConv
 from .sgc import SGConv
 from .trainable_sgc import TrainableSGConv
-from .median import MedianConv
-from .trimmed_conv import TrimmedConv
+from .median import MedianConv, TrimmedConv
 from .dagnn import DAGNNConv
 from .tagcn import TAGConv
 from .appnp import APPNProp, PPNProp

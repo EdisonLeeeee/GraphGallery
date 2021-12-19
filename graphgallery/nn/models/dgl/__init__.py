@@ -7,5 +7,7 @@ from .jknet import JKNet
 from .mixhop import MixHop
 from .grand import GRAND
 from .lgc import LGC, EGC, hLGC
+from .mediangcn import MedianGCN
+from .robust_gcn import RobustGCN
 
 from . import ala_gnn
