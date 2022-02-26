@@ -18,7 +18,8 @@ class JKNet(nn.Module):
         self.mode = mode
         num_JK_layers = len(list(hids)) - 1  # number of JK layers
 
-        assert num_JK_layers >= 1 and len(set(hids)) == 1, 'the number of hidden layers should be greated than 2 and the hidden units must be equal'
+        assert num_JK_layers >= 1 and len(set(
+            hids)) == 1, 'the number of hidden layers should be greater than 2 and the hidden units must be equal'
 
         conv = []
         self.dropout = nn.Dropout(dropout)
@@ -36,7 +37,8 @@ class JKNet(nn.Module):
         if self.mode == 'cat':
             hid = hid * (num_JK_layers + 1)
         elif self.mode == 'lstm':
-            self.lstm = nn.LSTM(hid, (num_JK_layers * hid) // 2, bidirectional=True, batch_first=True)
+            self.lstm = nn.LSTM(hid, (num_JK_layers * hid) //
+                                2, bidirectional=True, batch_first=True)
             self.attn = nn.Linear(2 * ((num_JK_layers * hid) // 2), 1)
 
         self.output = nn.Linear(hid, out_features)
