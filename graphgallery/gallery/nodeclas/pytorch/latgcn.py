@@ -24,7 +24,8 @@ class LATGCN(NodeClasTrainer):
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
         attr_matrix = gf.get(feat_transform)(graph.attr_matrix)
 
-        feat, adj = gf.astensors(attr_matrix, adj_matrix, device=self.data_device)
+        feat, adj = gf.astensors(
+            attr_matrix, adj_matrix, device=self.data_device)
 
         # ``adj`` and ``feat`` are cached for later use
         self.register_cache(feat=feat, adj=adj)
@@ -74,7 +75,7 @@ class LATGCN(NodeClasTrainer):
         Parameters
         ----------
         dataloader : DataLoader
-            the trianing dataloader
+            the training dataloader
 
         Returns
         -------

@@ -17,7 +17,7 @@ class LinkPredTrainer(Trainer):
         Parameters
         ----------
         dataloader : DataLoader
-            the trianing dataloader
+            the training dataloader
 
         Returns
         -------
@@ -43,7 +43,8 @@ class LinkPredTrainer(Trainer):
             # here `out_index` maybe pos_edge_index
             # or (pos_edge_index, neg_edge_index)
             if isinstance(out_index, (list, tuple)):
-                assert len(out_index) == 2, '`out_index` should be (pos_edge_index, neg_edge_index) or pos_edge_index'
+                assert len(
+                    out_index) == 2, '`out_index` should be (pos_edge_index, neg_edge_index) or pos_edge_index'
                 pos_edge_index, neg_edge_index = out_index
             else:
                 pos_edge_index, neg_edge_index = out_index, None

@@ -26,7 +26,8 @@ class OBVAT(NodeClasTrainer):
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
         attr_matrix = gf.get(feat_transform)(graph.attr_matrix)
 
-        feat, adj = gf.astensors(attr_matrix, adj_matrix, device=self.data_device)
+        feat, adj = gf.astensors(
+            attr_matrix, adj_matrix, device=self.data_device)
 
         # ``adj`` and ``feat`` are cached for later use
         self.register_cache(feat=feat, adj=adj)
@@ -44,7 +45,8 @@ class OBVAT(NodeClasTrainer):
                            dropout=dropout,
                            bias=bias)
 
-        model.r_adv = torch.nn.Parameter(torch.zeros(self.graph.num_nodes, self.graph.num_feats))
+        model.r_adv = torch.nn.Parameter(torch.zeros(
+            self.graph.num_nodes, self.graph.num_feats))
 
         return model
 
@@ -89,7 +91,7 @@ class OBVAT(NodeClasTrainer):
         Parameters
         ----------
         dataloader : DataLoader
-            the trianing dataloader
+            the training dataloader
 
         Returns
         -------
@@ -143,5 +145,6 @@ class OBVAT(NodeClasTrainer):
 
     def entropy_loss(self, logit):
         q = F.softmax(logit, dim=-1)
-        cross_entropy = softmax_cross_entropy_with_logits(logits=logit, labels=q)
+        cross_entropy = softmax_cross_entropy_with_logits(
+            logits=logit, labels=q)
         return cross_entropy.mean()

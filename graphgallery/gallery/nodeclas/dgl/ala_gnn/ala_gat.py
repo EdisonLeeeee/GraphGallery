@@ -22,7 +22,8 @@ class ALaGAT(NodeClasTrainer):
         graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
         attr_matrix = gf.get(feat_transform)(graph.attr_matrix)
-        feat, g = gf.astensors(attr_matrix, adj_matrix, device=self.data_device)
+        feat, g = gf.astensors(attr_matrix, adj_matrix,
+                               device=self.data_device)
 
         # ``g`` and ``feat`` are cached for later use
         self.register_cache(feat=feat, g=g)
@@ -54,7 +55,8 @@ class ALaGAT(NodeClasTrainer):
         # initial weight_y is obtained by linear regression
         feat = self.cache.feat.to(self.device)
         labels = gf.astensor(labels, device=self.device)
-        A = torch.mm(feat.t(), feat) + 1e-05 * torch.eye(feat.size(1), device=feat.device)
+        A = torch.mm(feat.t(), feat) + 1e-05 * \
+            torch.eye(feat.size(1), device=feat.device)
         labels_one_hot = feat.new_zeros(feat.size(0), self.graph.num_classes)
         labels_one_hot[torch.arange(labels.size(0)), labels] = 1
         self.model.init_weight_y = torch.mm(
@@ -89,7 +91,7 @@ class ALaGAT(NodeClasTrainer):
         Parameters
         ----------
         dataloader : DataLoader
-            the trianing dataloader
+            the training dataloader
 
         Returns
         -------
@@ -115,7 +117,8 @@ class ALaGAT(NodeClasTrainer):
             out, z = model(*x)
             if out_index is not None:
                 out = out[out_index]
-            loss = loss_fn(out, y) + torch.norm(z * (torch.ones_like(z) - z), p=1) * binary_reg
+            loss = loss_fn(out, y) + torch.norm(z *
+                                                (torch.ones_like(z) - z), p=1) * binary_reg
             loss.backward()
             for metric in self.metrics:
                 metric.update_state(y.cpu(), out.detach().cpu())

@@ -22,7 +22,8 @@ class GRAND(NodeClasTrainer):
         graph = self.graph
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
         attr_matrix = gf.get(feat_transform)(graph.attr_matrix)
-        feat, g = gf.astensors(attr_matrix, adj_matrix, device=self.data_device)
+        feat, g = gf.astensors(attr_matrix, adj_matrix,
+                               device=self.data_device)
 
         # ``g`` and ``feat`` are cached for later use
         self.register_cache(feat=feat, g=g)
@@ -63,7 +64,7 @@ class GRAND(NodeClasTrainer):
         Parameters
         ----------
         dataloader : DataLoader
-            the trianing dataloader
+            the training dataloader
 
         Returns
         -------
@@ -110,10 +111,12 @@ def consis_loss(logps, temp=0.5, lam=1.):
     ps = torch.stack(ps, dim=2)
 
     avg_p = torch.mean(ps, dim=2)
-    sharp_p = (torch.pow(avg_p, 1. / temp) / torch.sum(torch.pow(avg_p, 1. / temp), dim=1, keepdim=True)).detach()
+    sharp_p = (torch.pow(avg_p, 1. / temp) /
+               torch.sum(torch.pow(avg_p, 1. / temp), dim=1, keepdim=True)).detach()
 
     sharp_p = sharp_p.unsqueeze(2)
-    loss = torch.mean(torch.sum(torch.pow(ps - sharp_p, 2), dim=1, keepdim=True))
+    loss = torch.mean(
+        torch.sum(torch.pow(ps - sharp_p, 2), dim=1, keepdim=True))
 
     loss = lam * loss
     return loss

@@ -27,19 +27,23 @@ class SimPGCN(NodeClasTrainer):
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
         attr_matrix = gf.get(feat_transform)(graph.attr_matrix)
 
-        feat, adj = gf.astensors(attr_matrix, adj_matrix, device=self.data_device)
+        feat, adj = gf.astensors(
+            attr_matrix, adj_matrix, device=self.data_device)
 
         # ``adj`` and ``feat`` are cached for later use
         self.register_cache(feat=feat, adj=adj)
 
         if recalculate:
-            # Uses this to save time for structure evation attack
+            # Uses this to save time for structure evasion attack
             # NOTE: Please make sure the node attribute matrix remains the same if recalculate=False
-            knn_graph = gf.normalize_adj(gf.knn_graph(attr_matrix), add_self_loop=False)
+            knn_graph = gf.normalize_adj(
+                gf.knn_graph(attr_matrix), add_self_loop=False)
             pseudo_labels, node_pairs = gf.attr_sim(attr_matrix)
-            knn_graph, pseudo_labels = gf.astensors(knn_graph, pseudo_labels, device=self.data_device)
+            knn_graph, pseudo_labels = gf.astensors(
+                knn_graph, pseudo_labels, device=self.data_device)
 
-            self.register_cache(knn_graph=knn_graph, pseudo_labels=pseudo_labels, node_pairs=node_pairs)
+            self.register_cache(
+                knn_graph=knn_graph, pseudo_labels=pseudo_labels, node_pairs=node_pairs)
 
     def model_step(self,
                    hids=[64],
@@ -64,7 +68,7 @@ class SimPGCN(NodeClasTrainer):
         Parameters
         ----------
         dataloader : DataLoader
-            the trianing dataloader
+            the training dataloader
 
         Returns
         -------
@@ -92,7 +96,8 @@ class SimPGCN(NodeClasTrainer):
                 out = out[out_index]
 
             y, pseudo_labels, node_pairs = y
-            loss = loss_fn(out, y) + lambda_ * regression_loss(model, embeddings, pseudo_labels, node_pairs)
+            loss = loss_fn(out, y) + lambda_ * regression_loss(model,
+                                                               embeddings, pseudo_labels, node_pairs)
             loss.backward()
             for metric in self.metrics:
                 metric.update_state(y.cpu(), out.detach().cpu())
@@ -108,7 +113,8 @@ class SimPGCN(NodeClasTrainer):
         labels = self.graph.label[index]
         cache = self.cache
         sequence = FullBatchSequence(inputs=[cache.feat, cache.adj, cache.knn_graph],
-                                     y=[labels, cache.pseudo_labels, cache.node_pairs],
+                                     y=[labels, cache.pseudo_labels,
+                                         cache.node_pairs],
                                      out_index=index,
                                      device=self.data_device)
         return sequence
@@ -131,10 +137,12 @@ def regression_loss(model, embeddings, pseudo_labels, node_pairs):
         embeddings0 = embeddings[node_pairs[0][sampled]]
         embeddings1 = embeddings[node_pairs[1][sampled]]
         embeddings = model.linear(torch.abs(embeddings0 - embeddings1))
-        loss = F.mse_loss(embeddings, pseudo_labels[sampled].unsqueeze(-1), reduction='mean')
+        loss = F.mse_loss(
+            embeddings, pseudo_labels[sampled].unsqueeze(-1), reduction='mean')
     else:
         embeddings0 = embeddings[node_pairs[0]]
         embeddings1 = embeddings[node_pairs[1]]
         embeddings = model.linear(torch.abs(embeddings0 - embeddings1))
-        loss = F.mse_loss(embeddings, pseudo_labels.unsqueeze(-1), reduction='mean')
+        loss = F.mse_loss(
+            embeddings, pseudo_labels.unsqueeze(-1), reduction='mean')
     return loss

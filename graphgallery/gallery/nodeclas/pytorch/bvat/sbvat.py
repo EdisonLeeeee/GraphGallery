@@ -26,10 +26,12 @@ class SBVAT(NodeClasTrainer):
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
         attr_matrix = gf.get(feat_transform)(graph.attr_matrix)
 
-        feat, adj = gf.astensors(attr_matrix, adj_matrix, device=self.data_device)
+        feat, adj = gf.astensors(
+            attr_matrix, adj_matrix, device=self.data_device)
 
         # ``adj`` and ``feat`` are cached for later use
-        self.register_cache(feat=feat, adj=adj, neighbors=gf.find_4o_nbrs(adj_matrix))
+        self.register_cache(feat=feat, adj=adj,
+                            neighbors=gf.find_4o_nbrs(adj_matrix))
 
     def model_step(self,
                    hids=[16],
@@ -73,7 +75,7 @@ class SBVAT(NodeClasTrainer):
         Parameters
         ----------
         dataloader : DataLoader
-            the trianing dataloader
+            the training dataloader
 
         Returns
         -------
@@ -139,5 +141,6 @@ class SBVAT(NodeClasTrainer):
 
     def entropy_loss(self, logit):
         q = F.softmax(logit, dim=-1)
-        cross_entropy = softmax_cross_entropy_with_logits(logits=logit, labels=q)
+        cross_entropy = softmax_cross_entropy_with_logits(
+            logits=logit, labels=q)
         return cross_entropy.mean()

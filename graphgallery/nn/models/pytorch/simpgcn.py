@@ -61,7 +61,7 @@ class SimPGCN(nn.Module):
             glorot_uniform(s)
 
         for b in self.bias:
-            # fill in b with postive value to make
+            # fill in b with positive value to make
             # score s closer to 1 at the beginning
             zeros(b)
 
@@ -84,7 +84,8 @@ class SimPGCN(nn.Module):
         for ix, (layer, act) in enumerate(zip(self.layers, self.act_layers)):
             s = torch.sigmoid(x @ self.scores[ix] + self.bias[ix])
             Dk = x @ self.D_k[ix] + self.D_bias[ix]
-            x = s * act(layer(x, adj)) + (1 - s) * act(layer(x, adj_knn)) + gamma * Dk * act(layer(x))
+            x = s * act(layer(x, adj)) + (1 - s) * \
+                act(layer(x, adj_knn)) + gamma * Dk * act(layer(x))
 
             if ix < len(self.layers) - 1:
                 x = self.dropout(x)

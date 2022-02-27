@@ -29,7 +29,8 @@ class Node2Grids(NodeClasTrainer):
         attr_matrix = gf.get(feat_transform)(graph.attr_matrix)
         mapper = Node2GridsMapper(adj_matrix, attr_matrix, biasfactor=biasfactor,
                                   mapsize_a=mapsize_a, mapsize_b=mapsize_b)
-        self.register_cache(mapper=mapper, mapsize_a=mapsize_a, mapsize_b=mapsize_b)
+        self.register_cache(
+            mapper=mapper, mapsize_a=mapsize_a, mapsize_b=mapsize_b)
 
     def model_step(self,
                    hids=[200],
@@ -57,7 +58,7 @@ class Node2Grids(NodeClasTrainer):
         Parameters
         ----------
         dataloader : DataLoader
-            the trianing dataloader
+            the training dataloader
 
         Returns
         -------
@@ -83,7 +84,8 @@ class Node2Grids(NodeClasTrainer):
             out = model(*x)
             if out_index is not None:
                 out = out[out_index]
-            loss = loss_fn(out, y) + att_reg * torch.sum(model.attention.view(-1).square())
+            loss = loss_fn(out, y) + att_reg * \
+                torch.sum(model.attention.view(-1).square())
             # here I exactly follow the author's implementation in
             # <https://github.com/Ray-inthebox/Node2Gridss>
             # But what is it????
@@ -101,14 +103,16 @@ class Node2Grids(NodeClasTrainer):
         batch_size_train = self.cfg.get("batch_size_train", 8)
         labels = self.graph.label[index]
         node_grids = self.cache.mapper.map_node(index).transpose((0, 3, 1, 2))
-        sequence = FeatureLabelSequence(node_grids, labels, device=self.data_device, batch_size=batch_size_train, shuffle=False)
+        sequence = FeatureLabelSequence(
+            node_grids, labels, device=self.data_device, batch_size=batch_size_train, shuffle=False)
         return sequence
 
     def config_test_data(self, index):
         batch_size_test = self.cfg.get("batch_size_test", 1000)
         labels = self.graph.label[index]
         node_grids = self.cache.mapper.map_node(index).transpose((0, 3, 1, 2))
-        sequence = FeatureLabelSequence(node_grids, labels, device=self.data_device, batch_size=batch_size_test)
+        sequence = FeatureLabelSequence(
+            node_grids, labels, device=self.data_device, batch_size=batch_size_test)
         return sequence
 
     def config_optimizer(self) -> torch.optim.Optimizer:

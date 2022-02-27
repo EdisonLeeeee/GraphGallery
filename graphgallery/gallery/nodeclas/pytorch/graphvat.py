@@ -26,8 +26,10 @@ class GraphVAT(NodeClasTrainer):
         adj_matrix = gf.get(adj_transform)(graph.adj_matrix)
         attr_matrix = gf.get(feat_transform)(graph.attr_matrix)
 
-        feat, adj = gf.astensors(attr_matrix, adj_matrix, device=self.data_device)
-        self.sampler = gf.ToNeighborMatrix(num_neighbors, self_loop=False, add_dummy=False)
+        feat, adj = gf.astensors(
+            attr_matrix, adj_matrix, device=self.data_device)
+        self.sampler = gf.ToNeighborMatrix(
+            num_neighbors, self_loop=False, add_dummy=False)
 
         # ``adj`` and ``feat`` are cached for later use
         self.register_cache(feat=feat, adj=adj, adjacency=adj_matrix)
@@ -53,7 +55,7 @@ class GraphVAT(NodeClasTrainer):
         Parameters
         ----------
         dataloader : DataLoader
-            the trianing dataloader
+            the training dataloader
 
         Returns
         -------
@@ -130,7 +132,8 @@ class GraphVAT(NodeClasTrainer):
     def graph_adversarial_loss(self, inputs, logit, neighbors):
         feat, adj = inputs
         neighbor_logits = logit[neighbors.t()].detach()
-        r_gadv = self.generate_graph_adversarial_perturbation(feat, logit, neighbor_logits)
+        r_gadv = self.generate_graph_adversarial_perturbation(
+            feat, logit, neighbor_logits)
         logit_m = self.model(feat + r_gadv, adj)
         gat_loss = neighbor_kld_with_logit(neighbor_logits, logit_m)
         return gat_loss

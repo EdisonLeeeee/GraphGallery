@@ -22,10 +22,12 @@ class DGAT(NodeClasTrainer):
                   feat_transform=None):
 
         graph = self.graph
-        adj_matrix = gf.get(adj_transform)(graph.adj_matrix).A  # as dense matrix
+        adj_matrix = gf.get(adj_transform)(
+            graph.adj_matrix).A  # as dense matrix
         attr_matrix = gf.get(feat_transform)(graph.attr_matrix)
 
-        feat, adj = gf.astensors(attr_matrix, adj_matrix, device=self.data_device)
+        feat, adj = gf.astensors(
+            attr_matrix, adj_matrix, device=self.data_device)
 
         # ``adj`` and ``feat`` are cached for later use
         self.register_cache(feat=feat, adj=adj)
@@ -51,7 +53,7 @@ class DGAT(NodeClasTrainer):
         Parameters
         ----------
         dataloader : DataLoader
-            the trianing dataloader
+            the training dataloader
 
         Returns
         -------
@@ -100,7 +102,8 @@ class DGAT(NodeClasTrainer):
         logit_p = logit.detach()
         logit_m = self.model(feat_new, adj_para)
         dist = kld_with_logits(logit_p, logit_m)
-        grad = torch.autograd.grad(dist, adj_para, retain_graph=True)[0].detach()
+        grad = torch.autograd.grad(
+            dist, adj_para, retain_graph=True)[0].detach()
 
         adj_new = epsilon * get_normalized_vector(grad * adj)
         feat_new = self.generate_feat(feat, adj_new)

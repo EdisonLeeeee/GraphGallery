@@ -146,7 +146,8 @@ class Trainer:
         other arguments (if have) will be passed into your method 'model_step'.
         """
         if self._graph is None:
-            raise RuntimeError("Please call 'trainer.setup_graph(graph)' first.")
+            raise RuntimeError(
+                "Please call 'trainer.setup_graph(graph)' first.")
 
         model, kwargs = gf.wrapper(self.model_step)(**kwargs)
         self._model = model.to(self.device)
@@ -191,7 +192,8 @@ class Trainer:
                 val_data = self.config_test_data(val_data)
 
         # Setup callbacks
-        self.callbacks = callbacks = self.config_callbacks(verbose, epochs, callbacks=callbacks)
+        self.callbacks = callbacks = self.config_callbacks(
+            verbose, epochs, callbacks=callbacks)
 
         logs = gf.BunchDict()
         model.stop_training = False
@@ -204,11 +206,13 @@ class Trainer:
             for epoch in range(epochs):
                 callbacks.on_epoch_begin(epoch)
                 train_logs = self.train_step(train_data)
-                logs.update({k: self.to_item(v) for k, v in train_logs.items()})
+                logs.update({k: self.to_item(v)
+                            for k, v in train_logs.items()})
 
                 if validation:
                     valid_logs = self.test_step(val_data)
-                    logs.update({("val_" + k): self.to_item(v) for k, v in valid_logs.items()})
+                    logs.update({("val_" + k): self.to_item(v)
+                                for k, v in valid_logs.items()})
 
                 callbacks.on_epoch_end(epoch, logs)
 
@@ -227,7 +231,7 @@ class Trainer:
         Parameters
         ----------
         dataloader : DataLoader
-            the trianing dataloader
+            the training dataloader
 
         Returns
         -------
@@ -360,7 +364,8 @@ class Trainer:
         raise NotImplementedError
 
     def config_callbacks(self, verbose, epochs, callbacks=None) -> CallbackList:
-        callbacks = CallbackList(callbacks=callbacks, add_history=True, add_progbar=True if verbose else False)
+        callbacks = CallbackList(
+            callbacks=callbacks, add_history=True, add_progbar=True if verbose else False)
         if self.optimizer is not None:
             callbacks.append(Optimizer(self.optimizer))
         if self.scheduler is not None:
