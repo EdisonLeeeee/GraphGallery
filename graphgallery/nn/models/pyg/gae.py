@@ -84,7 +84,7 @@ class VGAE(nn.Module):
             return mu
 
     def cache_clear(self):
-        for conv in self.encoder:
+        for conv in self.conv:
             if isinstance(conv, GCNConv):
                 conv._cached_edge_index = None
                 conv._cached_adj_t = None
