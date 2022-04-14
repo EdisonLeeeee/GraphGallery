@@ -95,6 +95,10 @@ class HomoGraph(BaseGraph):
         return get_num_feats(self.attr_matrix)
 
     @property
+    def num_node_attrs(self) -> int:
+        return self.num_feats
+
+    @property
     def num_classes(self) -> int:
         return get_num_classes(self.label)
 
@@ -112,6 +116,11 @@ class HomoGraph(BaseGraph):
     def feat(self):
         """Alias of attr_matrix."""
         return self.attr_matrix
+
+    @property
+    def node_attr(self):
+        """Alias of attr_matrix."""
+        return self.feat
 
     @property
     def gx(self):
