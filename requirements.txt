@@ -10,3 +10,4 @@ tqdm>=4.32.1
 tabulate==0.8.7
 yacs
 IPython
+termcolor
