@@ -1,6 +1,8 @@
 import datetime
-import sphinx_rtd_theme
 import doctest
+
+import sphinx_rtd_theme
+
 import graphgallery
 
 extensions = [
@@ -21,7 +23,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 author = 'Jintang Li'
-project = 'graphgallery'
+project = 'GraphGallery'
 copyright = '{}, {}'.format(datetime.datetime.now().year, author)
 
 version = graphgallery.__version__
@@ -37,13 +39,13 @@ intersphinx_mapping = {'python': ('https://docs.python.org/', None)}
 html_theme_options = {
     'collapse_navigation': False,
     'display_version': True,
-    'logo_only': True,
-    'navigation_depth': 2,
+    'logo_only': False,
+    'navigation_depth': 4,
 }
 
 html_logo = '../../imgs/graphgallery.svg'
 html_static_path = ['_static']
-html_context = {'css_files': ['_static/css/custom.css']}
+# html_context = {'css_files': ['_static/css/custom.css']}
 rst_context = {'graphgallery': graphgallery}
 
 add_module_names = False

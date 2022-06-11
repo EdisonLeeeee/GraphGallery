@@ -1,47 +1,49 @@
-# The following codes are mainly modified from tensorflow and some changes are made.
-# You may refer to tensorflow for more details:
-#
-#     https://github.com/tensorflow/tensorflow
-#
-# Copyright The TensorFlow Authors. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ==============================================================================
-
-import time
-import sys
+from typing import Optional, Union, Tuple, List
 import os
-import numpy as np
+import sys
+import time
 from numbers import Number
+
+import numpy as np
 
 
 class Progbar:
-    """Displays a progress bar.
+    """A progress bar for display.
 
-    Arguments:
-        target: Total number of steps expected, None if unknown.
-        width: Progress bar width on screen.
-        verbose: Verbosity mode, 0 (silent), 1 (verbose), 2 (semi-verbose)
-        interval: Minimum visual progress update interval (in seconds).
-        unit_name: Display name for step counts (usually "step" or "sample").
+    Parameters
+    ----------
+    target : int
+        total number of steps expected.
+    width : int, optional
+        progress bar width on screen, by default 30
+    verbose : int, optional
+        verbosity mode, 0 (silent), 1 (verbose), 2 (semi-verbose), by default 1
+    interval : float, optional
+        minimum visual progress update interval (in seconds), by default 0.05
+    unit_name : str, optional
+        display name for step counts (usually "step" or "sample"), by default 'step'
+
+    Example
+    -------
+    >>> from graphgallery.utils import Progbar
+    >>> pbar = Progbar(5)
+    >>> for i in range(5):
+    ...     pbar.add(1, msg=f'current number {i}')
+    5/5 [==============================] - Total: 3.22ms - 643us/step- current number 4
+
+    >>> pbar = Progbar(5)
+    >>> for i in range(5):
+    ...     pbar.update(i+1, msg=f'current number {i}')
+    5/5 [==============================] - Total: 3.22ms - 643us/step- current number 4
+
     """
 
     def __init__(self,
-                 target,
-                 width=30,
-                 verbose=1,
-                 interval=0.05,
-                 unit_name='step'):
+                 target: int,
+                 width: int = 30,
+                 verbose: int = 1,
+                 interval: float = 0.05,
+                 unit_name: str = 'step'):
 
         self.target = target
         self.width = width
@@ -59,15 +61,27 @@ class Progbar:
         self._start = time.perf_counter()
         self._last_update = 0
 
-    def update(self, current, msg=None, finalize=None):
-        """Updates the progress bar.
+    def update(self, current: int, msg: Optional[Union[str, List, Tuple]] = None,
+               finalize: Optional[bool] = None):
+        """Updates the progress bar using current value.
 
-        Arguments:
-            current: Index of current step.
-            msg: List of tuples: `(name, value_for_last_step)` or string messages.
-            finalize: Whether this is the last update for the progress bar. If
-              `None`, defaults to `current >= self.target`.
+
+        Parameters
+        ----------
+        current : int
+            index of current step
+        msg : Optional[Union[str, List, Tuple]], optional
+            :obj:`(name, value_for_last_step)` or string messages, by default None
+        finalize : Optional[bool], optional
+            whether this is the last update for the progress bar. If
+            :obj:`None`, defaults to :obj:`current >= self.target`, by default None
+
+        Raises
+        ------
+        ValueError
+            invalid message :obj:`msg` for progress bar.
         """
+
         if not self.verbose:
             return
 
@@ -124,7 +138,8 @@ class Progbar:
 
             if self.target is not None:
                 numdigits = int(np.log10(self.target)) + 1
-                bar = ('%' + str(numdigits) + 'd/%d [') % (current, self.target)
+                bar = ('%' + str(numdigits) +
+                       'd/%d [') % (current, self.target)
                 prog = float(current) / self.target
                 prog_width = int(self.width * prog)
                 if prog_width > 0:
@@ -178,7 +193,8 @@ class Progbar:
         elif self.verbose == 2:
             if finalize:
                 numdigits = int(np.log10(self.target)) + 1
-                count = ('%' + str(numdigits) + 'd/%d') % (current, self.target)
+                count = ('%' + str(numdigits) +
+                         'd/%d') % (current, self.target)
                 info = count + info
                 info += message
                 info += '\n'
@@ -187,22 +203,31 @@ class Progbar:
 
         self._last_update = now
 
-    def add(self, n, msg=None):
+    def add(self, n: int, msg: Optional[Union[str, List, Tuple]] = None):
+        """Add :obj:`n` steps to the progress bar.
+
+        Parameters
+        ----------
+        n : int
+            number of steps to add to the progress bar
+        msg : Optional[Union[str, List, Tuple]], optional
+            :obj:`(name, value_for_last_step)` or string messages, by default None
+        """
         self.update(self._seen_so_far + n, msg)
 
     @staticmethod
-    def format_num(n):
+    def format_num(n: int) -> str:
         """
         Intelligent scientific notation (.3g).
 
         Parameters
         ----------
-        n  : int or float or Numeric
-            A Number.
+        n : int or float or Numeric
+            a Number.
 
         Returns
         -------
-        out  : str
+        out : str
             Formatted number.
         """
         assert isinstance(n, Number), f'{n} is not a Number.'

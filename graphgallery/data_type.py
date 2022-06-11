@@ -15,57 +15,63 @@ __all__ = [
 
 
 def is_iterable(x: Any) -> bool:
-    """Check whether `x` is an iterable object except for string."""
+    """Check whether :obj:`x` is an iterable object except for string."""
     return isinstance(x, collections.abc.Iterable) and not isinstance(x, (str, bytes))
 
 
 def is_listlike(x: Any) -> bool:
-    """Check whether `x` is list like, e.g., Tuple, List, or Numpy object.
+    """Check whether :obj:`x` is list like, e.g., Tuple, List, or Numpy object.
 
-    Parameters:
+    Parameters
     ----------
     x: A python object to check.
-    Returns:
-    ----------
-    `True` iff `x` is a list like sequence.
+
+    Returns
+    -------
+    :obj:`True` iff :obj:`x` is a list like sequence.
     """
     return isinstance(x, (list, tuple))
 
 
 def is_multiobjects(x: Any) -> bool:
-    """Check whether `x` is a list of complex objects (not integers).
+    """Check whether :obj:`x` is a list of complex objects (not integers).
 
-    Parameters:
+    Parameters
     ----------
     x: A python object to check.
-    Returns:
-    ----------
-    `True` iff `x` is a list of complex objects.
+
+    Returns
+    -------
+    :obj:`True` iff :obj:`x` is a list of complex objects.
     """
     return (is_listlike(x) or (isinstance(x, np.ndarray)
                                and x.dtype == "O")) and len(x) > 0 and not is_scalar(x[0])
 
 
 def is_scalar(x: Any) -> bool:
-    """Check whether `x` is a scalar, an array scalar, or a 0-dim array.
-    Parameters:
+    """Check whether :obj:`x` is a scalar, an array scalar, or a 0-dim array.
+
+    Parameters
     ----------
     x: A python object to check.
-    Returns:
-    ----------
-    `True` iff `x` is a scalar, an array scalar, or a 0-dim array.
+
+    Returns
+    -------
+    :obj:`True` iff :obj:`x` is a scalar, an array scalar, or a 0-dim array.
     """
     return np.isscalar(x) or (isinstance(x, np.ndarray) and x.ndim == 0)
 
 
 def is_intscalar(x: Any) -> bool:
-    """Check whether `x` is an integer scalar.
-    Parameters:
+    """Check whether :obj:`x` is an integer scalar.
+
+    Parameters
     ----------
     x: A python object to check.
-    Returns:
-    ----------
-    `True` iff `x` is an integer scalar (built-in or Numpy integer).
+
+    Returns
+    -------
+    :obj:`True` iff :obj:`x` is an integer scalar (built-in or Numpy integer).
     """
     return isinstance(x, (
         int,
@@ -81,15 +87,15 @@ def is_intscalar(x: Any) -> bool:
 
 
 def is_floatscalar(x: Any) -> bool:
-    """Check whether `x` is a float scalar.
+    """Check whether :obj:`x` is a float scalar.
 
-    Parameters:
+    Parameters
     ----------
     x: A python object to check.
 
-    Returns:
-    ----------
-    `True` iff `x` is a float scalar (built-in or Numpy float).
+    Returns
+    -------
+    :obj:`True` iff :obj:`x` is a float scalar (built-in or Numpy float).
     """
     return isinstance(x, (
         float,

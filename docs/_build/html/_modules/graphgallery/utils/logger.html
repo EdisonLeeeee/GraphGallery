@@ -3,17 +3,17 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>graphgallery.utils.logger &mdash; graphgallery 1.0.1 documentation</title><link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+  <title>graphgallery.utils.logger &mdash; GraphGallery 1.1.0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
-  <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../../../_static/jquery.js"></script>
-        <script type="text/javascript" src="../../../_static/underscore.js"></script>
-        <script type="text/javascript" src="../../../_static/doctools.js"></script>
-        <script type="text/javascript" src="../../../_static/language_data.js"></script>
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
@@ -24,10 +24,11 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../../index.html"><img src="../../../_static/graphgallery.svg" class="logo" alt="Logo"/>
+            <a href="../../../index.html" class="icon icon-home"> GraphGallery
+            <img src="../../../_static/graphgallery.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.0.1
+                1.1.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -37,12 +38,13 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Installation</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Installation</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../notes/installation.html">Installation</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Package Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">Package Reference</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules/root.html">graphgallery</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../modules/utils.html">graphgallery.utils</a></li>
 </ul>
 
@@ -52,7 +54,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../../index.html">graphgallery</a>
+          <a href="../../../index.html">GraphGallery</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -71,65 +73,72 @@
            <div itemprop="articleBody">
              
   <h1>Source code for graphgallery.utils.logger</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Copyright (c) Facebook, Inc. and its affiliates.</span>
-<span class="c1"># All rights reserved.</span>
-<span class="c1">#</span>
-<span class="c1"># This source code is licensed under the license found in the</span>
-<span class="c1"># LICENSE file in the root directory of this source tree.</span>
-
-<span class="c1"># They are mainly adopted from</span>
-<span class="c1"># https://github.com/facebookresearch/detectron2/blob/master/detectron2/utils/logger.py</span>
-
+<span></span><span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">import</span> <span class="nn">functools</span>
-<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+
 <span class="kn">from</span> <span class="nn">termcolor</span> <span class="kn">import</span> <span class="n">colored</span>
 
-
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;setup_logger&quot;</span><span class="p">,</span> <span class="s2">&quot;get_logger&quot;</span><span class="p">,</span> <span class="s2">&quot;create_small_table&quot;</span><span class="p">]</span>
-
-
-<span class="k">class</span> <span class="nc">_ColorfulFormatter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_root_name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;root_name&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_abbrev_name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;abbrev_name&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_abbrev_name</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_abbrev_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_abbrev_name</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">_ColorfulFormatter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">formatMessage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
-        <span class="n">record</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_root_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_abbrev_name</span><span class="p">)</span>
-        <span class="n">log</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">_ColorfulFormatter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">formatMessage</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">record</span><span class="o">.</span><span class="n">levelno</span> <span class="o">==</span> <span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">:</span>
-            <span class="n">prefix</span> <span class="o">=</span> <span class="n">colored</span><span class="p">(</span><span class="s2">&quot;WARNING&quot;</span><span class="p">,</span> <span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;blink&quot;</span><span class="p">])</span>
-        <span class="k">elif</span> <span class="n">record</span><span class="o">.</span><span class="n">levelno</span> <span class="o">==</span> <span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span> <span class="ow">or</span> <span class="n">record</span><span class="o">.</span><span class="n">levelno</span> <span class="o">==</span> <span class="n">logging</span><span class="o">.</span><span class="n">CRITICAL</span><span class="p">:</span>
-            <span class="n">prefix</span> <span class="o">=</span> <span class="n">colored</span><span class="p">(</span><span class="s2">&quot;ERROR&quot;</span><span class="p">,</span> <span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;blink&quot;</span><span class="p">,</span> <span class="s2">&quot;underline&quot;</span><span class="p">])</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">log</span>
-        <span class="k">return</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">log</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;setup_logger&quot;</span><span class="p">,</span> <span class="s2">&quot;get_logger&quot;</span><span class="p">]</span>
 
 
-<div class="viewcode-block" id="setup_logger"><a class="viewcode-back" href="../../../modules/utils.html#graphgallery.utils.setup_logger">[docs]</a><span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">()</span>  <span class="c1"># so that calling setup_logger multiple times won&#39;t add many handlers</span>
+<span class="c1"># cache the opened file object, so that different calls to `setup_logger`</span>
+<span class="c1"># with the same file name can safely write to the same file.</span>
+<div class="viewcode-block" id="setup_logger"><a class="viewcode-back" href="../../../modules/utils.html#graphgallery.utils.setup_logger">[docs]</a><span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">setup_logger</span><span class="p">(</span>
-    <span class="n">output</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">distributed_rank</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;graphgallery&quot;</span><span class="p">,</span> <span class="n">abbrev_name</span><span class="o">=</span><span class="kc">None</span>
+    <span class="n">output</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">distributed_rank</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span>
+    <span class="n">color</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;graphgallery&quot;</span><span class="p">,</span> <span class="n">abbrev_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Initialize the graphgallery logger and set its verbosity level to &quot;DEBUG&quot;.</span>
-<span class="sd">    </span>
-<span class="sd">    Args:</span>
-<span class="sd">        output (str): a file name or a directory to save log. If None, will not save log file.</span>
-<span class="sd">            If ends with &quot;.txt&quot; or &quot;.log&quot;, assumed to be a file name.</span>
-<span class="sd">            Otherwise, logs will be saved to `output/log.txt`.</span>
-<span class="sd">        name (str): the root module name of this logger</span>
-<span class="sd">        abbrev_name (str): an abbreviation of the module, to avoid long names in logs.</span>
-<span class="sd">            Set to &quot;&quot; to not log the root module in logs.</span>
-<span class="sd">            By default, will abbreviate &quot;detectron2&quot; to &quot;d2&quot; and leave other</span>
-<span class="sd">            modules unchanged.</span>
-<span class="sd">            </span>
-<span class="sd">    Returns:</span>
-<span class="sd">        logging.Logger: a logger</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    output : Optional[str], optional</span>
+<span class="sd">        a file name or a directory to save log. If None, will not save log file.</span>
+<span class="sd">        If ends with &quot;.txt&quot; or &quot;.log&quot;, assumed to be a file name.</span>
+<span class="sd">        Otherwise, logs will be saved to `output/log.txt`.</span>
+<span class="sd">    distributed_rank : int, optional</span>
+<span class="sd">        used for distributed training, by default 0</span>
+<span class="sd">    mode : str, optional</span>
+<span class="sd">        mode for the output file (if output is given), by default &#39;w&#39;.</span>
+<span class="sd">    color : bool, optional</span>
+<span class="sd">        whether to use color when printing, by default True</span>
+<span class="sd">    name : str, optional</span>
+<span class="sd">        the root module name of this logger, by default &quot;graphgallery&quot;</span>
+<span class="sd">    abbrev_name : Optional[str], optional</span>
+<span class="sd">        an abbreviation of the module, to avoid long names in logs.</span>
+<span class="sd">        Set to &quot;&quot; to not log the root module in logs.</span>
+<span class="sd">        By default, None.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    logging.Logger</span>
+<span class="sd">        a logger</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; logger = setup_logger(name=&#39;my exp&#39;)</span>
+
+<span class="sd">    &gt;&gt;&gt; logger.info(&#39;message&#39;)</span>
+<span class="sd">    [12/19 17:01:43 my exp]: message</span>
+
+<span class="sd">    &gt;&gt;&gt; logger.error(&#39;message&#39;)</span>
+<span class="sd">    ERROR [12/19 17:02:22 my exp]: message</span>
+
+<span class="sd">    &gt;&gt;&gt; logger.warning(&#39;message&#39;)</span>
+<span class="sd">    WARNING [12/19 17:02:32 my exp]: message</span>
+
+<span class="sd">    &gt;&gt;&gt; # specify output files</span>
+<span class="sd">    &gt;&gt;&gt; logger = setup_logger(output=&#39;log.txt&#39;, name=&#39;my exp&#39;)</span>
+<span class="sd">    # additive, by default mode=&#39;w&#39; </span>
+<span class="sd">    &gt;&gt;&gt; logger = setup_logger(output=&#39;log.txt&#39;, name=&#39;my exp&#39;, mode=&#39;a&#39;)    </span>
+
+<span class="sd">    # once you logger is set, you can call it by</span>
+<span class="sd">    &gt;&gt;&gt; logger = get_logger(name=&#39;my exp&#39;)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">propagate</span> <span class="o">=</span> <span class="kc">False</span>
@@ -170,7 +179,7 @@
         <span class="k">if</span> <span class="n">dirs</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">dirs</span><span class="p">):</span>
                 <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">dirs</span><span class="p">)</span>
-        <span class="n">file_handle</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;a&quot;</span><span class="p">)</span>
+        <span class="n">file_handle</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">)</span>
         <span class="n">file_handle</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
         <span class="n">file_handle</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">plain_formatter</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">file_handle</span><span class="p">)</span>
@@ -178,10 +187,39 @@
     <span class="k">return</span> <span class="n">logger</span></div>
 
 
-<div class="viewcode-block" id="get_logger"><a class="viewcode-back" href="../../../modules/utils.html#graphgallery.utils.get_logger">[docs]</a><span class="k">def</span> <span class="nf">get_logger</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;graphgallery&quot;</span><span class="p">):</span>
+<div class="viewcode-block" id="get_logger"><a class="viewcode-back" href="../../../modules/utils.html#graphgallery.utils.get_logger">[docs]</a><span class="k">def</span> <span class="nf">get_logger</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;GraphWar&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get a logger for a given name.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    name : str, optional</span>
+<span class="sd">        name of the logger, by default &quot;GraphWar&quot;</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    a logger for the given name</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
 
 
+<span class="k">class</span> <span class="nc">_ColorfulFormatter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_root_name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;root_name&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_abbrev_name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;abbrev_name&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_abbrev_name</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_abbrev_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_abbrev_name</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_ColorfulFormatter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">formatMessage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+        <span class="n">record</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_root_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_abbrev_name</span><span class="p">)</span>
+        <span class="n">log</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">_ColorfulFormatter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">formatMessage</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">record</span><span class="o">.</span><span class="n">levelno</span> <span class="o">==</span> <span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">:</span>
+            <span class="n">prefix</span> <span class="o">=</span> <span class="n">colored</span><span class="p">(</span><span class="s2">&quot;WARNING&quot;</span><span class="p">,</span> <span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;blink&quot;</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">record</span><span class="o">.</span><span class="n">levelno</span> <span class="o">==</span> <span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span> <span class="ow">or</span> <span class="n">record</span><span class="o">.</span><span class="n">levelno</span> <span class="o">==</span> <span class="n">logging</span><span class="o">.</span><span class="n">CRITICAL</span><span class="p">:</span>
+            <span class="n">prefix</span> <span class="o">=</span> <span class="n">colored</span><span class="p">(</span><span class="s2">&quot;ERROR&quot;</span><span class="p">,</span> <span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;blink&quot;</span><span class="p">,</span> <span class="s2">&quot;underline&quot;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">log</span>
+        <span class="k">return</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">log</span>
 </pre></div>
 
            </div>
@@ -191,7 +229,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2021, Jintang Li.</p>
+    <p>&#169; Copyright 2022, Jintang Li.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
