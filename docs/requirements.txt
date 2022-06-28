@@ -11,7 +11,7 @@ texttable==1.6.2
 matplotlib==3.4.3
 tqdm>=4.32.1
 networkx==2.3
-numpy==1.21.0
+numpy==1.22.0
 gensim>=3.8.0
 tabulate==0.8.7
 yacs
