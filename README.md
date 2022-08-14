@@ -23,12 +23,12 @@
 </p>
 
 # GraphGallery
-GraphGallery is a gallery for benchmarking Graph Neural Networks (GNNs) based on pure [PyTorch](https://github.com/pytorch/pytorch) backend. Alteratively, [Pytorch Geometric (PyG)](https://github.com/pyg-team/pytorch_geometric) and [Deep Graph Library (DGL)](https://www.dgl.ai/) backend are also available in GraphGallery to accelerate your implementations.
+GraphGallery is a gallery for benchmarking Graph Neural Networks (GNNs) based on pure [PyTorch](https://github.com/pytorch/pytorch) backend. Alteratively, [Pytorch Geometric (PyG)](https://github.com/pyg-team/pytorch_geometric) and [Deep Graph Library (DGL)](https://www.dgl.ai/) backend are also available in GraphGallery to facilitate your implementations.
 
 
 # 💨 NEWS
-+ (2021/11/20) We now no longer support `TensorFlow` backend.
-+ (2021/11/20) The module `graphgallery.attack` is deprecated, users may refer to [GraphWar](https://github.com/EdisonLeeeee/GraphWar) for more information.
++ November 20, 2021: We now no longer support `TensorFlow` backend.
++ November 20, 2021: The module `graphgallery.attack` is deprecated, users may refer to [GraphWar](https://github.com/EdisonLeeeee/GraphWar) for more information.
 
 # 🚀 Installation
 Please make sure you have installed [PyTorch](https://pytorch.org/). Also, [Pytorch Geometric (PyG)](https://github.com/pyg-team/pytorch_geometric) and [Deep Graph Library (DGL)](https://www.dgl.ai/) are alternative choices.
@@ -213,7 +213,7 @@ mydataset = Graph.from_npz('path/to/mydataset.npz')
 - [x] Add PyTorch trainers support
 - [x] Add other frameworks (PyG and DGL) support
 - [x] set tensorflow as optional dependency when using graphgallery
-- [ ] Add more GNN trainers (TF and Torch backend)
+- [ ] Add more GNN trainers
 - [ ] Support for more tasks, e.g., `graph Classification` and `link prediction`
 - [x] Support for more types of graphs, e.g., Heterogeneous graph
 - [ ] Add Docstrings and Documentation (Building)

@@ -25,7 +25,7 @@ url = 'https://github.com/EdisonLeeeee/GraphGallery'
 
 install_requires = [
     # Do not add pytorch here. Users should install
-    # pytorch themselves, preferrably by OS's package manager, or by
+    # pytorch themselves, preferably by OS's package manager, or by
     # choosing the proper pypi package name at
     # pytorch: https://pytorch.org/
     'tqdm',

@@ -1,5 +1,7 @@
 from tqdm import tqdm as tqdm_base
 
+__all__ = ['tqdm']
+
 
 def tqdm_clear(*args, **kwargs):
     getattr(tqdm_base, '_instances', {}).clear()
@@ -11,7 +13,7 @@ def tqdm(*args, **kwargs):
 
     Returns
     -------
-    an decorated `tqdm` class
+        an decorated :class:`tqdm` class
     """
 
     if hasattr(tqdm_base, '_instances'):

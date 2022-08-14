@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>graphgallery.utils.tqdm &mdash; GraphGallery 1.1.0 documentation</title>
+  <title>graphgallery.utils.seed &mdash; GraphGallery 1.1.0 documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -63,7 +63,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
           <li><a href="../../index.html">Module code</a> &raquo;</li>
-      <li>graphgallery.utils.tqdm</li>
+      <li>graphgallery.utils.seed</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -72,32 +72,28 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <h1>Source code for graphgallery.utils.tqdm</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span> <span class="k">as</span> <span class="n">tqdm_base</span>
+  <h1>Source code for graphgallery.utils.seed</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numbers</span> <span class="kn">import</span> <span class="n">Number</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">graphgallery</span> <span class="kn">import</span> <span class="n">backend</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;tqdm&#39;</span><span class="p">]</span>
-
-
-<span class="k">def</span> <span class="nf">tqdm_clear</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="nb">getattr</span><span class="p">(</span><span class="n">tqdm_base</span><span class="p">,</span> <span class="s1">&#39;_instances&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
-
-
-<div class="viewcode-block" id="tqdm"><a class="viewcode-back" href="../../../modules/utils.html#graphgallery.utils.tqdm">[docs]</a><span class="k">def</span> <span class="nf">tqdm</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Decorator of tqdm, to avoid some errors if tqdm </span>
-<span class="sd">    terminated unexpectedly</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">        an decorated :class:`tqdm` class</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">tqdm_base</span><span class="p">,</span> <span class="s1">&#39;_instances&#39;</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">instance</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">tqdm_base</span><span class="o">.</span><span class="n">_instances</span><span class="p">):</span>
-            <span class="n">tqdm_base</span><span class="o">.</span><span class="n">_decr_instances</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">tqdm_base</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;set_seed&quot;</span><span class="p">]</span>
 
 
-<span class="n">tqdm</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">tqdm_base</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">+</span> <span class="n">tqdm_base</span><span class="o">.</span><span class="fm">__init__</span><span class="o">.</span><span class="vm">__doc__</span>
+<div class="viewcode-block" id="set_seed"><a class="viewcode-back" href="../../../modules/root.html#graphgallery.utils.seed.set_seed">[docs]</a><span class="k">def</span> <span class="nf">set_seed</span><span class="p">(</span><span class="n">seed</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="n">seed</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">seed</span><span class="p">,</span> <span class="n">Number</span><span class="p">),</span> <span class="n">seed</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+    <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">backend</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;dgl&#39;</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">dgl</span>
+            <span class="n">dgl</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span></div>
+        <span class="c1"># torch.cuda.manual_seed_all(seed)</span>
 </pre></div>
 
            </div>

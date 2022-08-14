@@ -1,18 +1,10 @@
-# Copyright (c) Facebook, Inc. and its affiliates.
-# All rights reserved.
-#
-# This source code is licensed under the license found in the
-# LICENSE file in the root directory of this source tree.
-
-# They are mainly adapted from
-# https://github.com/facebookresearch/detectron2/blob/master/detectron2/utils/logger.py
-
-import os
-import sys
 import functools
 import logging
-from termcolor import colored
+import os
+import sys
 from typing import Optional
+
+from termcolor import colored
 
 __all__ = ["setup_logger", "get_logger"]
 
@@ -43,13 +35,33 @@ def setup_logger(
     abbrev_name : Optional[str], optional
         an abbreviation of the module, to avoid long names in logs.
         Set to "" to not log the root module in logs.
-        By default, will abbreviate "detectron2" to "d2" and leave other
-        modules unchanged.
+        By default, None.
 
     Returns
     -------
     logging.Logger
         a logger
+
+    Example
+    -------
+    >>> logger = setup_logger(name='my exp')
+
+    >>> logger.info('message')
+    [12/19 17:01:43 my exp]: message
+
+    >>> logger.error('message')
+    ERROR [12/19 17:02:22 my exp]: message
+
+    >>> logger.warning('message')
+    WARNING [12/19 17:02:32 my exp]: message
+
+    >>> # specify output files
+    >>> logger = setup_logger(output='log.txt', name='my exp')
+    # additive, by default mode='w' 
+    >>> logger = setup_logger(output='log.txt', name='my exp', mode='a')    
+
+    # once you logger is set, you can call it by
+    >>> logger = get_logger(name='my exp')
     """
 
     logger = logging.getLogger(name)
@@ -100,7 +112,18 @@ def setup_logger(
     return logger
 
 
-def get_logger(name="GraphGallery"):
+def get_logger(name: str = "GraphWar"):
+    """Get a logger for a given name.
+
+    Parameters
+    ----------
+    name : str, optional
+        name of the logger, by default "GraphWar"
+
+    Returns
+    -------
+    a logger for the given name
+    """
     return logging.getLogger(name)
 
 
