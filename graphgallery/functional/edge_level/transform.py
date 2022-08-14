@@ -56,8 +56,8 @@ def asedge(edge: np.ndarray, shape="col_wise", symmetric=False, dtype=None):
     N, M = edge.shape
     if N == M == 2 and shape == "row_wise":
         # TODO: N=M=2 is confusing, we assume that edge was 'row_wise'
-        warnings.warn(f"The shape of the edge is {N}x{M}."
-                      f"we assume that {edge} was 'col_wise'")
+#         warnings.warn(f"The shape of the edge is {N}x{M}."
+#                       f"we assume that {edge} was 'col_wise'")
         edge = edge.T
     elif (shape == "col_wise" and N != 2) or (shape == "row_wise" and M != 2):
         edge = edge.T

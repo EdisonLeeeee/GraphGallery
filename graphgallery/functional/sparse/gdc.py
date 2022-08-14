@@ -16,7 +16,7 @@ class GDC(SparseTransform):
                  alpha: float = 0.3,
                  t: float = None,
                  eps: float = None,
-                 K: int = 128,
+                 K: int = None,
                  which: str = 'PPR'):
         super().__init__()
         self.collect(locals())
@@ -35,7 +35,7 @@ def gdc(adj_matrix: sp.csr_matrix,
         alpha: float = 0.3,
         t: float = None,
         eps: float = None,
-        K: int = 128,
+        K: int = None,
         which: str = 'PPR') -> sp.csr_matrix:
 
     if not (eps or K):

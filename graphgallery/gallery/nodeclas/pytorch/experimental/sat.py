@@ -20,10 +20,8 @@ class SATGCN(NodeClasTrainer):
         attr_matrix = gf.get(feat_transform)(graph.attr_matrix)
 
         V, U = sp.linalg.eigsh(adj_matrix, k=k)
-
         adj_matrix = (U * V) @ U.T
-        adj_matrix[adj_matrix < 0] = 0.
-        adj_matrix = gf.get(adj_transform)(adj_matrix)
+        adj_matrix = gf.normalize_adj(adj_matrix)
 
         feat, adj, U, V = gf.astensors(attr_matrix,
                                        adj_matrix,
@@ -129,8 +127,8 @@ class SATGCN(NodeClasTrainer):
 @PyTorch.register()
 class SATSGC(SATGCN):
     def model_step(self,
-                   hids=[16],
-                   acts=['relu'],
+                   hids=[],
+                   acts=[],
                    K=2,
                    dropout=0.5,
                    bias=True):
@@ -149,8 +147,8 @@ class SATSGC(SATGCN):
 @PyTorch.register()
 class SATSSGC(SATGCN):
     def model_step(self,
-                   hids=[16],
-                   acts=['relu'],
+                   hids=[],
+                   acts=[],
                    K=5,
                    alpha=0.1,
                    dropout=0.5,
