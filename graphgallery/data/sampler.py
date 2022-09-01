@@ -5,7 +5,7 @@ from typing import List, Optional, Tuple, NamedTuple, Union
 
 try:
     from glcore import neighbor_sampler_cpu
-except ModuleNotFoundError:
+except (ModuleNotFoundError, ImportError):
     neighbor_sampler_cpu = None
 
 

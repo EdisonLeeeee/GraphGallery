@@ -5,7 +5,7 @@ from dgl import DGLError
 from graphwar.utils.normalize import dgl_normalize
 try:
     from glcore import dimmedian_idx
-except ModuleNotFoundError:
+except (ModuleNotFoundError, ImportError):
     dimmedian_idx = None
     
 class DimwiseMedianConv(nn.Module):
