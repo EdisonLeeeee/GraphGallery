@@ -3,7 +3,8 @@ from numba import njit
 from numba import types
 from numba.typed import Dict
 
-__all__ = ['mixing_matrix', 'degree_mixing_matrix', 'degree_assortativity_coefficient']
+__all__ = ['mixing_matrix', 'degree_mixing_matrix',
+           'degree_assortativity_coefficient']
 
 
 @njit
@@ -20,7 +21,6 @@ def mixing_matrix(edges, in_deg, out_deg, mapping):
         x = mapping[du]
         y = mapping[dv]
         M[x, y] += 1
-        M[y, x] += 1
     return M
 
 
@@ -58,7 +58,7 @@ def numeric_ac(M, mapping):
     xy = np.outer(x, y)
     ab = np.outer(a, b)
 
-    return (xy * (M - ab)).sum() / vara
+    return (xy * (M - ab)).sum() / np.sqrt(vara*varb)
 
 
 def degree_assortativity_coefficient(adj_matrix):
