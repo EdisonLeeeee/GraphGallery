@@ -97,6 +97,7 @@ ENV/
 
 *.pickle
 .vscode
+.DS_Store
 
 # dataset file
 dataset/
